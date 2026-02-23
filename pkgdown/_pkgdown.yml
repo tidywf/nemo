@@ -46,6 +46,7 @@ reference:
       - config_prep_raw_schema
       - config_prep_multi
       - config_prep_write
+      - schema_to_mermaid
   - title: "Parsing"
     contents:
       - parse_file

@@ -1,3 +1,5 @@
+.PHONY: all pkgdown
+
 readme:
 	@quarto render README.qmd
 
