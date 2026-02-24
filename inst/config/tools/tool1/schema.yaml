@@ -25,9 +25,8 @@ subsets:
 
 classes:
 
-  # ---------------------------------------------------------------------------
-  # Raw classes
-  # ---------------------------------------------------------------------------
+  #---- Table1 ----#
+  #----------------#
 
   RawTable1:
     description: Table1 raw file.
@@ -60,46 +59,6 @@ classes:
       metricZ:
         range: float
         in_subset: [latest]
-
-  RawTable2:
-    description: Table2 raw file.
-    in_subset: [raw, latest]
-    annotations:
-      name: table2
-      pattern: "\\.tool1\\.table2\\.tsv$"
-      ftype: tsv
-    attributes:
-      SampleID:
-        range: string
-        identifier: true
-      metricA:
-        range: string
-      metricB:
-        range: float
-
-  RawTable3:
-    description: Table3 raw file (no header).
-    in_subset: [raw, latest]
-    annotations:
-      name: table3
-      pattern: "\\.tool1\\.table3\\.tsv$"
-      ftype: txt-nohead
-    attributes:
-      SampleID:
-        range: string
-        identifier: true
-      QCStatus:
-        range: string
-      TotalReads:
-        range: float
-      MappedReads:
-        range: float
-      UnmappedReads:
-        range: float
-
-  # ---------------------------------------------------------------------------
-  # Tidy classes
-  # ---------------------------------------------------------------------------
 
   TidyTable1:
     description: Table1 tidy output.
@@ -139,6 +98,25 @@ classes:
         description: Metric Z
         in_subset: [latest]
 
+  #---- Table2 ----#
+  #----------------#
+
+  RawTable2:
+    description: Table2 raw file.
+    in_subset: [raw, latest]
+    annotations:
+      name: table2
+      pattern: "\\.tool1\\.table2\\.tsv$"
+      ftype: tsv
+    attributes:
+      SampleID:
+        range: string
+        identifier: true
+      metricA:
+        range: string
+      metricB:
+        range: float
+
   TidyTable2:
     description: Table2 tidy output.
     in_subset: [tidy, latest]
@@ -156,6 +134,29 @@ classes:
       metric_b:
         range: float
         description: Metric B
+
+  #---- Table3 ----#
+  #----------------#
+
+  RawTable3:
+    description: Table3 raw file (no header).
+    in_subset: [raw, latest]
+    annotations:
+      name: table3
+      pattern: "\\.tool1\\.table3\\.tsv$"
+      ftype: txt-nohead
+    attributes:
+      SampleID:
+        range: string
+        identifier: true
+      QCStatus:
+        range: string
+      TotalReads:
+        range: float
+      MappedReads:
+        range: float
+      UnmappedReads:
+        range: float
 
   TidyTable3:
     description: Table3 tidy output.
@@ -180,3 +181,4 @@ classes:
       reads_unmap:
         range: float
         description: Unmapped reads
+

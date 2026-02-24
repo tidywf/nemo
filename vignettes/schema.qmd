@@ -14,9 +14,6 @@ knitr:
 #| label: setup
 #| include: false
 use("nemo")
-use("dplyr")
-use("tidyr")
-use("knitr")
 ```
 
 Each tool has a single [LinkML](https://linkml.io/linkml/index.html) schema under
@@ -53,8 +50,8 @@ default_prefix: tool1
 
 `subsets` declares all the tags that will be referenced in `in_subset` later:
 
-- `raw`: marks a class as describing a raw input file.
-- `tidy`: marks a class as describing a tidy output tibble.
+- `raw`: class describes **raw input** file.
+- `tidy`: class describes **tidy output** tibble.
 - `<version>`: any other name (e.g. `v1.2.3`, `latest`) tags a version.
 
 ```yaml
@@ -83,6 +80,20 @@ To decouple the class name from the table name (useful when a single table
 maps to multiple tidy subtables), set the `name` annotation explicitly, which
 overrides the prefix-stripping fallback.
 
+## Visualisation
+
+Schemas can be visualised as Mermaid ER diagrams using `schema_to_mermaid()`.
+All schema versions are merged into a single view.
+
+For example, the `tool1` schema looks like:
+
+```{r tool1-mermaid}
+#| results: asis
+#| echo: true
+p <- system.file("config/tools/tool1/schema.yaml", package = "nemo")
+cat("```{mermaid}\n", schema_to_mermaid(p), "\n```\n", sep = "")
+```
+
 ## Annotations
 
 Every class carries a set of {nemo}-specific `annotations`:
@@ -101,8 +112,6 @@ LinkML `range` maps to {nemo}'s internal readr col-spec code:
 - string: character (`c`)
 - integer: integer (`i`)
 - float: double (`d`)
-
----
 
 ## Corner cases
 
@@ -344,7 +353,7 @@ intermediate step before custom R code splits or reshapes the result, the
 For example, `tidy_genecvg()` calls `.tidy_file()` (which renames all
 columns from CamelCase to snake_case) and then splits the wide tibble into
 two narrow tibbles (genes and per-base coverage). The schema's `TidyGenecvg`
-class must list all ~70 renamed columns.
+class must list all ~70 renamed columns (which sucks I know).
 
 ```yaml
   TidyGenecvg:
@@ -367,20 +376,6 @@ class must list all ~70 renamed columns.
       # ...
 ```
 
-The rule of thumb: the `Tidy*` class must match whatever `colnames()` the
+- Rule of thumb: `Tidy*` class must match whatever `colnames()` the
 tibble has at the point where `get_tidy_schema()` is called in the
 `tidy_*` method.
-
-## Visualisation
-
-Schemas can be visualised as Mermaid ER diagrams using `schema_to_mermaid()`.
-All schema versions are merged into a single view.
-
-For example, the `tool1` schema looks like:
-
-```{r tool1-mermaid}
-#| results: asis
-#| echo: true
-p <- system.file("config/tools/tool1/schema.yaml", package = "nemo")
-cat("```{mermaid}\n", schema_to_mermaid(p), "\n```\n", sep = "")
-```
