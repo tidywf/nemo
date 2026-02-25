@@ -128,7 +128,7 @@ subsets:
   tidy:
     description: Tidy output schema
   latest:
-    description: Tool2 latest version
+    description: Tool1 latest version
 
 classes:
   RawTable2:
