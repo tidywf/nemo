@@ -30,8 +30,8 @@ conf$get_tidy_schema("table1", subtbl = "tbl1")
 \item{\code{tool}}{(\code{character(1)})\cr
 Tool name.}
 
-\item{\code{config}}{(\code{list()})\cr
-Config list.}
+\item{\code{schema}}{(\code{list()})\cr
+Parsed LinkML schema.}
 
 \item{\code{raw_schemas_all}}{(\code{tibble()})\cr
 All raw schemas for tool.}
@@ -84,7 +84,7 @@ Package name for config lookup.}
 \if{html}{\out{<a id="method-Config-print"></a>}}
 \if{latex}{\out{\hypertarget{method-Config-print}{}}}
 \subsection{Method \code{print()}}{
-Print details about the Tool.
+Print details about the Config.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Config$print(...)}\if{html}{\out{</div>}}
 }
@@ -101,7 +101,7 @@ Print details about the Tool.
 \if{html}{\out{<a id="method-Config-read"></a>}}
 \if{latex}{\out{\hypertarget{method-Config-read}{}}}
 \subsection{Method \code{read()}}{
-Read YAML configs.
+Read LinkML schema.yaml.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Config$read(pkg)}\if{html}{\out{</div>}}
 }
@@ -115,7 +115,7 @@ Package name where the config files are located.}
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-A \code{list()} with the parsed data.
+A \code{list()} with the parsed LinkML schema.
 }
 }
 \if{html}{\out{<hr>}}

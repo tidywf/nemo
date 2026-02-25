@@ -1,0 +1,184 @@
+id: https://example.org/nemo/tool1
+name: tool1
+description: >-
+  Just a toy tool for demoing.
+
+prefixes:
+  linkml: https://w3id.org/linkml/
+  tool1: https://example.org/nemo/tool1/
+
+imports:
+  - linkml:types
+
+default_range: string
+default_prefix: tool1
+
+subsets:
+  raw:
+    description: Raw input file schema
+  tidy:
+    description: Tidy output schema
+  v1.2.3:
+    description: Tool1 version v1.2.3
+  latest:
+    description: Tool1 latest version
+
+classes:
+
+  #---- Table1 ----#
+  #----------------#
+
+  RawTable1:
+    description: Table1 raw file.
+    in_subset:
+      - raw
+    annotations:
+      name: table1
+      pattern: "\\.tool1\\.table1\\.tsv$"
+      ftype: tsv
+    attributes:
+      SampleID:
+        range: string
+        identifier: true
+        in_subset: [v1.2.3, latest]
+      Chromosome:
+        range: string
+        in_subset: [v1.2.3, latest]
+      Start:
+        range: integer
+        in_subset: [v1.2.3, latest]
+      End:
+        range: integer
+        in_subset: [v1.2.3, latest]
+      metricX:
+        range: float
+        in_subset: [v1.2.3, latest]
+      metricY:
+        range: float
+        in_subset: [latest]
+      metricZ:
+        range: float
+        in_subset: [latest]
+
+  TidyTable1:
+    description: Table1 tidy output.
+    in_subset:
+      - tidy
+    annotations:
+      name: table1
+      subtbl: tbl1
+    attributes:
+      sample_id:
+        range: string
+        identifier: true
+        description: Sample ID
+        in_subset: [v1.2.3, latest]
+      chromosome:
+        range: string
+        description: Chromosome
+        in_subset: [v1.2.3, latest]
+      start:
+        range: integer
+        description: Start position
+        in_subset: [v1.2.3, latest]
+      end:
+        range: integer
+        description: End position
+        in_subset: [v1.2.3, latest]
+      metric_x:
+        range: float
+        description: Metric X
+        in_subset: [v1.2.3, latest]
+      metric_y:
+        range: float
+        description: Metric Y
+        in_subset: [latest]
+      metric_z:
+        range: float
+        description: Metric Z
+        in_subset: [latest]
+
+  #---- Table2 ----#
+  #----------------#
+
+  RawTable2:
+    description: Table2 raw file.
+    in_subset: [raw, latest]
+    annotations:
+      name: table2
+      pattern: "\\.tool1\\.table2\\.tsv$"
+      ftype: tsv
+    attributes:
+      SampleID:
+        range: string
+        identifier: true
+      metricA:
+        range: string
+      metricB:
+        range: float
+
+  TidyTable2:
+    description: Table2 tidy output.
+    in_subset: [tidy, latest]
+    annotations:
+      name: table2
+      subtbl: tbl1
+    attributes:
+      sample_id:
+        range: string
+        identifier: true
+        description: Sample ID
+      metric_a:
+        range: string
+        description: Metric A
+      metric_b:
+        range: float
+        description: Metric B
+
+  #---- Table3 ----#
+  #----------------#
+
+  RawTable3:
+    description: Table3 raw file (no header).
+    in_subset: [raw, latest]
+    annotations:
+      name: table3
+      pattern: "\\.tool1\\.table3\\.tsv$"
+      ftype: txt-nohead
+    attributes:
+      SampleID:
+        range: string
+        identifier: true
+      QCStatus:
+        range: string
+      TotalReads:
+        range: float
+      MappedReads:
+        range: float
+      UnmappedReads:
+        range: float
+
+  TidyTable3:
+    description: Table3 tidy output.
+    in_subset: [tidy, latest]
+    annotations:
+      name: table3
+      subtbl: tbl1
+    attributes:
+      sample_id:
+        range: string
+        identifier: true
+        description: Sample ID
+      qcstatus:
+        range: string
+        description: QC status
+      reads_total:
+        range: float
+        description: Total reads
+      reads_map:
+        range: float
+        description: Mapped reads
+      reads_unmap:
+        range: float
+        description: Unmapped reads
+
