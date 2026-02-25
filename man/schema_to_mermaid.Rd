@@ -4,11 +4,15 @@
 \alias{schema_to_mermaid}
 \title{Generate Mermaid ER Diagram from a LinkML Schema}
 \usage{
-schema_to_mermaid(path)
+schema_to_mermaid(path, version = NULL)
 }
 \arguments{
 \item{path}{(\code{character(1)})\cr
 Path to a LinkML \code{schema.yaml} file.}
+
+\item{version}{(\code{character(1)} or \code{NULL})\cr
+Version subset name (e.g. \code{"v4.0"}, \code{"latest"}). When \code{NULL}, all attributes
+are included regardless of version.}
 }
 \value{
 A single character string containing a Mermaid \code{erDiagram} block.
@@ -16,8 +20,8 @@ A single character string containing a Mermaid \code{erDiagram} block.
 \description{
 Reads a LinkML \code{schema.yaml} file and returns a Mermaid ER diagram string
 that can be embedded in a Quarto document via a \code{{mermaid}} fenced block.
-All schema versions are merged into a single view, where version-specific fields
-are not distinguished.
+When \code{version} is \code{NULL}, all schema versions are merged into a single view.
+When \code{version} is specified, only attributes belonging to that version are shown.
 }
 \examples{
 p <- system.file("config/tools/tool1/schema.yaml", package = "nemo")
