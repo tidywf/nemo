@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - dev
 env:
   pkg_name: nemo
   anaconda_token: ${{ secrets.ANACONDA_UPLOAD_TOKEN }}
@@ -25,7 +26,7 @@ jobs:
 
     steps:
       - name: 🚚 Code checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: 👾 Miniforge setup
         uses: conda-incubator/setup-miniconda@v3
         with:
@@ -33,24 +34,29 @@ jobs:
           environment-file: ${{ env.conda_env_yaml }}/condabuild.yaml
           activate-environment: condabuild_env
           miniforge-version: latest
-      - name: 🐍 Conda pkg build and upload
+      - name: 🐍 Conda pkg build
         run: |
           rattler-build build \
-            --channel umccr \
             --channel conda-forge \
             --recipe ${conda_recipe}/recipe.yaml \
             --output-dir ${RUNNER_TEMP}/out1
-
+      - name: 🐍 Conda pkg upload
+        run: |
           pkg_path=$(find ${RUNNER_TEMP}/out1 -type f -name "*.conda")
-
+          LABEL_ARG=""
+          [[ "${{ github.ref }}" == "refs/heads/dev" ]] && LABEL_ARG="--label dev"
           rattler-build upload anaconda \
             --owner umccr \
             --api-key ${anaconda_token} \
+            ${LABEL_ARG} \
             ${pkg_path}
       - name: 🔒 Conda lock
         run: |
+          EXTRA_CHANNEL=""
+          [[ "${{ github.ref }}" == "refs/heads/dev" ]] && EXTRA_CHANNEL="--channel umccr/label/dev"
           conda-lock lock \
             --file ${conda_env_yaml}/${pkg_name}.yaml \
+            ${EXTRA_CHANNEL} \
             -p linux-64
           conda-lock render \
             -p linux-64 \
@@ -74,7 +80,8 @@ jobs:
           LATEST_COMMIT_HASH="$(git --no-pager log -1 --format='%H')"
           echo "latest_commit_hash=${LATEST_COMMIT_HASH}" >> $GITHUB_OUTPUT
       - name: 🔖 Create tag
-        uses: actions/github-script@v7
+        if: github.ref == 'refs/heads/main'
+        uses: actions/github-script@v8
         env:
           LATEST_COMMIT_HASH: ${{ steps.pull_lock_commit.outputs.latest_commit_hash }}
         with:
@@ -98,10 +105,14 @@ jobs:
     permissions:
       contents: write # for committing
     steps:
-      - name: 🚚 Code checkout
-        uses: actions/checkout@v5
+      - name: 🚚 Code checkout (release)
+        if: github.ref == 'refs/heads/main'
+        uses: actions/checkout@v6
         with:
           ref: v${{ env.VERSION }}
+      - name: 🚚 Code checkout (dev)
+        if: github.ref == 'refs/heads/dev'
+        uses: actions/checkout@v6
       - name: 👾 Miniforge setup
         uses: conda-incubator/setup-miniconda@v3
         with:
