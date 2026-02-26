@@ -53,11 +53,11 @@ jobs:
             ${pkg_path}
       - name: 🔒 Conda lock
         run: |
-          EXTRA_CHANNEL=""
-          [[ "${{ github.ref }}" == "refs/heads/dev" ]] && EXTRA_CHANNEL="--channel umccr/label/dev"
+          CHANNEL_ARGS="--channel umccr --channel conda-forge"
+          [[ "${{ github.ref }}" == "refs/heads/dev" ]] && CHANNEL_ARGS="--channel umccr/label/dev ${CHANNEL_ARGS}"
           conda-lock lock \
             --file ${conda_env_yaml}/${pkg_name}.yaml \
-            ${EXTRA_CHANNEL} \
+            ${CHANNEL_ARGS} \
             -p linux-64
           conda-lock render \
             -p linux-64 \
