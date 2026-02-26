@@ -1,6 +1,6 @@
 Package: nemo
 Title: Tidy and explore outputs from bioinformatic pipelines
-Version: 0.0.3.9000
+Version: 0.0.3.9001
 Description: Provides the base components for tidying and exploring
              outputs from bioinformatic pipelines.
 Authors@R: 
