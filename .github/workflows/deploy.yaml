@@ -45,7 +45,7 @@ jobs:
         run: |
           pkg_path=$(find ${RUNNER_TEMP}/out1 -type f -name "*.conda")
           LABEL_ARG=""
-          [[ "${{ github.ref }}" == "refs/heads/dev" ]] && LABEL_ARG="--label dev"
+          [[ "${{ github.ref }}" == "refs/heads/dev" ]] && LABEL_ARG="--channel dev"
           rattler-build upload anaconda \
             --owner umccr \
             --api-key ${anaconda_token} \
