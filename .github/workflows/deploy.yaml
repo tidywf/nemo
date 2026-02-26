@@ -37,6 +37,7 @@ jobs:
       - name: 🐍 Conda pkg build
         run: |
           rattler-build build \
+            --channel umccr \
             --channel conda-forge \
             --recipe ${conda_recipe}/recipe.yaml \
             --output-dir ${RUNNER_TEMP}/out1
