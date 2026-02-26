@@ -1,5 +1,6 @@
 name: pkgdown_env
 channels:
+  - umccr/label/dev
   - umccr
   - conda-forge
 dependencies:
