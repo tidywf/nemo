@@ -3,7 +3,7 @@ channels:
   - umccr
   - conda-forge
 dependencies:
-  - umccr::r-nemo ==0.0.3 # bump
+  - umccr::r-nemo ==0.0.3.9000 # bump
   - r-pkgdown
   - r-quarto
   - quarto

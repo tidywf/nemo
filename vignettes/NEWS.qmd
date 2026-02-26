@@ -50,6 +50,11 @@ pr <- function(n) {
 }
 ```
 
+## dev (2026-02-26)
+
+- Add support for LinkML schemas (`r pr(33)`, `r iss(22)`)
+- GitHub Actions: refactor deploy workflow for dev and main branches (`r pr(34)`)
+
 ## v0.0.3 (2026-02-09)
 
 - `nemo_write`: use NA outpath attr for db
