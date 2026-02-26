@@ -41,7 +41,7 @@ Using {remotes} directly from GitHub:
 ``` r
 install.packages("remotes")
 remotes::install_github("umccr/nemo") # latest main commit
-remotes::install_github("umccr/nemo@v0.0.3.9004") # released version
+remotes::install_github("umccr/nemo@v0.0.3.9005") # released version
 ```
 
 Alternatively:
@@ -66,7 +66,7 @@ export PATH="${nemo_cli}:${PATH}"
 ```
 
     $ nemo.R --version
-    nemo 0.0.3.9004
+    nemo 0.0.3.9005
 
     #-----------------------------------#
     $ nemo.R --help
