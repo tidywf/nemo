@@ -13,9 +13,9 @@ Provides the base components for tidying and exploring outputs from bioinformati
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://github.com/umccr/nemo}
-  \item \url{https://umccr.github.io/nemo/}
-  \item Report bugs at \url{https://github.com/umccr/nemo/issues}
+  \item \url{https://github.com/tidywf/nemo}
+  \item \url{https://tidywf.github.io/nemo/}
+  \item Report bugs at \url{https://github.com/tidywf/nemo/issues}
 }
 
 }
