@@ -26,10 +26,10 @@ options(width = 100)
 
 # 🐢 Tidy and Explore Bioinformatic Pipeline Outputs
 
-[![conda-latest1]](https://anaconda.org/umccr/r-nemo)
+[![conda-latest1]](https://anaconda.org/tidywf/r-nemo)
 [![gha]](https://github.com/tidywf/nemo/actions/workflows/deploy.yaml)
 
-[conda-latest1]: <https://anaconda.org/umccr/r-nemo/badges/latest_release_date.svg> "Conda Latest Release"
+[conda-latest1]: <https://anaconda.org/tidywf/r-nemo/badges/latest_release_date.svg> "Conda Latest Release"
 [gha]: <https://github.com/tidywf/nemo/actions/workflows/deploy.yaml/badge.svg> "GitHub Actions"
 
 - 📚 Docs: <https://tidywf.github.io/nemo>
@@ -63,7 +63,7 @@ for the _raw_ input _files_ and _tidy_ output _tbls_.
 
 Alternatively:
 
-- conda package: <https://anaconda.org/umccr/r-nemo>
+- conda package: <https://anaconda.org/tidywf/r-nemo>
 
 For more details see: <https://tidywf.github.io/nemo/articles/installation>
 

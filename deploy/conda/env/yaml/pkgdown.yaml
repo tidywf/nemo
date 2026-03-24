@@ -1,7 +1,7 @@
 name: pkgdown_env
 channels:
-  - umccr/label/dev
-  - umccr
+  - tidywf/label/dev
+  - tidywf
   - conda-forge
 dependencies:
   - r-nemo ==0.0.3.9006 # bump

@@ -1,6 +1,6 @@
 name: nemo_env
 channels:
-  - umccr
+  - tidywf
   - conda-forge
 dependencies:
   - r-nemo ==0.0.3.9006 # bump
