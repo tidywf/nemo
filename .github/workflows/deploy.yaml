@@ -39,7 +39,7 @@ jobs:
       - name: 🐍 Conda pkg build
         run: |
           rattler-build build \
-            --channel umccr \
+            --channel tidywf \
             --channel conda-forge \
             --recipe ${{ env.conda_recipe }}/recipe.yaml \
             --output-dir ${RUNNER_TEMP}/out1
@@ -49,14 +49,14 @@ jobs:
           LABEL_ARG=""
           [[ "${{ github.ref }}" == "refs/heads/dev" ]] && LABEL_ARG="--channel dev"
           rattler-build upload anaconda \
-            --owner umccr \
+            --owner tidywf \
             --api-key ${{ env.anaconda_token }} \
             ${LABEL_ARG} \
             ${pkg_path}
       - name: 🔒 Conda lock
         run: |
-          CHANNEL_ARGS="--channel umccr --channel conda-forge"
-          [[ "${{ github.ref }}" == "refs/heads/dev" ]] && CHANNEL_ARGS="--channel umccr/label/dev ${CHANNEL_ARGS}"
+          CHANNEL_ARGS="--channel tidywf --channel conda-forge"
+          [[ "${{ github.ref }}" == "refs/heads/dev" ]] && CHANNEL_ARGS="--channel tidywf/label/dev ${CHANNEL_ARGS}"
           conda-lock lock \
             --file ${{ env.conda_env_yaml }}/${{ env.pkg_name }}.yaml \
             ${CHANNEL_ARGS} \
