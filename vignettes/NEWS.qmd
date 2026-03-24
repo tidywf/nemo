@@ -22,7 +22,7 @@ knitr:
 ```
 
 ```{r echo=FALSE}
-repo <- "https://github.com/umccr/nemo"
+repo <- "https://github.com/tidywf/nemo"
 vdiff <- function(new, old) {
   stopifnot(utils::compareVersion(new, old) == 1)
   htmltools::a(

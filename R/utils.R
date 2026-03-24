@@ -204,7 +204,7 @@ get_python <- function() {
 nemoverse_wf_dispatch <- function(wf = NULL) {
   stopifnot(!is.null(wf))
   wfs <- list(
-    wigits = list(pkg = "tidywigits", wf = "Wigits", repo = "https://github.com/umccr/tidywigits"),
+    wigits = list(pkg = "tidywigits", wf = "Wigits", repo = "https://github.com/tidywf/tidywigits"),
     basemean = list(pkg = "base", wf = "mean", repo = "CRAN"),
     dummy1 = list(pkg = "dummy1", wf = "bar", repo = "BAZ")
     # dragen = list(pkg = "dracarys", wf = "Dragen"),

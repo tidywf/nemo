@@ -137,7 +137,7 @@ The `conda-docs` workflow triggers on pushes to `main` or `dev`, but only runs w
 
 **`conda`** — builds and uploads the conda package:
 1. Builds the package with `rattler-build` using the recipe at `deploy/conda/recipe/recipe.yaml`
-2. Uploads to Anaconda under the `umccr` owner; uses `--channel dev` label when on the `dev` branch
+2. Uploads to Anaconda under the `tidywf` owner; uses `--channel dev` label when on the `dev` branch
 3. Regenerates the conda lock file (`deploy/conda/env/lock/conda-linux-64.lock`) for `linux-64`
 4. Commits and pushes the updated lock file as a bot commit (`[bot] Updating conda-lock files (v<VERSION>)`)
 5. Creates a git tag (`vVERSION`) — only on `main`

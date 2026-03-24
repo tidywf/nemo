@@ -39,9 +39,9 @@ jobs:
       - name: 🐍 Conda pkg build
         run: |
           rattler-build build \
-            --channel umccr \
+            --channel tidywf \
             --channel conda-forge \
-            --recipe ${conda_recipe}/recipe.yaml \
+            --recipe ${{ env.conda_recipe }}/recipe.yaml \
             --output-dir ${RUNNER_TEMP}/out1
       - name: 🐍 Conda pkg upload
         run: |
@@ -49,29 +49,29 @@ jobs:
           LABEL_ARG=""
           [[ "${{ github.ref }}" == "refs/heads/dev" ]] && LABEL_ARG="--channel dev"
           rattler-build upload anaconda \
-            --owner umccr \
-            --api-key ${anaconda_token} \
+            --owner tidywf \
+            --api-key ${{ env.anaconda_token }} \
             ${LABEL_ARG} \
             ${pkg_path}
       - name: 🔒 Conda lock
         run: |
-          CHANNEL_ARGS="--channel umccr --channel conda-forge"
-          [[ "${{ github.ref }}" == "refs/heads/dev" ]] && CHANNEL_ARGS="--channel umccr/label/dev ${CHANNEL_ARGS}"
+          CHANNEL_ARGS="--channel tidywf --channel conda-forge"
+          [[ "${{ github.ref }}" == "refs/heads/dev" ]] && CHANNEL_ARGS="--channel tidywf/label/dev ${CHANNEL_ARGS}"
           conda-lock lock \
-            --file ${conda_env_yaml}/${pkg_name}.yaml \
+            --file ${{ env.conda_env_yaml }}/${{ env.pkg_name }}.yaml \
             ${CHANNEL_ARGS} \
             -p linux-64
           conda-lock render \
             -p linux-64 \
             conda-lock.yml \
           && rm conda-lock.yml \
-          && mv conda-linux-64.lock ${conda_env_lock}/
+          && mv conda-linux-64.lock ${{ env.conda_env_lock }}/
       - name: 💾 Commit lockfiles
         run: |
           git status
           git config --local user.email "actions@github.com"
           git config --local user.name "GitHub Actions"
-          MSG="[bot] Updating conda-lock files (v${VERSION})"
+          MSG="[bot] Updating conda-lock files (v${{ env.VERSION }})"
           git add .
           git commit -m "${MSG}"
           git push

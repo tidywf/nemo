@@ -10,7 +10,7 @@ brew install pixi
 
 ```
 cd my_projects
-pixi init hello-world -c conda-forge -c umccr
+pixi init hello-world -c conda-forge -c tidywf
 cd hello-world
 ```
 
@@ -21,7 +21,7 @@ A TOML file `pixi.toml` is created in the project directory:
 ```toml
 [workspace]
 authors = ["pdiakumis <peterdiakumis@gmail.com>"]
-channels = ["conda-forge", "umccr"]
+channels = ["conda-forge", "tidywf"]
 name = "hello-world"
 platforms = ["osx-arm64"]
 version = "0.1.0"
@@ -35,7 +35,7 @@ version = "0.1.0"
 
 - dependencies
 
-This will look into the `conda-forge` and `umccr` conda channels for `r-tidywigits`,
+This will look into the `conda-forge` and `tidywf` conda channels for `r-tidywigits`,
 and install it into `./.pixi` along with its dependencies.
 
 ```

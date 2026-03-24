@@ -2,7 +2,7 @@ If you use [Pixi](https://pixi.sh/), you can create a new isolated environment
 with the deployed conda package:
 
 ```bash
-pixi init -c umccr -c conda-forge ./tidy_env
+pixi init -c tidywf -c conda-forge ./tidy_env
 cd ./tidy_env
 pixi add r-nemo==0.0.3.9006
 ```

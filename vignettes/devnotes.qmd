@@ -64,7 +64,7 @@ remote storage and allow these processes to take place.
 | `dvc remote modify my_r2 endpointurl https://<...>.r2.cloudflarestorage.com` | add Cloudflare R2 remote endpointurl    |
 | `dvc remote list`                                                            | list all remotes                        |
 | `dvc check-ignore *`                                                         | check what is dvc-ignored               |
-| `dvc list https://github.com/umccr/tidywigits inst/extdata`                  | list dvc'ed data                        |
+| `dvc list https://github.com/tidywf/tidywigits inst/extdata`                  | list dvc'ed data                        |
 | `dvc add path/to/folder`                                                     | adds `folder` (and its contents) to dvc |
 | `dvc add path/to/file.txt`                                                   | adds `file.txt` to dvc                  |
 | `dvc push`                                                                   | pushes dvc data to remote               |
