@@ -25,10 +25,17 @@ jobs:
       contents: write # for lockfiles
 
     steps:
+      - name: 🤖 Generate app token
+        uses: actions/create-github-app-token@v3
+        id: app-token1
+        with:
+          app_id: ${{ vars.BOT1_APP_ID }}
+          private_key: ${{ secrets.BOT1_APP_PRIVATE_KEY }}
       - name: 🚚 Code checkout
         uses: actions/checkout@v6
         with:
-          ssh-key: ${{ secrets.BOT_DEPLOY_KEY }} # for overriding branch protection rules
+          token: ${{ steps.app-token1.outputs.token }} # for overriding branch protection rules
+          persist-credentials: false
       - name: 👾 Miniforge setup
         uses: conda-incubator/setup-miniconda@v3
         with:
@@ -67,10 +74,12 @@ jobs:
           && rm conda-lock.yml \
           && mv conda-linux-64.lock ${{ env.conda_env_lock }}/
       - name: 💾 Commit lockfiles
+        env:
+          APP_ID: ${{ vars.BOT1_APP_ID }}
         run: |
           git status
-          git config --local user.email "actions@github.com"
-          git config --local user.name "GitHub Actions"
+          git config --local user.email "${APP_ID}+tidywf-ci-bot[bot]@users.noreply.github.com"
+          git config --local user.name "tidywf-ci-bot[bot]"
           MSG="[bot] Updating conda-lock files (v${{ env.VERSION }})"
           git add .
           git commit -m "${MSG}"
@@ -108,17 +117,18 @@ jobs:
     permissions:
       contents: write # for committing
     steps:
-      - name: 🚚 Code checkout (release)
-        if: github.ref == 'refs/heads/main'
+      - name: 🤖 Generate app token
+        uses: actions/create-github-app-token@v3
+        id: app-token2
+        with:
+          app_id: ${{ vars.BOT1_APP_ID }}
+          private_key: ${{ secrets.BOT1_APP_PRIVATE_KEY }}
+      - name: 🚚 Code checkout
         uses: actions/checkout@v6
         with:
-          ref: v${{ env.VERSION }}
-          ssh-key: ${{ secrets.BOT_DEPLOY_KEY }} # for overriding branch protection rules
-      - name: 🚚 Code checkout (dev)
-        if: github.ref == 'refs/heads/dev'
-        uses: actions/checkout@v6
-        with:
-          ssh-key: ${{ secrets.BOT_DEPLOY_KEY }} # for overriding branch protection rules
+          ref: ${{ github.ref == 'refs/heads/main' && format('v{0}', env.VERSION) || '' }} # handle main/dev
+          token: ${{ steps.app-token2.outputs.token }} # for overriding branch protection rules
+          persist-credentials: false
       - name: 👾 Miniforge setup
         uses: conda-incubator/setup-miniconda@v3
         with:
@@ -127,8 +137,10 @@ jobs:
           activate-environment: pkgdown_env
           miniforge-version: latest
       - name: 🌐 Website publish
+        env:
+          APP_ID: ${{ vars.BOT1_APP_ID }}
         run: |
           Rscript -e "list.files(system.file('extdata', package = 'nemo'), recursive = TRUE)"
-          git config --local user.email "actions@github.com"
-          git config --local user.name "GitHub Actions"
+          git config --local user.email "${APP_ID}+tidywf-ci-bot[bot]@users.noreply.github.com"
+          git config --local user.name "tidywf-ci-bot[bot]"
           Rscript -e "pkgdown::deploy_to_branch(pkg = '.', new_process = FALSE)"
