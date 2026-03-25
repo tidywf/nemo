@@ -131,31 +131,23 @@ Use `make bump VERSION=x.y.z` to bump the version. This runs `bump-my-version` (
 
 ## CI/CD: `.github/workflows/deploy.yaml`
 
-The `conda-docs` workflow triggers on pushes to `main` or `dev`, but only runs when the commit message starts with `Bump version:`.
+The `conda-docs` workflow triggers on pushes to `main` or `dev`, but only runs when the commit message starts with `Bump version:`. Both jobs call reusable workflows from `tidywf/.github`.
 
 ### Jobs
 
-**`conda`** — builds and uploads the conda package:
-1. Builds the package with `rattler-build` using the recipe at `deploy/conda/recipe/recipe.yaml`
-2. Uploads to Anaconda under the `tidywf` owner; uses `--channel dev` label when on the `dev` branch
+**`condarise_and_tag`** — delegates to `tidywf/.github/.github/workflows/condarise-and-tag.yaml`:
+1. Builds the conda package with `rattler-build`
+2. Uploads to Anaconda under the `tidywf` owner; uses `--channel dev` label on `dev`
 3. Regenerates the conda lock file (`deploy/conda/env/lock/conda-linux-64.lock`) for `linux-64`
-4. Commits and pushes the updated lock file as a bot commit (`[bot] Updating conda-lock files (v<VERSION>)`)
-5. Creates a git tag (`vVERSION`) — only on `main`
+4. Commits and pushes the updated lock file as a bot commit
+5. Creates a git tag (`vVERSION`) — on both branches
 
-**`pkgdown`** (depends on `conda`) — publishes the documentation site:
-- On `main`: checks out the tagged release commit, then deploys via `pkgdown::deploy_to_branch()`
-- On `dev`: checks out the branch tip and deploys
+**`pkgdownise`** (depends on `condarise_and_tag`) — delegates to `tidywf/.github/.github/workflows/pkgdownise.yaml`:
+- Checks out the release tag, then deploys via `pkgdown::deploy_to_branch()` — same flow on both branches
 
-### Key variables
+### Version
 
-| Variable | Value |
-|----------|-------|
-| `VERSION` | Set manually in the workflow file (line 14) when bumping the package version |
-| `conda_recipe` | `deploy/conda/recipe` |
-| `conda_env_yaml` | `deploy/conda/env/yaml` |
-| `conda_env_lock` | `deploy/conda/env/lock` |
-
-> When releasing, update `VERSION` in `deploy.yaml` to match the new package version before committing the version bump.
+The version is set via `pkg_version:` in the `with:` blocks of each job. `make bump VERSION=x.y.z` updates all occurrences automatically.
 
 ## Output Formats
 
