@@ -5,145 +5,22 @@ on:
     branches:
       - main
       - dev
-env:
-  pkg_name: nemo
-  anaconda_token: ${{ secrets.ANACONDA_UPLOAD_TOKEN }}
-  conda_recipe: deploy/conda/recipe
-  conda_env_yaml: deploy/conda/env/yaml
-  conda_env_lock: deploy/conda/env/lock
-  conda_org: tidywf
-  VERSION: '0.0.3.9006' # bump
 
 jobs:
-  conda:
+  condarise_and_tag:
     if: "startsWith(github.event.head_commit.message, 'Bump version:')"
-    name: Conda Deployment
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        shell: bash -l {0}
-    permissions:
-      contents: write # for lockfiles
+    name: Condarise and Tag
+    uses: tidywf/.github/.github/workflows/condarise-and-tag.yaml@main
+    with:
+      pkg_name: nemo
+      pkg_version: '0.0.3.9006' # bump
+    secrets: inherit
 
-    steps:
-      - name: 🤖 Generate app token
-        uses: actions/create-github-app-token@v3
-        id: app-token1
-        with:
-          app_id: ${{ vars.BOT1_APP_ID }}
-          private_key: ${{ secrets.BOT1_APP_PRIVATE_KEY }}
-      - name: 🚚 Code checkout
-        uses: actions/checkout@v6
-        with:
-          token: ${{ steps.app-token1.outputs.token }} # branch write override
-          persist-credentials: false
-      - name: 👾 Miniforge setup
-        uses: conda-incubator/setup-miniconda@v3
-        with:
-          auto-update-conda: true
-          environment-file: ${{ env.conda_env_yaml }}/condabuild.yaml
-          activate-environment: condabuild_env
-          miniforge-version: latest
-      - name: 🐍 Conda pkg build
-        run: |
-          EXTRA_CHANNEL=""
-          [[ "${{ github.ref }}" == "refs/heads/dev" ]] && EXTRA_CHANNEL="--channel ${{ env.conda_org }}/label/dev"
-          rattler-build build \
-            ${EXTRA_CHANNEL} \
-            --channel ${{ env.conda_org }} \
-            --channel conda-forge \
-            --recipe ${{ env.conda_recipe }}/recipe.yaml \
-            --output-dir ${RUNNER_TEMP}/out1
-      - name: 🐍 Conda pkg upload
-        run: |
-          pkg_path=$(find ${RUNNER_TEMP}/out1 -type f -name "*.conda")
-          LABEL_ARG=""
-          [[ "${{ github.ref }}" == "refs/heads/dev" ]] && LABEL_ARG="--channel dev"
-          rattler-build upload anaconda \
-            --owner ${{ env.conda_org }} \
-            --api-key ${{ env.anaconda_token }} \
-            ${LABEL_ARG} \
-            ${pkg_path}
-      - name: 🔒 Conda lock
-        run: |
-          CHANNEL_ARGS="--channel ${{ env.conda_org }} --channel conda-forge"
-          [[ "${{ github.ref }}" == "refs/heads/dev" ]] && CHANNEL_ARGS="--channel ${{ env.conda_org }}/label/dev ${CHANNEL_ARGS}"
-          conda-lock lock \
-            --file ${{ env.conda_env_yaml }}/${{ env.pkg_name }}.yaml \
-            ${CHANNEL_ARGS} \
-            -p linux-64
-          conda-lock render \
-            -p linux-64 \
-            conda-lock.yml \
-          && rm conda-lock.yml \
-          && mv conda-linux-64.lock ${{ env.conda_env_lock }}/
-      - name: 💾 Commit lockfiles
-        env:
-          APP_ID: ${{ vars.BOT1_APP_ID }}
-        run: |
-          git status
-          git config --local user.email "${APP_ID}+tidywf-ci-bot[bot]@users.noreply.github.com"
-          git config --local user.name "tidywf-ci-bot[bot]"
-          MSG="[bot] Updating conda-lock files (v${{ env.VERSION }})"
-          git add .
-          git commit -m "${MSG}"
-          git push
-      - name: 📥 Pull lock commit
-        id: pull_lock_commit
-        run: |
-          git pull --no-rebase
-          git --no-pager log --decorate=short --pretty=oneline -n3
-          LATEST_COMMIT_HASH="$(git --no-pager log -1 --format='%H')"
-          echo "latest_commit_hash=${LATEST_COMMIT_HASH}" >> $GITHUB_OUTPUT
-      - name: 🔖 Create tag
-        uses: actions/github-script@v8
-        env:
-          LATEST_COMMIT_HASH: ${{ steps.pull_lock_commit.outputs.latest_commit_hash }}
-        with:
-          script: |
-            const the_tag_name = 'refs/tags/v' + process.env.VERSION
-            const the_sha = process.env.LATEST_COMMIT_HASH
-            github.rest.git.createRef({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: the_tag_name,
-              sha: the_sha
-            })
-
-  pkgdown:
-    name: pkgdown
-    needs: [conda]
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        shell: bash -l {0}
-    permissions:
-      contents: write # for committing
-    steps:
-      - name: 🤖 Generate app token
-        uses: actions/create-github-app-token@v3
-        id: app-token2
-        with:
-          app_id: ${{ vars.BOT1_APP_ID }}
-          private_key: ${{ secrets.BOT1_APP_PRIVATE_KEY }}
-      - name: 🚚 Code checkout
-        uses: actions/checkout@v6
-        with:
-          ref: v${{ env.VERSION }}
-          token: ${{ steps.app-token2.outputs.token }} # branch write override
-          persist-credentials: false
-      - name: 👾 Miniforge setup
-        uses: conda-incubator/setup-miniconda@v3
-        with:
-          auto-update-conda: true
-          environment-file: ${{ env.conda_env_yaml }}/pkgdown.yaml
-          activate-environment: pkgdown_env
-          miniforge-version: latest
-      - name: 🌐 Website publish
-        env:
-          APP_ID: ${{ vars.BOT1_APP_ID }}
-        run: |
-          Rscript -e "list.files(system.file('extdata', package = 'nemo'), recursive = TRUE)"
-          git config --local user.email "${APP_ID}+tidywf-ci-bot[bot]@users.noreply.github.com"
-          git config --local user.name "tidywf-ci-bot[bot]"
-          Rscript -e "pkgdown::deploy_to_branch(pkg = '.', new_process = FALSE)"
+  pkgdownise:
+    name: Pkgdownise
+    needs: [condarise_and_tag]
+    uses: tidywf/.github/.github/workflows/pkgdownise.yaml@main
+    with:
+      pkg_name: nemo
+      pkg_version: '0.0.3.9006' # bump
+    secrets: inherit
