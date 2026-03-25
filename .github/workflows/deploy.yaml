@@ -11,6 +11,8 @@ jobs:
     if: "startsWith(github.event.head_commit.message, 'Bump version:')"
     name: Condarise and Tag
     uses: tidywf/.github/.github/workflows/condarise-and-tag.yaml@main
+    permissions:
+      contents: write
     with:
       pkg_name: nemo
       pkg_version: '0.0.3.9006' # bump
@@ -20,6 +22,8 @@ jobs:
     name: Pkgdownise
     needs: [condarise_and_tag]
     uses: tidywf/.github/.github/workflows/pkgdownise.yaml@main
+    permissions:
+      contents: write
     with:
       pkg_name: nemo
       pkg_version: '0.0.3.9006' # bump
