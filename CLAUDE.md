@@ -127,7 +127,17 @@ R code is formatted with [air](https://github.com/posit-dev/air) (100-char line 
 
 ## Version Bumping and Release Workflow
 
-Use `make bump VERSION=x.y.z` to bump the version. This runs `bump-my-version` (configured in `.bumpversion.toml`), which updates all version references across the repo in a single commit with the message `Bump version: OLD => NEW`. The CI workflow (`deploy.yaml`) triggers on that commit message pattern to build and publish the conda package and docs.
+Bumping is done via the `.github/workflows/bump.yaml` GitHub Actions workflow, which installs the package, bumps all version references, renders `README.qmd`, and pushes a single `Bump version: OLD => NEW` commit directly to the branch (using the bot token to bypass branch protection). The `deploy.yaml` workflow triggers on that commit message pattern.
+
+Trigger it from the CLI:
+
+```bash
+make bump VERSION=x.y.z BRANCH=dev
+# or on main:
+make bump VERSION=x.y.z BRANCH=main
+```
+
+This calls `gh workflow run bump.yaml --ref BRANCH --field version=VERSION` under the hood. Can also be triggered via the GitHub Actions UI: Actions → Bump Version → Run workflow.
 
 ## CI/CD: `.github/workflows/deploy.yaml`
 
