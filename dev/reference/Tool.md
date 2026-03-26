@@ -16,7 +16,7 @@ Base class for all nemo tools.
 
 - `config`:
 
-  ([`Config()`](https://umccr.github.io/nemo/dev/reference/Config.md))  
+  ([`Config()`](https://tidywf.github.io/nemo/dev/reference/Config.md))  
   Config of tool.
 
 - `files`:
@@ -53,7 +53,7 @@ Base class for all nemo tools.
 
   (`tibble(n)`)  
   Tibble of files from
-  [`list_files_dir()`](https://umccr.github.io/nemo/dev/reference/list_files_dir.md).
+  [`list_files_dir()`](https://tidywf.github.io/nemo/dev/reference/list_files_dir.md).
 
 ## Methods
 
@@ -117,7 +117,7 @@ Create a new Tool object.
 
   (`tibble(n)`)  
   Tibble of files from
-  [`list_files_dir()`](https://umccr.github.io/nemo/dev/reference/list_files_dir.md).
+  [`list_files_dir()`](https://tidywf.github.io/nemo/dev/reference/list_files_dir.md).
 
 ------------------------------------------------------------------------
 

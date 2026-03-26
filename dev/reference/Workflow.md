@@ -23,7 +23,7 @@ A Workflow is composed of multiple Tools.
 
   (`tibble(n)`)  
   Tibble of files from
-  [`list_files_dir()`](https://umccr.github.io/nemo/dev/reference/list_files_dir.md).
+  [`list_files_dir()`](https://tidywf.github.io/nemo/dev/reference/list_files_dir.md).
 
 - `written_files`:
 
@@ -384,10 +384,10 @@ wf1$list_files()
 #> # A tibble: 4 × 9
 #>   tool_parser  parser bname  size lastmodified        path  pattern prefix group
 #>   <glue>       <chr>  <chr> <fs:> <dttm>              <chr> <chr>   <glue> <glu>
-#> 1 tool1_table1 table1 samp…   113 2026-02-26 12:58:08 /hom… "\\.to… sampl…      
-#> 2 tool1_table1 table1 samp…   153 2026-02-26 12:58:08 /hom… "\\.to… sampl… _2   
-#> 3 tool1_table2 table2 samp…    70 2026-02-26 12:58:08 /hom… "\\.to… sampl…      
-#> 4 tool1_table3 table3 samp…    83 2026-02-26 12:58:08 /hom… "\\.to… sampl…      
+#> 1 tool1_table1 table1 samp…   113 2026-03-26 03:10:41 /hom… "\\.to… sampl…      
+#> 2 tool1_table1 table1 samp…   153 2026-03-26 03:10:41 /hom… "\\.to… sampl… _2   
+#> 3 tool1_table2 table2 samp…    70 2026-03-26 03:10:41 /hom… "\\.to… sampl…      
+#> 4 tool1_table3 table3 samp…    83 2026-03-26 03:10:41 /hom… "\\.to… sampl…      
 wf1$nemofy(diro = diro, format = "parquet", input_id = "run1")
 (lf <- list.files(diro, pattern = "tool1.*parquet", full.names = FALSE))
 #> [1] "sampleA_2_tool1_table1.parquet" "sampleA_tool1_table1.parquet"  

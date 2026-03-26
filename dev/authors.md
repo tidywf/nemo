@@ -8,16 +8,16 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/umccr/nemo/blob/dev/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/tidywf/nemo/blob/dev/DESCRIPTION)
 
 Diakumis P (2026). *nemo: Tidy and explore outputs from bioinformatic
-pipelines*. R package version 0.0.3.9006, https://umccr.github.io/nemo/,
-<https://github.com/umccr/nemo>.
+pipelines*. R package version 0.0.3.9007,
+https://tidywf.github.io/nemo/, <https://github.com/tidywf/nemo>.
 
     @Manual{,
       title = {nemo: Tidy and explore outputs from bioinformatic pipelines},
       author = {Peter Diakumis},
       year = {2026},
-      note = {R package version 0.0.3.9006, https://umccr.github.io/nemo/},
-      url = {https://github.com/umccr/nemo},
+      note = {R package version 0.0.3.9007, https://tidywf.github.io/nemo/},
+      url = {https://github.com/tidywf/nemo},
     }

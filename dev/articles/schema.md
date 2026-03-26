@@ -69,7 +69,7 @@ explicitly, which overrides the prefix-stripping fallback.
 ## Visualisation
 
 Schemas can be visualised as Mermaid ER diagrams using
-[`schema_to_mermaid()`](https://umccr.github.io/nemo/dev/reference/schema_to_mermaid.md).
+[`schema_to_mermaid()`](https://tidywf.github.io/nemo/dev/reference/schema_to_mermaid.md).
 All schema versions are merged into a single view.
 
 For example, the `tool1` schema looks like:
@@ -291,9 +291,9 @@ conf$get_raw_versions()
 ```
 
 The
-[`schema_guess()`](https://umccr.github.io/nemo/dev/reference/schema_guess.md)
+[`schema_guess()`](https://tidywf.github.io/nemo/dev/reference/schema_guess.md)
 function (called internally by
-[`parse_file()`](https://umccr.github.io/nemo/dev/reference/parse_file.md))
+[`parse_file()`](https://tidywf.github.io/nemo/dev/reference/parse_file.md))
 uses exact column-count and column-name matching to select the correct
 version for any given file automatically.
 

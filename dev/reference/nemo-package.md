@@ -7,11 +7,11 @@ bioinformatic pipelines.
 
 Useful links:
 
-- <https://github.com/umccr/nemo>
+- <https://github.com/tidywf/nemo>
 
-- <https://umccr.github.io/nemo/>
+- <https://tidywf.github.io/nemo/>
 
-- Report bugs at <https://github.com/umccr/nemo/issues>
+- Report bugs at <https://github.com/tidywf/nemo/issues>
 
 ## Author
 

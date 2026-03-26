@@ -19,7 +19,7 @@
 ">
 <meta property="og:description" content="A tidyverse R6 approach for working with bioinformatic pipeline outputs.
 ">
-<meta property="og:image" content="https://umccr.github.io/nemo/logo.png">
+<meta property="og:image" content="https://tidywf.github.io/nemo/logo.png">
 <meta name="robots" content="noindex">
 </head>
 <body>
@@ -30,7 +30,7 @@
 
     <a class="navbar-brand me-2" href="index.html">nemo</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.0.3.9006</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.0.3.9007</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -58,7 +58,7 @@
 <li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="search.json">
 </form></li>
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/umccr/nemo/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/tidywf/nemo/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul>
 </div>
 
@@ -72,13 +72,13 @@
 <img src="logo.png" class="logo" alt=""><h1 id="turtle-tidy-and-explore-bioinformatic-pipeline-outputs">🐢 Tidy and Explore Bioinformatic Pipeline Outputs<a class="anchor" aria-label="anchor" href="#turtle-tidy-and-explore-bioinformatic-pipeline-outputs"></a>
 </h1>
 </div>
-<p><a href="https://anaconda.org/umccr/r-nemo" class="external-link"><img src="https://anaconda.org/umccr/r-nemo/badges/latest_release_date.svg" title="Conda Latest Release" alt="conda-latest1"></a> <a href="https://github.com/umccr/nemo/actions/workflows/deploy.yaml" class="external-link"><img src="https://github.com/umccr/nemo/actions/workflows/deploy.yaml/badge.svg" title="GitHub Actions" alt="gha"></a></p>
+<p><a href="https://anaconda.org/tidywf/r-nemo" class="external-link"><img src="https://anaconda.org/tidywf/r-nemo/badges/latest_release_date.svg" title="Conda Latest Release" alt="conda-latest1"></a> <a href="https://github.com/tidywf/nemo/actions/workflows/deploy.yaml" class="external-link"><img src="https://github.com/tidywf/nemo/actions/workflows/deploy.yaml/badge.svg" title="GitHub Actions" alt="gha"></a></p>
 <ul>
-<li>📚 Docs: <a href="https://umccr.github.io/nemo" class="uri">https://umccr.github.io/nemo</a>
+<li>📚 Docs: <a href="https://tidywf.github.io/nemo" class="uri">https://tidywf.github.io/nemo</a>
 <ul>
-<li><a href="https://umccr.github.io/nemo/articles/installation">Installation</a></li>
-<li><a href="https://umccr.github.io/nemo/articles/structure">R6 structure</a></li>
-<li><a href="https://umccr.github.io/nemo/articles/NEWS">Changelog</a></li>
+<li><a href="https://tidywf.github.io/nemo/articles/installation">Installation</a></li>
+<li><a href="https://tidywf.github.io/nemo/articles/structure">R6 structure</a></li>
+<li><a href="https://tidywf.github.io/nemo/articles/NEWS">Changelog</a></li>
 </ul>
 </li>
 </ul>
@@ -87,7 +87,7 @@
 </h2>
 <p>{nemo} is an R package that contains the building blocks for parsing, tidying, and writing bioinformatic pipeline results in a more consistent structure.</p>
 <p>In short, it traverses through a directory containing results from one or more runs of certain bioinformatic tools, parses any files it recognises, tidies them up (which includes data reshaping, normalisation, column name cleanup etc.), and writes them to the output format of choice e.g. Apache Parquet, PostgreSQL, TSV, RDS.</p>
-<p>The specific tools it can handle are controlled by configuration files written in YAML that are part of ‘child’ {nemo} packages, like {<a href="https://github.com/umccr/tidywigits" title="tidywigits" class="external-link">tidywigits</a>} and {<a href="https://github.com/umccr/dracarys" title="dracarys" class="external-link">dracarys</a>}. These configuration files (under <code>inst/config</code> in those respective packages) specify the schemas, types, patterns and field descriptions for the <em>raw</em> input <em>files</em> and <em>tidy</em> output <em>tbls</em>.</p>
+<p>The specific tools it can handle are controlled by configuration files written in YAML that are part of ‘child’ {nemo} packages, like {<a href="https://github.com/tidywf/tidywigits" title="tidywigits" class="external-link">tidywigits</a>} and {<a href="https://github.com/tidywf/dracarys" title="dracarys" class="external-link">dracarys</a>}. These configuration files (under <code>inst/config</code> in those respective packages) specify the schemas, types, patterns and field descriptions for the <em>raw</em> input <em>files</em> and <em>tidy</em> output <em>tbls</em>.</p>
 </div>
 <div class="section level2">
 <h2 id="pizza-installation">🍕 Installation<a class="anchor" aria-label="anchor" href="#pizza-installation"></a>
@@ -95,14 +95,14 @@
 <p>Using {remotes} directly from GitHub:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"remotes"</span><span class="op">)</span></span>
-<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"umccr/nemo"</span><span class="op">)</span> <span class="co"># latest main commit</span></span>
-<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"umccr/nemo@v0.0.3.9006"</span><span class="op">)</span> <span class="co"># released version</span></span></code></pre></div>
+<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"tidywf/nemo"</span><span class="op">)</span> <span class="co"># latest main commit</span></span>
+<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"tidywf/nemo@v0.0.3.9007"</span><span class="op">)</span> <span class="co"># released version</span></span></code></pre></div>
 <p>Alternatively:</p>
 <ul>
-<li>conda package: <a href="https://anaconda.org/umccr/r-nemo" class="external-link uri">https://anaconda.org/umccr/r-nemo</a>
+<li>conda package: <a href="https://anaconda.org/tidywf/r-nemo" class="external-link uri">https://anaconda.org/tidywf/r-nemo</a>
 </li>
 </ul>
-<p>For more details see: <a href="https://umccr.github.io/nemo/articles/installation" class="uri">https://umccr.github.io/nemo/articles/installation</a></p>
+<p>For more details see: <a href="https://tidywf.github.io/nemo/articles/installation" class="uri">https://tidywf.github.io/nemo/articles/installation</a></p>
 </div>
 <div class="section level2">
 <h2 id="cyclone-cli">🌀 CLI<a class="anchor" aria-label="anchor" href="#cyclone-cli"></a>
@@ -140,43 +140,39 @@
 <span id="cb3-24"><a href="#cb3-24" tabindex="-1"></a></span>
 <span id="cb3-25"><a href="#cb3-25" tabindex="-1"></a>options<span class="sc">:</span></span>
 <span id="cb3-26"><a href="#cb3-26" tabindex="-1"></a>  <span class="sc">-</span>h, <span class="sc">--</span>help            show this help message and exit</span>
-<span id="cb3-27"><a href="#cb3-27" tabindex="-1"></a>  <span class="sc">-</span>w WORKFLOW, <span class="sc">--</span>workflow WORKFLOW</span>
+<span id="cb3-27"><a href="#cb3-27" tabindex="-1"></a>  <span class="sc">-</span>w, <span class="sc">--</span>workflow WORKFLOW</span>
 <span id="cb3-28"><a href="#cb3-28" tabindex="-1"></a>                        Workflow name.</span>
-<span id="cb3-29"><a href="#cb3-29" tabindex="-1"></a>  <span class="sc">-</span>d IN_DIR, <span class="sc">--</span>in_dir IN_DIR</span>
-<span id="cb3-30"><a href="#cb3-30" tabindex="-1"></a>                        Input directory.</span>
-<span id="cb3-31"><a href="#cb3-31" tabindex="-1"></a>  <span class="sc">-</span>o OUT_DIR, <span class="sc">--</span>out_dir OUT_DIR</span>
-<span id="cb3-32"><a href="#cb3-32" tabindex="-1"></a>                        Output directory.</span>
-<span id="cb3-33"><a href="#cb3-33" tabindex="-1"></a>  <span class="sc">-</span>f FORMAT, <span class="sc">--</span>format FORMAT</span>
-<span id="cb3-34"><a href="#cb3-34" tabindex="-1"></a>                        Format of output [def<span class="sc">:</span> parquet] (parquet, db, tsv,</span>
-<span id="cb3-35"><a href="#cb3-35" tabindex="-1"></a>                        csv, rds)</span>
-<span id="cb3-36"><a href="#cb3-36" tabindex="-1"></a>  <span class="sc">-</span>i ID, <span class="sc">--</span>id ID        ID to use <span class="cf">for</span> this run.</span>
-<span id="cb3-37"><a href="#cb3-37" tabindex="-1"></a>  <span class="sc">--</span>dbname DBNAME       Database name.</span>
-<span id="cb3-38"><a href="#cb3-38" tabindex="-1"></a>  <span class="sc">--</span>dbuser DBUSER       Database user.</span>
-<span id="cb3-39"><a href="#cb3-39" tabindex="-1"></a>  <span class="sc">--</span>include INCLUDE     Include only these <span class="fu">files</span> (comma,sep).</span>
-<span id="cb3-40"><a href="#cb3-40" tabindex="-1"></a>  <span class="sc">--</span>exclude EXCLUDE     Exclude these <span class="fu">files</span> (comma,sep).</span>
-<span id="cb3-41"><a href="#cb3-41" tabindex="-1"></a>  <span class="sc">-</span>q, <span class="sc">--</span>quiet           Shush all the logs.</span>
-<span id="cb3-42"><a href="#cb3-42" tabindex="-1"></a></span>
-<span id="cb3-43"><a href="#cb3-43" tabindex="-1"></a><span class="co">#-----------------------------------#</span></span>
-<span id="cb3-44"><a href="#cb3-44" tabindex="-1"></a><span class="sc">$</span> nemo.R list <span class="sc">--</span>help</span>
-<span id="cb3-45"><a href="#cb3-45" tabindex="-1"></a>usage<span class="sc">:</span> nemo.R list [<span class="sc">-</span>h] <span class="sc">-</span>w WORKFLOW <span class="sc">-</span>d IN_DIR [<span class="sc">-</span>f FORMAT] [<span class="sc">-</span>q]</span>
-<span id="cb3-46"><a href="#cb3-46" tabindex="-1"></a></span>
-<span id="cb3-47"><a href="#cb3-47" tabindex="-1"></a>options<span class="sc">:</span></span>
-<span id="cb3-48"><a href="#cb3-48" tabindex="-1"></a>  <span class="sc">-</span>h, <span class="sc">--</span>help            show this help message and exit</span>
-<span id="cb3-49"><a href="#cb3-49" tabindex="-1"></a>  <span class="sc">-</span>w WORKFLOW, <span class="sc">--</span>workflow WORKFLOW</span>
-<span id="cb3-50"><a href="#cb3-50" tabindex="-1"></a>                        Workflow name.</span>
-<span id="cb3-51"><a href="#cb3-51" tabindex="-1"></a>  <span class="sc">-</span>d IN_DIR, <span class="sc">--</span>in_dir IN_DIR</span>
-<span id="cb3-52"><a href="#cb3-52" tabindex="-1"></a>                        Input directory.</span>
-<span id="cb3-53"><a href="#cb3-53" tabindex="-1"></a>  <span class="sc">-</span>f FORMAT, <span class="sc">--</span>format FORMAT</span>
-<span id="cb3-54"><a href="#cb3-54" tabindex="-1"></a>                        Format of list output [def<span class="sc">:</span> pretty] (tsv, pretty)</span>
-<span id="cb3-55"><a href="#cb3-55" tabindex="-1"></a>  <span class="sc">-</span>q, <span class="sc">--</span>quiet           Shush all the logs.</span></code></pre></div>
+<span id="cb3-29"><a href="#cb3-29" tabindex="-1"></a>  <span class="sc">-</span>d, <span class="sc">--</span>in_dir IN_DIR   Input directory.</span>
+<span id="cb3-30"><a href="#cb3-30" tabindex="-1"></a>  <span class="sc">-</span>o, <span class="sc">--</span>out_dir OUT_DIR</span>
+<span id="cb3-31"><a href="#cb3-31" tabindex="-1"></a>                        Output directory.</span>
+<span id="cb3-32"><a href="#cb3-32" tabindex="-1"></a>  <span class="sc">-</span>f, <span class="sc">--</span>format FORMAT   Format of output [def<span class="sc">:</span> parquet] (parquet, db, tsv,</span>
+<span id="cb3-33"><a href="#cb3-33" tabindex="-1"></a>                        csv, rds)</span>
+<span id="cb3-34"><a href="#cb3-34" tabindex="-1"></a>  <span class="sc">-</span>i, <span class="sc">--</span>id ID           ID to use <span class="cf">for</span> this run.</span>
+<span id="cb3-35"><a href="#cb3-35" tabindex="-1"></a>  <span class="sc">--</span>dbname DBNAME       Database name.</span>
+<span id="cb3-36"><a href="#cb3-36" tabindex="-1"></a>  <span class="sc">--</span>dbuser DBUSER       Database user.</span>
+<span id="cb3-37"><a href="#cb3-37" tabindex="-1"></a>  <span class="sc">--</span>include INCLUDE     Include only these <span class="fu">files</span> (comma,sep).</span>
+<span id="cb3-38"><a href="#cb3-38" tabindex="-1"></a>  <span class="sc">--</span>exclude EXCLUDE     Exclude these <span class="fu">files</span> (comma,sep).</span>
+<span id="cb3-39"><a href="#cb3-39" tabindex="-1"></a>  <span class="sc">-</span>q, <span class="sc">--</span>quiet           Shush all the logs.</span>
+<span id="cb3-40"><a href="#cb3-40" tabindex="-1"></a></span>
+<span id="cb3-41"><a href="#cb3-41" tabindex="-1"></a><span class="co">#-----------------------------------#</span></span>
+<span id="cb3-42"><a href="#cb3-42" tabindex="-1"></a><span class="sc">$</span> nemo.R list <span class="sc">--</span>help</span>
+<span id="cb3-43"><a href="#cb3-43" tabindex="-1"></a>usage<span class="sc">:</span> nemo.R list [<span class="sc">-</span>h] <span class="sc">-</span>w WORKFLOW <span class="sc">-</span>d IN_DIR [<span class="sc">-</span>f FORMAT] [<span class="sc">-</span>q]</span>
+<span id="cb3-44"><a href="#cb3-44" tabindex="-1"></a></span>
+<span id="cb3-45"><a href="#cb3-45" tabindex="-1"></a>options<span class="sc">:</span></span>
+<span id="cb3-46"><a href="#cb3-46" tabindex="-1"></a>  <span class="sc">-</span>h, <span class="sc">--</span>help            show this help message and exit</span>
+<span id="cb3-47"><a href="#cb3-47" tabindex="-1"></a>  <span class="sc">-</span>w, <span class="sc">--</span>workflow WORKFLOW</span>
+<span id="cb3-48"><a href="#cb3-48" tabindex="-1"></a>                        Workflow name.</span>
+<span id="cb3-49"><a href="#cb3-49" tabindex="-1"></a>  <span class="sc">-</span>d, <span class="sc">--</span>in_dir IN_DIR   Input directory.</span>
+<span id="cb3-50"><a href="#cb3-50" tabindex="-1"></a>  <span class="sc">-</span>f, <span class="sc">--</span>format FORMAT   Format of list output [def<span class="sc">:</span> pretty] (tsv, pretty)</span>
+<span id="cb3-51"><a href="#cb3-51" tabindex="-1"></a>  <span class="sc">-</span>q, <span class="sc">--</span>quiet           Shush all the logs.</span></code></pre></div>
 </div>
 </div>
 
   </main><aside class="col-md-3"><div class="links">
 <h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">
-<li><a href="https://github.com/umccr/nemo/" class="external-link">Browse source code</a></li>
-<li><a href="https://github.com/umccr/nemo/issues" class="external-link">Report a bug</a></li>
+<li><a href="https://github.com/tidywf/nemo/" class="external-link">Browse source code</a></li>
+<li><a href="https://github.com/tidywf/nemo/issues" class="external-link">Report a bug</a></li>
 </ul>
 </div>
 
@@ -213,7 +209,7 @@
 <div class="dev-status">
 <h2 data-toc-skip>Dev status</h2>
 <ul class="list-unstyled">
-<li><a href="https://umccr.github.io/nemo"><img src="reference/figures/logo.png" alt="logo" align="left" height="100"></a></li>
+<li><a href="https://tidywf.github.io/nemo"><img src="reference/figures/logo.png" alt="logo" align="left" height="100"></a></li>
 </ul>
 </div>
 

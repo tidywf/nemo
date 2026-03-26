@@ -8,22 +8,22 @@ Using {remotes} directly from GitHub:
 
 ``` r
 install.packages("remotes")
-remotes::install_github("umccr/nemo") # latest main commit
-remotes::install_github("umccr/nemo@v0.0.3.9006") # released version
+remotes::install_github("tidywf/nemo") # latest main commit
+remotes::install_github("tidywf/nemo@v0.0.3.9007") # released version
 ```
 
 ### Conda
 
-[![conda-version](https://anaconda.org/umccr/r-nemo/badges/version.svg "Conda package version")![conda-latest](https://anaconda.org/umccr/r-nemo/badges/latest_release_date.svg "Conda package latest release date")](https://anaconda.org/umccr/r-nemo)
+[![conda-version](https://anaconda.org/tidywf/r-nemo/badges/version.svg "Conda package version")![conda-latest](https://anaconda.org/tidywf/r-nemo/badges/latest_release_date.svg "Conda package latest release date")](https://anaconda.org/tidywf/r-nemo)
 
-The conda package is available from the umccr channel at
-<https://anaconda.org/umccr/r-nemo>.
+The conda package is available from the tidywf channel at
+<https://anaconda.org/tidywf/r-nemo>.
 
 ``` bash
 conda create \
   -n nemo_env \
-  -c umccr -c conda-forge \
-  r-nemo==0.0.3.9006
+  -c tidywf -c conda-forge \
+  r-nemo==0.0.3.9007
 
 conda activate nemo_env
 ```
@@ -34,9 +34,9 @@ If you use [Pixi](https://pixi.sh/), you can create a new isolated
 environment with the deployed conda package:
 
 ``` bash
-pixi init -c umccr -c conda-forge ./tidy_env
+pixi init -c tidywf -c conda-forge ./tidy_env
 cd ./tidy_env
-pixi add r-nemo==0.0.3.9006
+pixi add r-nemo==0.0.3.9007
 ```
 
 Then you can create a task to run the `nemo.R` CLI script:

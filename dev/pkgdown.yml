@@ -10,7 +10,7 @@ articles:
   schema: schema.html
   structure: structure.html
   uml: uml.html
-last_built: 2026-02-26T12:59Z
+last_built: 2026-03-26T03:12Z
 urls:
-  reference: https://umccr.github.io/nemo/reference
-  article: https://umccr.github.io/nemo/articles
+  reference: https://tidywf.github.io/nemo/reference
+  article: https://tidywf.github.io/nemo/articles

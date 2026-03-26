@@ -4,7 +4,7 @@ Tool1 file parsing and manipulation.
 
 ## Super class
 
-[`nemo::Tool`](https://umccr.github.io/nemo/dev/reference/Tool.md) -\>
+[`nemo::Tool`](https://tidywf.github.io/nemo/dev/reference/Tool.md) -\>
 `Tool1`
 
 ## Methods
@@ -29,17 +29,17 @@ Tool1 file parsing and manipulation.
 
 Inherited methods
 
-- [`nemo::Tool$.eval_func()`](https://umccr.github.io/nemo/dev/reference/Tool.html#method-.eval_func)
-- [`nemo::Tool$.parse_file()`](https://umccr.github.io/nemo/dev/reference/Tool.html#method-.parse_file)
-- [`nemo::Tool$.parse_file_keyvalue()`](https://umccr.github.io/nemo/dev/reference/Tool.html#method-.parse_file_keyvalue)
-- [`nemo::Tool$.parse_file_nohead()`](https://umccr.github.io/nemo/dev/reference/Tool.html#method-.parse_file_nohead)
-- [`nemo::Tool$.tidy_file()`](https://umccr.github.io/nemo/dev/reference/Tool.html#method-.tidy_file)
-- [`nemo::Tool$filter_files()`](https://umccr.github.io/nemo/dev/reference/Tool.html#method-filter_files)
-- [`nemo::Tool$list_files()`](https://umccr.github.io/nemo/dev/reference/Tool.html#method-list_files)
-- [`nemo::Tool$nemofy()`](https://umccr.github.io/nemo/dev/reference/Tool.html#method-nemofy)
-- [`nemo::Tool$print()`](https://umccr.github.io/nemo/dev/reference/Tool.html#method-print)
-- [`nemo::Tool$tidy()`](https://umccr.github.io/nemo/dev/reference/Tool.html#method-tidy)
-- [`nemo::Tool$write()`](https://umccr.github.io/nemo/dev/reference/Tool.html#method-write)
+- [`nemo::Tool$.eval_func()`](https://tidywf.github.io/nemo/dev/reference/Tool.html#method-.eval_func)
+- [`nemo::Tool$.parse_file()`](https://tidywf.github.io/nemo/dev/reference/Tool.html#method-.parse_file)
+- [`nemo::Tool$.parse_file_keyvalue()`](https://tidywf.github.io/nemo/dev/reference/Tool.html#method-.parse_file_keyvalue)
+- [`nemo::Tool$.parse_file_nohead()`](https://tidywf.github.io/nemo/dev/reference/Tool.html#method-.parse_file_nohead)
+- [`nemo::Tool$.tidy_file()`](https://tidywf.github.io/nemo/dev/reference/Tool.html#method-.tidy_file)
+- [`nemo::Tool$filter_files()`](https://tidywf.github.io/nemo/dev/reference/Tool.html#method-filter_files)
+- [`nemo::Tool$list_files()`](https://tidywf.github.io/nemo/dev/reference/Tool.html#method-list_files)
+- [`nemo::Tool$nemofy()`](https://tidywf.github.io/nemo/dev/reference/Tool.html#method-nemofy)
+- [`nemo::Tool$print()`](https://tidywf.github.io/nemo/dev/reference/Tool.html#method-print)
+- [`nemo::Tool$tidy()`](https://tidywf.github.io/nemo/dev/reference/Tool.html#method-tidy)
+- [`nemo::Tool$write()`](https://tidywf.github.io/nemo/dev/reference/Tool.html#method-write)
 
 ------------------------------------------------------------------------
 
@@ -63,7 +63,7 @@ Create a new Tool1 object.
 
   (`tibble(n)`)  
   Tibble of files from
-  [`list_files_dir()`](https://umccr.github.io/nemo/dev/reference/list_files_dir.md).
+  [`list_files_dir()`](https://tidywf.github.io/nemo/dev/reference/list_files_dir.md).
 
 ------------------------------------------------------------------------
 

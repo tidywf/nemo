@@ -17,7 +17,7 @@
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><script src="notes_files/libs/quarto-html/popper.min.js"></script><script src="notes_files/libs/quarto-html/tippy.umd.min.js"></script><link href="notes_files/libs/quarto-html/tippy.css" rel="stylesheet">
 <link href="notes_files/libs/quarto-html/light-border.css" rel="stylesheet">
 <!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Notes">
-<meta property="og:image" content="https://umccr.github.io/nemo/logo.png">
+<meta property="og:image" content="https://tidywf.github.io/nemo/logo.png">
 <meta name="robots" content="noindex">
 </head>
 <body>
@@ -28,7 +28,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">nemo</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.0.3.9006</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.0.3.9007</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -56,7 +56,7 @@
 <li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json">
 </form></li>
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/umccr/nemo/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/tidywf/nemo/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul>
 </div>
 
@@ -70,7 +70,7 @@
 
 
 
-      <small class="dont-index">Source: <a href="https://github.com/umccr/nemo/blob/dev/vignettes/notes.qmd" class="external-link"><code>vignettes/notes.qmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/tidywf/nemo/blob/dev/vignettes/notes.qmd" class="external-link"><code>vignettes/notes.qmd</code></a></small>
       <div class="d-none name"><code></code></div>
     </div>
 
@@ -856,7 +856,7 @@ aws ec2 describe-availability-zones --region $AWS_DEFAULT_REGION | jq -r '.Avail
 </section><section class="level3"><h3 id="project">Project<a class="anchor" aria-label="anchor" href="#project"></a>
 </h3>
 <pre><code>cd my_projects
-pixi init hello-world -c conda-forge -c umccr
+pixi init hello-world -c conda-forge -c tidywf
 cd hello-world</code></pre>
 <ul>
 <li><code>pixi.toml</code></li>
@@ -864,7 +864,7 @@ cd hello-world</code></pre>
 <p>A TOML file <code>pixi.toml</code> is created in the project directory:</p>
 <div class="sourceCode" id="cb51"><pre class="sourceCode toml"><code class="sourceCode toml"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a><span class="kw">[workspace]</span></span>
 <span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a><span class="dt">authors</span> <span class="op">=</span> <span class="op">[</span><span class="st">"pdiakumis &lt;peterdiakumis@gmail.com&gt;"</span><span class="op">]</span></span>
-<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a><span class="dt">channels</span> <span class="op">=</span> <span class="op">[</span><span class="st">"conda-forge"</span><span class="op">,</span> <span class="st">"umccr"</span><span class="op">]</span></span>
+<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a><span class="dt">channels</span> <span class="op">=</span> <span class="op">[</span><span class="st">"conda-forge"</span><span class="op">,</span> <span class="st">"tidywf"</span><span class="op">]</span></span>
 <span id="cb51-4"><a href="#cb51-4" aria-hidden="true" tabindex="-1"></a><span class="dt">name</span> <span class="op">=</span> <span class="st">"hello-world"</span></span>
 <span id="cb51-5"><a href="#cb51-5" aria-hidden="true" tabindex="-1"></a><span class="dt">platforms</span> <span class="op">=</span> <span class="op">[</span><span class="st">"osx-arm64"</span><span class="op">]</span></span>
 <span id="cb51-6"><a href="#cb51-6" aria-hidden="true" tabindex="-1"></a><span class="dt">version</span> <span class="op">=</span> <span class="st">"0.1.0"</span></span>
@@ -876,7 +876,7 @@ cd hello-world</code></pre>
 <ul>
 <li>dependencies</li>
 </ul>
-<p>This will look into the <code>conda-forge</code> and <code>umccr</code> conda channels for <code>r-tidywigits</code>, and install it into <code>./.pixi</code> along with its dependencies.</p>
+<p>This will look into the <code>conda-forge</code> and <code>tidywf</code> conda channels for <code>r-tidywigits</code>, and install it into <code>./.pixi</code> along with its dependencies.</p>
 <pre><code>pixi add r-tidywigits
 ls -1 .pixi/envs/default/lib/R/library/tidywigits/cli
 list.R

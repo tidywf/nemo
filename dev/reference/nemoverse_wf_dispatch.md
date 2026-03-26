@@ -25,6 +25,6 @@ wf <- "basemean"
 (fun <- nemoverse_wf_dispatch(wf))
 #> function (x, ...) 
 #> UseMethod("mean")
-#> <bytecode: 0x55b510dd4dc8>
+#> <bytecode: 0x55b88ab1b468>
 #> <environment: namespace:base>
 ```

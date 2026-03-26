@@ -61,7 +61,7 @@ nemo_metadata(files, pkgs, input_id, output_id, input_dir, output_dir)
 #> [x] "run123"
 #> 
 #> $output_id
-#> [x] "01KJD0HTZQ6JTH0PPJ8P8NB61G"
+#> [x] "01KMM22NY20WWMS8KTDTTF2B9Q"
 #> 
 #> $input_dir
 #> [1] "/path/to/wigits/run123"
@@ -73,7 +73,7 @@ nemo_metadata(files, pkgs, input_id, output_id, input_dir, output_dir)
 #> # A tibble: 1 × 2
 #>   name  version   
 #>   <chr> <chr>     
-#> 1 nemo  0.0.3.9006
+#> 1 nemo  0.0.3.9007
 #> 
 #> $files
 #> # A tibble: 2 × 3
