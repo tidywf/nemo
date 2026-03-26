@@ -1,0 +1,19 @@
+name: Bump Version
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'New version (e.g. 0.1.0)'
+        required: true
+        type: string
+
+jobs:
+  bump:
+    uses: tidywf/.github/.github/workflows/bump.yaml@main
+    permissions:
+      contents: write
+    with:
+      pkg_name: nemo
+      pkg_version: ${{ inputs.version }}
+    secrets: inherit
