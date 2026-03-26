@@ -4,7 +4,7 @@ with the deployed conda package:
 ```bash
 pixi init -c tidywf -c conda-forge ./tidy_env
 cd ./tidy_env
-pixi add r-nemo==0.0.3.9006
+pixi add r-nemo==0.0.3.9007
 ```
 
 Then you can create a task to run the `nemo.R` CLI script:
