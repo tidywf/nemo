@@ -26,6 +26,7 @@ requirements:
     - r-jsonlite
     - r-knitr
     - r-log4r
+    - r-paws.storage
     - r-purrr
     - r-r6
     - r-readr
@@ -46,6 +47,7 @@ requirements:
     - r-glue
     - r-knitr
     - r-log4r
+    - r-paws.storage
     - r-purrr
     - r-r6
     - r-readr
