@@ -22,20 +22,20 @@ use("nemo")
 options(width = 100)
 ```
 
-<a href="https://umccr.github.io/nemo"><img src="man/figures/logo.png" alt="logo" align="left" height="100" /></a>
+<a href="https://tidywf.github.io/nemo"><img src="man/figures/logo.png" alt="logo" align="left" height="100" /></a>
 
 # 🐢 Tidy and Explore Bioinformatic Pipeline Outputs
 
-[![conda-latest1]](https://anaconda.org/umccr/r-nemo)
-[![gha]](https://github.com/umccr/nemo/actions/workflows/deploy.yaml)
+[![conda-latest1]](https://anaconda.org/tidywf/r-nemo)
+[![gha]](https://github.com/tidywf/nemo/actions/workflows/deploy.yaml)
 
-[conda-latest1]: <https://anaconda.org/umccr/r-nemo/badges/latest_release_date.svg> "Conda Latest Release"
-[gha]: <https://github.com/umccr/nemo/actions/workflows/deploy.yaml/badge.svg> "GitHub Actions"
+[conda-latest1]: <https://anaconda.org/tidywf/r-nemo/badges/latest_release_date.svg> "Conda Latest Release"
+[gha]: <https://github.com/tidywf/nemo/actions/workflows/deploy.yaml/badge.svg> "GitHub Actions"
 
-- 📚 Docs: <https://umccr.github.io/nemo>
-  - [Installation](https://umccr.github.io/nemo/articles/installation)
-  - [R6 structure](https://umccr.github.io/nemo/articles/structure)
-  - [Changelog](https://umccr.github.io/nemo/articles/NEWS)
+- 📚 Docs: <https://tidywf.github.io/nemo>
+  - [Installation](https://tidywf.github.io/nemo/articles/installation)
+  - [R6 structure](https://tidywf.github.io/nemo/articles/structure)
+  - [Changelog](https://tidywf.github.io/nemo/articles/NEWS)
 
 ## Overview
 
@@ -54,8 +54,8 @@ in YAML that are part of 'child' {nemo} packages, like {[tidywigits]} and
 packages) specify the schemas, types, patterns and field descriptions
 for the _raw_ input _files_ and _tidy_ output _tbls_.
 
-[tidywigits]: <https://github.com/umccr/tidywigits> "tidywigits"
-[dracarys]: <https://github.com/umccr/dracarys> "dracarys"
+[tidywigits]: <https://github.com/tidywf/tidywigits> "tidywigits"
+[dracarys]: <https://github.com/tidywf/dracarys> "dracarys"
 
 ## 🍕 Installation
 
@@ -63,9 +63,9 @@ for the _raw_ input _files_ and _tidy_ output _tbls_.
 
 Alternatively:
 
-- conda package: <https://anaconda.org/umccr/r-nemo>
+- conda package: <https://anaconda.org/tidywf/r-nemo>
 
-For more details see: <https://umccr.github.io/nemo/articles/installation>
+For more details see: <https://tidywf.github.io/nemo/articles/installation>
 
 ## 🌀 CLI
 

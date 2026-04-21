@@ -2,17 +2,17 @@
 
 <!-- README.md is generated from README.qmd. Please edit that file -->
 
-<a href="https://umccr.github.io/nemo"><img src="man/figures/logo.png" alt="logo" align="left" height="100" /></a>
+<a href="https://tidywf.github.io/nemo"><img src="man/figures/logo.png" alt="logo" align="left" height="100" /></a>
 
 # 🐢 Tidy and Explore Bioinformatic Pipeline Outputs
 
-[![conda-latest1](https://anaconda.org/umccr/r-nemo/badges/latest_release_date.svg "Conda Latest Release")](https://anaconda.org/umccr/r-nemo)
-[![gha](https://github.com/umccr/nemo/actions/workflows/deploy.yaml/badge.svg "GitHub Actions")](https://github.com/umccr/nemo/actions/workflows/deploy.yaml)
+[![conda-latest1](https://anaconda.org/tidywf/r-nemo/badges/latest_release_date.svg "Conda Latest Release")](https://anaconda.org/tidywf/r-nemo)
+[![gha](https://github.com/tidywf/nemo/actions/workflows/deploy.yaml/badge.svg "GitHub Actions")](https://github.com/tidywf/nemo/actions/workflows/deploy.yaml)
 
-- 📚 Docs: <https://umccr.github.io/nemo>
-  - [Installation](https://umccr.github.io/nemo/articles/installation)
-  - [R6 structure](https://umccr.github.io/nemo/articles/structure)
-  - [Changelog](https://umccr.github.io/nemo/articles/NEWS)
+- 📚 Docs: <https://tidywf.github.io/nemo>
+  - [Installation](https://tidywf.github.io/nemo/articles/installation)
+  - [R6 structure](https://tidywf.github.io/nemo/articles/structure)
+  - [Changelog](https://tidywf.github.io/nemo/articles/NEWS)
 
 ## Overview
 
@@ -28,8 +28,8 @@ format of choice e.g. Apache Parquet, PostgreSQL, TSV, RDS.
 
 The specific tools it can handle are controlled by configuration files
 written in YAML that are part of ‘child’ {nemo} packages, like
-{[tidywigits](https://github.com/umccr/tidywigits "tidywigits")} and
-{[dracarys](https://github.com/umccr/dracarys "dracarys")}. These
+{[tidywigits](https://github.com/tidywf/tidywigits "tidywigits")} and
+{[dracarys](https://github.com/tidywf/dracarys "dracarys")}. These
 configuration files (under `inst/config` in those respective packages)
 specify the schemas, types, patterns and field descriptions for the
 *raw* input *files* and *tidy* output *tbls*.
@@ -40,16 +40,16 @@ Using {remotes} directly from GitHub:
 
 ``` r
 install.packages("remotes")
-remotes::install_github("umccr/nemo") # latest main commit
-remotes::install_github("umccr/nemo@v0.0.3") # released version
+remotes::install_github("tidywf/nemo") # latest main commit
+remotes::install_github("tidywf/nemo@v0.0.3.9007") # released version
 ```
 
 Alternatively:
 
-- conda package: <https://anaconda.org/umccr/r-nemo>
+- conda package: <https://anaconda.org/tidywf/r-nemo>
 
 For more details see:
-<https://umccr.github.io/nemo/articles/installation>
+<https://tidywf.github.io/nemo/articles/installation>
 
 ## 🌀 CLI
 
@@ -66,7 +66,7 @@ export PATH="${nemo_cli}:${PATH}"
 ```
 
     $ nemo.R --version
-    nemo 0.0.3
+    nemo 0.0.3.9006
 
     #-----------------------------------#
     $ nemo.R --help
@@ -91,16 +91,14 @@ export PATH="${nemo_cli}:${PATH}"
 
     options:
       -h, --help            show this help message and exit
-      -w WORKFLOW, --workflow WORKFLOW
+      -w, --workflow WORKFLOW
                             Workflow name.
-      -d IN_DIR, --in_dir IN_DIR
-                            Input directory.
-      -o OUT_DIR, --out_dir OUT_DIR
+      -d, --in_dir IN_DIR   Input directory.
+      -o, --out_dir OUT_DIR
                             Output directory.
-      -f FORMAT, --format FORMAT
-                            Format of output [def: parquet] (parquet, db, tsv,
+      -f, --format FORMAT   Format of output [def: parquet] (parquet, db, tsv,
                             csv, rds)
-      -i ID, --id ID        ID to use for this run.
+      -i, --id ID           ID to use for this run.
       --dbname DBNAME       Database name.
       --dbuser DBUSER       Database user.
       --include INCLUDE     Include only these files (comma,sep).
@@ -113,10 +111,8 @@ export PATH="${nemo_cli}:${PATH}"
 
     options:
       -h, --help            show this help message and exit
-      -w WORKFLOW, --workflow WORKFLOW
+      -w, --workflow WORKFLOW
                             Workflow name.
-      -d IN_DIR, --in_dir IN_DIR
-                            Input directory.
-      -f FORMAT, --format FORMAT
-                            Format of list output [def: pretty] (tsv, pretty)
+      -d, --in_dir IN_DIR   Input directory.
+      -f, --format FORMAT   Format of list output [def: pretty] (tsv, pretty)
       -q, --quiet           Shush all the logs.

@@ -70,8 +70,8 @@ the {nemo} parent classes. This allows for custom parsers and tidiers for specif
 bioinformatic tools and workflows.
 
 [R6]: <https://github.com/r-lib/R6> "R6 package repo"
-[tidywigits]: <https://github.com/umccr/tidywigits> "tidywigits"
-[dracarys]: <https://github.com/umccr/dracarys> "dracarys"
+[tidywigits]: <https://github.com/tidywf/tidywigits> "tidywigits"
+[dracarys]: <https://github.com/tidywf/dracarys> "dracarys"
 
 Here we use the `Tool1` and `Workflow1` classes as examples to illustrate the
 structure of the package.

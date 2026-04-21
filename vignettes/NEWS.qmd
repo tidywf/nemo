@@ -22,7 +22,7 @@ knitr:
 ```
 
 ```{r echo=FALSE}
-repo <- "https://github.com/umccr/nemo"
+repo <- "https://github.com/tidywf/nemo"
 vdiff <- function(new, old) {
   stopifnot(utils::compareVersion(new, old) == 1)
   htmltools::a(
@@ -49,6 +49,11 @@ pr <- function(n) {
   pr_or_issue(n, "pr")
 }
 ```
+
+## dev (2026-02-26)
+
+- Add support for LinkML schemas (`r pr(33)`, `r iss(22)`)
+- GitHub Actions: refactor deploy workflow for dev and main branches (`r pr(34)`)
 
 ## v0.0.3 (2026-02-09)
 
