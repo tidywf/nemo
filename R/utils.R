@@ -109,60 +109,10 @@ is_files_tbl <- function(x) {
   )
 }
 
-# map linkml range types to readr col spec codes used internally.
-linkml_type_remap <- function(x) {
-  type_map <- c(string = "c", integer = "i", float = "d")
-  all_nms_glued <- glue::glue_collapse(names(type_map), sep = ", ", last = " or ")
-  assertthat::assert_that(
-    x %in% names(type_map),
-    msg = glue(
-      "Unknown LinkML type: '{x}'. Must be one of: {all_nms_glued}."
-    )
-  )
+schema_type_remap <- function(x) {
+  type_map <- c(char = "c", float = "d", int = "i")
+  assertthat::assert_that(x %in% names(type_map))
   unname(type_map[x])
-}
-
-# filter linkml classes by subset tag (e.g. "raw" or "tidy").
-linkml_classes_by_subset <- function(schema, subset) {
-  schema$classes |>
-    purrr::keep(\(cls) subset %in% unlist(cls$in_subset %||% list()))
-}
-
-# strip class name prefix and lowercase: RawTable1 -> table1
-linkml_strip_prefix <- function(x, prefix) {
-  sub(paste0("^", prefix), "", x) |> tolower()
-}
-
-# get logical table name for a linkml class.
-linkml_class_name <- function(cls, cls_name, prefix) {
-  cls$annotations$name %||% linkml_strip_prefix(cls_name, prefix)
-}
-
-# get version subsets for a class.
-# checks slot-level in_subset first; falls back to class-level.
-# "raw" and "tidy" are not version tags.
-linkml_class_versions <- function(cls) {
-  meta <- c("raw", "tidy")
-  slot_versions <- (cls$attributes %||% list()) |>
-    purrr::map(\(s) unlist(s$in_subset %||% list())) |>
-    unlist() |>
-    unique()
-  slot_versions <- slot_versions[!slot_versions %in% meta]
-  if (length(slot_versions) > 0) {
-    return(slot_versions)
-  }
-  cls_versions <- unlist(cls$in_subset %||% list())
-  cls_versions[!cls_versions %in% meta]
-}
-
-# get attributes that belong to a given version.
-# slots with no in_subset belong to all versions.
-linkml_slots_for_version <- function(cls, v) {
-  (cls$attributes %||% list()) |>
-    purrr::keep(\(s) {
-      ss <- unlist(s$in_subset %||% list())
-      length(ss) == 0 || v %in% ss
-    })
 }
 
 
@@ -204,7 +154,7 @@ get_python <- function() {
 nemoverse_wf_dispatch <- function(wf = NULL) {
   stopifnot(!is.null(wf))
   wfs <- list(
-    wigits = list(pkg = "tidywigits", wf = "Wigits", repo = "https://github.com/tidywf/tidywigits"),
+    wigits = list(pkg = "tidywigits", wf = "Wigits", repo = "https://github.com/umccr/tidywigits"),
     basemean = list(pkg = "base", wf = "mean", repo = "CRAN"),
     dummy1 = list(pkg = "dummy1", wf = "bar", repo = "BAZ")
     # dragen = list(pkg = "dracarys", wf = "Dragen"),

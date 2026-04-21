@@ -10,52 +10,8 @@ nemo is an R package for tidying and exploring outputs from bioinformatic pipeli
 
 - **Tool**: Base R6 class (`R/Tool.R`) that parses specific file types and outputs tidy tibbles
 - **Workflow**: R6 class (`R/Workflow.R`) that orchestrates multiple Tools, handling file discovery, tidying, and writing
-- **Config**: R6 class (`R/Config.R`) that reads a per-tool LinkML schema (`inst/config/tools/<tool>/schema.yaml`) and exposes raw/tidy schemas as tibbles
+- **Config**: R6 class (`R/Config.R`) that reads a per-tool schema (`inst/config/tools/<tool>/`) and exposes raw/tidy schemas as tibbles
 - Tools inherit from the base `Tool` class and implement file-specific parsing logic
-
-## Config / Schema System
-
-Each tool has a single LinkML (https://github.com/linkml/linkml) schema at `inst/config/tools/<tool>/schema.yaml`.
-
-### Class naming convention
-
-| Prefix | Meaning | Example |
-|--------|---------|---------|
-| `Raw`  | Describes an input file | `RawTable1` |
-| `Tidy` | Describes a tidy output tibble | `TidyTable1` |
-
-The prefix is stripped and lowercased to get the table name used in the `Config` API (e.g. `RawTable1` → `"table1"`).
-
-### Versioning
-
-Slot-level `in_subset` tags declare which tool versions a field belongs to. Version subsets are anything that isn't `raw` or `tidy` (e.g. `v1.2.3`, `latest`). If no slot-level version tags exist, the class-level `in_subset` is used.
-
-### nemo-specific annotations
-
-Since LinkML has no native concept of file discovery, nemo-specific metadata is stored in class `annotations`:
-- `name` — explicit logical table name (e.g. `table1`). **Required** on all classes. Decouples the class name from the table name, which allows multiple tidy classes to share the same logical name (e.g. `TidyTable1Coords` and `TidyTable1Metrics` both with `name: table1`, distinguished by `subtbl`)
-- `pattern` — regex used to match raw output files
-- `ftype` — file type (`tsv`, `txt-nohead`, etc.)
-- `subtbl` — tidy sub-table name (defaults to `"tbl1"` if omitted). Use distinct values when one raw table produces multiple tidy tibbles
-
-### Field types
-
-LinkML `range` types map to readr col spec codes internally:
-
-| LinkML  | nemo internal |
-|---------|--------------|
-| `string`  | `c` |
-| `integer` | `i` |
-| `float`   | `d` |
-
-### Key helpers (`R/utils.R`)
-
-- `linkml_type_remap(x)` — maps LinkML type → nemo internal type
-- `linkml_classes_by_subset(schema, subset)` — filter classes by subset tag
-- `linkml_class_name(cls, cls_name, prefix)` — get logical table name; prefers `annotations$name`, falls back to stripping prefix and lowercasing
-- `linkml_strip_prefix(x, prefix)` — strip class name prefix and lowercase (used as fallback by `lkml_class_name`)
-- `linkml_class_versions(cls)` — get version tags for a class
-- `linkml_slots_for_version(cls, v)` — get slots belonging to a version
 
 ## Reference Implementations
 

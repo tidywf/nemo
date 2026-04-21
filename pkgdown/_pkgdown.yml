@@ -33,8 +33,6 @@ navbar:
           href: articles/devnotes.html
         - text: UML
           href: articles/uml.html
-        - text: Schema
-          href: articles/schema.html
     news:
       text: NEWS
       href: articles/NEWS.html
@@ -50,8 +48,6 @@ reference:
       - config_prep_raw_schema
       - config_prep_multi
       - config_prep_write
-      - schema_to_mermaid
-      - schema_versions
   - title: "Parsing"
     contents:
       - parse_file

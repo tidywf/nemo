@@ -36,9 +36,9 @@ Config <- R6::R6Class(
     #' @field tool (`character(1)`)\cr
     #' Tool name.
     tool = NULL,
-    #' @field schema (`list()`)\cr
-    #' Parsed LinkML schema.
-    schema = NULL,
+    #' @field config (`list()`)\cr
+    #' Config list.
+    config = NULL,
     #' @field raw_schemas_all (`tibble()`)\cr
     #' All raw schemas for tool.
     raw_schemas_all = NULL,
@@ -54,11 +54,11 @@ Config <- R6::R6Class(
     initialize = function(tool, pkg) {
       tool <- tolower(tool)
       self$tool <- tool
-      self$schema <- self$read(pkg = pkg)
+      self$config <- self$read(pkg = pkg)
       self$raw_schemas_all <- self$get_raw_schemas_all()
       self$tidy_schemas_all <- self$get_tidy_schemas_all()
     },
-    #' @description Print details about the Config.
+    #' @description Print details about the Tool.
     #' @param ... (ignored).
     print = function(...) {
       res <- tibble::tribble(
@@ -71,78 +71,70 @@ Config <- R6::R6Class(
       print(knitr::kable(res))
       invisible(self)
     },
-    #' @description Read LinkML schema.yaml.
+    #' @description Read YAML configs.
     #' @param pkg (`character(1)`)\cr
     #' Package name where the config files are located.
-    #' @return A `list()` with the parsed LinkML schema.
+    #' @return A `list()` with the parsed data.
     read = function(pkg) {
       pkg_config_path <- system.file("config/tools", package = pkg)
       stopifnot(dir.exists(pkg_config_path))
       tools <- list.files(pkg_config_path, full.names = FALSE)
       msg1 <- glue("'{self$tool}' does not have a config under '{pkg_config_path}/'.")
+      msg2 <- glue("There should be a raw.yaml and tidy.yaml file for {self$tool}.")
       assertthat::assert_that(self$tool %in% tools, msg = msg1)
-      schema_path <- file.path(pkg_config_path, self$tool, "schema.yaml")
-      msg2 <- glue("No schema.yaml found for {self$tool} at {schema_path}.")
-      assertthat::assert_that(file.exists(schema_path), msg = msg2)
-      yaml::read_yaml(schema_path)
+      pkg_config_path <- file.path(pkg_config_path, self$tool)
+      assertthat::assert_that(
+        all(file.exists(file.path(pkg_config_path, c("raw.yaml", "tidy.yaml")))),
+        msg = msg2
+      )
+      raw <- yaml::read_yaml(file.path(pkg_config_path, "raw.yaml"))
+      tidy <- yaml::read_yaml(file.path(pkg_config_path, "tidy.yaml"))
+      stopifnot("raw" %in% names(raw), "tidy" %in% names(tidy))
+      list(raw = raw, tidy = tidy)
     },
     #' @description Return all output file patterns.
     get_raw_patterns = function() {
-      linkml_classes_by_subset(self$schema, "raw") |>
-        purrr::imap(\(cls, cls_name) {
-          tibble::tibble(
-            name = linkml_class_name(cls, cls_name, "Raw"),
-            value = cls$annotations$pattern %||% NA_character_
-          )
-        }) |>
-        dplyr::bind_rows()
+      self$config[["raw"]][["raw"]] |>
+        purrr::map("pattern") |>
+        tibble::enframe() |>
+        tidyr::unnest("value")
     },
     #' @description Return all output file schema versions.
     get_raw_versions = function() {
-      linkml_classes_by_subset(self$schema, "raw") |>
-        purrr::imap(\(cls, cls_name) {
-          tibble::tibble(
-            name = linkml_class_name(cls, cls_name, "Raw"),
-            value = linkml_class_versions(cls)
-          )
-        }) |>
-        dplyr::bind_rows()
+      self$config[["raw"]][["raw"]] |>
+        purrr::map(\(file) file[["schema"]] |> names()) |>
+        tibble::enframe() |>
+        tidyr::unnest("value")
     },
     #' @description Return all output file descriptions.
     get_raw_descriptions = function() {
-      linkml_classes_by_subset(self$schema, "raw") |>
-        purrr::imap(\(cls, cls_name) {
-          tibble::tibble(
-            name = linkml_class_name(cls, cls_name, "Raw"),
-            value = cls$description %||% NA_character_
-          )
-        }) |>
-        dplyr::bind_rows()
+      self$config[["raw"]][["raw"]] |>
+        purrr::map("description") |>
+        tibble::enframe() |>
+        tidyr::unnest("value")
     },
     #' @description Return all output file schemas.
     get_raw_schemas_all = function() {
-      linkml_classes_by_subset(self$schema, "raw") |>
-        purrr::imap(\(cls, cls_name) {
-          schema_by_version <- linkml_class_versions(cls) |>
-            purrr::set_names() |>
-            purrr::map(\(v) {
-              linkml_slots_for_version(cls, v) |>
-                purrr::imap(\(slot, field) {
-                  tibble::tibble(
-                    field = field,
-                    type = linkml_type_remap(slot$range %||% "string")
-                  )
-                }) |>
-                dplyr::bind_rows()
-            }) |>
+      self$config[["raw"]][["raw"]] |>
+        purrr::map(\(rawfile) {
+          description <- tibble::tibble(tbl_description = rawfile[["description"]])
+          schema <- rawfile[["schema"]] |>
+            purrr::map(
+              \(s) {
+                {
+                  s |>
+                    purrr::map(\(v) {
+                      v[["type"]] <- schema_type_remap(v[["type"]])
+                      tibble::as_tibble_row(v)
+                    })
+                } |>
+                  dplyr::bind_rows()
+              }
+            ) |>
             tibble::enframe(name = "version", value = "schema")
-          tibble::tibble(
-            name = linkml_class_name(cls, cls_name, "Raw"),
-            tbl_description = cls$description %||% NA_character_
-          ) |>
-            dplyr::bind_cols(schema_by_version)
+          dplyr::bind_cols(description, schema)
         }) |>
-        dplyr::bind_rows()
+        dplyr::bind_rows(.id = "name")
     },
     #' @description Get raw file schema.
     #' @param x (`character(1)`)\cr
@@ -202,44 +194,39 @@ Config <- R6::R6Class(
     },
     #' @description Return all tidy tibble descriptions.
     get_tidy_descriptions = function() {
-      linkml_classes_by_subset(self$schema, "tidy") |>
-        purrr::imap(\(cls, cls_name) {
-          tibble::tibble(
-            name = linkml_class_name(cls, cls_name, "Tidy"),
-            value = cls$description %||% NA_character_
-          )
+      self$config[["tidy"]][["tidy"]] |>
+        purrr::map(\(tt) {
+          tt[["description"]]
         }) |>
-        dplyr::bind_rows()
+        tibble::enframe() |>
+        tidyr::unnest("value")
     },
     #' @description Return all tidy tibble schemas.
     get_tidy_schemas_all = function() {
-      linkml_classes_by_subset(self$schema, "tidy") |>
-        purrr::imap(\(cls, cls_name) {
-          subtbl <- cls$annotations$subtbl %||% "tbl1"
-          schema_by_version <- linkml_class_versions(cls) |>
-            purrr::set_names() |>
+      l1 <- self$config[["tidy"]][["tidy"]]
+      l1 |>
+        purrr::map(\(tt) {
+          description <- tibble::tibble(tbl_description = tt[["description"]])
+          schema <- tt[["schema"]] |>
             purrr::map(\(v) {
-              schema <- linkml_slots_for_version(cls, v) |>
-                purrr::imap(\(slot, field) {
-                  tibble::tibble(
-                    field = field,
-                    type = linkml_type_remap(slot$range %||% "string"),
-                    description = slot$description %||% NA_character_
-                  )
-                }) |>
-                dplyr::bind_rows()
-              list(schema) |>
-                purrr::set_names(subtbl) |>
+              v |>
+                purrr::map(
+                  \(y) {
+                    y |>
+                      purrr::map(\(z) {
+                        z[["type"]] <- schema_type_remap(z[["type"]])
+                        tibble::as_tibble_row(z)
+                      }) |>
+                      dplyr::bind_rows()
+                  }
+                ) |>
                 tibble::enframe(name = "tbl", value = "schema")
             }) |>
             tibble::enframe(name = "version", value = "value2")
-          tibble::tibble(
-            name = linkml_class_name(cls, cls_name, "Tidy"),
-            tbl_description = cls$description %||% NA_character_
-          ) |>
-            dplyr::bind_cols(schema_by_version)
+          dplyr::bind_cols(description, schema)
         }) |>
-        dplyr::bind_rows() |>
+        tibble::enframe(name = "name", value = "value1") |>
+        tidyr::unnest("value1") |>
         tidyr::unnest("value2")
     },
     #' @description Get tidy tbl schema.
