@@ -5,23 +5,28 @@
 \title{Config Object}
 \description{
 Config YAML file parsing.
+
+A Config object:
+\itemize{
+\item belongs to a package (\code{pkg})
+\item has a tool name (\code{tool})
+\item has a parsed configuration list with the schemas (\code{config}).
+}
 }
 \examples{
 tool <- "tool1"
 pkg <- "nemo"
 conf <- Config$new(tool, pkg)
-conf$get_raw_patterns()
-(rv1 <- conf$get_raw_versions())
-conf$get_raw_descriptions()
-conf$get_raw_schemas_all()
+(patterns <- conf$get_patterns())
+(ftypes <- conf$get_ftypes())
+(descr <- conf$get_descriptions())
+(rs <- conf$get_raw_schemas_all())
 conf$get_raw_schema("table1")
 conf$get_raw_schema("table1", v = "v1.2.3")
-conf$are_raw_schemas_valid()
-conf$get_tidy_descriptions()
-(ts1 <- conf$get_tidy_schemas_all())
+conf$are_schemas_valid()
 conf$get_tidy_schema("table1")
 conf$get_tidy_schema("table1", v = "v1.2.3")
-conf$get_tidy_schema("table1", subtbl = "tbl1")
+conf$get_col_map("table5")
 
 }
 \section{Public fields}{
@@ -30,14 +35,14 @@ conf$get_tidy_schema("table1", subtbl = "tbl1")
 \item{\code{tool}}{(\code{character(1)})\cr
 Tool name.}
 
+\item{\code{pkg}}{(\code{character(1)})\cr
+Package name for config lookup.}
+
 \item{\code{config}}{(\code{list()})\cr
-Config list.}
+Config list (parsed schema.yaml).}
 
 \item{\code{raw_schemas_all}}{(\code{tibble()})\cr
-All raw schemas for tool.}
-
-\item{\code{tidy_schemas_all}}{(\code{tibble()})\cr
-All tidy schemas for tool.}
+All raw schemas for tool (versioned, for schema_guess).}
 }
 \if{html}{\out{</div>}}
 }
@@ -47,15 +52,15 @@ All tidy schemas for tool.}
 \item \href{#method-Config-new}{\code{Config$new()}}
 \item \href{#method-Config-print}{\code{Config$print()}}
 \item \href{#method-Config-read}{\code{Config$read()}}
-\item \href{#method-Config-get_raw_patterns}{\code{Config$get_raw_patterns()}}
-\item \href{#method-Config-get_raw_versions}{\code{Config$get_raw_versions()}}
-\item \href{#method-Config-get_raw_descriptions}{\code{Config$get_raw_descriptions()}}
+\item \href{#method-Config-get_patterns}{\code{Config$get_patterns()}}
+\item \href{#method-Config-get_ftypes}{\code{Config$get_ftypes()}}
+\item \href{#method-Config-get_ftype}{\code{Config$get_ftype()}}
+\item \href{#method-Config-get_descriptions}{\code{Config$get_descriptions()}}
 \item \href{#method-Config-get_raw_schemas_all}{\code{Config$get_raw_schemas_all()}}
 \item \href{#method-Config-get_raw_schema}{\code{Config$get_raw_schema()}}
-\item \href{#method-Config-are_raw_schemas_valid}{\code{Config$are_raw_schemas_valid()}}
-\item \href{#method-Config-get_tidy_descriptions}{\code{Config$get_tidy_descriptions()}}
-\item \href{#method-Config-get_tidy_schemas_all}{\code{Config$get_tidy_schemas_all()}}
+\item \href{#method-Config-are_schemas_valid}{\code{Config$are_schemas_valid()}}
 \item \href{#method-Config-get_tidy_schema}{\code{Config$get_tidy_schema()}}
+\item \href{#method-Config-get_col_map}{\code{Config$get_col_map()}}
 \item \href{#method-Config-clone}{\code{Config$clone()}}
 }
 }
@@ -84,7 +89,7 @@ Package name for config lookup.}
 \if{html}{\out{<a id="method-Config-print"></a>}}
 \if{latex}{\out{\hypertarget{method-Config-print}{}}}
 \subsection{Method \code{print()}}{
-Print details about the Tool.
+Print details about the Config.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Config$print(...)}\if{html}{\out{</div>}}
 }
@@ -101,68 +106,90 @@ Print details about the Tool.
 \if{html}{\out{<a id="method-Config-read"></a>}}
 \if{latex}{\out{\hypertarget{method-Config-read}{}}}
 \subsection{Method \code{read()}}{
-Read YAML configs.
+Read schema.yaml config.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Config$read(pkg)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Config$read()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+(\code{list()})\cr
+Parsed YAML as a list of table schemas.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Config-get_patterns"></a>}}
+\if{latex}{\out{\hypertarget{method-Config-get_patterns}{}}}
+\subsection{Method \code{get_patterns()}}{
+Return all output file patterns.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Config$get_patterns()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Config-get_ftypes"></a>}}
+\if{latex}{\out{\hypertarget{method-Config-get_ftypes}{}}}
+\subsection{Method \code{get_ftypes()}}{
+Return all output file types.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Config$get_ftypes()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Config-get_ftype"></a>}}
+\if{latex}{\out{\hypertarget{method-Config-get_ftype}{}}}
+\subsection{Method \code{get_ftype()}}{
+Return ftype for a specific table.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Config$get_ftype(x)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{pkg}}{(\code{character(1)})\cr
-Package name where the config files are located.}
+\item{\code{x}}{(\code{character(1)})\cr
+Table name.}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-A \code{list()} with the parsed data.
+(\code{character(1)})\cr
+File type.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Config-get_raw_patterns"></a>}}
-\if{latex}{\out{\hypertarget{method-Config-get_raw_patterns}{}}}
-\subsection{Method \code{get_raw_patterns()}}{
-Return all output file patterns.
+\if{html}{\out{<a id="method-Config-get_descriptions"></a>}}
+\if{latex}{\out{\hypertarget{method-Config-get_descriptions}{}}}
+\subsection{Method \code{get_descriptions()}}{
+Return all table descriptions.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Config$get_raw_patterns()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Config$get_descriptions()}\if{html}{\out{</div>}}
 }
 
+\subsection{Returns}{
+Tibble with table name and its description.
 }
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Config-get_raw_versions"></a>}}
-\if{latex}{\out{\hypertarget{method-Config-get_raw_versions}{}}}
-\subsection{Method \code{get_raw_versions()}}{
-Return all output file schema versions.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Config$get_raw_versions()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Config-get_raw_descriptions"></a>}}
-\if{latex}{\out{\hypertarget{method-Config-get_raw_descriptions}{}}}
-\subsection{Method \code{get_raw_descriptions()}}{
-Return all output file descriptions.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Config$get_raw_descriptions()}\if{html}{\out{</div>}}
-}
-
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Config-get_raw_schemas_all"></a>}}
 \if{latex}{\out{\hypertarget{method-Config-get_raw_schemas_all}{}}}
 \subsection{Method \code{get_raw_schemas_all()}}{
-Return all output file schemas.
+Return all raw schemas.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Config$get_raw_schemas_all()}\if{html}{\out{</div>}}
 }
 
+\subsection{Returns}{
+A tibble with \code{name}, \code{tbl_description}, \code{version}, \code{schema}
+(list-col of tibble(field, type) using raw column names).
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Config-get_raw_schema"></a>}}
 \if{latex}{\out{\hypertarget{method-Config-get_raw_schema}{}}}
 \subsection{Method \code{get_raw_schema()}}{
-Get raw file schema.
+Get raw schema for a specific table and optional version.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Config$get_raw_schema(x = NULL, v = NULL)}\if{html}{\out{</div>}}
 }
@@ -171,41 +198,24 @@ Get raw file schema.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{x}}{(\code{character(1)})\cr
-Raw file name.}
+Table name.}
 
 \item{\code{v}}{(\code{character(1)})\cr
-Version of schema. If NULL, returns all versions for particular file.}
+Version. If NULL, returns all versions.}
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Returns}{
+Tibble with version, field and type.
+}
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Config-are_raw_schemas_valid"></a>}}
-\if{latex}{\out{\hypertarget{method-Config-are_raw_schemas_valid}{}}}
-\subsection{Method \code{are_raw_schemas_valid()}}{
-Validate schema.
+\if{html}{\out{<a id="method-Config-are_schemas_valid"></a>}}
+\if{latex}{\out{\hypertarget{method-Config-are_schemas_valid}{}}}
+\subsection{Method \code{are_schemas_valid()}}{
+Validate schemas.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Config$are_raw_schemas_valid()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Config-get_tidy_descriptions"></a>}}
-\if{latex}{\out{\hypertarget{method-Config-get_tidy_descriptions}{}}}
-\subsection{Method \code{get_tidy_descriptions()}}{
-Return all tidy tibble descriptions.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Config$get_tidy_descriptions()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Config-get_tidy_schemas_all"></a>}}
-\if{latex}{\out{\hypertarget{method-Config-get_tidy_schemas_all}{}}}
-\subsection{Method \code{get_tidy_schemas_all()}}{
-Return all tidy tibble schemas.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Config$get_tidy_schemas_all()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Config$are_schemas_valid()}\if{html}{\out{</div>}}
 }
 
 }
@@ -213,22 +223,41 @@ Return all tidy tibble schemas.
 \if{html}{\out{<a id="method-Config-get_tidy_schema"></a>}}
 \if{latex}{\out{\hypertarget{method-Config-get_tidy_schema}{}}}
 \subsection{Method \code{get_tidy_schema()}}{
-Get tidy tbl schema.
+Get tidy schema for a table (field names for column renaming).
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Config$get_tidy_schema(x = NULL, v = NULL, subtbl = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Config$get_tidy_schema(x = NULL, v = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{x}}{(\code{character(1)})\cr
-Tidy tbl name.}
+Table name.}
 
 \item{\code{v}}{(\code{character(1)})\cr
-Version of schema. If NULL, returns all versions for particular tbl.}
+Version. If NULL, uses the latest version.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Config-get_col_map"></a>}}
+\if{latex}{\out{\hypertarget{method-Config-get_col_map}{}}}
+\subsection{Method \code{get_col_map()}}{
+Get column mapping (raw -> tidy) for a table.
+Used for tables with custom parse logic (e.g. csv-nohead-long).
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Config$get_col_map(x = NULL, v = NULL)}\if{html}{\out{</div>}}
+}
 
-\item{\code{subtbl}}{(\code{character(1)})\cr
-Subtbl to use. If NULL, returns all subtbls for particular tbl and version.}
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{x}}{(\code{character(1)})\cr
+Table name.}
+
+\item{\code{v}}{(\code{character(1)})\cr
+Version. If NULL, uses the latest version.}
 }
 \if{html}{\out{</div>}}
 }
