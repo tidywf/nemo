@@ -8,9 +8,9 @@ Config YAML file parsing.
 
 A Config object:
 \itemize{
-\item belongs to a package (\code{pkg})
-\item has a tool name (\code{tool})
-\item has a parsed configuration list with the schemas (\code{config}).
+\item belongs to a package (\code{pkg});
+\item has a tool name (\code{tool});
+\item has a parsed configuration list with the schemas (\code{config});
 }
 }
 \examples{
@@ -38,7 +38,7 @@ conf$get_col_map("table5")
 Tool name.}
 
 \item{\code{pkg}}{(\code{character(1)})\cr
-Package name for config lookup.}
+Package name tool belongs to (for config lookup).}
 
 \item{\code{config}}{(\code{list()})\cr
 Config list (parsed schema.yaml).}
@@ -81,7 +81,7 @@ Create a new Config object.
 Tool name.}
 
 \item{\code{pkg}}{(\code{character(1)})\cr
-Package name for config lookup.}
+Package name tool belongs to (for config lookup).}
 }
 \if{html}{\out{</div>}}
 }

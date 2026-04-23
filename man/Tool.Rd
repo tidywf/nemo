@@ -5,11 +5,20 @@
 \title{Tool Object}
 \description{
 Base class for all nemo tools.
+
+A Tool object:
+\itemize{
+\item has a name (\code{name});
+\item has a path to a directory with its outputs (\code{path});
+\item has a schema configuration Config object (\code{config});
+\item has a tibble of files matching its Config patterns (\code{files});
+\item has a tibble with the parsed and tidied files as tibbles (\code{tbls});
+}
 }
 \examples{
-\dontrun{
-path <- here::here("inst/extdata/tool1")
-# demo filter + tidy
+name <- "tool1"; pkg <- "nemo";
+path <- system.file("extdata", name, package = pkg)
+tool <- Tool$new(name = name, pkg = pkg, path = path)
 x <- Tool1$new(path = path)$
   filter_files(exclude = "alignments_dupfreq")$
   tidy(keep_raw = TRUE)
@@ -31,7 +40,6 @@ lx$nemofy(
     exclude = NULL
 )
 DBI::dbDisconnect(dbconn)
-}
 
 }
 \section{Public fields}{
@@ -39,6 +47,9 @@ DBI::dbDisconnect(dbconn)
 \describe{
 \item{\code{name}}{(\code{character(1)})\cr
 Name of tool.}
+
+\item{\code{pkg}}{(\code{character(1)})\cr
+Package name tool belongs to (for config lookup).}
 
 \item{\code{path}}{(\code{character(1)})\cr
 Output directory of tool.}
@@ -55,14 +66,14 @@ Tibble of tidy tibbles.}
 \item{\code{raw_schemas_all}}{(\code{tibble()})\cr
 All raw schemas for tool.}
 
-\item{\code{tidy_schemas_all}}{(\code{tibble()})\cr
-All tidy schemas for tool.}
-
 \item{\code{get_tidy_schema}}{(\verb{function()})\cr
 Get specific tidy schema.}
 
 \item{\code{get_raw_schema}}{(\verb{function()})\cr
 Get specific raw schema.}
+
+\item{\code{get_col_map}}{(\verb{function()})\cr
+Get column mapping (raw -> tidy) for a table.}
 
 \item{\code{files_tbl}}{(\code{tibble(n)})\cr
 Tibble of files from \code{\link[=list_files_dir]{list_files_dir()}}.}
@@ -114,6 +125,10 @@ Tibble of files from \code{\link[=list_files_dir]{list_files_dir()}}.}
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Returns}{
+(\code{R6::R6Class()})\cr
+R6 object.
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Tool-print"></a>}}
@@ -132,14 +147,16 @@ Print details about the Tool.
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-self invisibly.
+(\code{R6::R6Class()})\cr
+R6 object invisibly.
 }
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Tool-filter_files"></a>}}
 \if{latex}{\out{\hypertarget{method-Tool-filter_files}{}}}
 \subsection{Method \code{filter_files()}}{
-Filter files in given tool directory.
+Filter files in given tool directory based on inclusion or
+exclusion tool_parser names.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Tool$filter_files(include = NULL, exclude = NULL)}\if{html}{\out{</div>}}
 }
@@ -156,7 +173,8 @@ Files to exclude.}
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-The tibble of files with potentially removed rows.
+(\code{R6::R6Class()})\cr
+R6 object invisibly.
 }
 }
 \if{html}{\out{<hr>}}
@@ -178,7 +196,20 @@ See \code{fs::dir_info}.}
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-A tibble of file paths.
+(\code{tibble()})\cr
+A tibble with:
+\itemize{
+\item \code{tool_parser}: tool name followed by parser name;
+\item \code{parser}: parser name;
+\item \code{bname}: file basename;
+\item \code{size}: file size;
+\item \code{lastmodified}: last modified timestamp of file;
+\item \code{path}: file path;
+\item \code{pattern}: file pattern;
+\item \code{prefix}: file prefix;
+\item \code{group}: if multiple files have the same basename then this is used
+as a differentiator.
+}
 }
 }
 \if{html}{\out{<hr>}}

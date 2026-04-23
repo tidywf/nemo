@@ -4,9 +4,9 @@
 #' Config YAML file parsing.
 #'
 #' A Config object:
-#' - belongs to a package (`pkg`)
-#' - has a tool name (`tool`)
-#' - has a parsed configuration list with the schemas (`config`).
+#' - belongs to a package (`pkg`);
+#' - has a tool name (`tool`);
+#' - has a parsed configuration list with the schemas (`config`);
 #' @examples
 #' tool <- "tool1"
 #' pkg <- "nemo"
@@ -45,7 +45,7 @@ Config <- R6::R6Class(
     #' Tool name.
     tool = NULL,
     #' @field pkg (`character(1)`)\cr
-    #' Package name for config lookup.
+    #' Package name tool belongs to (for config lookup).
     pkg = NULL,
     #' @field config (`list()`)\cr
     #' Config list (parsed schema.yaml).
@@ -58,7 +58,7 @@ Config <- R6::R6Class(
     #' @param tool (`character(1)`)\cr
     #' Tool name.
     #' @param pkg (`character(1)`)\cr
-    #' Package name for config lookup.
+    #' Package name tool belongs to (for config lookup).
     #' @return (`R6::R6Class()`)\cr
     #' R6 object.
     initialize = function(tool, pkg) {

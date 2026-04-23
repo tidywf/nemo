@@ -2,10 +2,18 @@
 #'
 #' @description
 #' Base class for all nemo tools.
+#'
+#' A Tool object:
+#' - has a name (`name`);
+#' - has a path to a directory with its outputs (`path`);
+#' - has a schema configuration Config object (`config`);
+#' - has a tibble of files matching its Config patterns (`files`);
+#' - has a tibble with the parsed and tidied files as tibbles (`tbls`);
+#'
 #' @examples
-#' \dontrun{
-#' path <- here::here("inst/extdata/tool1")
-#' # demo filter + tidy
+#' name <- "tool1"; pkg <- "nemo";
+#' path <- system.file("extdata", name, package = pkg)
+#' tool <- Tool$new(name = name, pkg = pkg, path = path)
 #' x <- Tool1$new(path = path)$
 #'   filter_files(exclude = "alignments_dupfreq")$
 #'   tidy(keep_raw = TRUE)
@@ -27,7 +35,6 @@
 #'     exclude = NULL
 #' )
 #' DBI::dbDisconnect(dbconn)
-#' }
 #'
 #' @export
 Tool <- R6::R6Class(
@@ -42,6 +49,9 @@ Tool <- R6::R6Class(
     #' @field name (`character(1)`)\cr
     #' Name of tool.
     name = NULL,
+    #' @field pkg (`character(1)`)\cr
+    #' Package name tool belongs to (for config lookup).
+    pkg = NULL,
     #' @field path  (`character(1)`)\cr
     #' Output directory of tool.
     path = NULL,
@@ -57,15 +67,15 @@ Tool <- R6::R6Class(
     #' @field raw_schemas_all (`tibble()`)\cr
     #' All raw schemas for tool.
     raw_schemas_all = NULL,
-    #' @field tidy_schemas_all (`tibble()`)\cr
-    #' All tidy schemas for tool.
-    tidy_schemas_all = NULL,
     #' @field get_tidy_schema (`function()`)\cr
     #' Get specific tidy schema.
     get_tidy_schema = NULL,
     #' @field get_raw_schema (`function()`)\cr
     #' Get specific raw schema.
     get_raw_schema = NULL,
+    #' @field get_col_map (`function()`)\cr
+    #' Get column mapping (raw -> tidy) for a table.
+    get_col_map = NULL,
     #' @field files_tbl (`tibble(n)`)\cr
     #' Tibble of files from [list_files_dir()].
     files_tbl = NULL,
@@ -80,6 +90,8 @@ Tool <- R6::R6Class(
     #' ignored.
     #' @param files_tbl (`tibble(n)`)\cr
     #' Tibble of files from [list_files_dir()].
+    #' @return (`R6::R6Class()`)\cr
+    #' R6 object.
     initialize = function(name = NULL, pkg = NULL, path = NULL, files_tbl = NULL) {
       stopifnot(
         !is.null(path) || !is.null(files_tbl),
@@ -89,17 +101,22 @@ Tool <- R6::R6Class(
       if (!is.null(files_tbl)) {
         stopifnot(is_files_tbl(files_tbl))
         if (!is.null(path)) {
-          # gets ignored if files_tbl is specified
+          # ignore if files_tbl is specified
           path <- NULL
         }
       }
       self$name <- name
+      self$pkg <- pkg
       self$path <- path
-      self$config <- Config$new(self$name, pkg = pkg)
+      self$config <- Config$new(self$name, pkg = self$pkg)
       self$raw_schemas_all <- self$config$raw_schemas_all
-      self$tidy_schemas_all <- self$config$tidy_schemas_all
-      self$get_tidy_schema <- self$config$get_tidy_schema
-      self$get_raw_schema <- self$config$get_raw_schema
+      self$get_tidy_schema <- function(x = NULL, v = NULL) {
+        self$config$get_schema(x = x, v = v, raw_or_tidy = "tidy")
+      }
+      self$get_raw_schema <- function(x = NULL, v = NULL) {
+        self$config$get_schema(x = x, v = v, raw_or_tidy = "raw")
+      }
+      self$get_col_map <- self$config$get_col_map
       self$files_tbl <- files_tbl
       private$is_tidied <- FALSE
       private$is_written <- FALSE
@@ -108,7 +125,8 @@ Tool <- R6::R6Class(
     },
     #' @description Print details about the Tool.
     #' @param ... (ignored).
-    #' @return self invisibly.
+    #' @return (`R6::R6Class()`)\cr
+    #' R6 object invisibly.
     print = function(...) {
       res <- tibble::tribble(
         ~var      , ~value                           ,
@@ -119,16 +137,18 @@ Tool <- R6::R6Class(
         "written" , as.character(private$is_written)
       ) |>
         tidyr::unnest("value")
-      cat(glue("#--- Tool {self$name} ---#"))
+      cat(glue("#--- Tool {self$pkg}::{self$name} ---#"))
       print(knitr::kable(res))
       invisible(self)
     },
-    #' @description Filter files in given tool directory.
+    #' @description Filter files in given tool directory based on inclusion or
+    #' exclusion tool_parser names.
     #' @param include (`character(n)`)\cr
     #' Files to include.
     #' @param exclude (`character(n)`)\cr
     #' Files to exclude.
-    #' @return The tibble of files with potentially removed rows.
+    #' @return (`R6::R6Class()`)\cr
+    #' R6 object invisibly.
     filter_files = function(include = NULL, exclude = NULL) {
       f1 <- function(d, include = NULL, exclude = NULL) {
         assertthat::assert_that(
@@ -143,7 +163,7 @@ Tool <- R6::R6Class(
         if (!is.null(exclude)) {
           stopifnot(rlang::is_character(exclude))
           d <- d |>
-            dplyr::filter(!.data$tool_parser %in% exclude)
+            dplyr::filter_out(.data$tool_parser %in% exclude)
         }
         d
       }
@@ -158,15 +178,26 @@ Tool <- R6::R6Class(
     #' @param type (`character(1)`)\cr
     #' File type(s) to return (e.g. any, file, directory, symlink).
     #' See `fs::dir_info`.
-    #' @return A tibble of file paths.
+    #' @return (`tibble()`)\cr
+    #' A tibble with:
+    #' - `tool_parser`: tool name followed by parser name;
+    #' - `parser`: parser name;
+    #' - `bname`: file basename;
+    #' - `size`: file size;
+    #' - `lastmodified`: last modified timestamp of file;
+    #' - `path`: file path;
+    #' - `pattern`: file pattern;
+    #' - `prefix`: file prefix;
+    #' - `group`: if multiple files have the same basename then this is used
+    #' as a differentiator.
     list_files = function(type = "file") {
       files_tbl <- self$files_tbl
       stopifnot(!is.null(self$path) || !is.null(files_tbl))
       if (!is.null(files_tbl)) {
         stopifnot(is_files_tbl(files_tbl))
       }
-      patterns <- self$config$get_raw_patterns() |>
-        dplyr::rename(pat_name = "name", pat_value = "value")
+      patterns <- self$config$get_patterns() |>
+        dplyr::rename(pat_name = "name", pat_value = "pattern")
       files <- files_tbl %||% list_files_dir(self$path, type = type)
       res <- files |>
         tidyr::crossing(patterns) |>
