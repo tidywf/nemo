@@ -296,18 +296,18 @@ config_sort_versions <- function(versions) {
 #' expect_equal(x[1, "field", drop = T], "'SampleID'")
 #' @export
 config_prep_raw_schema <- function(path, ...) {
+  type_map <- c(
+    "character" = "'char'",
+    "integer" = "'int'",
+    "numeric" = "'float'",
+    "logical" = "'char'"
+  )
   path |>
     readr::read_delim(n_max = 100, show_col_types = FALSE, ...) |>
     purrr::map_chr(class) |>
     tibble::enframe(name = "field", value = "type") |>
     dplyr::mutate(
-      type = dplyr::case_match(
-        .data$type,
-        "character" ~ "'char'",
-        "integer" ~ "'int'",
-        "numeric" ~ "'float'",
-        "logical" ~ "'char'"
-      ),
+      type = type_map[.data$type],
       field = paste0("'", .data$field, "'")
     )
 }
