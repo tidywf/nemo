@@ -28,6 +28,10 @@ obj$nemofy(diro = odir, format = "parquet", input_id = id)
 \item \href{#method-Tool1-tidy_table2}{\code{Tool1$tidy_table2()}}
 \item \href{#method-Tool1-parse_table3}{\code{Tool1$parse_table3()}}
 \item \href{#method-Tool1-tidy_table3}{\code{Tool1$tidy_table3()}}
+\item \href{#method-Tool1-parse_table4}{\code{Tool1$parse_table4()}}
+\item \href{#method-Tool1-tidy_table4}{\code{Tool1$tidy_table4()}}
+\item \href{#method-Tool1-parse_table5}{\code{Tool1$parse_table5()}}
+\item \href{#method-Tool1-tidy_table5}{\code{Tool1$tidy_table5()}}
 \item \href{#method-Tool1-clone}{\code{Tool1$clone()}}
 }
 }
@@ -174,6 +178,78 @@ Tidy \code{table3.tsv} file.
 \describe{
 \item{\code{x}}{(\code{character(1)})\cr
 Path to file.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Tool1-parse_table4"></a>}}
+\if{latex}{\out{\hypertarget{method-Tool1-parse_table4}{}}}
+\subsection{Method \code{parse_table4()}}{
+Read \code{table4.tsv} file (no header).
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Tool1$parse_table4(x)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{x}}{(\code{character(1)})\cr
+Path to file.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Tool1-tidy_table4"></a>}}
+\if{latex}{\out{\hypertarget{method-Tool1-tidy_table4}{}}}
+\subsection{Method \code{tidy_table4()}}{
+Tidy \code{table4.tsv} file.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Tool1$tidy_table4(x)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{x}}{(\code{character(1)})\cr
+Path to file.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Tool1-parse_table5"></a>}}
+\if{latex}{\out{\hypertarget{method-Tool1-parse_table5}{}}}
+\subsection{Method \code{parse_table5()}}{
+Read \code{table5.csv} file (csv, no header, long format).
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Tool1$parse_table5(x)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{x}}{(\code{character(1)})\cr
+Path to file.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Tool1-tidy_table5"></a>}}
+\if{latex}{\out{\hypertarget{method-Tool1-tidy_table5}{}}}
+\subsection{Method \code{tidy_table5()}}{
+Tidy \code{table5.csv} file.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Tool1$tidy_table5(x)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{x}}{(\code{character(1)})\cr
+Path to file or already parsed tibble.}
 }
 \if{html}{\out{</div>}}
 }
