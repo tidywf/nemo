@@ -134,7 +134,7 @@ file_hdr <- function(fpath, delim = "\t", n_max = 0, ...) {
 #' cnames1 <- file_hdr(fpath1)
 #' cnames2 <- file_hdr(fpath2)
 #' conf <- Config$new("tool1", pkg = "nemo")
-#' schemas_all <- conf$get_raw_schemas_all()
+#' schemas_all <- conf$get_schemas_all("raw")
 #' (s1 <- schema_guess(pname, cnames1, schemas_all))
 #' (s2 <- schema_guess(pname, cnames2, schemas_all))
 #'

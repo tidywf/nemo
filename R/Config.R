@@ -1,12 +1,17 @@
 #' @title Config Object
 #'
 #' @description
-#' Config YAML file parsing.
+#' Reads and parses a tool's `schema.yaml` from `inst/config/tools/<tool>/` in
+#' the package. The schema defines each output table: its file pattern, file
+#' type, description, and versioned columns (raw name, tidy name, type, `since`
+#' version). Exposes raw and tidy schemas and column mappings used by `Tool` for
+#' file discovery and column renaming.
 #'
 #' A Config object:
 #' - belongs to a package (`pkg`);
 #' - has a tool name (`tool`);
-#' - has a parsed configuration list with the schemas (`config`);
+#' - has a parsed config list (`config`);
+#' - caches all raw schemas as a flat tibble (`raw_schemas_all`);
 #' @examples
 #' tool <- "tool1"
 #' pkg <- "nemo"
@@ -17,25 +22,35 @@
 #' (descr <- conf$get_descriptions())
 #' (rs <- conf$get_schemas_all("raw"))
 #' (ts <- conf$get_schemas_all("tidy"))
-#' conf$get_schema("table1")
+#' (s1 <- conf$get_schema("table1"))
 #' conf$get_schema("table1", v = "v1.2.3")
 #' conf$get_schema("table1", raw_or_tidy = "tidy")
-#' conf$get_schema("table1", v = "v1.2.3", raw_or_tidy = "tidy")
 #' conf$are_schemas_valid()
-#' conf$get_col_map("table5")
+#' (cm <- conf$get_col_map("table5"))
 #'
 #' @testexamples
-#' expect_error(conf$get_schema("foo"))
-#' expect_error(conf$get_schema("table1", v = "foo"))
-#' expect_error(conf$get_schema("table1", v = "foo", raw_or_tidy = "tidy"))
-#' expect_true(conf$are_schemas_valid())
+#' # initialize
+#' expect_error(Config$new("foo", pkg))
+#' # get_patterns
+#' expect_equal(nrow(patterns), 5)
+#' # get_ftypes
+#' expect_equal(dplyr::distinct(ftypes, .data$ftype) |> nrow(), 4)
+#' # get_ftype
+#' expect_equal(ftype1, "txt")
+#' # get_descriptions
+#' expect_equal(nrow(descr), 5)
+#' # get_schemas_all
 #' expect_equal(dplyr::filter(rs, .data$name == "table1") |> nrow(), 2)
 #' expect_equal(dplyr::filter(ts, .data$name == "table1") |> nrow(), 2)
-#' expect_error(Config$new("foo", pkg))
-#' expect_equal(nrow(patterns), 5)
-#' expect_equal(dplyr::distinct(ftypes, .data$ftype) |> nrow(), 4)
-#' expect_equal(ftype1, "txt")
-#' expect_equal(nrow(descr), 5)
+#' # get_schema
+#' expect_named(s1, c("version", "field", "type"))
+#' expect_equal(nrow(conf$get_schema("table1", v = "v1.2.3")), 5)
+#' expect_error(conf$get_schema("foo"))
+#' expect_error(conf$get_schema("table1", v = "foo"))
+#' # are_schemas_valid
+#' expect_true(conf$are_schemas_valid())
+#' # get_col_map
+#' expect_named(cm, c("raw", "tidy", "type", "description"))
 #'
 #' @export
 Config <- R6::R6Class(

@@ -111,7 +111,7 @@ is_files_tbl <- function(x) {
 
 schema_type_remap <- function(x) {
   type_map <- c(char = "c", float = "d", int = "i")
-  assertthat::assert_that(x %in% names(type_map))
+  stopifnot(x %in% names(type_map))
   unname(type_map[x])
 }
 

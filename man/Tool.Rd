@@ -4,28 +4,54 @@
 \alias{Tool}
 \title{Tool Object}
 \description{
-Base class for all nemo tools.
+Base R6 class for all nemo tools. Subclasses implement parsers for specific
+bioinformatic tool outputs by optionally overriding \verb{parse_\{tname\}()} and
+\verb{tidy_\{tname\}()} methods for custom parse or tidy logic per table.
 
 A Tool object:
 \itemize{
 \item has a name (\code{name});
 \item has a path to a directory with its outputs (\code{path});
-\item has a schema configuration Config object (\code{config});
-\item has a tibble of files matching its Config patterns (\code{files});
-\item has a tibble with the parsed and tidied files as tibbles (\code{tbls});
+\item has a schema configuration \code{Config} object (\code{config});
+\item has a tibble of files matching its \code{Config} patterns (\code{files});
+\item has a tibble with the parsed and tidied files (\code{tbls});
 }
+
+The typical workflow is: optionally filter files with \code{filter_files()}, parse
+and tidy with \code{tidy()}, then write outputs with \code{write()}. \code{nemofy()} chains
+all three steps.
 }
 \examples{
+fs::path(tempdir(), letters[1:5]) |>
+fs::file_temp_push() |>
+fs::dir_create()
 name <- "tool1"; pkg <- "nemo";
-path <- system.file("extdata", name, package = pkg)
-tool <- Tool$new(name = name, pkg = pkg, path = path)
-tool$filter_files(exclude = "table3")
-x <- Tool1$new(path = path)$
-  filter_files(exclude = "alignments_dupfreq")$
-  tidy(keep_raw = TRUE)
-x$tbls
-x$files
-x$list_files()
+path <- system.file("extdata/tool1", package = "nemo")
+toolA <- Tool$new(name = name, pkg = pkg, path = path)
+toolA$files
+toolA$filter_files(exclude = "tool1_table3"); toolA$files # note the exclusion this time
+toolA$list_files()
+
+toolB <- Tool$new(name = name, pkg = pkg, path = path)$
+  filter_files(include = "tool1_table1")
+toolB$files
+# tidy + write
+toolC <- Tool$new(name = name, pkg = pkg, path = path)$
+  filter_files(exclude = "tool1_table5")$
+  tidy()
+toolC$files
+toolC$tbls # note the tidy column
+dir1 <- fs::file_temp(); dir2 <- fs::file_temp()
+toolC$write(diro = dir1, format = "parquet", input_id = "run1")
+(lfC <- list.files(dir1, full.names = TRUE))
+
+# nemofy
+toolD <- Tool$new(name = name, pkg = pkg, path = path)$
+  filter_files(exclude = "tool1_table5")$
+  nemofy(diro = dir2, format = "parquet", input_id = "run2")
+(lfD <- list.files(dir2, full.names = TRUE))
+
+
 }
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
@@ -143,7 +169,7 @@ R6 object invisibly.
 \if{latex}{\out{\hypertarget{method-Tool-filter_files}{}}}
 \subsection{Method \code{filter_files()}}{
 Filter files in given tool directory based on inclusion or
-exclusion tool_parser names.
+exclusion tool_parser names. The result is reflected in the \code{files} field.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Tool$filter_files(include = NULL, exclude = NULL)}\if{html}{\out{</div>}}
 }
@@ -152,10 +178,10 @@ exclusion tool_parser names.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{include}}{(\code{character(n)})\cr
-Files to include.}
+tool_parser names to include (e.g. \code{"tool1_table1"}).}
 
 \item{\code{exclude}}{(\code{character(n)})\cr
-Files to exclude.}
+tool_parser names to exclude (e.g. \code{"tool1_table3"}).}
 }
 \if{html}{\out{</div>}}
 }
@@ -332,7 +358,7 @@ Convert field types based on schema.}
 }
 \subsection{Returns}{
 (\code{tibble()})\cr
-Parsed data in enframed tibble.
+Tidy data in enframed tibble.
 }
 }
 \if{html}{\out{<hr>}}
@@ -400,7 +426,7 @@ Parsed data in tibble.
 \if{html}{\out{<a id="method-Tool-tidy"></a>}}
 \if{latex}{\out{\hypertarget{method-Tool-tidy}{}}}
 \subsection{Method \code{tidy()}}{
-Tidy a list of files.
+Tidy a list of files. The result is reflected in the \code{tbls} field.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Tool$tidy(tidy = TRUE, keep_raw = FALSE)}\if{html}{\out{</div>}}
 }
@@ -457,7 +483,9 @@ Database connection object (see \code{DBI::dbConnect}).}
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-A tibble with the tidy data and their output location prefix.
+(\code{tibble()} or \code{NULL})\cr
+A tibble with columns \code{tool_parser}, \code{prefix}, \code{tidy_data}, \code{tbl_name},
+\code{outpath}, invisibly. \code{NULL} if no files were found.
 }
 }
 \if{html}{\out{<hr>}}
@@ -496,15 +524,17 @@ Output ID to use for the dataset (e.g. \code{run123}).}
 Database connection object (see \code{DBI::dbConnect}).}
 
 \item{\code{include}}{(\code{character(n)})\cr
-Files to include.}
+tool_parser names to include (e.g. \code{"tool1_table1"}).}
 
 \item{\code{exclude}}{(\code{character(n)})\cr
-Files to exclude.}
+tool_parser names to exclude (e.g. \code{"tool1_table3"}).}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-A tibble with the tidy data and their output location prefix.
+(\code{tibble()} or \code{NULL})\cr
+A tibble with columns \code{tool_parser}, \code{prefix}, \code{tidy_data}, \code{tbl_name},
+\code{outpath}, invisibly. \code{NULL} if no files were found.
 }
 }
 \if{html}{\out{<hr>}}

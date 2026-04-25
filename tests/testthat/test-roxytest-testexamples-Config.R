@@ -2,36 +2,49 @@
 
 # File R/Config.R: @testexamples
 
-test_that("Function Config() @ L33", {
+test_that("Function Config() @ L56", {
   
   tool <- "tool1"
   pkg <- "nemo"
   conf <- Config$new(tool, pkg)
-  conf$get_raw_patterns()
-  (rv1 <- conf$get_raw_versions())
-  conf$get_raw_descriptions()
-  conf$get_raw_schemas_all()
-  conf$get_raw_schema("table1")
-  conf$get_raw_schema("table1", v = "v1.2.3")
-  conf$are_raw_schemas_valid()
-  conf$get_tidy_descriptions()
-  (ts1 <- conf$get_tidy_schemas_all())
-  conf$get_tidy_schema("table1")
-  conf$get_tidy_schema("table1", v = "v1.2.3")
-  conf$get_tidy_schema("table1", subtbl = "tbl1")
+  (patterns <- conf$get_patterns())
+  (ftypes <- conf$get_ftypes())
+  (ftype1 <- conf$get_ftype("table1"))
+  (descr <- conf$get_descriptions())
+  (rs <- conf$get_schemas_all("raw"))
+  (ts <- conf$get_schemas_all("tidy"))
+  (s1 <- conf$get_schema("table1"))
+  conf$get_schema("table1", v = "v1.2.3")
+  conf$get_schema("table1", raw_or_tidy = "tidy")
+  conf$are_schemas_valid()
+  (cm <- conf$get_col_map("table5"))
   
-  expect_error(conf$get_raw_schema("foo"))
-  expect_error(conf$get_raw_schema("table1", v = "foo"))
-  expect_error(conf$get_tidy_schema("table1", v = "foo"))
-  expect_error(conf$get_tidy_schema("table1", subtbl = "foo"))
-  expect_true(conf$are_raw_schemas_valid())
-  expect_true(ts1 |> dplyr::filter(.data$name == "table1") |> nrow() == 2)
-  expect_true(all(unique(rv1$value) == c("v1.2.3", "latest")))
+  # initialize
   expect_error(Config$new("foo", pkg))
+  # get_patterns
+  expect_equal(nrow(patterns), 5)
+  # get_ftypes
+  expect_equal(dplyr::distinct(ftypes, .data$ftype) |> nrow(), 4)
+  # get_ftype
+  expect_equal(ftype1, "txt")
+  # get_descriptions
+  expect_equal(nrow(descr), 5)
+  # get_schemas_all
+  expect_equal(dplyr::filter(rs, .data$name == "table1") |> nrow(), 2)
+  expect_equal(dplyr::filter(ts, .data$name == "table1") |> nrow(), 2)
+  # get_schema
+  expect_named(s1, c("version", "field", "type"))
+  expect_equal(nrow(conf$get_schema("table1", v = "v1.2.3")), 5)
+  expect_error(conf$get_schema("foo"))
+  expect_error(conf$get_schema("table1", v = "foo"))
+  # are_schemas_valid
+  expect_true(conf$are_schemas_valid())
+  # get_col_map
+  expect_named(cm, c("raw", "tidy", "type", "description"))
 })
 
 
-test_that("Function config_prep_raw_schema() @ L286", {
+test_that("Function config_prep_raw_schema() @ L313", {
   
   path <- system.file("extdata", "tool1/latest/sampleA.tool1.table1.tsv", package = "nemo")
   (x <- config_prep_raw_schema(path = path, delim = "\t"))
@@ -39,7 +52,7 @@ test_that("Function config_prep_raw_schema() @ L286", {
 })
 
 
-test_that("Function config_prep_raw() @ L331", {
+test_that("Function config_prep_raw() @ L358", {
   
   path <- system.file("extdata", "tool1/latest/sampleA.tool1.table1.tsv", package = "nemo")
   name <- "table1"

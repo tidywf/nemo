@@ -4,13 +4,18 @@
 \alias{Config}
 \title{Config Object}
 \description{
-Config YAML file parsing.
+Reads and parses a tool's \code{schema.yaml} from \verb{inst/config/tools/<tool>/} in
+the package. The schema defines each output table: its file pattern, file
+type, description, and versioned columns (raw name, tidy name, type, \code{since}
+version). Exposes raw and tidy schemas and column mappings used by \code{Tool} for
+file discovery and column renaming.
 
 A Config object:
 \itemize{
 \item belongs to a package (\code{pkg});
 \item has a tool name (\code{tool});
-\item has a parsed configuration list with the schemas (\code{config});
+\item has a parsed config list (\code{config});
+\item caches all raw schemas as a flat tibble (\code{raw_schemas_all});
 }
 }
 \examples{
@@ -23,12 +28,11 @@ conf <- Config$new(tool, pkg)
 (descr <- conf$get_descriptions())
 (rs <- conf$get_schemas_all("raw"))
 (ts <- conf$get_schemas_all("tidy"))
-conf$get_schema("table1")
+(s1 <- conf$get_schema("table1"))
 conf$get_schema("table1", v = "v1.2.3")
 conf$get_schema("table1", raw_or_tidy = "tidy")
-conf$get_schema("table1", v = "v1.2.3", raw_or_tidy = "tidy")
 conf$are_schemas_valid()
-conf$get_col_map("table5")
+(cm <- conf$get_col_map("table5"))
 
 }
 \section{Public fields}{

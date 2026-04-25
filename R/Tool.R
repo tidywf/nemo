@@ -1,42 +1,82 @@
 #' @title Tool Object
 #'
 #' @description
-#' Base class for all nemo tools.
+#' Base R6 class for all nemo tools. Subclasses implement parsers for specific
+#' bioinformatic tool outputs by optionally overriding `parse_{tname}()` and
+#' `tidy_{tname}()` methods for custom parse or tidy logic per table.
 #'
 #' A Tool object:
 #' - has a name (`name`);
 #' - has a path to a directory with its outputs (`path`);
-#' - has a schema configuration Config object (`config`);
-#' - has a tibble of files matching its Config patterns (`files`);
-#' - has a tibble with the parsed and tidied files as tibbles (`tbls`);
+#' - has a schema configuration `Config` object (`config`);
+#' - has a tibble of files matching its `Config` patterns (`files`);
+#' - has a tibble with the parsed and tidied files (`tbls`);
+#'
+#' The typical workflow is: optionally filter files with `filter_files()`, parse
+#' and tidy with `tidy()`, then write outputs with `write()`. `nemofy()` chains
+#' all three steps.
 #'
 #' @examples
+#' fs::path(tempdir(), letters[1:5]) |>
+#' fs::file_temp_push() |>
+#' fs::dir_create()
 #' name <- "tool1"; pkg <- "nemo";
-#' path <- system.file("extdata", name, package = pkg)
-#' tool <- Tool$new(name = name, pkg = pkg, path = path)
-#' tool$filter_files(exclude = "table3")
-#' x <- Tool1$new(path = path)$
-#'   filter_files(exclude = "alignments_dupfreq")$
-#'   tidy(keep_raw = TRUE)
-#' x$tbls
-#' x$files
-#' x$list_files()
-#' @testexamples
 #' path <- system.file("extdata/tool1", package = "nemo")
-#' t_all <- Tool1$new(path = path)
+#' toolA <- Tool$new(name = name, pkg = pkg, path = path)
+#' toolA$files
+#' toolA$filter_files(exclude = "tool1_table3"); toolA$files # note the exclusion this time
+#' toolA$list_files()
+#'
+#' toolB <- Tool$new(name = name, pkg = pkg, path = path)$
+#'   filter_files(include = "tool1_table1")
+#' toolB$files
+#' # tidy + write
+#' toolC <- Tool$new(name = name, pkg = pkg, path = path)$
+#'   filter_files(exclude = "tool1_table5")$
+#'   tidy()
+#' toolC$files
+#' toolC$tbls # note the tidy column
+#' dir1 <- fs::file_temp(); dir2 <- fs::file_temp()
+#' toolC$write(diro = dir1, format = "parquet", input_id = "run1")
+#' (lfC <- list.files(dir1, full.names = TRUE))
+#'
+#' # nemofy
+#' toolD <- Tool$new(name = name, pkg = pkg, path = path)$
+#'   filter_files(exclude = "tool1_table5")$
+#'   nemofy(diro = dir2, format = "parquet", input_id = "run2")
+#' (lfD <- list.files(dir2, full.names = TRUE))
+#'
+#'
+#' @testexamples
+#' # filter_files
 #' expect_equal(
-#'   t_all$files$tool_parser,
-#'   c("tool1_table1", "tool1_table1", "tool1_table2", "tool1_table3", "tool1_table4", "tool1_table5")
+#'   toolA$files$tool_parser,
+#'   paste0("tool1_", c("table1", "table1", "table2", "table4", "table5"))
 #' )
-#' t_excl <- Tool1$new(path = path)$filter_files(exclude = "tool1_table3")
-#' expect_false("tool1_table3" %in% t_excl$files$tool_parser)
-#' expect_true(all(c("tool1_table1", "tool1_table2", "tool1_table4", "tool1_table5") %in% t_excl$files$tool_parser))
-#' t_incl <- Tool1$new(path = path)$filter_files(include = "tool1_table1")
-#' expect_equal(unique(t_incl$files$tool_parser), "tool1_table1")
+#' expect_equal(unique(toolB$files$tool_parser), "tool1_table1")
+#' expect_equal(
+#'   toolC$files$tool_parser,
+#'   paste0("tool1_", c("table1", "table1", "table2", "table3", "table4"))
+#' )
 #' expect_error(
 #'   Tool1$new(path = path)$filter_files(include = "tool1_table1", exclude = "tool1_table3"),
 #'   "You cannot define both include and exclude"
 #' )
+#' # list_files
+#' expect_equal(length(lfC), 5)
+#' expect_equal(length(lfD), 5)
+#' # tidy
+#' expect_false(is.null(toolC$tbls))
+#' expect_equal(nrow(toolC$tbls), 5)
+#' expect_named(
+#'   toolC$tbls,
+#'   c(
+#'     "tool_parser", "parser", "bname", "size", "lastmodified", "path",
+#'     "pattern", "prefix", "group", "tidy"
+#'   )
+#' )
+#' # write
+#' expect_named(toolD, c("tool_parser", "prefix", "tidy_data", "tbl_name", "outpath"))
 #'
 #' @export
 Tool <- R6::R6Class(
@@ -308,7 +348,7 @@ Tool <- R6::R6Class(
     #' @param convert_types (`logical(1)`)\cr
     #' Convert field types based on schema.
     #' @return (`tibble()`)\cr
-    #' Parsed data in enframed tibble.
+    #' Tidy data in enframed tibble.
     .tidy_file = function(x, name, convert_types = FALSE) {
       if (!tibble::is_tibble(x)) {
         x <- self$.dispatch_parse(x, name)
@@ -371,7 +411,7 @@ Tool <- R6::R6Class(
         ...
       )
     },
-    #' @description Tidy a list of files.
+    #' @description Tidy a list of files. The result is reflected in the `tbls` field.
     #' @param tidy (`logical(1)`)\cr
     #' Should the raw parsed tibbles get tidied?
     #' @param keep_raw (`logical(1)`)\cr
@@ -428,7 +468,9 @@ Tool <- R6::R6Class(
     #' Output ID to use for the dataset (e.g. `run123`).
     #' @param dbconn (`DBIConnection`)\cr
     #' Database connection object (see `DBI::dbConnect`).
-    #' @return A tibble with the tidy data and their output location prefix.
+    #' @return (`tibble()` or `NULL`)\cr
+    #' A tibble with columns `tool_parser`, `prefix`, `tidy_data`, `tbl_name`,
+    #' `outpath`, invisibly. `NULL` if no files were found.
     write = function(
       diro = ".",
       format = "tsv",
@@ -516,10 +558,12 @@ Tool <- R6::R6Class(
     #' @param dbconn (`DBIConnection`)\cr
     #' Database connection object (see `DBI::dbConnect`).
     #' @param include (`character(n)`)\cr
-    #' Files to include.
+    #' tool_parser names to include (e.g. `"tool1_table1"`).
     #' @param exclude (`character(n)`)\cr
-    #' Files to exclude.
-    #' @return A tibble with the tidy data and their output location prefix.
+    #' tool_parser names to exclude (e.g. `"tool1_table3"`).
+    #' @return (`tibble()` or `NULL`)\cr
+    #' A tibble with columns `tool_parser`, `prefix`, `tidy_data`, `tbl_name`,
+    #' `outpath`, invisibly. `NULL` if no files were found.
     nemofy = function(
       diro = ".",
       format = "tsv",
