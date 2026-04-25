@@ -18,8 +18,8 @@
 #'
 #' @examples
 #' fs::path(tempdir(), letters[1:5]) |>
-#' fs::file_temp_push() |>
-#' fs::dir_create()
+#'   fs::file_temp_push() |>
+#'   fs::dir_create()
 #' name <- "tool1"; pkg <- "nemo";
 #' path <- system.file("extdata/tool1", package = "nemo")
 #' toolA <- Tool$new(name = name, pkg = pkg, path = path)
@@ -109,6 +109,9 @@ Tool <- R6::R6Class(
     #' @field raw_schemas_all (`tibble()`)\cr
     #' All raw schemas for tool.
     raw_schemas_all = NULL,
+    #' @field tidy_schemas_all (`tibble()`)\cr
+    #' All tidy schemas for tool.
+    tidy_schemas_all = NULL,
     #' @field get_tidy_schema (`function()`)\cr
     #' Get specific tidy schema.
     get_tidy_schema = NULL,
@@ -152,6 +155,7 @@ Tool <- R6::R6Class(
       self$path <- path
       self$config <- Config$new(self$name, pkg = self$pkg)
       self$raw_schemas_all <- self$config$raw_schemas_all
+      self$tidy_schemas_all <- self$config$get_schemas_all("tidy")
       self$get_tidy_schema <- function(x = NULL, v = NULL) {
         self$config$get_schema(x = x, v = v, raw_or_tidy = "tidy")
       }

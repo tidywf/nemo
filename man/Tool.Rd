@@ -23,8 +23,8 @@ all three steps.
 }
 \examples{
 fs::path(tempdir(), letters[1:5]) |>
-fs::file_temp_push() |>
-fs::dir_create()
+  fs::file_temp_push() |>
+  fs::dir_create()
 name <- "tool1"; pkg <- "nemo";
 path <- system.file("extdata/tool1", package = "nemo")
 toolA <- Tool$new(name = name, pkg = pkg, path = path)
@@ -76,6 +76,9 @@ Tibble of tidy tibbles.}
 
 \item{\code{raw_schemas_all}}{(\code{tibble()})\cr
 All raw schemas for tool.}
+
+\item{\code{tidy_schemas_all}}{(\code{tibble()})\cr
+All tidy schemas for tool.}
 
 \item{\code{get_tidy_schema}}{(\verb{function()})\cr
 Get specific tidy schema.}

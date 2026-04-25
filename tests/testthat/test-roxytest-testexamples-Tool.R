@@ -5,8 +5,8 @@
 test_that("Function Tool() @ L82", {
   
   fs::path(tempdir(), letters[1:5]) |>
-  fs::file_temp_push() |>
-  fs::dir_create()
+    fs::file_temp_push() |>
+    fs::dir_create()
   name <- "tool1"; pkg <- "nemo";
   path <- system.file("extdata/tool1", package = "nemo")
   toolA <- Tool$new(name = name, pkg = pkg, path = path)
