@@ -19,28 +19,13 @@ A Tool object:
 name <- "tool1"; pkg <- "nemo";
 path <- system.file("extdata", name, package = pkg)
 tool <- Tool$new(name = name, pkg = pkg, path = path)
+tool$filter_files(exclude = "table3")
 x <- Tool1$new(path = path)$
   filter_files(exclude = "alignments_dupfreq")$
   tidy(keep_raw = TRUE)
 x$tbls
 x$files
 x$list_files()
-lx <- Linx$new(path)
-dbconn <- DBI::dbConnect(
-  drv = RPostgres::Postgres(),
-  dbname = "nemo",
-  user = "orcabus"
-)
-lx$nemofy(
-    diro = "nogit/test_data",
-    format = "db", # "parquet",
-    id = "run2",
-    dbconn = dbconn,
-    include = NULL,
-    exclude = NULL
-)
-DBI::dbDisconnect(dbconn)
-
 }
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
@@ -87,11 +72,13 @@ Tibble of files from \code{\link[=list_files_dir]{list_files_dir()}}.}
 \item \href{#method-Tool-print}{\code{Tool$print()}}
 \item \href{#method-Tool-filter_files}{\code{Tool$filter_files()}}
 \item \href{#method-Tool-list_files}{\code{Tool$list_files()}}
+\item \href{#method-Tool-.dispatch_parse}{\code{Tool$.dispatch_parse()}}
+\item \href{#method-Tool-.dispatch_tidy}{\code{Tool$.dispatch_tidy()}}
+\item \href{#method-Tool-.parse_by_ftype}{\code{Tool$.parse_by_ftype()}}
 \item \href{#method-Tool-.parse_file}{\code{Tool$.parse_file()}}
 \item \href{#method-Tool-.tidy_file}{\code{Tool$.tidy_file()}}
 \item \href{#method-Tool-.parse_file_keyvalue}{\code{Tool$.parse_file_keyvalue()}}
 \item \href{#method-Tool-.parse_file_nohead}{\code{Tool$.parse_file_nohead()}}
-\item \href{#method-Tool-.eval_func}{\code{Tool$.eval_func()}}
 \item \href{#method-Tool-tidy}{\code{Tool$tidy()}}
 \item \href{#method-Tool-write}{\code{Tool$write()}}
 \item \href{#method-Tool-nemofy}{\code{Tool$nemofy()}}
@@ -213,6 +200,84 @@ as a differentiator.
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Tool-.dispatch_parse"></a>}}
+\if{latex}{\out{\hypertarget{method-Tool-.dispatch_parse}{}}}
+\subsection{Method \code{.dispatch_parse()}}{
+Dispatch parse for a table: calls custom \verb{parse_\{name\}()} if
+defined in the subclass, otherwise falls back to \code{.parse_by_ftype()}.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Tool$.dispatch_parse(x, tname)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{x}}{(\code{character(1)})\cr
+File path.}
+
+\item{\code{tname}}{(\code{character(1)})\cr
+Table name.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+(\code{tibble()})\cr
+Parsed data in tibble.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Tool-.dispatch_tidy"></a>}}
+\if{latex}{\out{\hypertarget{method-Tool-.dispatch_tidy}{}}}
+\subsection{Method \code{.dispatch_tidy()}}{
+Dispatch tidy for a table: calls custom \verb{tidy_\{tname\}()} if
+defined in the subclass, otherwise falls back to \code{.tidy_file()}.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Tool$.dispatch_tidy(x, tname)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{x}}{(\code{character(1)} or \code{tibble()})\cr
+File path or already parsed raw tibble.}
+
+\item{\code{tname}}{(\code{character(1)})\cr
+Table name.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+(\code{tibble()})\cr
+Tidy data in enframed tibble.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Tool-.parse_by_ftype"></a>}}
+\if{latex}{\out{\hypertarget{method-Tool-.parse_by_ftype}{}}}
+\subsection{Method \code{.parse_by_ftype()}}{
+Parse a file by looking up its ftype from the config and
+calling the appropriate internal parser. Errors for ftypes that require
+a custom \verb{parse_\{tname\}()} method (e.g. \code{csv-nohead-long}).
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Tool$.parse_by_ftype(x, tname)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{x}}{(\code{character(1)})\cr
+File path.}
+
+\item{\code{tname}}{(\code{character(1)})\cr}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+(\code{tibble()})\cr
+Parsed data in tibble.
+}
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Tool-.parse_file"></a>}}
 \if{latex}{\out{\hypertarget{method-Tool-.parse_file}{}}}
 \subsection{Method \code{.parse_file()}}{
@@ -238,7 +303,8 @@ File delimiter.}
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-A tibble with the parsed data.
+(\code{tibble()})\cr
+Parsed data in tibble.
 }
 }
 \if{html}{\out{<hr>}}
@@ -265,7 +331,8 @@ Convert field types based on schema.}
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-A tibble with the tidy data enframed.
+(\code{tibble()})\cr
+Parsed data in enframed tibble.
 }
 }
 \if{html}{\out{<hr>}}
@@ -295,7 +362,8 @@ File delimiter.}
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-A tibble with the parsed data.
+(\code{tibble()})\cr
+Parsed data in tibble.
 }
 }
 \if{html}{\out{<hr>}}
@@ -324,32 +392,8 @@ File delimiter.}
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-A tibble with the parsed data.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Tool-.eval_func"></a>}}
-\if{latex}{\out{\hypertarget{method-Tool-.eval_func}{}}}
-\subsection{Method \code{.eval_func()}}{
-Evaluate function in the context of the Tool's
-environment.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Tool$.eval_func(fun, envir = self)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{fun}}{(\code{character(1)})\cr
-Function from Tool to evaluate.}
-
-\item{\code{envir}}{(\code{environment()})\cr
-Environment to evaluate the function within.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-The evaluated function.
+(\code{tibble()})\cr
+Parsed data in tibble.
 }
 }
 \if{html}{\out{<hr>}}
@@ -373,7 +417,8 @@ Should the raw parsed tibbles be kept in the final output?}
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-self invisibly.
+(\code{R6::R6Class()})\cr
+R6 object invisibly.
 }
 }
 \if{html}{\out{<hr>}}

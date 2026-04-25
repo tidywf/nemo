@@ -14,27 +14,29 @@
 #' name <- "tool1"; pkg <- "nemo";
 #' path <- system.file("extdata", name, package = pkg)
 #' tool <- Tool$new(name = name, pkg = pkg, path = path)
+#' tool$filter_files(exclude = "table3")
 #' x <- Tool1$new(path = path)$
 #'   filter_files(exclude = "alignments_dupfreq")$
 #'   tidy(keep_raw = TRUE)
 #' x$tbls
 #' x$files
 #' x$list_files()
-#' lx <- Linx$new(path)
-#' dbconn <- DBI::dbConnect(
-#'   drv = RPostgres::Postgres(),
-#'   dbname = "nemo",
-#'   user = "orcabus"
+#' @testexamples
+#' path <- system.file("extdata/tool1", package = "nemo")
+#' t_all <- Tool1$new(path = path)
+#' expect_equal(
+#'   t_all$files$tool_parser,
+#'   c("tool1_table1", "tool1_table1", "tool1_table2", "tool1_table3", "tool1_table4", "tool1_table5")
 #' )
-#' lx$nemofy(
-#'     diro = "nogit/test_data",
-#'     format = "db", # "parquet",
-#'     id = "run2",
-#'     dbconn = dbconn,
-#'     include = NULL,
-#'     exclude = NULL
+#' t_excl <- Tool1$new(path = path)$filter_files(exclude = "tool1_table3")
+#' expect_false("tool1_table3" %in% t_excl$files$tool_parser)
+#' expect_true(all(c("tool1_table1", "tool1_table2", "tool1_table4", "tool1_table5") %in% t_excl$files$tool_parser))
+#' t_incl <- Tool1$new(path = path)$filter_files(include = "tool1_table1")
+#' expect_equal(unique(t_incl$files$tool_parser), "tool1_table1")
+#' expect_error(
+#'   Tool1$new(path = path)$filter_files(include = "tool1_table1", exclude = "tool1_table3"),
+#'   "You cannot define both include and exclude"
 #' )
-#' DBI::dbDisconnect(dbconn)
 #'
 #' @export
 Tool <- R6::R6Class(
@@ -142,36 +144,31 @@ Tool <- R6::R6Class(
       invisible(self)
     },
     #' @description Filter files in given tool directory based on inclusion or
-    #' exclusion tool_parser names.
+    #' exclusion tool_parser names. The result is reflected in the `files` field.
     #' @param include (`character(n)`)\cr
-    #' Files to include.
+    #' tool_parser names to include (e.g. `"tool1_table1"`).
     #' @param exclude (`character(n)`)\cr
-    #' Files to exclude.
+    #' tool_parser names to exclude (e.g. `"tool1_table3"`).
     #' @return (`R6::R6Class()`)\cr
     #' R6 object invisibly.
     filter_files = function(include = NULL, exclude = NULL) {
-      f1 <- function(d, include = NULL, exclude = NULL) {
-        assertthat::assert_that(
-          is.null(include) || is.null(exclude),
-          msg = "You cannot define both include and exclude!"
-        )
-        if (!is.null(include)) {
-          stopifnot(rlang::is_character(include))
-          d <- d |>
-            dplyr::filter(.data$tool_parser %in% include)
-        }
-        if (!is.null(exclude)) {
-          stopifnot(rlang::is_character(exclude))
-          d <- d |>
-            dplyr::filter_out(.data$tool_parser %in% exclude)
-        }
-        d
-      }
+      assertthat::assert_that(
+        is.null(include) || is.null(exclude),
+        msg = "You cannot define both include and exclude!"
+      )
       if (nrow(self$files) == 0) {
         return(invisible(self))
       }
-      self$files <- self$files |>
-        f1(include = include, exclude = exclude)
+      if (!is.null(include)) {
+        stopifnot(rlang::is_character(include))
+        self$files <- self$files |>
+          dplyr::filter(.data$tool_parser %in% include)
+      }
+      if (!is.null(exclude)) {
+        stopifnot(rlang::is_character(exclude))
+        self$files <- self$files |>
+          dplyr::filter(!(.data$tool_parser %in% exclude))
+      }
       return(invisible(self))
     },
     #' @description List files in given tool directory.
@@ -231,6 +228,59 @@ Tool <- R6::R6Class(
         ) |>
         dplyr::relocate("tool_parser", .before = 1)
     },
+    #' @description Dispatch parse for a table: calls custom `parse_{name}()` if
+    #' defined in the subclass, otherwise falls back to `.parse_by_ftype()`.
+    #' @param x (`character(1)`)\cr
+    #' File path.
+    #' @param tname (`character(1)`)\cr
+    #' Table name.
+    #' @return (`tibble()`)\cr
+    #' Parsed data in tibble.
+    .dispatch_parse = function(x, tname) {
+      fun <- glue("parse_{tname}")
+      if (is.function(self[[fun]])) {
+        self[[fun]](x)
+      } else {
+        self$.parse_by_ftype(x, tname)
+      }
+    },
+    #' @description Dispatch tidy for a table: calls custom `tidy_{tname}()` if
+    #' defined in the subclass, otherwise falls back to `.tidy_file()`.
+    #' @param x (`character(1)` or `tibble()`)\cr
+    #' File path or already parsed raw tibble.
+    #' @param tname (`character(1)`)\cr
+    #' Table name.
+    #' @return (`tibble()`)\cr
+    #' Tidy data in enframed tibble.
+    .dispatch_tidy = function(x, tname) {
+      fun <- glue("tidy_{tname}")
+      if (is.function(self[[fun]])) {
+        self[[fun]](x)
+      } else {
+        self$.tidy_file(x, tname)
+      }
+    },
+    #' @description Parse a file by looking up its ftype from the config and
+    #' calling the appropriate internal parser. Errors for ftypes that require
+    #' a custom `parse_{tname}()` method (e.g. `csv-nohead-long`).
+    #' @param x (`character(1)`)\cr
+    #' File path.
+    #' @param tname (`character(1)`)\cr
+    #' @return (`tibble()`)\cr
+    #' Parsed data in tibble.
+    .parse_by_ftype = function(x, tname) {
+      ftype <- self$config$get_ftype(tname)
+      switch(
+        ftype,
+        "txt" = self$.parse_file(x, tname),
+        "txt-nohead" = self$.parse_file_nohead(x, tname),
+        "txt-keyvalue" = self$.parse_file_keyvalue(x, tname),
+        stop(glue(
+          "No default parser for ftype '{ftype}' (table '{tname}'). ",
+          "Define parse_{tname}() in the subclass."
+        ))
+      )
+    },
     #' @description Parse file.
     #' @param x (`character(1)`)\cr
     #' File path.
@@ -239,7 +289,8 @@ Tool <- R6::R6Class(
     #' @param delim (`character(1)`)\cr
     #' File delimiter.
     #' @param ... Passed on to `readr::read_delim`.
-    #' @return A tibble with the parsed data.
+    #' @return (`tibble()`)\cr
+    #' Parsed data in tibble.
     .parse_file = function(x, name, delim = "\t", ...) {
       parse_file(
         fpath = x,
@@ -256,11 +307,11 @@ Tool <- R6::R6Class(
     #' Parser name (e.g. "breakends" - see docs).
     #' @param convert_types (`logical(1)`)\cr
     #' Convert field types based on schema.
-    #' @return A tibble with the tidy data enframed.
+    #' @return (`tibble()`)\cr
+    #' Parsed data in enframed tibble.
     .tidy_file = function(x, name, convert_types = FALSE) {
       if (!tibble::is_tibble(x)) {
-        .parser <- self$.eval_func(glue("parse_{name}"))
-        x <- .parser(x)
+        x <- self$.dispatch_parse(x, name)
       }
       version <- get_tbl_version_attr(x)
       stopifnot(!is.null(version))
@@ -288,7 +339,8 @@ Tool <- R6::R6Class(
     #' @param delim (`character(1)`)\cr
     #' File delimiter.
     #' @param ... Passed on to `readr::read_delim`.
-    #' @return A tibble with the parsed data.
+    #' @return (`tibble()`)\cr
+    #' Parsed data in tibble.
     .parse_file_keyvalue = function(x, name, delim = "\t", ...) {
       parse_file_keyvalue(
         fpath = x,
@@ -306,7 +358,8 @@ Tool <- R6::R6Class(
     #' @param delim (`character(1)`)\cr
     #' File delimiter.
     #' @param ... Passed on to `readr::read_delim`.
-    #' @return A tibble with the parsed data.
+    #' @return (`tibble()`)\cr
+    #' Parsed data in tibble.
     .parse_file_nohead = function(x, pname, delim = "\t", ...) {
       schema <- self$raw_schemas_all |>
         dplyr::filter(.data$name == pname) |>
@@ -318,23 +371,13 @@ Tool <- R6::R6Class(
         ...
       )
     },
-    #' @description Evaluate function in the context of the Tool's
-    #' environment.
-    #' @param fun (`character(1)`)\cr
-    #' Function from Tool to evaluate.
-    #' @param envir (`environment()`)\cr
-    #' Environment to evaluate the function within.
-    #' @return The evaluated function.
-    .eval_func = function(fun, envir = self) {
-      stopifnot(rlang::is_scalar_character(fun))
-      get(fun, envir)
-    },
     #' @description Tidy a list of files.
     #' @param tidy (`logical(1)`)\cr
     #' Should the raw parsed tibbles get tidied?
     #' @param keep_raw (`logical(1)`)\cr
     #' Should the raw parsed tibbles be kept in the final output?
-    #' @return self invisibly.
+    #' @return (`R6::R6Class()`)\cr
+    #' R6 object invisibly.
     tidy = function(tidy = TRUE, keep_raw = FALSE) {
       # if no tidying needed, early return
       if (private$is_tidied) {
@@ -352,21 +395,16 @@ Tool <- R6::R6Class(
         return(invisible(self))
       }
       d <- self$files |>
-        dplyr::mutate(
-          parse_fun = glue("parse_{parser}"),
-          tidy_fun = glue("tidy_{parser}")
-        ) |>
         dplyr::rowwise() |>
         dplyr::mutate(
-          raw = list(self$.eval_func(.data$parse_fun)(.data$path)),
+          raw = list(self$.dispatch_parse(.data$path, .data$parser)),
           tidy = dplyr::if_else(
             tidy,
-            list(self$.eval_func(.data$tidy_fun)(.data$raw)),
+            list(self$.dispatch_tidy(.data$raw, .data$parser)),
             list(NULL)
           )
         ) |>
-        dplyr::ungroup() |>
-        dplyr::select(-c("parse_fun", "tidy_fun"))
+        dplyr::ungroup()
       if (!keep_raw) {
         d <- d |>
           dplyr::select(-"raw")
