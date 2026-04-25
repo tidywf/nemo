@@ -2,15 +2,58 @@
 
 # File R/Tool1.R: @testexamples
 
-test_that("Function Tool1() @ L16", {
+test_that("Function Tool1() @ L62", {
   
-  cls <- Tool1
   indir <- system.file("extdata/tool1", package = "nemo")
-  odir <- tempdir()
-  id <- "tool1_run1"
-  obj <- cls$new(indir)
-  obj$nemofy(diro = odir, format = "parquet", input_id = id)
-  (lf <- list.files(odir, pattern = "tool1.*parquet", full.names = FALSE))
-  expect_equal(length(lf), 4)
+  dir1 <- tempdir()
+  obj1 <- Tool1$new(indir)
+  
+  p3 <- system.file("extdata/tool1/latest/sampleA.tool1.table3.tsv", package = "nemo")
+  p5 <- system.file("extdata/tool1/latest/sampleA.tool1.table5.csv", package = "nemo")
+  (tidy3 <- obj1$tidy_table3(p3))
+  (raw5 <- obj1$parse_table5(p5))
+  (tidy5 <- obj1$tidy_table5(p5))
+  
+  obj1$nemofy(diro = dir1, format = "parquet", input_id = "run1")
+  (lf <- list.files(dir1, pattern = "tool1.*parquet", full.names = FALSE))
+  
+  obj2 <- Tool1$new(indir)$tidy()
+  # parse_table5
+  expect_named(raw5, c("section", "rg", "variable", "count", "pct"))
+  expect_equal(nrow(raw5), 16)
+  # tidy_table3
+  expect_named(tidy3, c("name", "data"))
+  expect_named(
+    tidy3$data[[1]],
+    c("sample_id", "qcstatus", "reads_total", "reads_map", "reads_unmap")
+  )
+  # tidy_table5
+  expect_named(tidy5, c("name", "data"))
+  expect_named(
+    tidy5$data[[1]],
+    c("section", "rg", "reads_total", "reads_map", "reads_unmap", "bases_total",
+      "reads_total_pct", "reads_map_pct", "reads_unmap_pct")
+  )
+  # nemofy
+  expect_equal(length(lf), 6)
+  # tidy (obj2)
+  expect_false(is.null(obj2$tbls))
+  expect_equal(nrow(obj2$tbls), 6)
+  expect_named(
+    obj2$tbls,
+    c(
+      "tool_parser", "parser", "bname", "size", "lastmodified", "path",
+      "pattern", "prefix", "group", "tidy"
+    )
+  )
+  expect_named(
+    obj2$tbls |> dplyr::filter(parser == "table3") |> dplyr::pull(tidy) |> _[[1]] |> _$data[[1]],
+    c("sample_id", "qcstatus", "reads_total", "reads_map", "reads_unmap")
+  )
+  expect_named(
+    obj2$tbls |> dplyr::filter(parser == "table5") |> dplyr::pull(tidy) |> _[[1]] |> _$data[[1]],
+    c("section", "rg", "reads_total", "reads_map", "reads_unmap", "bases_total",
+      "reads_total_pct", "reads_map_pct", "reads_unmap_pct")
+  )
 })
 

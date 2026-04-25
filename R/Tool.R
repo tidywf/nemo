@@ -59,7 +59,7 @@
 #'   paste0("tool1_", c("table1", "table1", "table2", "table3", "table4"))
 #' )
 #' expect_error(
-#'   Tool1$new(path = path)$filter_files(include = "tool1_table1", exclude = "tool1_table3"),
+#'   toolB$filter_files(include = "tool1_table1", exclude = "tool1_table3"),
 #'   "You cannot define both include and exclude"
 #' )
 #' # list_files

@@ -4,16 +4,25 @@
 \alias{Tool1}
 \title{Tool1 Object}
 \description{
-Tool1 file parsing and manipulation.
+Parses and tidies output files from Tool1. Table schemas and file patterns
+are defined in \code{inst/config/tools/tool1/schema.yaml}. Custom parse and tidy
+methods are provided for tables that require non-standard handling.
 }
 \examples{
-cls <- Tool1
 indir <- system.file("extdata/tool1", package = "nemo")
-odir <- tempdir()
-id <- "tool1_run1"
-obj <- cls$new(indir)
-obj$nemofy(diro = odir, format = "parquet", input_id = id)
-(lf <- list.files(odir, pattern = "tool1.*parquet", full.names = FALSE))
+dir1 <- tempdir()
+obj1 <- Tool1$new(indir)
+
+p3 <- system.file("extdata/tool1/latest/sampleA.tool1.table3.tsv", package = "nemo")
+p5 <- system.file("extdata/tool1/latest/sampleA.tool1.table5.csv", package = "nemo")
+(tidy3 <- obj1$tidy_table3(p3))
+(raw5 <- obj1$parse_table5(p5))
+(tidy5 <- obj1$tidy_table5(p5))
+
+obj1$nemofy(diro = dir1, format = "parquet", input_id = "run1")
+(lf <- list.files(dir1, pattern = "tool1.*parquet", full.names = FALSE))
+
+obj2 <- Tool1$new(indir)$tidy()
 }
 \section{Super class}{
 \code{\link[nemo:Tool]{nemo::Tool}} -> \code{Tool1}
@@ -22,14 +31,7 @@ obj$nemofy(diro = odir, format = "parquet", input_id = id)
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-Tool1-new}{\code{Tool1$new()}}
-\item \href{#method-Tool1-parse_table1}{\code{Tool1$parse_table1()}}
-\item \href{#method-Tool1-tidy_table1}{\code{Tool1$tidy_table1()}}
-\item \href{#method-Tool1-parse_table2}{\code{Tool1$parse_table2()}}
-\item \href{#method-Tool1-tidy_table2}{\code{Tool1$tidy_table2()}}
-\item \href{#method-Tool1-parse_table3}{\code{Tool1$parse_table3()}}
 \item \href{#method-Tool1-tidy_table3}{\code{Tool1$tidy_table3()}}
-\item \href{#method-Tool1-parse_table4}{\code{Tool1$parse_table4()}}
-\item \href{#method-Tool1-tidy_table4}{\code{Tool1$tidy_table4()}}
 \item \href{#method-Tool1-parse_table5}{\code{Tool1$parse_table5()}}
 \item \href{#method-Tool1-tidy_table5}{\code{Tool1$tidy_table5()}}
 \item \href{#method-Tool1-clone}{\code{Tool1$clone()}}
@@ -38,7 +40,9 @@ obj$nemofy(diro = odir, format = "parquet", input_id = id)
 \if{html}{\out{
 <details><summary>Inherited methods</summary>
 <ul>
-<li><span class="pkg-link" data-pkg="nemo" data-topic="Tool" data-id=".eval_func"><a href='../../nemo/html/Tool.html#method-Tool-.eval_func'><code>nemo::Tool$.eval_func()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="nemo" data-topic="Tool" data-id=".dispatch_parse"><a href='../../nemo/html/Tool.html#method-Tool-.dispatch_parse'><code>nemo::Tool$.dispatch_parse()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="nemo" data-topic="Tool" data-id=".dispatch_tidy"><a href='../../nemo/html/Tool.html#method-Tool-.dispatch_tidy'><code>nemo::Tool$.dispatch_tidy()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="nemo" data-topic="Tool" data-id=".parse_by_ftype"><a href='../../nemo/html/Tool.html#method-Tool-.parse_by_ftype'><code>nemo::Tool$.parse_by_ftype()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="nemo" data-topic="Tool" data-id=".parse_file"><a href='../../nemo/html/Tool.html#method-Tool-.parse_file'><code>nemo::Tool$.parse_file()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="nemo" data-topic="Tool" data-id=".parse_file_keyvalue"><a href='../../nemo/html/Tool.html#method-Tool-.parse_file_keyvalue'><code>nemo::Tool$.parse_file_keyvalue()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="nemo" data-topic="Tool" data-id=".parse_file_nohead"><a href='../../nemo/html/Tool.html#method-Tool-.parse_file_nohead'><code>nemo::Tool$.parse_file_nohead()</code></a></span></li>
@@ -73,102 +77,16 @@ Tibble of files from \code{\link[=list_files_dir]{list_files_dir()}}.}
 }
 \if{html}{\out{</div>}}
 }
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Tool1-parse_table1"></a>}}
-\if{latex}{\out{\hypertarget{method-Tool1-parse_table1}{}}}
-\subsection{Method \code{parse_table1()}}{
-Read \code{table1.tsv} file.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Tool1$parse_table1(x)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{x}}{(\code{character(1)})\cr
-Path to file.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Tool1-tidy_table1"></a>}}
-\if{latex}{\out{\hypertarget{method-Tool1-tidy_table1}{}}}
-\subsection{Method \code{tidy_table1()}}{
-Tidy \code{table1.tsv} file.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Tool1$tidy_table1(x)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{x}}{(\code{character(1)})\cr
-Path to file.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Tool1-parse_table2"></a>}}
-\if{latex}{\out{\hypertarget{method-Tool1-parse_table2}{}}}
-\subsection{Method \code{parse_table2()}}{
-Read \code{table2.tsv} file.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Tool1$parse_table2(x)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{x}}{(\code{character(1)})\cr
-Path to file.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Tool1-tidy_table2"></a>}}
-\if{latex}{\out{\hypertarget{method-Tool1-tidy_table2}{}}}
-\subsection{Method \code{tidy_table2()}}{
-Tidy \code{table2.tsv} file.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Tool1$tidy_table2(x)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{x}}{(\code{character(1)})\cr
-Path to file.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Tool1-parse_table3"></a>}}
-\if{latex}{\out{\hypertarget{method-Tool1-parse_table3}{}}}
-\subsection{Method \code{parse_table3()}}{
-Read \code{table3.tsv} file.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Tool1$parse_table3(x)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{x}}{(\code{character(1)})\cr
-Path to file.}
-}
-\if{html}{\out{</div>}}
+\subsection{Returns}{
+(\code{R6::R6Class()})\cr
+R6 object.
 }
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Tool1-tidy_table3"></a>}}
 \if{latex}{\out{\hypertarget{method-Tool1-tidy_table3}{}}}
 \subsection{Method \code{tidy_table3()}}{
-Tidy \code{table3.tsv} file.
+Tidy \code{table3.tsv} file with type conversion enabled.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Tool1$tidy_table3(x)}\if{html}{\out{</div>}}
 }
@@ -176,46 +94,14 @@ Tidy \code{table3.tsv} file.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{x}}{(\code{character(1)})\cr
-Path to file.}
+\item{\code{x}}{(\code{character(1)} or \code{tibble()})\cr
+Path to file or already parsed tibble.}
 }
 \if{html}{\out{</div>}}
 }
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Tool1-parse_table4"></a>}}
-\if{latex}{\out{\hypertarget{method-Tool1-parse_table4}{}}}
-\subsection{Method \code{parse_table4()}}{
-Read \code{table4.tsv} file (no header).
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Tool1$parse_table4(x)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{x}}{(\code{character(1)})\cr
-Path to file.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Tool1-tidy_table4"></a>}}
-\if{latex}{\out{\hypertarget{method-Tool1-tidy_table4}{}}}
-\subsection{Method \code{tidy_table4()}}{
-Tidy \code{table4.tsv} file.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Tool1$tidy_table4(x)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{x}}{(\code{character(1)})\cr
-Path to file.}
-}
-\if{html}{\out{</div>}}
+\subsection{Returns}{
+(\code{tibble()})\cr
+Tidy data in enframed tibble.
 }
 }
 \if{html}{\out{<hr>}}
@@ -235,6 +121,10 @@ Path to file.}
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Returns}{
+(\code{tibble()})\cr
+Raw parsed tibble with columns \code{section}, \code{rg}, \code{variable}, \code{count}, \code{pct}.
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Tool1-tidy_table5"></a>}}
@@ -248,10 +138,14 @@ Tidy \code{table5.csv} file.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{x}}{(\code{character(1)})\cr
+\item{\code{x}}{(\code{character(1)} or \code{tibble()})\cr
 Path to file or already parsed tibble.}
 }
 \if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+(\code{tibble()})\cr
+Tidy data in enframed tibble, pivoted wide from long format.
 }
 }
 \if{html}{\out{<hr>}}
