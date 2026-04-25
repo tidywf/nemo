@@ -2,14 +2,20 @@
 
 # File R/Workflow1.R: @testexamples
 
-test_that("Function Workflow1() @ L15", {
+test_that("Function Workflow1() @ L22", {
   
   path <- system.file("extdata/tool1", package = "nemo")
-  odir <- tempdir()
-  id <- "workflow1_run1"
-  w <- Workflow1$new(path)
-  x <- w$nemofy(diro = odir, format = "parquet", input_id = id)
-  (lf <- list.files(odir, pattern = "tool1.*parquet", full.names = FALSE))
-  expect_equal(length(lf), 4)
+  wf <- Workflow1$new(path)
+  (lf_all <- wf$list_files())
+  dir1 <- tempdir()
+  wf$nemofy(diro = dir1, format = "parquet", input_id = "run1")
+  (lf <- list.files(dir1, pattern = "tool1.*parquet", full.names = TRUE))
+  # initialize
+  expect_equal(length(wf$tools), 1)
+  expect_equal(wf$tools[[1]]$name, "tool1")
+  # list_files
+  expect_equal(nrow(lf_all), 6)
+  # nemofy
+  expect_equal(length(lf), 6)
 })
 
