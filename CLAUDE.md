@@ -10,7 +10,7 @@ nemo is an R package for tidying and exploring outputs from bioinformatic pipeli
 
 - **Tool**: Base R6 class (`R/Tool.R`) that parses specific file types and outputs tidy tibbles
 - **Workflow**: R6 class (`R/Workflow.R`) that orchestrates multiple Tools, handling file discovery, tidying, and writing
-- **Config**: R6 class (`R/Config.R`) that reads a per-tool schema (`inst/config/tools/<tool>/`) and exposes raw/tidy schemas as tibbles
+- **Config**: R6 class (`R/Config.R`) that reads `inst/config/tools/<tool>/schema.yaml` and exposes raw/tidy schemas as tibbles
 - Tools inherit from the base `Tool` class and implement file-specific parsing logic
 
 ## Reference Implementations
