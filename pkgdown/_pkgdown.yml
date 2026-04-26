@@ -27,6 +27,8 @@ navbar:
           href: articles/installation.html
         - text: Structure
           href: articles/structure.html
+        - text: Schema
+          href: articles/schema.html
         - text: Contribute
           href: articles/contribute.html
         - text: Devnotes
