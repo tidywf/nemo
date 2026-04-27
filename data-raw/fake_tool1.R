@@ -13,6 +13,16 @@ tool1 <- list(
       )
     ),
     list(
+      version = "v4.5.6",
+      format = "tsv",
+      data = tibble::tibble(
+        SampleID = "sampleA",
+        Chromosome = c("chr1", "chr2", "chr3"),
+        Start = c(10, 100, 1000),
+        End = c(50, 500, 5000)
+      )
+    ),
+    list(
       version = "latest",
       format = "tsv",
       data = tibble::tibble(
@@ -20,7 +30,6 @@ tool1 <- list(
         Chromosome = c("chr1", "chr2", "chr3"),
         Start = c(10, 100, 1000),
         End = c(50, 500, 5000),
-        metricX = c(0.1, 0.2, 0.3),
         metricY = c(0.4, 0.5, 0.6),
         metricZ = c(0.7, 0.8, 0.9)
       )

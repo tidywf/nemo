@@ -30,8 +30,9 @@ fill in:
 - `tidy` — snake_case column name for the tidy output
 - `description` — human-readable field description (tool documentation is a
   good source)
-- `since` — use `latest` for columns present in the current version; use an
-  explicit version tag (e.g. `v1.2.3`) for columns introduced in that version
+- `versions` — explicit array of every tool version the column appears in
+  (e.g. `['v1.2.3', 'latest']`); use `['latest']` for columns present only in
+  the current version
 
 Save the result as `inst/config/tools/<tool>/schema.yaml`. See
 `vignette("structure")` for details on the schema format and how `Config`

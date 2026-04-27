@@ -8,7 +8,7 @@ config_sort_versions(versions)
 }
 \arguments{
 \item{versions}{(\code{character(n)})\cr
-Vector of version strings (e.g. \code{c("v1.2.3", "latest")}).}
+Vector of unique version strings (e.g. \code{c("v1.2.3", "latest")}) — typically from \code{unlist()}ing the \code{versions} list-col.}
 }
 \value{
 Sorted character vector with \code{"latest"} last.

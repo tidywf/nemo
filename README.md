@@ -66,7 +66,7 @@ export PATH="${nemo_cli}:${PATH}"
 ```
 
     $ nemo.R --version
-    nemo 0.0.3.9006
+    nemo 0.0.3.9007
 
     #-----------------------------------#
     $ nemo.R --help

@@ -15,7 +15,7 @@ Scaffold a new nemo Tool. Ask the user for:
    - Table name (e.g. `table1`)
    - File type: `txt`, `txt-nohead`, `txt-keyvalue`, or `csv-nohead-long`
    - File pattern regex (e.g. `"\\.mytool\\.table1\\.tsv$"`)
-   - Columns: for each column, collect `raw` name, `tidy` name (snake_case), `type` (`char`, `int`, or `float`), `description`, and `since` version (e.g. `v1.0.0` or `latest`)
+   - Columns: for each column, collect `raw` name, `tidy` name (snake_case), `type` (`char`, `int`, or `float`), `description`, and `versions` array (e.g. `['v1.0.0', 'latest']` or `['latest']`)
 
 Then create the following files, following the conventions in `Tool1`/`Workflow1` exactly:
 
@@ -41,10 +41,10 @@ tables:
         tidy: '<tidy_col_name>'
         type: 'char'   # char | int | float
         description: '<description>'
-        since: 'latest'   # or e.g. 'v1.2.3'
+        versions: ['latest']   # explicit array of versions this column appears in
 ```
 
-The `since` field controls versioned schemas: columns with earlier `since` values are included in all subsequent versions. Use `latest` for columns present in all versions; use explicit version tags (e.g. `v1.2.3`) for columns added in that version and carried forward.
+The `versions` array lists every tool version the column appears in. Use `['latest']` for columns present only in the current version; list all applicable versions explicitly (e.g. `['v1.2.3', 'latest']`) for columns that span multiple versions.
 
 ### 3. `inst/extdata/<toolname>/latest/`
 

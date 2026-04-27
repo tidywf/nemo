@@ -51,23 +51,23 @@
 #' # filter_files
 #' expect_equal(
 #'   toolA$files$tool_parser,
-#'   paste0("tool1_", c("table1", "table1", "table2", "table4", "table5"))
+#'   paste0("tool1_", c("table1", "table1", "table1", "table2", "table4", "table5"))
 #' )
 #' expect_equal(unique(toolB$files$tool_parser), "tool1_table1")
 #' expect_equal(
 #'   toolC$files$tool_parser,
-#'   paste0("tool1_", c("table1", "table1", "table2", "table3", "table4"))
+#'   paste0("tool1_", c("table1", "table1", "table1", "table2", "table3", "table4"))
 #' )
 #' expect_error(
 #'   toolB$filter_files(include = "tool1_table1", exclude = "tool1_table3"),
 #'   "You cannot define both include and exclude"
 #' )
 #' # list_files
-#' expect_equal(length(lfC), 5)
-#' expect_equal(length(lfD), 5)
+#' expect_equal(length(lfC), 6)
+#' expect_equal(length(lfD), 6)
 #' # tidy
 #' expect_false(is.null(toolC$tbls))
-#' expect_equal(nrow(toolC$tbls), 5)
+#' expect_equal(nrow(toolC$tbls), 6)
 #' expect_named(
 #'   toolC$tbls,
 #'   c(

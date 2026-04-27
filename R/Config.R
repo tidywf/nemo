@@ -3,7 +3,7 @@
 #' @description
 #' Reads and parses a tool's `schema.yaml` from `inst/config/tools/<tool>/` in
 #' the package. The schema defines each output table: its file pattern, file
-#' type, description, and versioned columns (raw name, tidy name, type, `since`
+#' type, description, and versioned columns (raw name, tidy name, type, `versions`
 #' version). Exposes raw and tidy schemas and column mappings used by `Tool` for
 #' file discovery and column renaming.
 #'
@@ -40,11 +40,12 @@
 #' # get_descriptions
 #' expect_equal(nrow(descr), 5)
 #' # get_schemas_all
-#' expect_equal(dplyr::filter(rs, .data$name == "table1") |> nrow(), 2)
-#' expect_equal(dplyr::filter(ts, .data$name == "table1") |> nrow(), 2)
+#' expect_equal(dplyr::filter(rs, .data$name == "table1") |> nrow(), 3)
+#' expect_equal(dplyr::filter(ts, .data$name == "table1") |> nrow(), 3)
 #' # get_schema
 #' expect_named(s1, c("version", "field", "type"))
 #' expect_equal(nrow(conf$get_schema("table1", v = "v1.2.3")), 5)
+#' expect_equal(nrow(conf$get_schema("table1", v = "v4.5.6")), 4)
 #' expect_error(conf$get_schema("foo"))
 #' expect_error(conf$get_schema("table1", v = "foo"))
 #' # are_schemas_valid
@@ -168,15 +169,16 @@ Config <- R6::R6Class(
       tabs <- self$config[["tables"]]
       .get_schema <- function(tab, tab_name) {
         cols_df <- tab[["columns"]] |>
-          purrr::map(tibble::as_tibble_row) |>
+          purrr::map(\(col) {
+            col[["versions"]] <- list(col[["versions"]])
+            tibble::as_tibble_row(col)
+          }) |>
           dplyr::bind_rows()
         description <- tibble::tibble(tbl_description = tab[["description"]])
-        versions <- config_sort_versions(unique(cols_df[["since"]]))
+        versions <- config_sort_versions(unique(unlist(cols_df[["versions"]])))
         .get_schema_per_version <- function(v) {
-          v_idx <- which(versions == v)
-          valid_since <- versions[seq_len(v_idx)]
           cols_v <- cols_df |>
-            dplyr::filter(.data$since %in% valid_since) |>
+            dplyr::filter(purrr::map_lgl(.data$versions, \(vs) v %in% vs)) |>
             dplyr::mutate(type = schema_type_remap(.data$type)) |>
             dplyr::select(field = dplyr::all_of({{ raw_or_tidy }}), "type")
           tibble::tibble(version = v, schema = list(cols_v))
@@ -263,9 +265,12 @@ Config <- R6::R6Class(
         msg = glue("{x} not found in tables for {self$tool}.")
       )
       cols_df <- tabs[[x]][["columns"]] |>
-        purrr::map(tibble::as_tibble_row) |>
+        purrr::map(\(col) {
+          col[["versions"]] <- list(col[["versions"]])
+          tibble::as_tibble_row(col)
+        }) |>
         dplyr::bind_rows()
-      versions <- config_sort_versions(unique(cols_df[["since"]]))
+      versions <- config_sort_versions(unique(unlist(cols_df[["versions"]])))
       if (is.null(v)) {
         v <- versions[length(versions)]
       }
@@ -273,10 +278,8 @@ Config <- R6::R6Class(
         v %in% versions,
         msg = glue("{v} not found in versions for {x} in {self$tool}.")
       )
-      v_idx <- which(versions == v)
-      valid_since <- versions[seq_len(v_idx)]
       cols_df |>
-        dplyr::filter(.data$since %in% valid_since) |>
+        dplyr::filter(purrr::map_lgl(.data$versions, \(vs) v %in% vs)) |>
         dplyr::mutate(type = schema_type_remap(.data$type)) |>
         dplyr::select("raw", "tidy", "type", "description")
     }
@@ -286,7 +289,7 @@ Config <- R6::R6Class(
 #' Sort version strings with "latest" always last
 #'
 #' @param versions (`character(n)`)\cr
-#' Vector of version strings (e.g. `c("v1.2.3", "latest")`).
+#' Vector of unique version strings (e.g. `c("v1.2.3", "latest")`) — typically from `unlist()`ing the `versions` list-col.
 #' @returns Sorted character vector with `"latest"` last.
 #' @keywords internal
 config_sort_versions <- function(versions) {

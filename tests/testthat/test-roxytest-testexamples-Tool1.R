@@ -35,10 +35,10 @@ test_that("Function Tool1() @ L62", {
       "reads_total_pct", "reads_map_pct", "reads_unmap_pct")
   )
   # nemofy
-  expect_equal(length(lf), 6)
+  expect_equal(length(lf), 7)
   # tidy (obj2)
   expect_false(is.null(obj2$tbls))
-  expect_equal(nrow(obj2$tbls), 6)
+  expect_equal(nrow(obj2$tbls), 7)
   expect_named(
     obj2$tbls,
     c(

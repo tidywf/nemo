@@ -14,8 +14,8 @@ test_that("Function Workflow1() @ L22", {
   expect_equal(length(wf$tools), 1)
   expect_equal(wf$tools[[1]]$name, "tool1")
   # list_files
-  expect_equal(nrow(lf_all), 6)
+  expect_equal(nrow(lf_all), 7)
   # nemofy
-  expect_equal(length(lf), 6)
+  expect_equal(length(lf), 7)
 })
 

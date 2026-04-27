@@ -55,7 +55,7 @@ pr <- function(n) {
 - GitHub Actions: refactor deploy workflow for dev and main branches (`r pr(34)`)
 - Schema simplification: replace separate `raw.yaml` + `tidy.yaml` per tool with a
   single unified `schema.yaml`. Each table entry now has a flat `columns:` list where
-  each column carries its raw name, tidy name, type, description, and `since` version.
+  each column carries its raw name, tidy name, type, description, and `versions` array.
   `Config` derives versioned raw and tidy views from this unified source on demand.
 - `Tool`: refactor parse/tidy dispatch — subclasses can now override per-table
   `parse_<tname>()` and `tidy_<tname>()` methods; falls back to ftype-based dispatch

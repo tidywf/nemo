@@ -35,7 +35,7 @@ tables:
         tidy: '<tidy snake_case name>'
         type: 'char | int | float'
         description: '<human-readable description>'
-        since: '<version string, e.g. v1.2.3 or latest>'
+        versions: ['<version1>', '<version2>']
 ```
 
 The `pattern` value must use YAML **double-quoted** strings so that backslash
@@ -65,7 +65,7 @@ by `schema_guess` to identify which versioned schema applies to a given file.
 No header row; columns are identified purely by position.
 The `raw:` names are always `X1, X2, …, XN` (where N = number of columns).
 This makes version tracking unambiguous: adding or removing a column is
-reflected by a new `since:` entry for the affected positional label.
+reflected by updating the `versions:` array for the affected positional label.
 The tidy step renames `X1 => tidy_name_1`, `X2 => tidy_name_2`, etc. positionally.
 
 ### `txt-keyvalue`
@@ -84,28 +84,28 @@ The `columns:` block only maps raw metric names to tidy column names.
 The structural logic (which column is the key, `_pct` suffix generation, section
 cleaning) lives in the tool's `tidy_*` method, not in the schema.
 
-## Versioning (`since:`)
+## Versioning (`versions:`)
 
-The `since:` field on each column records the **first version** of the tool that
-produced that column.
-The effective schema for a file at version `V` is all columns where `since <= V`,
-with `latest` always treated as the highest version.
+The `versions:` field on each column is an explicit array of every tool version
+that column appears in. This gives a full picture of column history, including
+additions and removals across versions.
 
 ```yaml
 table1 columns:
-  SampleID   since: v1.2.3   # present in v1.2.3 and later
-  Chromosome since: v1.2.3
-  Start      since: v1.2.3
-  End        since: v1.2.3
-  metricX    since: v1.2.3
-  metricY    since: latest   # added in latest
-  metricZ    since: latest
+  SampleID   versions: [v1.2.3, v4.5.6, latest]  # present in all versions
+  Chromosome versions: [v1.2.3, v4.5.6, latest]
+  Start      versions: [v1.2.3, v4.5.6, latest]
+  End        versions: [v1.2.3, v4.5.6, latest]
+  metricX    versions: [v1.2.3]                   # dropped in v4.5.6
+  metricY    versions: [latest]                   # added in latest
+  metricZ    versions: [latest]
 ```
 
-`schema_guess` uses this to automatically match a file's column names against the
-correct versioned schema.
-Tables with a single version (all columns `since: latest`) are the common case
-and require no special handling.
+The effective schema for version `V` is all columns whose `versions` array
+contains `V`. `schema_guess` uses this to automatically match a file's column
+names against the correct versioned snapshot.
+Tables with a single version (all columns `versions: [latest]`) are the common
+case and require no special handling.
 
 ## Live example
 

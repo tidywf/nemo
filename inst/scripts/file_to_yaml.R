@@ -1,6 +1,6 @@
 # Generate a skeleton schema.yaml for a new tool.
 # Auto-detects raw column names and types from sample files.
-# Fill in 'tidy', 'description', and 'since' placeholders manually before use.
+# Fill in 'tidy', 'description', and 'versions' placeholders manually before use.
 {
   use("glue", "glue")
   use("tibble", "tribble")
@@ -31,7 +31,7 @@ build_columns <- function(raw_schema) {
       tidy = glue("'{tolower(raw_nm)}'"),
       type = raw_schema$type[i],
       description = "'TODO'",
-      since = "'latest'"
+      versions = list("'latest'")
     )
   })
 }

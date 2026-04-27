@@ -39,20 +39,20 @@
 #'   "tool_parser", "parser", "bname", "size", "lastmodified", "path",
 #'   "pattern", "prefix", "group"
 #' )
-#' expect_equal(nrow(lf_all), 6)
+#' expect_equal(nrow(lf_all), 7)
 #' expect_named(lf_all, nms1)
 #' # filter_files + tidy + get_tbls
-#' expect_equal(nrow(tbls), 5)
+#' expect_equal(nrow(tbls), 6)
 #' expect_named(tbls, c(nms1, "tidy"))
 #' # get_raw_schemas_all
 #' expect_named(rs, c("tool", "name", "tbl_description", "version", "schema"))
 #' # write + written_files
-#' expect_equal(length(lf1), 5)
+#' expect_equal(length(lf1), 6)
 #' expect_named(wf$written_files, c("tool_parser", "prefix", "tidy_data", "tbl_name", "outpath"))
 #' # get_metadata
 #' expect_named(meta, c("input_id", "output_id", "input_dir", "output_dir", "pkg_versions", "files"))
 #' # nemofy
-#' expect_equal(length(lf2), 6)
+#' expect_equal(length(lf2), 7)
 #'
 #' @export
 Workflow <- R6::R6Class(

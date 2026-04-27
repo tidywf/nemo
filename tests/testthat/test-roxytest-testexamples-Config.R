@@ -2,7 +2,7 @@
 
 # File R/Config.R: @testexamples
 
-test_that("Function Config() @ L56", {
+test_that("Function Config() @ L57", {
   
   tool <- "tool1"
   pkg <- "nemo"
@@ -30,11 +30,12 @@ test_that("Function Config() @ L56", {
   # get_descriptions
   expect_equal(nrow(descr), 5)
   # get_schemas_all
-  expect_equal(dplyr::filter(rs, .data$name == "table1") |> nrow(), 2)
-  expect_equal(dplyr::filter(ts, .data$name == "table1") |> nrow(), 2)
+  expect_equal(dplyr::filter(rs, .data$name == "table1") |> nrow(), 3)
+  expect_equal(dplyr::filter(ts, .data$name == "table1") |> nrow(), 3)
   # get_schema
   expect_named(s1, c("version", "field", "type"))
   expect_equal(nrow(conf$get_schema("table1", v = "v1.2.3")), 5)
+  expect_equal(nrow(conf$get_schema("table1", v = "v4.5.6")), 4)
   expect_error(conf$get_schema("foo"))
   expect_error(conf$get_schema("table1", v = "foo"))
   # are_schemas_valid
@@ -44,7 +45,7 @@ test_that("Function Config() @ L56", {
 })
 
 
-test_that("Function config_prep_raw_schema() @ L313", {
+test_that("Function config_prep_raw_schema() @ L316", {
   
   path <- system.file("extdata", "tool1/latest/sampleA.tool1.table1.tsv", package = "nemo")
   (x <- config_prep_raw_schema(path = path, delim = "\t"))
@@ -52,7 +53,7 @@ test_that("Function config_prep_raw_schema() @ L313", {
 })
 
 
-test_that("Function config_prep_raw() @ L358", {
+test_that("Function config_prep_raw() @ L361", {
   
   path <- system.file("extdata", "tool1/latest/sampleA.tool1.table1.tsv", package = "nemo")
   name <- "table1"

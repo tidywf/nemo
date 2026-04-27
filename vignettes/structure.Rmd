@@ -81,7 +81,8 @@ structure of the package.
 A `Config` object reads a single `schema.yaml` file from `inst/config/tools/<tool>/`.
 Each table entry defines its file pattern, file type, description, and a list of
 columns — each column carrying both its raw name (as produced by the tool) and its
-tidy name (snake_case), type, description, and the `since` version it was introduced.
+tidy name (snake_case), type, description, and the `versions` array listing every
+tool version the column appears in.
 `Config` derives versioned raw and tidy views from this unified source on demand.
 See `?Config`.
 
@@ -116,9 +117,8 @@ conf$get_descriptions() |>
 
 #### versions
 
-The `since` field on each column controls which schema version it belongs to.
-`latest` means the column is present in the most recent version; explicit tags
-(e.g. `v1.2.3`) mark columns introduced in that version.
+The `versions` array on each column lists every tool version that column appears
+in, giving a full picture of additions and removals across versions.
 
 ```{r tool1_config_versions}
 conf$get_schemas_all() |>
