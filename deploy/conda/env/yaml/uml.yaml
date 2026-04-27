@@ -1,0 +1,9 @@
+name: uml_env
+channels:
+  - tidywf
+  - conda-forge
+dependencies:
+  - r-nemo
+  - r-r6toplant
+  - r-here
+  - plantuml
