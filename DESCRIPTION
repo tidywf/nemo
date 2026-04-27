@@ -35,9 +35,11 @@ Imports:
 Suggests:
     argparse,
     here,
+    htmltools,
     knitr,
     quarto,
     R6toPlant,
+    reactable,
     RPostgres,
     testthat (>= 3.0.0)
 Remotes:

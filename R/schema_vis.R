@@ -1,5 +1,25 @@
+#' Render a reactable schema table
+#'
+#' @description
+#' Renders an interactive [reactable::reactable()] displaying per-table schemas
+#' with expandable version buttons. The input data frame must contain columns
+#' `n`, `tool`, `tbl`, `description`, `row_id`, and a nested list-column
+#' `schema_version` (with sub-columns `version` and `schema`).
+#'
+#' This is a low-level function; most callers should use [nemo_schema_reactable()]
+#' instead.
+#'
+#' @param dat data frame as produced by [nemo_schema_reactable()] internals.
+#' @param ... additional arguments passed to [reactable::reactable()].
+#' @return An htmlwidget.
+#' @examples
+#' \dontrun{
+#' d <- nemo_schema_data("tool1", pkg = "nemo")
+#' reactable_schema(d)
+#' }
+#' @export
 reactable_schema <- function(dat, ...) {
-  # button click handlers
+  rlang::check_installed(c("reactable", "htmltools"))
   js_code <- "
   function toggleSchema(rowId, versionIndex) {
     var schemaId = 'schema_' + rowId + '_' + versionIndex;
@@ -9,14 +29,12 @@ reactable_schema <- function(dat, ...) {
 
     if (schemaDiv && button) {
       if (schemaDiv.style.display === 'none' || schemaDiv.style.display === '') {
-        // Show schema, change button to active state
         schemaDiv.style.display = 'block';
         button.style.backgroundColor = '#1565c0';
         button.style.color = 'white';
         button.style.borderColor = '#0d47a1';
         button.style.transform = 'scale(0.98)';
       } else {
-        // Hide schema, reset button to normal state
         schemaDiv.style.display = 'none';
         button.style.backgroundColor = '#e3f2fd';
         button.style.color = '#1565c0';
@@ -24,11 +42,11 @@ reactable_schema <- function(dat, ...) {
         button.style.transform = 'scale(1)';
       }
     }
-}
+  }
   "
 
   htmltools::tags$div(
-    htmltools::tags$script(HTML(js_code)),
+    htmltools::tags$script(htmltools::HTML(js_code)),
     reactable::reactable(
       dat,
       sortable = TRUE,
@@ -49,20 +67,19 @@ reactable_schema <- function(dat, ...) {
         row_id = reactable::colDef(show = FALSE),
         schema_version = reactable::colDef(
           minWidth = 130,
-          name = "Schema",
+          name = "schema",
           html = TRUE,
           cell = function(value, index) {
             row_id <- dat$row_id[[index]]
             versions <- value$version
 
-            # Create interactive version buttons
             version_buttons <- purrr::map_chr(
               seq_along(versions),
               function(i) {
                 v <- versions[[i]]
-                button_id <- glue("btn_{row_id}_{i - 1}")
+                button_id <- glue::glue("btn_{row_id}_{i - 1}")
                 paste0(
-                  glue('<button id="{button_id}" onclick="toggleSchema({row_id}, {i - 1})" '),
+                  glue::glue('<button id="{button_id}" onclick="toggleSchema({row_id}, {i - 1})" '),
                   'style="',
                   'background-color: #e3f2fd; ',
                   'border: 1px solid #90caf9; ',
@@ -83,13 +100,11 @@ reactable_schema <- function(dat, ...) {
               }
             )
 
-            # hidden schema divs
             schema_divs <- purrr::map_chr(seq_along(versions), function(i) {
               schema_data <- value$schema[[i]]
-              schema_id <- glue("schema_{row_id}_{i - 1}")
+              schema_id <- glue::glue("schema_{row_id}_{i - 1}")
 
               if (is.data.frame(schema_data)) {
-                # schema to HTML tbl
                 schema_html <- paste0(
                   '<div style="margin-top: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 6px; background-color: #fafafa;">',
                   '<div style="font-weight: 600; margin-bottom: 8px; color: #333;">Version: ',
@@ -97,7 +112,7 @@ reactable_schema <- function(dat, ...) {
                   '</div>',
                   '<div style="font-size: 12px; color: #666; margin-bottom: 10px;">',
                   nrow(schema_data),
-                  ' rows × ',
+                  ' rows \u00d7 ',
                   ncol(schema_data),
                   ' columns</div>',
                   '<div style="overflow-x: auto; max-height: 300px;">',
@@ -107,7 +122,7 @@ reactable_schema <- function(dat, ...) {
                     '<th style="border: 1px solid #ddd; padding: 6px; background-color: #f5f5f5; text-align: left;">',
                     names(schema_data),
                     '</th>',
-                    collapse = ''
+                    collapse = ""
                   ),
                   '</thead>',
                   '<tbody>',
@@ -119,12 +134,12 @@ reactable_schema <- function(dat, ...) {
                           '<td style="border: 1px solid #ddd; padding: 6px;">',
                           as.character(row),
                           '</td>',
-                          collapse = ''
+                          collapse = ""
                         ),
                         '</tr>'
                       )
                     }),
-                    collapse = ''
+                    collapse = ""
                   ),
                   '</tbody>',
                   '</table>',
@@ -141,14 +156,14 @@ reactable_schema <- function(dat, ...) {
                   '</div>'
                 )
               }
-              glue('<div id="{schema_id}" style="display: none;">{schema_html}</div>')
+              glue::glue('<div id="{schema_id}" style="display: none;">{schema_html}</div>')
             })
 
             htmltools::HTML(
               paste0(
                 '<div>',
-                paste(version_buttons, collapse = ''),
-                paste(schema_divs, collapse = ''),
+                paste(version_buttons, collapse = ""),
+                paste(schema_divs, collapse = ""),
                 '</div>'
               )
             )
@@ -158,4 +173,57 @@ reactable_schema <- function(dat, ...) {
       ...
     )
   )
+}
+
+#' Build schema data for use with reactable_schema
+#'
+#' @description
+#' Builds the nested data frame expected by [reactable_schema()] for one or
+#' more tools from a given package. Useful when you need to inspect or
+#' manipulate the data before rendering.
+#'
+#' @param tools character vector of tool names.
+#' @param pkg package name that owns the tool configs. Defaults to `"nemo"`.
+#' @return A tibble with columns `n`, `tool`, `tbl`, `schema_version`,
+#'   `description`, `row_id`.
+#' @examples
+#' nemo_schema_data("tool1", pkg = "nemo")
+#' @testexamples
+#' expect_s3_class(nemo_schema_data("tool1", pkg = "nemo"), "tbl_df")
+#' expect_true(all(c("n", "tool", "tbl", "schema_version", "description") %in%
+#'   names(nemo_schema_data("tool1", pkg = "nemo"))))
+#' @export
+nemo_schema_data <- function(tools, pkg = "nemo") {
+  get_one <- function(tool) {
+    conf <- Config$new(tool, pkg = pkg)
+    conf$get_schemas_all("both") |>
+      dplyr::select(tbl = "name", description = "tbl_description", "version", "schema") |>
+      tidyr::nest(schema_version = c("version", "schema")) |>
+      dplyr::mutate(tool = toupper(tool))
+  }
+  purrr::map(tools, get_one) |>
+    dplyr::bind_rows() |>
+    dplyr::mutate(row_id = dplyr::row_number(), n = .data$row_id) |>
+    dplyr::relocate("n") |>
+    dplyr::relocate("tool", .after = "n") |>
+    dplyr::relocate("schema_version", .after = "tbl")
+}
+
+#' Render an interactive schema explorer
+#'
+#' @description
+#' Builds schema data for one or more tools and renders it as an interactive
+#' [reactable::reactable()] table with expandable per-version column details.
+#'
+#' @param tools character vector of tool names.
+#' @param pkg package name that owns the tool configs. Defaults to `"nemo"`.
+#' @param ... additional arguments passed to [reactable::reactable()].
+#' @return An htmlwidget.
+#' @examples
+#' \dontrun{
+#' nemo_schema_reactable("tool1", pkg = "nemo")
+#' }
+#' @export
+nemo_schema_reactable <- function(tools, pkg = "nemo", ...) {
+  reactable_schema(nemo_schema_data(tools, pkg = pkg), ...)
 }

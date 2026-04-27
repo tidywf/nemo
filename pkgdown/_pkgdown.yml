@@ -77,6 +77,11 @@ reference:
       - nemo_cli
       - nemo_log
       - nemo_log_date
-      - nemo_uml
       - nemoverse_wf_dispatch
       - pkg_found
+  - title: "Schema Visualisation"
+    contents:
+      - nemo_schema_data
+      - nemo_schema_reactable
+      - reactable_schema
+      - nemo_uml

@@ -23,11 +23,13 @@ requirements:
     - r-dplyr
     - r-fs
     - r-glue
+    - r-htmltools
     - r-jsonlite
     - r-knitr
     - r-log4r
     - r-purrr
     - r-r6
+    - r-reactable
     - r-readr
     - r-rlang
     - r-rpostgres
@@ -44,10 +46,12 @@ requirements:
     - r-dplyr
     - r-fs
     - r-glue
+    - r-htmltools
     - r-knitr
     - r-log4r
     - r-purrr
     - r-r6
+    - r-reactable
     - r-readr
     - r-rlang
     - r-rpostgres

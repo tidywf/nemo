@@ -1,0 +1,23 @@
+---
+title: "Schemas"
+vignette: >
+  %\VignetteIndexEntry{Schemas}
+  %\VignetteEngine{quarto::html}
+  %\VignetteEncoding{UTF-8}
+knitr:
+  opts_chunk:
+    collapse: true
+    comment: '#>'
+    echo: false
+---
+
+```{r}
+#| label: setup
+#| message: false
+use("nemo", "nemo_schema_reactable")
+```
+
+```{r}
+#| label: reactable
+nemo_schema_reactable("tool1", pkg = "nemo")
+```
