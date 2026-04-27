@@ -6,7 +6,7 @@
 \description{
 Reads and parses a tool's \code{schema.yaml} from \verb{inst/config/tools/<tool>/} in
 the package. The schema defines each output table: its file pattern, file
-type, description, and versioned columns (raw name, tidy name, type, \code{since}
+type, description, and versioned columns (raw name, tidy name, type, \code{versions}
 version). Exposes raw and tidy schemas and column mappings used by \code{Tool} for
 file discovery and column renaming.
 
@@ -206,14 +206,14 @@ Return all raw or tidy schemas.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{raw_or_tidy}}{(\code{character(1)})\cr
-Either the raw or the tidy schema.}
+Either the raw or the tidy schema, or both.}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
 (\code{tibble()})\cr
 Table \code{name}, \code{tbl_description}, \code{version}, and \code{schema}
-(list-col of tibble(field, type) using raw or tidy column names).
+(list-col of tibble(field, type) for \code{"raw"}/\code{"tidy"}, or tibble(raw, tidy, type) for \code{"both"}).
 }
 }
 \if{html}{\out{<hr>}}

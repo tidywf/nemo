@@ -161,10 +161,10 @@ Config <- R6::R6Class(
     },
     #' @description Return all raw or tidy schemas.
     #' @param raw_or_tidy (`character(1)`)\cr
-    #' Either the raw or the tidy schema.
+    #' Either the raw or the tidy schema, or both.
     #' @return (`tibble()`)\cr
     #' Table `name`, `tbl_description`, `version`, and `schema`
-    #' (list-col of tibble(field, type) using raw or tidy column names).
+    #' (list-col of tibble(field, type) for `"raw"`/`"tidy"`, or tibble(raw, tidy, type) for `"both"`).
     get_schemas_all = function(raw_or_tidy = "raw") {
       tabs <- self$config[["tables"]]
       .get_schema <- function(tab, tab_name) {
@@ -177,10 +177,14 @@ Config <- R6::R6Class(
         description <- tibble::tibble(tbl_description = tab[["description"]])
         versions <- config_sort_versions(unique(unlist(cols_df[["versions"]])))
         .get_schema_per_version <- function(v) {
-          cols_v <- cols_df |>
+          cols_filtered <- cols_df |>
             dplyr::filter(purrr::map_lgl(.data$versions, \(vs) v %in% vs)) |>
-            dplyr::mutate(type = schema_type_remap(.data$type)) |>
-            dplyr::select(field = dplyr::all_of({{ raw_or_tidy }}), "type")
+            dplyr::mutate(type = schema_type_remap(.data$type))
+          cols_v <- if (raw_or_tidy == "both") {
+            cols_filtered |> dplyr::select("raw", "tidy", "type")
+          } else {
+            cols_filtered |> dplyr::select(field = dplyr::all_of({{ raw_or_tidy }}), "type")
+          }
           tibble::tibble(version = v, schema = list(cols_v))
         }
         schema_rows <- purrr::map(versions, \(v) .get_schema_per_version(v)) |>
