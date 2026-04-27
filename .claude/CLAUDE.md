@@ -95,21 +95,22 @@ make bump VERSION=x.y.z BRANCH=main
 
 This calls `gh workflow run bump.yaml --ref BRANCH --field version=VERSION` under the hood. Can also be triggered via the GitHub Actions UI: Actions → Bump Version → Run workflow.
 
+## UML Generation
+
+`nemo_uml()` (`R/uml.R`) generates a PlantUML diagram from R6 class names and renders it as an SVG. Entry script: `inst/scripts/uml.R`. Output tracked in `vignettes/fig/uml/`. `R6toPlant` is in `Suggests` + `Remotes`.
+
 ## CI/CD: `.github/workflows/deploy.yaml`
 
-The `conda-docs` workflow triggers on pushes to `main` or `dev`, but only runs when the commit message starts with `Bump version:`. Both jobs call reusable workflows from `tidywf/.github`.
+The `conda-docs` workflow triggers on pushes to `main` or `dev`, but only runs when the commit message starts with `Bump version:`. All jobs delegate to reusable workflows in `tidywf/.github`.
 
-### Jobs
+### Jobs (in order)
 
-**`condarise_and_tag`** — delegates to `tidywf/.github/.github/workflows/condarise-and-tag.yaml`:
-1. Builds the conda package with `rattler-build`
-2. Uploads to Anaconda under the `tidywf` owner; uses `--channel dev` label on `dev`
-3. Regenerates the conda lock file (`deploy/conda/env/lock/conda-linux-64.lock`) for `linux-64`
-4. Commits and pushes the updated lock file as a bot commit
-5. Creates a git tag (`vVERSION`) — on both branches
-
-**`pkgdownise`** (depends on `condarise_and_tag`) — delegates to `tidywf/.github/.github/workflows/pkgdownise.yaml`:
-- Checks out the release tag, then deploys via `pkgdown::deploy_to_branch()` — same flow on both branches
+| Job | Reusable workflow | Notes |
+|-----|-------------------|-------|
+| `umlise` | `umlise.yaml` | Installs from source, runs `inst/scripts/uml.R`, commits `vignettes/fig/uml/` if changed |
+| `condarise` | `condarise.yaml` | Builds + uploads conda pkg, regenerates lock file, commits |
+| `tag` | `tag.yaml` | `git pull` to collect all bot commits, then creates `vVERSION` tag |
+| `pkgdownise` | `pkgdownise.yaml` | Checks out tag, deploys pkgdown site |
 
 ### Version
 

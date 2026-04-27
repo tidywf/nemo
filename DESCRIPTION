@@ -34,10 +34,14 @@ Imports:
     yaml
 Suggests:
     argparse,
+    here,
     knitr,
     quarto,
+    R6toPlant,
     RPostgres,
     testthat (>= 3.0.0)
+Remotes:
+    gitlab::b-rowlingson/R6toPlant
 Roxygen: list(markdown = TRUE,
               roclets = c("namespace", "rd", "roxytest::testthat_roclet"))
 biocViews:
