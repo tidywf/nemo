@@ -41,7 +41,7 @@ Using {remotes} directly from GitHub:
 ``` r
 install.packages("remotes")
 remotes::install_github("tidywf/nemo") # latest main commit
-remotes::install_github("tidywf/nemo@v0.0.3.9007") # released version
+remotes::install_github("tidywf/nemo@v0.0.3.9008") # released version
 ```
 
 Alternatively:

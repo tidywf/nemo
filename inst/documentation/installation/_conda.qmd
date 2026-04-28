@@ -10,7 +10,7 @@ The conda package is available from the tidywf channel at
 conda create \
   -n nemo_env \
   -c tidywf -c conda-forge \
-  r-nemo==0.0.3.9007
+  r-nemo==0.0.3.9008
 
 conda activate nemo_env
 ```
