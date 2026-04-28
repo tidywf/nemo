@@ -12,6 +12,7 @@ home:
 template:
   bootstrap: 5
   bootswatch: zephyr
+llm-docs: false
 navbar:
   structure:
     left: [home, articles, news]
