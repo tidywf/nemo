@@ -3,4 +3,4 @@ channels:
   - tidywf
   - conda-forge
 dependencies:
-  - r-nemo ==0.0.3.9008 # bump
+  - r-nemo ==0.0.3.9009 # bump
