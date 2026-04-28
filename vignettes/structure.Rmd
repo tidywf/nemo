@@ -70,24 +70,23 @@ the {nemo} parent classes. This allows for custom parsers and tidiers for specif
 bioinformatic tools and workflows.
 
 [R6]: <https://github.com/r-lib/R6> "R6 package repo"
-[tidywigits]: <https://github.com/umccr/tidywigits> "tidywigits"
-[dracarys]: <https://github.com/umccr/dracarys> "dracarys"
+[tidywigits]: <https://github.com/tidywf/tidywigits> "tidywigits"
+[dracarys]: <https://github.com/tidywf/dracarys> "dracarys"
 
 Here we use the `Tool1` and `Workflow1` classes as examples to illustrate the
 structure of the package.
 
-## `Config`
+## `Config` {.tabset .tabset-pills}
 
-A `Config` object contains functionality for interacting with YAML
-configuration files (under `inst/config`) that specify the schemas, types,
-patterns and field descriptions for the _raw_ input _files_ and _tidy_ output
-_tbls_. See `?Config`.
+A `Config` object reads a single `schema.yaml` file from `inst/config/tools/<tool>/`.
+Each table entry defines its file pattern, file type, description, and a list of
+columns — each column carrying both its raw name (as produced by the tool) and its
+tidy name (snake_case), type, description, and the `versions` array listing every
+tool version the column appears in.
+`Config` derives versioned raw and tidy views from this unified source on demand.
+See `?Config`.
 
-### raw {.tabset .tabset-pills}
-
-#### intro
-
-Let's look at some of the information for the raw `Tool1` config, for instance:
+### intro
 
 ```{r tool1_config1}
 tool <- params$tool
@@ -96,79 +95,51 @@ conf <- Config$new(tool, pkg = "nemo")
 conf
 ```
 
-You can access the individual fields in the classic R list-like manner, using
-the `$` sign.
-
-#### patterns
+### patterns
 
 Patterns are used to fish out the relevant files from a directory listing.
 
-```{r tool1_config_raw_patterns}
-conf$get_raw_patterns() |>
-  knitr::kable(caption = glue("{tool} raw file patterns."))
+```{r tool1_config_patterns}
+conf$get_patterns() |>
+  knitr::kable(caption = glue("{tool} file patterns."))
 ```
 
-#### descriptions
+### descriptions
 
-File descriptions are based on the available open source documentation.
+Descriptions are usually derived from the individual tool documentation.
 
-```{r tool1_config_raw_descriptions}
-conf$get_raw_descriptions() |>
-  knitr::kable(caption = glue("{tool} raw file descriptions."))
+```{r tool1_config_descriptions}
+conf$get_descriptions() |>
+  knitr::kable(caption = glue("{tool} file descriptions."))
 ```
 
-#### versions
+### versions
 
-Versions are used to distinguish changes in schema between individual tool
-versions. For example, after `Tool1` v1.2.3 metrics Y and Z were added to `table1`,
-which is reflected in the available schemas.
-For now we are using `latest` as a default version based on the most
-recent schema tests, and any discrepancies we see are labelled accordingly by the
-version of the tool that generated a file with a different schema.
+The `versions` array on each column lists every tool version that column appears
+in, giving a full picture of additions and removals across versions.
 
-```{r tool1_config_raw_versions}
-conf$get_raw_versions() |>
-  knitr::kable(caption = glue("{tool} raw file versions."))
+```{r tool1_config_versions}
+conf$get_schemas_all() |>
+  dplyr::select("name", "version") |>
+  dplyr::distinct() |>
+  knitr::kable(caption = glue("{tool} schema versions."))
 ```
 
+### schemas
 
-#### schemas
+`get_schemas_all()` derives a versioned view from the unified column list.
+Pass `"raw"` (default) or `"tidy"` to get column names in either form:
 
-The raw schemas specify the column name and type (e.g. character (`c`),
-integer (`i`), float/double (`d`)) for each input file:
-
-```{r tool1_config_raw_schemas1}
-(s <- conf$get_raw_schemas_all())
-s |>
-  dplyr::filter(name == "table1", version == "v1.2.3") |>
+```{r tool1_config_schemas}
+(s_raw <- conf$get_schemas_all("raw"))
+s_raw |>
+  dplyr::filter(.data$name == "table1", .data$version == "v1.2.3") |>
   dplyr::select("schema") |>
   tidyr::unnest("schema")
-```
 
-### tidy {.tabset .tabset-pills}
-
-#### intro
-
-Now let's look at some of the information in the tidy `Tool1` config. The
-difference between raw and tidy configs is mostly in the column names (they are
-standardised to lowercase separated by underscores, i.e. `snake_case`), and some
-raw files get split into multiple tidy tables (e.g. for normalisation purposes).
-
-#### descriptions
-
-Tidy descriptions are the same as the raw descriptions for now.
-
-```{r tool1_config_tidy_descriptions}
-conf$get_tidy_descriptions() |>
-  knitr::kable(caption = glue("{tool} tidy file descriptions."))
-```
-
-#### schemas
-
-```{r tool1_config_tidy_schemas1}
-(s <- conf$get_tidy_schemas_all())
-s |>
-  dplyr::filter(.data$name == "table1", version == "v1.2.3") |>
+(s_tidy <- conf$get_schemas_all("tidy"))
+s_tidy |>
+  dplyr::filter(.data$name == "table1", .data$version == "v1.2.3") |>
   dplyr::select("schema") |>
   tidyr::unnest("schema")
 ```
@@ -213,11 +184,11 @@ is used internally to find files of interest and infer their schemas:
 
 ```{r tool1_conf}
 t1$config
-t1$config$get_raw_patterns()
-t1$config$get_raw_schema("table1", v = "v1.2.3")
-# t1$config$get_raw_schema("table1", v = "latest") # default
-t1$config$get_tidy_schema("table1", v = "v1.2.3")
-# t1$config$get_tidy_schema("table1", v = "latest") # default
+t1$config$get_patterns()
+t1$get_raw_schema("table1", v = "v1.2.3")
+# t1$get_raw_schema("table1", v = "latest") # default
+t1$get_tidy_schema("table1", v = "v1.2.3")
+# t1$get_tidy_schema("table1", v = "latest") # default
 ```
 
 ### list
@@ -247,7 +218,7 @@ t1$tbls$tidy[[1]][["data"]][[1]] |> dplyr::glimpse()
 ### filter
 
 We can also focus on a subset of files to tidy using the `filter_files()` function.
-The `include` and `exclude` arguments can specify which parsers to include or
+The `include` and `exclude` arguments can specify which `tool_parser`s to include or
 exclude in the analysis:
 
 ```{r tool1_filter}

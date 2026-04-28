@@ -27,7 +27,7 @@ x <- tibble::tibble(
   name = c("table1", "table2"),
   descr = c("Table1 from Tool1.", "Table2 from Tool1."),
   pat = c("\\\\.tool1\\\\.table1\\\\.tsv$", "\\\\.tool1\\\\.table2\\\\.tsv$"),
-  type = c("tsv", "tsv"),
+  type = c("txt", "txt"),
   path = c(path1, path2)
 )
 tool_descr <- "Tool1 does amazing things."

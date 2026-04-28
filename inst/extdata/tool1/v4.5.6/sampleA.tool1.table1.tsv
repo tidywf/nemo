@@ -1,0 +1,4 @@
+SampleID	Chromosome	Start	End
+sampleA	chr1	10	50
+sampleA	chr2	100	500
+sampleA	chr3	1000	5000

@@ -111,7 +111,7 @@ is_files_tbl <- function(x) {
 
 schema_type_remap <- function(x) {
   type_map <- c(char = "c", float = "d", int = "i")
-  assertthat::assert_that(x %in% names(type_map))
+  stopifnot(x %in% names(type_map))
   unname(type_map[x])
 }
 
@@ -155,6 +155,7 @@ nemoverse_wf_dispatch <- function(wf = NULL) {
   stopifnot(!is.null(wf))
   wfs <- list(
     wigits = list(pkg = "tidywigits", wf = "Wigits", repo = "https://github.com/umccr/tidywigits"),
+    workflow1 = list(pkg = "nemo", wf = "Workflow1", repo = "local"),
     basemean = list(pkg = "base", wf = "mean", repo = "CRAN"),
     dummy1 = list(pkg = "dummy1", wf = "bar", repo = "BAZ")
     # dragen = list(pkg = "dracarys", wf = "Dragen"),

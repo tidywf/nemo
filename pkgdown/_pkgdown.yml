@@ -1,4 +1,6 @@
-url: https://umccr.github.io/nemo
+url: https://tidywf.github.io/nemo
+development:
+  mode: auto
 title: nemo
 authors:
   Peter Diakumis:
@@ -25,6 +27,8 @@ navbar:
           href: articles/installation.html
         - text: Structure
           href: articles/structure.html
+        - text: Schema
+          href: articles/schema.html
         - text: Contribute
           href: articles/contribute.html
         - text: Devnotes
@@ -75,3 +79,9 @@ reference:
       - nemo_log_date
       - nemoverse_wf_dispatch
       - pkg_found
+  - title: "Schema Visualisation"
+    contents:
+      - nemo_schema_data
+      - nemo_schema_reactable
+      - reactable_schema
+      - nemo_uml

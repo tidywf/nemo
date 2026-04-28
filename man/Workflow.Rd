@@ -4,18 +4,40 @@
 \alias{Workflow}
 \title{Workflow Object}
 \description{
-A Workflow is composed of multiple Tools.
+Orchestrates multiple \code{Tool} objects over a shared directory, handling file
+discovery, filtering, tidying, and writing in a single pipeline.
+
+A Workflow object:
+\itemize{
+\item has a name (\code{name});
+\item has one or more paths to workflow results (\code{path});
+\item has a list of \code{Tool} subclass objects (\code{tools});
+\item has a tibble of all files in the shared directory (\code{files_tbl});
+\item has a tibble of written output files, populated after \code{write()} (\code{written_files});
+}
+
+The typical workflow is: optionally filter with \code{filter_files()}, tidy with
+\code{tidy()}, then write with \code{write()}. \code{nemofy()} chains all three steps.
 }
 \examples{
+fs::path(tempdir(), letters[1:5]) |>
+  fs::file_temp_push() |>
+  fs::dir_create()
 path <- system.file("extdata/tool1", package = "nemo")
 tools <- list(tool1 = Tool1)
-wf1 <- Workflow$new(name = "foo", path = path, tools = tools)
-diro <- tempdir()
-wf1$list_files()
-wf1$nemofy(diro = diro, format = "parquet", input_id = "run1")
-(lf <- list.files(diro, pattern = "tool1.*parquet", full.names = FALSE))
-#dbconn <- DBI::dbConnect(drv = RPostgres::Postgres(), dbname = "nemo", user = "orcabus")
-#wf1$nemofy(format = "db", id = "runABC", dbconn = dbconn)
+wf <- Workflow$new(name = "wf1", path = path, tools = tools)
+(lf_all <- wf$list_files())
+wf$filter_files(exclude = "tool1_table5")
+wf$tidy()
+(tbls <- wf$get_tbls())
+(rs <- wf$get_raw_schemas_all())
+dir1 <- fs::file_temp(); dir2 <- fs::file_temp()
+wf$write(diro = dir1, format = "parquet", input_id = "run1")
+(lf1 <- list.files(dir1, pattern = "tool1.*parquet", full.names = TRUE))
+(meta <- wf$get_metadata(input_id = "run1", output_id = "out1", output_dir = dir1))
+wf2 <- Workflow$new(name = "wf2", path = path, tools = tools)
+wf2$nemofy(diro = dir2, format = "parquet", input_id = "run2")
+(lf2 <- list.files(dir2, pattern = "tool1.*parquet", full.names = TRUE))
 }
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
@@ -77,12 +99,16 @@ List of Tools that compose a Workflow.}
 }
 \if{html}{\out{</div>}}
 }
+\subsection{Returns}{
+(\code{R6::R6Class()})\cr
+R6 object.
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Workflow-print"></a>}}
 \if{latex}{\out{\hypertarget{method-Workflow-print}{}}}
 \subsection{Method \code{print()}}{
-Print details about the File.
+Print details about the Workflow.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Workflow$print(...)}\if{html}{\out{</div>}}
 }
@@ -93,6 +119,10 @@ Print details about the File.
 \item{\code{...}}{(ignored).}
 }
 \if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+(\code{R6::R6Class()})\cr
+R6 object invisibly.
 }
 }
 \if{html}{\out{<hr>}}
@@ -108,12 +138,16 @@ Filter files in given workflow directory.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{include}}{(\code{character(n)})\cr
-Files to include.}
+tool_parser names to include (e.g. \code{"tool1_table1"}).}
 
 \item{\code{exclude}}{(\code{character(n)})\cr
-Files to exclude.}
+tool_parser names to exclude (e.g. \code{"tool1_table5"}).}
 }
 \if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+(\code{R6::R6Class()})\cr
+R6 object invisibly.
 }
 }
 \if{html}{\out{<hr>}}
@@ -135,7 +169,8 @@ See \code{fs::dir_info}.}
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-A tibble with all files found for each Tool.
+(\code{tibble()})\cr
+Bound \code{list_files()} tibbles from all Tools.
 }
 }
 \if{html}{\out{<hr>}}
@@ -159,7 +194,8 @@ Should the raw parsed tibbles be kept in the final output?}
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-self invisibly.
+(\code{R6::R6Class()})\cr
+R6 object invisibly.
 }
 }
 \if{html}{\out{<hr>}}
@@ -198,7 +234,8 @@ Database connection object (see \code{DBI::dbConnect}).}
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-self invisibly.
+(\code{R6::R6Class()})\cr
+R6 object invisibly.
 }
 }
 \if{html}{\out{<hr>}}
@@ -237,15 +274,16 @@ Output ID to use for the dataset (e.g. \code{run123}).}
 Database connection object (see \code{DBI::dbConnect}).}
 
 \item{\code{include}}{(\code{character(n)})\cr
-Files to include.}
+tool_parser names to include (e.g. \code{"tool1_table1"}).}
 
 \item{\code{exclude}}{(\code{character(n)})\cr
-Files to exclude.}
+tool_parser names to exclude (e.g. \code{"tool1_table5"}).}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-self invisibly.
+(\code{R6::R6Class()})\cr
+R6 object invisibly.
 }
 }
 \if{html}{\out{<hr>}}
@@ -258,7 +296,8 @@ Get raw schemas for all Tools.
 }
 
 \subsection{Returns}{
-Tibble with names of tool and file, schema and its version.
+(\code{tibble()})\cr
+Bound \code{raw_schemas_all} tibbles from all Tools, with a leading \code{tool} column.
 }
 }
 \if{html}{\out{<hr>}}
@@ -271,27 +310,29 @@ Get tidy schemas for all Tools.
 }
 
 \subsection{Returns}{
-Tibble with names of tool and tbl, schema and its version.
+(\code{tibble()})\cr
+Bound tidy schema tibbles from all Tools, with a leading \code{tool} column.
 }
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Workflow-get_tbls"></a>}}
 \if{latex}{\out{\hypertarget{method-Workflow-get_tbls}{}}}
 \subsection{Method \code{get_tbls()}}{
-Get tidy tbls for all Tools.
+Get tidy tibbles for all Tools.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Workflow$get_tbls()}\if{html}{\out{</div>}}
 }
 
 \subsection{Returns}{
-Tibble with tidy tbls of all Tools.
+(\code{tibble()})\cr
+Bound \code{tbls} tibbles from all Tools.
 }
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Workflow-get_metadata"></a>}}
 \if{latex}{\out{\hypertarget{method-Workflow-get_metadata}{}}}
 \subsection{Method \code{get_metadata()}}{
-Get metadata
+Get metadata for the workflow run.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Workflow$get_metadata(input_id, output_id, output_dir, pkgs = c("nemo"))}\if{html}{\out{</div>}}
 }
@@ -314,7 +355,9 @@ Which R packages to extract versions for.}
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-List with metadata
+(\code{list()})\cr
+List with \code{input_id}, \code{output_id}, \code{input_dir}, \code{output_dir},
+\code{pkg_versions}, and \code{files}.
 }
 }
 \if{html}{\out{<hr>}}

@@ -1,0 +1,157 @@
+---
+title: "Schema"
+vignette: >
+  %\VignetteIndexEntry{Schema}
+  %\VignetteEngine{quarto::html}
+  %\VignetteEncoding{UTF-8}
+knitr:
+  opts_chunk:
+    collapse: true
+    comment: '#>'
+---
+
+```{r}
+#| label: setup
+#| include: false
+use("nemo")
+use("dplyr", c("select", "filter", "mutate"))
+use("knitr", "kable")
+```
+
+Each nemo tool has a single `schema.yaml` under `inst/config/tools/<tool>/`.
+It is a flat `tables:` map — one entry per output file type — that drives both
+file discovery and raw => tidy transformation.
+
+## `schema.yaml` structure
+
+```yaml
+tables:
+  <table_name>:
+    description: '<human-readable description>'
+    pattern: "<regex matching the file basename>"
+    ftype: '<file type — see below>'
+    columns:
+      - raw: '<raw column name or positional label>'
+        tidy: '<tidy snake_case name>'
+        type: 'char | int | float'
+        description: '<human-readable description>'
+        versions: ['<version1>', '<version2>']
+```
+
+The `pattern` value must use YAML **double-quoted** strings so that backslash
+escapes are processed correctly (e.g. `"\\.tool1\\.table1\\.tsv$"`).
+
+## File types (`ftype`)
+
+The `ftype` field signals the parsing strategy for that table.
+Tab-delimited is the default; other delimiters are handled inside the
+specific parser, not in `ftype`.
+
+| `ftype`           | Description                        | `raw:` names        | Parse function |
+|-------------------|------------------------------------|---------------------|----------------|
+| `txt`             | Header present; cols named in file | actual column names | `parse_file` |
+| `txt-nohead`      | No header; positional columns      | `X1, X2, …, XN`     | `parse_file_nohead` |
+| `txt-keyvalue`    | No header; exactly 2 cols (key, value); pivoted wide | actual key values | `parse_file_keyvalue` |
+| `csv-nohead-long` | No header; long format with a metric-name col; custom pivot logic | metric names (values in the key column) | custom `tidy_*` method |
+
+### `txt`
+
+Standard delimited file with a header row.
+The `raw:` names must exactly match the column names in the file — they are used
+by `schema_guess` to identify which versioned schema applies to a given file.
+
+### `txt-nohead`
+
+No header row; columns are identified purely by position.
+The `raw:` names are always `X1, X2, …, XN` (where N = number of columns).
+This makes version tracking unambiguous: adding or removing a column is
+reflected by updating the `versions:` array for the affected positional label.
+The tidy step renames `X1 => tidy_name_1`, `X2 => tidy_name_2`, etc. positionally.
+
+### `txt-keyvalue`
+
+A special case of `txt-nohead` with exactly two columns where the first column
+is a key and the second is its value.
+The file is pivoted wide so that each key becomes a column name.
+The `raw:` names are the actual key values (e.g. `SampleID`, `TotalReads`),
+which are matched by `schema_guess` after the pivot.
+
+### `csv-nohead-long`
+
+No header; long format where one column holds metric names and adjacent columns
+hold their values (e.g. count and percentage).
+The `columns:` block only maps raw metric names to tidy column names.
+The structural logic (which column is the key, `_pct` suffix generation, section
+cleaning) lives in the tool's `tidy_*` method, not in the schema.
+
+## Versioning (`versions:`)
+
+The `versions:` field on each column is an explicit array of every tool version
+that column appears in. This gives a full picture of column history, including
+additions and removals across versions.
+
+```yaml
+table1 columns:
+  SampleID   versions: [v1.2.3, v4.5.6, latest]  # present in all versions
+  Chromosome versions: [v1.2.3, v4.5.6, latest]
+  Start      versions: [v1.2.3, v4.5.6, latest]
+  End        versions: [v1.2.3, v4.5.6, latest]
+  metricX    versions: [v1.2.3]                   # dropped in v4.5.6
+  metricY    versions: [latest]                   # added in latest
+  metricZ    versions: [latest]
+```
+
+The effective schema for version `V` is all columns whose `versions` array
+contains `V`. `schema_guess` uses this to automatically match a file's column
+names against the correct versioned snapshot.
+Tables with a single version (all columns `versions: [latest]`) are the common
+case and require no special handling.
+
+## Live example
+
+`Config$new()` reads the `schema.yaml` and exposes the derived schemas:
+
+```{r}
+conf <- Config$new("tool1", pkg = "nemo")
+conf
+```
+
+### Patterns and file types
+
+```{r}
+conf$get_patterns() |> kable()
+```
+
+```{r}
+conf$get_ftypes() |> kable()
+```
+
+### Versioned raw schemas (used by `schema_guess`)
+
+```{r}
+conf$get_schemas_all() |>
+  select("name", "version", "schema")
+```
+
+The `schema` list-col holds the `(field, type)` pairs used when reading a file:
+
+```{r}
+conf$get_schema("table1", v = "v1.2.3", raw_or_tidy = "raw") |>
+  select("field", "type") |>
+  kable()
+```
+
+### Tidy schema (used for column renaming)
+
+```{r}
+conf$get_schema("table1", raw_or_tidy = "tidy") |> kable()
+```
+
+### Column map for `csv-nohead-long` tables
+
+For `csv-nohead-long` tables, `get_col_map()` returns the metric-name mapping
+used inside the `tidy_*` method:
+
+```{r}
+conf$get_col_map("table5") |> kable()
+```

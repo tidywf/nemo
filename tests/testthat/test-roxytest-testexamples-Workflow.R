@@ -2,17 +2,45 @@
 
 # File R/Workflow.R: @testexamples
 
-test_that("Function Workflow() @ L19", {
+test_that("Function Workflow() @ L59", {
   
+  fs::path(tempdir(), letters[1:5]) |>
+    fs::file_temp_push() |>
+    fs::dir_create()
   path <- system.file("extdata/tool1", package = "nemo")
   tools <- list(tool1 = Tool1)
-  wf1 <- Workflow$new(name = "foo", path = path, tools = tools)
-  diro <- tempdir()
-  wf1$list_files()
-  wf1$nemofy(diro = diro, format = "parquet", input_id = "run1")
-  (lf <- list.files(diro, pattern = "tool1.*parquet", full.names = FALSE))
-  #dbconn <- DBI::dbConnect(drv = RPostgres::Postgres(), dbname = "nemo", user = "orcabus")
-  #wf1$nemofy(format = "db", id = "runABC", dbconn = dbconn)
-  expect_equal(length(lf), 4)
+  wf <- Workflow$new(name = "wf1", path = path, tools = tools)
+  (lf_all <- wf$list_files())
+  wf$filter_files(exclude = "tool1_table5")
+  wf$tidy()
+  (tbls <- wf$get_tbls())
+  (rs <- wf$get_raw_schemas_all())
+  dir1 <- fs::file_temp(); dir2 <- fs::file_temp()
+  wf$write(diro = dir1, format = "parquet", input_id = "run1")
+  (lf1 <- list.files(dir1, pattern = "tool1.*parquet", full.names = TRUE))
+  (meta <- wf$get_metadata(input_id = "run1", output_id = "out1", output_dir = dir1))
+  wf2 <- Workflow$new(name = "wf2", path = path, tools = tools)
+  wf2$nemofy(diro = dir2, format = "parquet", input_id = "run2")
+  (lf2 <- list.files(dir2, pattern = "tool1.*parquet", full.names = TRUE))
+  # list_files
+  nms1 <- c(
+    "tool_parser", "parser", "bname", "size", "lastmodified", "path",
+    "pattern", "prefix", "group"
+  )
+  expect_true(all(c("tool1_table1", "tool1_table2", "tool1_table4") %in% lf_all$tool_parser))
+  expect_named(lf_all, nms1)
+  # filter_files + tidy + get_tbls: table5 excluded, table4 retained
+  expect_false("tool1_table5" %in% tbls$tool_parser)
+  expect_true("tool1_table4" %in% tbls$tool_parser)
+  expect_named(tbls, c(nms1, "tidy"))
+  # get_raw_schemas_all
+  expect_named(rs, c("tool", "name", "tbl_description", "version", "schema"))
+  # write: two table4 output files (one per version)
+  expect_equal(sum(grepl("table4", basename(lf1))), 2)
+  expect_named(wf$written_files, c("tool_parser", "prefix", "tidy_data", "tbl_name", "outpath"))
+  # get_metadata
+  expect_named(meta, c("input_id", "output_id", "input_dir", "output_dir", "pkg_versions", "files"))
+  # nemofy: all parsers written
+  expect_true(all(c("tool1_table1", "tool1_table4") %in% sub(".*_(tool1_table\\d).*", "\\1", basename(lf2))))
 })
 

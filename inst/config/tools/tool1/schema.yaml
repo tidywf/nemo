@@ -1,0 +1,146 @@
+tables:
+  table1:
+    description: 'Table1 for tool1 (txt: header present, tab-delimited).'
+    pattern: "\\.tool1\\.table1\\.tsv$"
+    ftype: 'txt'
+    columns:
+      - raw: 'SampleID'
+        tidy: 'sample_id'
+        type: 'char'
+        description: 'sample ID'
+        versions: ['v1.2.3', 'v4.5.6', 'latest']
+      - raw: 'Chromosome'
+        tidy: 'chromosome'
+        type: 'char'
+        description: 'chromosome'
+        versions: ['v1.2.3', 'v4.5.6', 'latest']
+      - raw: 'Start'
+        tidy: 'start'
+        type: 'int'
+        description: 'start position'
+        versions: ['v1.2.3', 'v4.5.6', 'latest']
+      - raw: 'End'
+        tidy: 'end'
+        type: 'int'
+        description: 'end position'
+        versions: ['v1.2.3', 'v4.5.6', 'latest']
+      - raw: 'metricX'
+        tidy: 'metric_x'
+        type: 'float'
+        description: 'metric X'
+        versions: ['v1.2.3']
+      - raw: 'metricY'
+        tidy: 'metric_y'
+        type: 'float'
+        description: 'metric Y'
+        versions: ['latest']
+      - raw: 'metricZ'
+        tidy: 'metric_z'
+        type: 'float'
+        description: 'metric Z'
+        versions: ['latest']
+  table2:
+    description: 'Table2 for tool1 (txt: header present, tab-delimited).'
+    pattern: "\\.tool1\\.table2\\.tsv$"
+    ftype: 'txt'
+    columns:
+      - raw: 'SampleID'
+        tidy: 'sample_id'
+        type: 'char'
+        description: 'sample ID'
+        versions: ['v1.0.0', 'latest']
+      - raw: 'metricA'
+        tidy: 'metric_a'
+        type: 'char'
+        description: 'metric A'
+        versions: ['v1.0.0', 'latest']
+      - raw: 'metricB'
+        tidy: 'metric_b'
+        type: 'float'
+        description: 'metric B'
+        versions: ['latest']
+  table3:
+    description: 'Table3 for tool1 (txt-keyvalue: no header, 2 cols, col1=key col2=value).'
+    pattern: "\\.tool1\\.table3\\.tsv$"
+    ftype: 'txt-keyvalue'
+    columns:
+      - raw: 'SampleID'
+        tidy: 'sample_id'
+        type: 'char'
+        description: 'sample ID'
+        versions: ['v1.0.0', 'latest']
+      - raw: 'QCStatus'
+        tidy: 'qcstatus'
+        type: 'char'
+        description: 'QC status'
+        versions: ['v1.0.0', 'latest']
+      - raw: 'TotalReads'
+        tidy: 'reads_total'
+        type: 'float'
+        description: 'total reads'
+        versions: ['v1.0.0', 'latest']
+      - raw: 'MappedReads'
+        tidy: 'reads_map'
+        type: 'float'
+        description: 'mapped reads'
+        versions: ['latest']
+      - raw: 'UnmappedReads'
+        tidy: 'reads_unmap'
+        type: 'float'
+        description: 'unmapped reads'
+        versions: ['latest']
+  table4:
+    description: 'Table4 for tool1 (txt-nohead: no header, positional cols X1..XN).'
+    pattern: "\\.tool1\\.table4\\.tsv$"
+    ftype: 'txt-nohead'
+    columns:
+      - raw: 'X1'
+        tidy: 'sample_id'
+        type: 'char'
+        description: 'sample ID'
+        versions: ['v1.0.0', 'latest']
+      - raw: 'X2'
+        tidy: 'chromosome'
+        type: 'char'
+        description: 'chromosome'
+        versions: ['v1.0.0', 'latest']
+      - raw: 'X3'
+        tidy: 'start'
+        type: 'int'
+        description: 'start position'
+        versions: ['v1.0.0', 'latest']
+      - raw: 'X4'
+        tidy: 'end'
+        type: 'int'
+        description: 'end position'
+        versions: ['latest']
+      - raw: 'X5'
+        tidy: 'depth'
+        type: 'float'
+        description: 'depth'
+        versions: ['latest']
+  table5:
+    description: 'Table5 for tool1 (csv-nohead-long: no header, long format with metric name col).'
+    pattern: "\\.tool1\\.table5\\.csv$"
+    ftype: 'csv-nohead-long'
+    columns:
+      - raw: 'Total reads'
+        tidy: 'reads_total'
+        type: 'float'
+        description: 'total reads'
+        versions: ['latest']
+      - raw: 'Mapped reads'
+        tidy: 'reads_map'
+        type: 'float'
+        description: 'mapped reads'
+        versions: ['latest']
+      - raw: 'Unmapped reads'
+        tidy: 'reads_unmap'
+        type: 'float'
+        description: 'unmapped reads'
+        versions: ['latest']
+      - raw: 'Total bases'
+        tidy: 'bases_total'
+        type: 'float'
+        description: 'total bases'
+        versions: ['latest']

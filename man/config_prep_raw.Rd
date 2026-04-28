@@ -4,7 +4,7 @@
 \alias{config_prep_raw}
 \title{Prepare config from raw file}
 \usage{
-config_prep_raw(path, name, descr, pat, type = "tsv", v = "latest", ...)
+config_prep_raw(path, name, descr, pat, type = "txt", v = "latest", ...)
 }
 \arguments{
 \item{path}{(\code{character(1)})\cr

@@ -4,15 +4,15 @@
 \alias{Workflow1}
 \title{Workflow1 Object}
 \description{
-Workflow1 file parsing and manipulation.
+Pre-configured \code{Workflow} bundling \code{Tool1}.
 }
 \examples{
 path <- system.file("extdata/tool1", package = "nemo")
-odir <- tempdir()
-id <- "workflow1_run1"
-w <- Workflow1$new(path)
-x <- w$nemofy(diro = odir, format = "parquet", input_id = id)
-(lf <- list.files(odir, pattern = "tool1.*parquet", full.names = FALSE))
+wf <- Workflow1$new(path)
+(lf_all <- wf$list_files())
+dir1 <- tempdir()
+wf$nemofy(diro = dir1, format = "parquet", input_id = "run1")
+(lf <- list.files(dir1, pattern = "tool1.*parquet", full.names = TRUE))
 }
 \section{Super class}{
 \code{\link[nemo:Workflow]{nemo::Workflow}} -> \code{Workflow1}
@@ -56,6 +56,10 @@ Create a new Workflow1 object.
 Path(s) to Workflow1 results.}
 }
 \if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+(\code{R6::R6Class()})\cr
+R6 object.
 }
 }
 \if{html}{\out{<hr>}}

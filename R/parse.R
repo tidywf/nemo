@@ -17,12 +17,27 @@
 #' path <- system.file("extdata/tool1", package = "nemo")
 #' x <- Tool$new("tool1", pkg = "nemo", path)
 #' schemas_all <- x$raw_schemas_all
-#' pname <- "table1"
-#' fpath <- file.path(path, "latest", "sampleA.tool1.table1.tsv")
-#' (d <- parse_file(fpath, pname, schemas_all))
+#' # table1: three versions with different column sets
+#' (d1_v123 <- parse_file(file.path(path, "v1.2.3", "sampleA.tool1.table1.tsv"), "table1", schemas_all))
+#' (d1_v456 <- parse_file(file.path(path, "v4.5.6", "sampleA.tool1.table1.tsv"), "table1", schemas_all))
+#' (d1_lat  <- parse_file(file.path(path, "latest", "sampleA.tool1.table1.tsv"), "table1", schemas_all))
+#' # table2: two versions (v1.0.0 drops metricB)
+#' (d2_v1  <- parse_file(file.path(path, "v1.0.0", "sampleA.tool1.table2.tsv"), "table2", schemas_all))
+#' (d2_lat <- parse_file(file.path(path, "latest", "sampleA.tool1.table2.tsv"), "table2", schemas_all))
 #'
 #' @testexamples
-#' expect_equal(names(d)[1:3], c("SampleID", "Chromosome", "Start"))
+#' # table1 version detection
+#' expect_equal(attr(d1_v123, "file_version"), "v1.2.3")
+#' expect_equal(attr(d1_v456, "file_version"), "v4.5.6")
+#' expect_equal(attr(d1_lat,  "file_version"), "latest")
+#' expect_equal(names(d1_v123), c("SampleID", "Chromosome", "Start", "End", "metricX"))
+#' expect_equal(names(d1_v456), c("SampleID", "Chromosome", "Start", "End"))
+#' expect_equal(names(d1_lat),  c("SampleID", "Chromosome", "Start", "End", "metricY", "metricZ"))
+#' # table2 version detection
+#' expect_equal(attr(d2_v1,  "file_version"), "v1.0.0")
+#' expect_equal(attr(d2_lat, "file_version"), "latest")
+#' expect_equal(names(d2_v1),  c("SampleID", "metricA"))
+#' expect_equal(names(d2_lat), c("SampleID", "metricA", "metricB"))
 #' @export
 parse_file <- function(fpath, pname, schemas_all, delim = "\t", ...) {
   cnames <- file_hdr(fpath, delim = delim, ...)
@@ -56,6 +71,30 @@ parse_file <- function(fpath, pname, schemas_all, delim = "\t", ...) {
 #' @param delim (`character(1)`)\cr
 #' File delimiter.
 #' @param ... Passed on to `readr::read_delim`.
+#'
+#' @examples
+#' path <- system.file("extdata/tool1", package = "nemo")
+#' x <- Tool$new("tool1", pkg = "nemo", path)
+#' schemas_all <- x$raw_schemas_all
+#' pname <- "table4"
+#' fpath_latest <- file.path(path, "latest", "sampleA.tool1.table4.tsv")
+#' fpath_v1 <- file.path(path, "v1.0.0", "sampleA.tool1.table4.tsv")
+#' schema_latest <- schemas_all |>
+#'   dplyr::filter(.data$name == pname, .data$version == "latest") |>
+#'   dplyr::select("version", "schema")
+#' schema_v1 <- schemas_all |>
+#'   dplyr::filter(.data$name == pname, .data$version == "v1.0.0") |>
+#'   dplyr::select("version", "schema")
+#' (d_latest <- parse_file_nohead(fpath_latest, schema_latest))
+#' (d_v1 <- parse_file_nohead(fpath_v1, schema_v1))
+#'
+#' @testexamples
+#' expect_equal(ncol(d_latest), 5)
+#' expect_equal(ncol(d_v1), 3)
+#' expect_equal(names(d_latest), c("X1", "X2", "X3", "X4", "X5"))
+#' expect_equal(names(d_v1), c("X1", "X2", "X3"))
+#' expect_equal(attr(d_latest, "file_version"), "latest")
+#' expect_equal(attr(d_v1, "file_version"), "v1.0.0")
 #' @export
 parse_file_nohead <- function(fpath, schema, delim = "\t", ...) {
   assertthat::assert_that(
@@ -134,7 +173,7 @@ file_hdr <- function(fpath, delim = "\t", n_max = 0, ...) {
 #' cnames1 <- file_hdr(fpath1)
 #' cnames2 <- file_hdr(fpath2)
 #' conf <- Config$new("tool1", pkg = "nemo")
-#' schemas_all <- conf$get_raw_schemas_all()
+#' schemas_all <- conf$get_schemas_all("raw")
 #' (s1 <- schema_guess(pname, cnames1, schemas_all))
 #' (s2 <- schema_guess(pname, cnames2, schemas_all))
 #'
@@ -189,15 +228,20 @@ schema_guess <- function(pname, cnames, schemas_all) {
 #' @param ... Passed on to `readr::read_delim`.
 #'
 #' @examples
-#' dir1 <- system.file("extdata/tool1", package = "nemo")
-#' fpath <- file.path(dir1, "latest", "sampleA.tool1.table3.tsv")
-#' x <- Tool1$new(dir1)
+#' path <- system.file("extdata/tool1", package = "nemo")
+#' x <- Tool1$new(path)
 #' schemas_all <- x$raw_schemas_all
 #' pname <- "table3"
-#' (d <- parse_file_keyvalue(fpath, pname, schemas_all))
+#' # v1.0.0: 3 key-value pairs (SampleID, QCStatus, TotalReads)
+#' (d3_v1  <- parse_file_keyvalue(file.path(path, "v1.0.0", "sampleA.tool1.table3.tsv"), pname, schemas_all))
+#' # latest: 5 key-value pairs
+#' (d3_lat <- parse_file_keyvalue(file.path(path, "latest", "sampleA.tool1.table3.tsv"), pname, schemas_all))
 #'
 #' @testexamples
-#' expect_equal(names(d)[1:2], c("SampleID", "QCStatus"))
+#' expect_equal(attr(d3_v1,  "file_version"), "v1.0.0")
+#' expect_equal(attr(d3_lat, "file_version"), "latest")
+#' expect_equal(names(d3_v1),  c("SampleID", "QCStatus", "TotalReads"))
+#' expect_equal(names(d3_lat), c("SampleID", "QCStatus", "TotalReads", "MappedReads", "UnmappedReads"))
 #' @export
 parse_file_keyvalue <- function(fpath, pname, schemas_all, delim = "\t", ...) {
   ncols <- file_hdr(fpath, delim = delim, ...) |> length()
