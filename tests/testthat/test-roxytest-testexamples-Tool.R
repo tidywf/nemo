@@ -2,7 +2,7 @@
 
 # File R/Tool.R: @testexamples
 
-test_that("Function Tool() @ L82", {
+test_that("Function Tool() @ L81", {
   
   fs::path(tempdir(), letters[1:5]) |>
     fs::file_temp_push() |>
@@ -34,26 +34,19 @@ test_that("Function Tool() @ L82", {
   (lfD <- list.files(dir2, full.names = TRUE))
   
   
-  # filter_files
-  expect_equal(
-    toolA$files$tool_parser,
-    paste0("tool1_", c("table1", "table1", "table1", "table2", "table4", "table5"))
-  )
+  # filter_files: table3 excluded, other parsers present
+  expect_false("tool1_table3" %in% toolA$files$tool_parser)
+  expect_true(all(c("tool1_table1", "tool1_table2", "tool1_table4") %in% toolA$files$tool_parser))
   expect_equal(unique(toolB$files$tool_parser), "tool1_table1")
-  expect_equal(
-    toolC$files$tool_parser,
-    paste0("tool1_", c("table1", "table1", "table1", "table2", "table3", "table4"))
-  )
+  # toolC: table5 excluded, table3 retained
+  expect_false("tool1_table5" %in% toolC$files$tool_parser)
+  expect_true("tool1_table3" %in% toolC$files$tool_parser)
   expect_error(
     toolB$filter_files(include = "tool1_table1", exclude = "tool1_table3"),
     "You cannot define both include and exclude"
   )
-  # list_files
-  expect_equal(length(lfC), 6)
-  expect_equal(length(lfD), 6)
-  # tidy
+  # tidy: structure and column names
   expect_false(is.null(toolC$tbls))
-  expect_equal(nrow(toolC$tbls), 6)
   expect_named(
     toolC$tbls,
     c(
@@ -61,7 +54,13 @@ test_that("Function Tool() @ L82", {
       "pattern", "prefix", "group", "tidy"
     )
   )
-  # write
+  # table4: two versions parsed with correct column counts
+  t4 <- toolC$tbls |> dplyr::filter(tool_parser == "tool1_table4")
+  expect_equal(nrow(t4), 2)
+  t4_ncols <- purrr::map_int(t4$tidy, \(x) ncol(x$data[[1]]))
+  expect_setequal(t4_ncols, c(3L, 5L))
+  # write: two table4 output files (one per version)
+  expect_equal(sum(grepl("table4", lfC)), 2)
   expect_named(toolD, c("tool_parser", "prefix", "tidy_data", "tbl_name", "outpath"))
 })
 

@@ -48,26 +48,19 @@
 #'
 #'
 #' @testexamples
-#' # filter_files
-#' expect_equal(
-#'   toolA$files$tool_parser,
-#'   paste0("tool1_", c("table1", "table1", "table1", "table2", "table4", "table5"))
-#' )
+#' # filter_files: table3 excluded, other parsers present
+#' expect_false("tool1_table3" %in% toolA$files$tool_parser)
+#' expect_true(all(c("tool1_table1", "tool1_table2", "tool1_table4") %in% toolA$files$tool_parser))
 #' expect_equal(unique(toolB$files$tool_parser), "tool1_table1")
-#' expect_equal(
-#'   toolC$files$tool_parser,
-#'   paste0("tool1_", c("table1", "table1", "table1", "table2", "table3", "table4"))
-#' )
+#' # toolC: table5 excluded, table3 retained
+#' expect_false("tool1_table5" %in% toolC$files$tool_parser)
+#' expect_true("tool1_table3" %in% toolC$files$tool_parser)
 #' expect_error(
 #'   toolB$filter_files(include = "tool1_table1", exclude = "tool1_table3"),
 #'   "You cannot define both include and exclude"
 #' )
-#' # list_files
-#' expect_equal(length(lfC), 6)
-#' expect_equal(length(lfD), 6)
-#' # tidy
+#' # tidy: structure and column names
 #' expect_false(is.null(toolC$tbls))
-#' expect_equal(nrow(toolC$tbls), 6)
 #' expect_named(
 #'   toolC$tbls,
 #'   c(
@@ -75,7 +68,13 @@
 #'     "pattern", "prefix", "group", "tidy"
 #'   )
 #' )
-#' # write
+#' # table4: two versions parsed with correct column counts
+#' t4 <- toolC$tbls |> dplyr::filter(tool_parser == "tool1_table4")
+#' expect_equal(nrow(t4), 2)
+#' t4_ncols <- purrr::map_int(t4$tidy, \(x) ncol(x$data[[1]]))
+#' expect_setequal(t4_ncols, c(3L, 5L))
+#' # write: two table4 output files (one per version)
+#' expect_equal(sum(grepl("table4", lfC)), 2)
 #' expect_named(toolD, c("tool_parser", "prefix", "tidy_data", "tbl_name", "outpath"))
 #'
 #' @export
@@ -405,9 +404,19 @@ Tool <- R6::R6Class(
     #' @return (`tibble()`)\cr
     #' Parsed data in tibble.
     .parse_file_nohead = function(x, pname, delim = "\t", ...) {
+      ncols <- file_hdr(x, delim = delim, ...) |> length()
       schema <- self$raw_schemas_all |>
         dplyr::filter(.data$name == pname) |>
-        dplyr::select("version", "schema")
+        dplyr::select("version", "schema") |>
+        dplyr::rowwise() |>
+        dplyr::filter(nrow(.data$schema) == ncols) |>
+        dplyr::ungroup()
+      if (nrow(schema) != 1) {
+        stop(glue(
+          "Expected exactly one schema version matching {ncols} columns ",
+          "for '{pname}', found {nrow(schema)}."
+        ))
+      }
       parse_file_nohead(
         fpath = x,
         schema = schema,

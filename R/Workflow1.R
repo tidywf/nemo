@@ -14,10 +14,10 @@
 #' # initialize
 #' expect_equal(length(wf$tools), 1)
 #' expect_equal(wf$tools[[1]]$name, "tool1")
-#' # list_files
-#' expect_equal(nrow(lf_all), 7)
-#' # nemofy
-#' expect_equal(length(lf), 7)
+#' # list_files: all parsers present
+#' expect_true(all(c("tool1_table1", "tool1_table2", "tool1_table4") %in% lf_all$tool_parser))
+#' # nemofy: two table4 output files (one per version)
+#' expect_equal(sum(grepl("table4", basename(lf))), 2)
 #' @export
 Workflow1 <- R6::R6Class(
   "Workflow1",

@@ -66,6 +66,15 @@ tool1 <- list(
   # txt-nohead: no header, positional columns, tab-delimited
   table4 = list(
     list(
+      version = "v1.0.0",
+      format = "txt-nohead",
+      data = tibble::tibble(
+        SampleID = c("sampleA", "sampleB"),
+        Chromosome = c("chr1", "chr2"),
+        Start = c(100L, 200L)
+      )
+    ),
+    list(
       version = "latest",
       format = "txt-nohead",
       data = tibble::tibble(

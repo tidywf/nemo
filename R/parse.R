@@ -56,6 +56,30 @@ parse_file <- function(fpath, pname, schemas_all, delim = "\t", ...) {
 #' @param delim (`character(1)`)\cr
 #' File delimiter.
 #' @param ... Passed on to `readr::read_delim`.
+#'
+#' @examples
+#' path <- system.file("extdata/tool1", package = "nemo")
+#' x <- Tool$new("tool1", pkg = "nemo", path)
+#' schemas_all <- x$raw_schemas_all
+#' pname <- "table4"
+#' fpath_latest <- file.path(path, "latest", "sampleA.tool1.table4.tsv")
+#' fpath_v1 <- file.path(path, "v1.0.0", "sampleA.tool1.table4.tsv")
+#' schema_latest <- schemas_all |>
+#'   dplyr::filter(.data$name == pname, .data$version == "latest") |>
+#'   dplyr::select("version", "schema")
+#' schema_v1 <- schemas_all |>
+#'   dplyr::filter(.data$name == pname, .data$version == "v1.0.0") |>
+#'   dplyr::select("version", "schema")
+#' (d_latest <- parse_file_nohead(fpath_latest, schema_latest))
+#' (d_v1 <- parse_file_nohead(fpath_v1, schema_v1))
+#'
+#' @testexamples
+#' expect_equal(ncol(d_latest), 5)
+#' expect_equal(ncol(d_v1), 3)
+#' expect_equal(names(d_latest), c("X1", "X2", "X3", "X4", "X5"))
+#' expect_equal(names(d_v1), c("X1", "X2", "X3"))
+#' expect_equal(attr(d_latest, "file_version"), "latest")
+#' expect_equal(attr(d_v1, "file_version"), "v1.0.0")
 #' @export
 parse_file_nohead <- function(fpath, schema, delim = "\t", ...) {
   assertthat::assert_that(

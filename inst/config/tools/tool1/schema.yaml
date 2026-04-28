@@ -98,17 +98,17 @@ tables:
         tidy: 'sample_id'
         type: 'char'
         description: 'sample ID'
-        versions: ['latest']
+        versions: ['v1.0.0', 'latest']
       - raw: 'X2'
         tidy: 'chromosome'
         type: 'char'
         description: 'chromosome'
-        versions: ['latest']
+        versions: ['v1.0.0', 'latest']
       - raw: 'X3'
         tidy: 'start'
         type: 'int'
         description: 'start position'
-        versions: ['latest']
+        versions: ['v1.0.0', 'latest']
       - raw: 'X4'
         tidy: 'end'
         type: 'int'

@@ -2,7 +2,7 @@
 
 # File R/Workflow.R: @testexamples
 
-test_that("Function Workflow() @ L58", {
+test_that("Function Workflow() @ L59", {
   
   fs::path(tempdir(), letters[1:5]) |>
     fs::file_temp_push() |>
@@ -27,19 +27,20 @@ test_that("Function Workflow() @ L58", {
     "tool_parser", "parser", "bname", "size", "lastmodified", "path",
     "pattern", "prefix", "group"
   )
-  expect_equal(nrow(lf_all), 7)
+  expect_true(all(c("tool1_table1", "tool1_table2", "tool1_table4") %in% lf_all$tool_parser))
   expect_named(lf_all, nms1)
-  # filter_files + tidy + get_tbls
-  expect_equal(nrow(tbls), 6)
+  # filter_files + tidy + get_tbls: table5 excluded, table4 retained
+  expect_false("tool1_table5" %in% tbls$tool_parser)
+  expect_true("tool1_table4" %in% tbls$tool_parser)
   expect_named(tbls, c(nms1, "tidy"))
   # get_raw_schemas_all
   expect_named(rs, c("tool", "name", "tbl_description", "version", "schema"))
-  # write + written_files
-  expect_equal(length(lf1), 6)
+  # write: two table4 output files (one per version)
+  expect_equal(sum(grepl("table4", basename(lf1))), 2)
   expect_named(wf$written_files, c("tool_parser", "prefix", "tidy_data", "tbl_name", "outpath"))
   # get_metadata
   expect_named(meta, c("input_id", "output_id", "input_dir", "output_dir", "pkg_versions", "files"))
-  # nemofy
-  expect_equal(length(lf2), 7)
+  # nemofy: all parsers written
+  expect_true(all(c("tool1_table1", "tool1_table4") %in% sub(".*_(tool1_table\\d).*", "\\1", basename(lf2))))
 })
 

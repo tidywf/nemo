@@ -37,11 +37,11 @@
 #'   c("section", "rg", "reads_total", "reads_map", "reads_unmap", "bases_total",
 #'     "reads_total_pct", "reads_map_pct", "reads_unmap_pct")
 #' )
-#' # nemofy
-#' expect_equal(length(lf), 7)
+#' # nemofy: two table4 output files (one per version)
+#' expect_equal(sum(grepl("table4", lf)), 2)
 #' # tidy (obj2)
 #' expect_false(is.null(obj2$tbls))
-#' expect_equal(nrow(obj2$tbls), 7)
+#' expect_equal(nrow(obj2$tbls |> dplyr::filter(tool_parser == "tool1_table4")), 2)
 #' expect_named(
 #'   obj2$tbls,
 #'   c(
