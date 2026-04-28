@@ -2,27 +2,28 @@
 
 class Config {
 +tool
++pkg
 +config
 +raw_schemas_all
-+tidy_schemas_all
 +initialize(tool,\n  pkg)
 +print(...)
-+read(pkg)
-+get_raw_patterns()
-+get_raw_versions()
-+get_raw_descriptions()
-+get_raw_schemas_all()
-+get_raw_schema(x,\n  v)
-+are_raw_schemas_valid()
-+get_tidy_descriptions()
-+get_tidy_schemas_all()
-+get_tidy_schema(x,\n  v,\n  subtbl)
++read()
++get_patterns()
++get_ftypes()
++get_ftype(x)
++get_descriptions()
++get_schemas_all(raw_or_tidy)
++get_schema(x,\n  v,\n  raw_or_tidy)
++are_schemas_valid()
++get_col_map(x,\n  v)
 +clone(deep)
 }
 
 class Tool {
--needs_tidying
+-is_tidied
+-is_written
 +name
++pkg
 +path
 +config
 +files
@@ -31,48 +32,53 @@ class Tool {
 +tidy_schemas_all
 +get_tidy_schema
 +get_raw_schema
++get_col_map
 +files_tbl
 +initialize(name,\n  pkg,\n  path,\n  files_tbl)
 +print(...)
 +filter_files(include,\n  exclude)
 +list_files(type)
++.dispatch_parse(x,\n  tname)
++.dispatch_tidy(x,\n  tname)
++.parse_by_ftype(x,\n  tname)
 +.parse_file(x,\n  name,\n  delim,\n  ...)
 +.tidy_file(x,\n  name,\n  convert_types)
++.parse_file_keyvalue(x,\n  name,\n  delim,\n  ...)
 +.parse_file_nohead(x,\n  pname,\n  delim,\n  ...)
-+.eval_func(fun,\n  envir)
 +tidy(tidy,\n  keep_raw)
-+write(odir,\n  format,\n  id,\n  dbconn)
-+nemofy(odir,\n  format,\n  id,\n  dbconn,\n  include,\n  exclude)
++write(diro,\n  format,\n  input_id,\n  output_id,\n  dbconn)
++nemofy(diro,\n  format,\n  input_id,\n  output_id,\n  dbconn,\n  include,\n  exclude)
 +clone(deep)
 }
 
 class Tool1 {
 +initialize(path,\n  files_tbl)
-+parse_table1(x)
-+tidy_table1(x)
-+parse_table2(x)
-+tidy_table2(x)
-+parse_table3(x)
 +tidy_table3(x)
++parse_table5(x)
++tidy_table5(x)
 +clone(deep)
 }
 
 class Workflow {
+-is_tidied
+-is_written
 +name
 +path
 +tools
 +files_tbl
++written_files
 -validate_tools(x)
 +initialize(name,\n  path,\n  tools)
 +print(...)
 +filter_files(include,\n  exclude)
 +list_files(type)
 +tidy(tidy,\n  keep_raw)
-+write(odir,\n  format,\n  id,\n  dbconn)
-+nemofy(odir,\n  format,\n  id,\n  dbconn,\n  include,\n  exclude)
++write(diro,\n  format,\n  input_id,\n  output_id,\n  dbconn)
++nemofy(diro,\n  format,\n  input_id,\n  output_id,\n  dbconn,\n  include,\n  exclude)
 +get_raw_schemas_all()
 +get_tidy_schemas_all()
 +get_tbls()
++get_metadata(input_id,\n  output_id,\n  output_dir,\n  pkgs)
 +clone(deep)
 }
 
