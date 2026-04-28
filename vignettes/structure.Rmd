@@ -76,7 +76,7 @@ bioinformatic tools and workflows.
 Here we use the `Tool1` and `Workflow1` classes as examples to illustrate the
 structure of the package.
 
-## `Config`
+## `Config` {.tabset .tabset-pills}
 
 A `Config` object reads a single `schema.yaml` file from `inst/config/tools/<tool>/`.
 Each table entry defines its file pattern, file type, description, and a list of
@@ -86,9 +86,7 @@ tool version the column appears in.
 `Config` derives versioned raw and tidy views from this unified source on demand.
 See `?Config`.
 
-### {.tabset .tabset-pills}
-
-#### intro
+### intro
 
 ```{r tool1_config1}
 tool <- params$tool
@@ -97,7 +95,7 @@ conf <- Config$new(tool, pkg = "nemo")
 conf
 ```
 
-#### patterns
+### patterns
 
 Patterns are used to fish out the relevant files from a directory listing.
 
@@ -106,7 +104,7 @@ conf$get_patterns() |>
   knitr::kable(caption = glue("{tool} file patterns."))
 ```
 
-#### descriptions
+### descriptions
 
 Descriptions are usually derived from the individual tool documentation.
 
@@ -115,7 +113,7 @@ conf$get_descriptions() |>
   knitr::kable(caption = glue("{tool} file descriptions."))
 ```
 
-#### versions
+### versions
 
 The `versions` array on each column lists every tool version that column appears
 in, giving a full picture of additions and removals across versions.
@@ -127,7 +125,7 @@ conf$get_schemas_all() |>
   knitr::kable(caption = glue("{tool} schema versions."))
 ```
 
-#### schemas
+### schemas
 
 `get_schemas_all()` derives a versioned view from the unified column list.
 Pass `"raw"` (default) or `"tidy"` to get column names in either form:
