@@ -48,12 +48,12 @@ tables:
         tidy: 'sample_id'
         type: 'char'
         description: 'sample ID'
-        versions: ['latest']
+        versions: ['v1.0.0', 'latest']
       - raw: 'metricA'
         tidy: 'metric_a'
         type: 'char'
         description: 'metric A'
-        versions: ['latest']
+        versions: ['v1.0.0', 'latest']
       - raw: 'metricB'
         tidy: 'metric_b'
         type: 'float'
@@ -68,17 +68,17 @@ tables:
         tidy: 'sample_id'
         type: 'char'
         description: 'sample ID'
-        versions: ['latest']
+        versions: ['v1.0.0', 'latest']
       - raw: 'QCStatus'
         tidy: 'qcstatus'
         type: 'char'
         description: 'QC status'
-        versions: ['latest']
+        versions: ['v1.0.0', 'latest']
       - raw: 'TotalReads'
         tidy: 'reads_total'
         type: 'float'
         description: 'total reads'
-        versions: ['latest']
+        versions: ['v1.0.0', 'latest']
       - raw: 'MappedReads'
         tidy: 'reads_map'
         type: 'float'

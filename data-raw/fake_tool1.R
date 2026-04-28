@@ -38,6 +38,14 @@ tool1 <- list(
   # tsv: header present, tab-delimited (simpler, single version)
   table2 = list(
     list(
+      version = "v1.0.0",
+      format = "tsv",
+      data = tibble::tibble(
+        SampleID = "sampleA",
+        metricA = c("a", "b", "c")
+      )
+    ),
+    list(
       version = "latest",
       format = "tsv",
       data = tibble::tibble(
@@ -49,6 +57,17 @@ tool1 <- list(
   ),
   # keyvalue: two-column key=value pairs, tab-delimited, no header, pivots to single-row tibble
   table3 = list(
+    list(
+      version = "v1.0.0",
+      format = "keyvalue",
+      delim = "\t",
+      data = tibble::tribble(
+        ~key         , ~value    ,
+        "SampleID"   , "sampleA" ,
+        "QCStatus"   , "Pass"    ,
+        "TotalReads" , "10000"
+      )
+    ),
     list(
       version = "latest",
       format = "keyvalue",

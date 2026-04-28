@@ -49,10 +49,11 @@
 #'     "pattern", "prefix", "group", "tidy"
 #'   )
 #' )
-#' expect_named(
-#'   obj2$tbls |> dplyr::filter(parser == "table3") |> dplyr::pull(tidy) |> _[[1]] |> _$data[[1]],
-#'   c("sample_id", "qcstatus", "reads_total", "reads_map", "reads_unmap")
+#' t3_ncols <- purrr::map_int(
+#'   obj2$tbls |> dplyr::filter(parser == "table3") |> dplyr::pull(tidy),
+#'   \(x) ncol(x$data[[1]])
 #' )
+#' expect_setequal(t3_ncols, c(3L, 5L))
 #' expect_named(
 #'   obj2$tbls |> dplyr::filter(parser == "table5") |> dplyr::pull(tidy) |> _[[1]] |> _$data[[1]],
 #'   c("section", "rg", "reads_total", "reads_map", "reads_unmap", "bases_total",
@@ -109,6 +110,7 @@ Tool1 <- R6::R6Class(
       version <- get_tbl_version_attr(x)
       col_map <- self$get_col_map("table5", v = version)
       raw_to_tidy <- col_map |> dplyr::select("raw", "tidy") |> tibble::deframe()
+      # reserved for post-pivot type coercion once table5 has non-float schema columns
       raw_to_type <- col_map |> dplyr::select("tidy", "type") |> tibble::deframe()
       d_count <- x |>
         dplyr::filter(.data$variable %in% names(raw_to_tidy)) |>

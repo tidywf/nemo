@@ -2,20 +2,35 @@
 
 # File R/parse.R: @testexamples
 
-test_that("Function parse_file() @ L27", {
+test_that("Function parse_file() @ L42", {
   
   path <- system.file("extdata/tool1", package = "nemo")
   x <- Tool$new("tool1", pkg = "nemo", path)
   schemas_all <- x$raw_schemas_all
-  pname <- "table1"
-  fpath <- file.path(path, "latest", "sampleA.tool1.table1.tsv")
-  (d <- parse_file(fpath, pname, schemas_all))
+  # table1: three versions with different column sets
+  (d1_v123 <- parse_file(file.path(path, "v1.2.3", "sampleA.tool1.table1.tsv"), "table1", schemas_all))
+  (d1_v456 <- parse_file(file.path(path, "v4.5.6", "sampleA.tool1.table1.tsv"), "table1", schemas_all))
+  (d1_lat  <- parse_file(file.path(path, "latest", "sampleA.tool1.table1.tsv"), "table1", schemas_all))
+  # table2: two versions (v1.0.0 drops metricB)
+  (d2_v1  <- parse_file(file.path(path, "v1.0.0", "sampleA.tool1.table2.tsv"), "table2", schemas_all))
+  (d2_lat <- parse_file(file.path(path, "latest", "sampleA.tool1.table2.tsv"), "table2", schemas_all))
   
-  expect_equal(names(d)[1:3], c("SampleID", "Chromosome", "Start"))
+  # table1 version detection
+  expect_equal(attr(d1_v123, "file_version"), "v1.2.3")
+  expect_equal(attr(d1_v456, "file_version"), "v4.5.6")
+  expect_equal(attr(d1_lat,  "file_version"), "latest")
+  expect_equal(names(d1_v123), c("SampleID", "Chromosome", "Start", "End", "metricX"))
+  expect_equal(names(d1_v456), c("SampleID", "Chromosome", "Start", "End"))
+  expect_equal(names(d1_lat),  c("SampleID", "Chromosome", "Start", "End", "metricY", "metricZ"))
+  # table2 version detection
+  expect_equal(attr(d2_v1,  "file_version"), "v1.0.0")
+  expect_equal(attr(d2_lat, "file_version"), "latest")
+  expect_equal(names(d2_v1),  c("SampleID", "metricA"))
+  expect_equal(names(d2_lat), c("SampleID", "metricA", "metricB"))
 })
 
 
-test_that("Function parse_file_nohead() @ L84", {
+test_that("Function parse_file_nohead() @ L99", {
   
   path <- system.file("extdata/tool1", package = "nemo")
   x <- Tool$new("tool1", pkg = "nemo", path)
@@ -41,7 +56,7 @@ test_that("Function parse_file_nohead() @ L84", {
 })
 
 
-test_that("Function file_hdr() @ L129", {
+test_that("Function file_hdr() @ L144", {
   
   dir1 <- system.file("extdata/tool1", package = "nemo")
   fpath <- file.path(dir1, "latest", "sampleA.tool1.table1.tsv")
@@ -51,7 +66,7 @@ test_that("Function file_hdr() @ L129", {
 })
 
 
-test_that("Function schema_guess() @ L170", {
+test_that("Function schema_guess() @ L185", {
   
   dir1 <- system.file("extdata/tool1", package = "nemo")
   fpath1 <- file.path(dir1, "latest", "sampleA.tool1.table1.tsv")
@@ -70,15 +85,20 @@ test_that("Function schema_guess() @ L170", {
 })
 
 
-test_that("Function parse_file_keyvalue() @ L226", {
+test_that("Function parse_file_keyvalue() @ L246", {
   
-  dir1 <- system.file("extdata/tool1", package = "nemo")
-  fpath <- file.path(dir1, "latest", "sampleA.tool1.table3.tsv")
-  x <- Tool1$new(dir1)
+  path <- system.file("extdata/tool1", package = "nemo")
+  x <- Tool1$new(path)
   schemas_all <- x$raw_schemas_all
   pname <- "table3"
-  (d <- parse_file_keyvalue(fpath, pname, schemas_all))
+  # v1.0.0: 3 key-value pairs (SampleID, QCStatus, TotalReads)
+  (d3_v1  <- parse_file_keyvalue(file.path(path, "v1.0.0", "sampleA.tool1.table3.tsv"), pname, schemas_all))
+  # latest: 5 key-value pairs
+  (d3_lat <- parse_file_keyvalue(file.path(path, "latest", "sampleA.tool1.table3.tsv"), pname, schemas_all))
   
-  expect_equal(names(d)[1:2], c("SampleID", "QCStatus"))
+  expect_equal(attr(d3_v1,  "file_version"), "v1.0.0")
+  expect_equal(attr(d3_lat, "file_version"), "latest")
+  expect_equal(names(d3_v1),  c("SampleID", "QCStatus", "TotalReads"))
+  expect_equal(names(d3_lat), c("SampleID", "QCStatus", "TotalReads", "MappedReads", "UnmappedReads"))
 })
 

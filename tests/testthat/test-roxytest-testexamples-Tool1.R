@@ -2,7 +2,7 @@
 
 # File R/Tool1.R: @testexamples
 
-test_that("Function Tool1() @ L62", {
+test_that("Function Tool1() @ L63", {
   
   indir <- system.file("extdata/tool1", package = "nemo")
   dir1 <- tempdir()
@@ -46,10 +46,11 @@ test_that("Function Tool1() @ L62", {
       "pattern", "prefix", "group", "tidy"
     )
   )
-  expect_named(
-    obj2$tbls |> dplyr::filter(parser == "table3") |> dplyr::pull(tidy) |> _[[1]] |> _$data[[1]],
-    c("sample_id", "qcstatus", "reads_total", "reads_map", "reads_unmap")
+  t3_ncols <- purrr::map_int(
+    obj2$tbls |> dplyr::filter(parser == "table3") |> dplyr::pull(tidy),
+    \(x) ncol(x$data[[1]])
   )
+  expect_setequal(t3_ncols, c(3L, 5L))
   expect_named(
     obj2$tbls |> dplyr::filter(parser == "table5") |> dplyr::pull(tidy) |> _[[1]] |> _$data[[1]],
     c("section", "rg", "reads_total", "reads_map", "reads_unmap", "bases_total",
