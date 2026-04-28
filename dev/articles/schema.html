@@ -16,7 +16,6 @@
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><script src="schema_files/libs/quarto-html/popper.min.js"></script><script src="schema_files/libs/quarto-html/tippy.umd.min.js"></script><link href="schema_files/libs/quarto-html/tippy.css" rel="stylesheet">
 <link href="schema_files/libs/quarto-html/light-border.css" rel="stylesheet">
-<script src="schema_files/libs/quarto-diagram/mermaid.min.js"></script><script src="schema_files/libs/quarto-diagram/mermaid-init.js"></script><link href="schema_files/libs/quarto-diagram/mermaid.css" rel="stylesheet">
 <!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Schema">
 <meta property="og:image" content="https://tidywf.github.io/nemo/logo.png">
 <meta name="robots" content="noindex">
@@ -29,7 +28,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">nemo</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.0.3.9007</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.0.3.9010</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -44,10 +43,10 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/installation.html">Installation</a></li>
     <li><a class="dropdown-item" href="../articles/structure.html">Structure</a></li>
+    <li><a class="dropdown-item" href="../articles/schema.html">Schema</a></li>
     <li><a class="dropdown-item" href="../articles/contribute.html">Contribute</a></li>
     <li><a class="dropdown-item" href="../articles/devnotes.html">Devnotes</a></li>
     <li><a class="dropdown-item" href="../articles/uml.html">UML</a></li>
-    <li><a class="dropdown-item" href="../articles/schema.html">Schema</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../articles/NEWS.html">NEWS</a></li>
@@ -80,404 +79,372 @@
 
 
 
-    <p>Each tool has a single <a href="https://linkml.io/linkml/index.html" class="external-link">LinkML</a> schema under <code>inst/config/tools/&lt;tool&gt;/schema.yaml</code>. This file tells {nemo} everything it needs to know: which files to look for, how to parse them, and what the tidy output should look like.</p>
-<section class="level2"><h2 id="file-header">File header<a class="anchor" aria-label="anchor" href="#file-header"></a>
+    <p>Each nemo tool has a single <code>schema.yaml</code> under <code>inst/config/tools/&lt;tool&gt;/</code>. It is a flat <code>tables:</code> map — one entry per output file type — that drives both file discovery and raw =&gt; tidy transformation.</p>
+<section class="level2"><h2 id="schema-yaml-structure">
+<code>schema.yaml</code> structure<a class="anchor" aria-label="anchor" href="#schema-yaml-structure"></a>
 </h2>
-<p>Every schema starts with the same boilerplate:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">id</span><span class="kw">:</span><span class="at"> https://example.org/nemo/tool1</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">name</span><span class="kw">:</span><span class="at"> tool1</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">description</span><span class="kw">: </span><span class="ch">&gt;-</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  Just a toy tool for demoing.</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">prefixes</span><span class="kw">:</span></span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">linkml</span><span class="kw">:</span><span class="at"> https://w3id.org/linkml/</span></span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">tool1</span><span class="kw">:</span><span class="at"> https://example.org/nemo/tool1/</span></span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="fu">imports</span><span class="kw">:</span></span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> linkml:types</span></span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="fu">default_range</span><span class="kw">:</span><span class="at"> string</span></span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="fu">default_prefix</span><span class="kw">:</span><span class="at"> tool1</span></span></code></pre></div>
-<ul>
-<li>
-<code>id</code>, <code>name</code>, <code>description</code>, <code>prefixes</code>, and <code>imports</code>: LinkML conventions.</li>
-<li>
-<code>default_range: string</code>: use string as a fallback for any attribute without an explicit <code>range</code>.</li>
-</ul></section><section class="level2"><h2 id="subsets">Subsets<a class="anchor" aria-label="anchor" href="#subsets"></a>
+<div class="sourceCode" id="cb1"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tables</span><span class="kw">:</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">&lt;table_name&gt;</span><span class="kw">:</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">description</span><span class="kw">:</span><span class="at"> </span><span class="st">'&lt;human-readable description&gt;'</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">pattern</span><span class="kw">:</span><span class="at"> </span><span class="st">"&lt;regex matching the file basename&gt;"</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">ftype</span><span class="kw">:</span><span class="at"> </span><span class="st">'&lt;file type — see below&gt;'</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">columns</span><span class="kw">:</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">raw</span><span class="kw">:</span><span class="at"> </span><span class="st">'&lt;raw column name or positional label&gt;'</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">tidy</span><span class="kw">:</span><span class="at"> </span><span class="st">'&lt;tidy snake_case name&gt;'</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">type</span><span class="kw">:</span><span class="at"> </span><span class="st">'char | int | float'</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">description</span><span class="kw">:</span><span class="at"> </span><span class="st">'&lt;human-readable description&gt;'</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">versions</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="st">'&lt;version1&gt;'</span><span class="kw">,</span><span class="at"> </span><span class="st">'&lt;version2&gt;'</span><span class="kw">]</span></span></code></pre></div>
+<p>The <code>pattern</code> value must use YAML <strong>double-quoted</strong> strings so that backslash escapes are processed correctly (e.g. <code>"\\.tool1\\.table1\\.tsv$"</code>).</p>
+</section><section class="level2"><h2 id="file-types-ftype">File types (<code>ftype</code>)<a class="anchor" aria-label="anchor" href="#file-types-ftype"></a>
 </h2>
-<p><code>subsets</code> declares all the tags that will be referenced in <code>in_subset</code> later:</p>
-<ul>
-<li>
-<code>raw</code>: class describes <strong>raw input</strong> file.</li>
-<li>
-<code>tidy</code>: class describes <strong>tidy output</strong> tibble.</li>
-<li>
-<code>&lt;version&gt;</code>: any other name (e.g. <code>v1.2.3</code>, <code>latest</code>) tags a version.</li>
-</ul>
-<div class="sourceCode" id="cb2"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">subsets</span><span class="kw">:</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">raw</span><span class="kw">:</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">description</span><span class="kw">:</span><span class="at"> Raw input file schema</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">tidy</span><span class="kw">:</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">description</span><span class="kw">:</span><span class="at"> Tidy output schema</span></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">v1.2.3</span><span class="kw">:</span></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">description</span><span class="kw">:</span><span class="at"> Tool1 version v1.2.3</span></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">latest</span><span class="kw">:</span></span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">description</span><span class="kw">:</span><span class="at"> Tool1 latest version</span></span></code></pre></div>
-<p>At least <code>raw</code>, <code>tidy</code>, and one version subset (typically <code>latest</code>) are always required.</p>
-</section><section class="level2"><h2 id="class-naming-convention">Class naming convention<a class="anchor" aria-label="anchor" href="#class-naming-convention"></a>
-</h2>
-<p>Classes under <code>classes:</code> must be named with a <code>Raw</code> or <code>Tidy</code> prefix. The prefix is stripped and lowercased to get the <strong>logical table name</strong> used in the Config API. For example, <code>RawTable1</code> and <code>TidyTable1</code> both refer to the logical table <code>table1</code>.</p>
-<p>To decouple the class name from the table name (useful when a single table maps to multiple tidy subtables), set the <code>name</code> annotation explicitly, which overrides the prefix-stripping fallback.</p>
-</section><section class="level2"><h2 id="visualisation">Visualisation<a class="anchor" aria-label="anchor" href="#visualisation"></a>
-</h2>
-<p>Schemas can be visualised as Mermaid ER diagrams using <code><a href="../reference/schema_to_mermaid.html">schema_to_mermaid()</a></code>. All schema versions are merged into a single view.</p>
-<p>For example, the <code>tool1</code> schema looks like:</p>
-<div class="sourceCode cell-code" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">p</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"config/tools/tool1/schema.yaml"</span>, package <span class="op">=</span> <span class="st">"nemo"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"```{mermaid}\n"</span>, <span class="fu"><a href="../reference/schema_to_mermaid.html">schema_to_mermaid</a></span><span class="op">(</span><span class="va">p</span><span class="op">)</span>, <span class="st">"\n```\n"</span>, sep <span class="op">=</span> <span class="st">""</span><span class="op">)</span></span></code></pre></div>
-<div class="cell" data-layout-align="default">
-<div class="cell-output-display">
-<div>
-<p></p>
-<figure class=""><p></p>
-<div>
-<pre class="mermaid mermaid-js">erDiagram
-RawTable1 {
-    string SampleID
-    string Chromosome
-    integer Start
-    integer End
-    float metricX
-    float metricY
-    float metricZ
-}
-TidyTable1 {
-    string sample_id
-    string chromosome
-    integer start
-    integer end
-    float metric_x
-    float metric_y
-    float metric_z
-}
-RawTable2 {
-    string SampleID
-    string metricA
-    float metricB
-}
-TidyTable2 {
-    string sample_id
-    string metric_a
-    float metric_b
-}
-RawTable3 {
-    string SampleID
-    string QCStatus
-    float TotalReads
-    float MappedReads
-    float UnmappedReads
-}
-TidyTable3 {
-    string sample_id
-    string qcstatus
-    float reads_total
-    float reads_map
-    float reads_unmap
-}
-</pre>
-</div>
-<p></p></figure><p></p>
-</div>
-</div>
-</div>
-</section><section class="level2"><h2 id="annotations">Annotations<a class="anchor" aria-label="anchor" href="#annotations"></a>
-</h2>
-<p>Every class carries a set of {nemo}-specific <code>annotations</code>:</p>
+<p>The <code>ftype</code> field signals the parsing strategy for that table. Tab-delimited is the default; other delimiters are handled inside the specific parser, not in <code>ftype</code>.</p>
 <table class="table caption-top">
 <colgroup>
-<col style="width: 13%">
+<col style="width: 20%">
+<col style="width: 39%">
 <col style="width: 22%">
-<col style="width: 63%">
+<col style="width: 17%">
 </colgroup>
 <thead><tr class="header">
-<th>Key</th>
-<th>Required on</th>
-<th>Purpose</th>
+<th><code>ftype</code></th>
+<th>Description</th>
+<th>
+<code>raw:</code> names</th>
+<th>Parse function</th>
 </tr></thead>
 <tbody>
 <tr class="odd">
-<td><code>name</code></td>
-<td>both Raw and Tidy</td>
-<td>Logical table name; overrides prefix-strip fallback</td>
+<td><code>txt</code></td>
+<td>Header present; cols named in file</td>
+<td>actual column names</td>
+<td><code>parse_file</code></td>
 </tr>
 <tr class="even">
-<td><code>pattern</code></td>
-<td>Raw only</td>
-<td>Regex used to find matching files in a directory</td>
+<td><code>txt-nohead</code></td>
+<td>No header; positional columns</td>
+<td><code>X1, X2, …, XN</code></td>
+<td><code>parse_file_nohead</code></td>
 </tr>
 <tr class="odd">
-<td><code>ftype</code></td>
-<td>Raw only</td>
-<td>File type (<code>tsv</code>, <code>csv</code>, <code>txt-nohead</code>)</td>
+<td><code>txt-keyvalue</code></td>
+<td>No header; exactly 2 cols (key, value); pivoted wide</td>
+<td>actual key values</td>
+<td><code>parse_file_keyvalue</code></td>
 </tr>
 <tr class="even">
-<td><code>subtbl</code></td>
-<td>Tidy only</td>
-<td>Sub-table name within a parser (default: <code>tbl1</code>)</td>
+<td><code>csv-nohead-long</code></td>
+<td>No header; long format with a metric-name col; custom pivot logic</td>
+<td>metric names (values in the key column)</td>
+<td>custom <code>tidy_*</code> method</td>
 </tr>
 </tbody>
-</table></section><section class="level2"><h2 id="field-types">Field types<a class="anchor" aria-label="anchor" href="#field-types"></a>
-</h2>
-<p>LinkML <code>range</code> maps to {nemo}’s internal readr col-spec code:</p>
-<ul>
-<li>string: character (<code>c</code>)</li>
-<li>integer: integer (<code>i</code>)</li>
-<li>float: double (<code>d</code>)</li>
-</ul></section><section class="level2"><h2 id="corner-cases">Corner cases<a class="anchor" aria-label="anchor" href="#corner-cases"></a>
-</h2>
-<section class="level3"><h3 id="simple-11-mapping-single-version">1. Simple 1:1 mapping (single version)<a class="anchor" aria-label="anchor" href="#simple-11-mapping-single-version"></a>
+</table>
+<section class="level3"><h3 id="txt">
+<code>txt</code><a class="anchor" aria-label="anchor" href="#txt"></a>
 </h3>
-<p>The common case: one raw file, one tidy tibble, latest version only. Both classes carry <code>in_subset: [raw, latest]</code> / <code>[tidy, latest]</code> at the class level, which applies to all their attributes.</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">subsets</span><span class="kw">:</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">raw</span><span class="kw">:</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">description</span><span class="kw">:</span><span class="at"> Raw input file schema</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">tidy</span><span class="kw">:</span></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">description</span><span class="kw">:</span><span class="at"> Tidy output schema</span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">latest</span><span class="kw">:</span></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">description</span><span class="kw">:</span><span class="at"> Tool1 latest version</span></span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="fu">classes</span><span class="kw">:</span></span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">RawTable2</span><span class="kw">:</span></span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">description</span><span class="kw">:</span><span class="at"> Table2 raw file.</span></span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">in_subset</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">raw</span><span class="kw">,</span><span class="at"> latest</span><span class="kw">]</span></span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">annotations</span><span class="kw">:</span></span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">name</span><span class="kw">:</span><span class="at"> table2</span></span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">pattern</span><span class="kw">:</span><span class="at"> </span><span class="st">"</span><span class="sc">\\</span><span class="st">.tool1</span><span class="sc">\\</span><span class="st">.table2</span><span class="sc">\\</span><span class="st">.tsv$"</span></span>
-<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">ftype</span><span class="kw">:</span><span class="at"> tsv</span></span>
-<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">attributes</span><span class="kw">:</span></span>
-<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">SampleID</span><span class="kw">:</span></span>
-<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">range</span><span class="kw">:</span><span class="at"> string</span></span>
-<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">metricA</span><span class="kw">:</span></span>
-<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">range</span><span class="kw">:</span><span class="at"> string</span></span>
-<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">metricB</span><span class="kw">:</span></span>
-<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">range</span><span class="kw">:</span><span class="at"> float</span></span>
-<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">TidyTable2</span><span class="kw">:</span></span>
-<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">description</span><span class="kw">:</span><span class="at"> Table2 tidy output.</span></span>
-<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">in_subset</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">tidy</span><span class="kw">,</span><span class="at"> latest</span><span class="kw">]</span></span>
-<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">annotations</span><span class="kw">:</span></span>
-<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">name</span><span class="kw">:</span><span class="at"> table2</span></span>
-<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">subtbl</span><span class="kw">:</span><span class="at"> tbl1</span></span>
-<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">attributes</span><span class="kw">:</span></span>
-<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">sample_id</span><span class="kw">:</span></span>
-<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">range</span><span class="kw">:</span><span class="at"> string</span></span>
-<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">description</span><span class="kw">:</span><span class="at"> Sample ID</span></span>
-<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">metric_a</span><span class="kw">:</span></span>
-<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">range</span><span class="kw">:</span><span class="at"> string</span></span>
-<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">description</span><span class="kw">:</span><span class="at"> Metric A</span></span>
-<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">metric_b</span><span class="kw">:</span></span>
-<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">range</span><span class="kw">:</span><span class="at"> float</span></span>
-<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">description</span><span class="kw">:</span><span class="at"> Metric B</span></span></code></pre></div>
-<p>The <code>tool1</code> schema included with {nemo} demonstrates this pattern for <code>table2</code>. We can inspect it programmatically:</p>
+<p>Standard delimited file with a header row. The <code>raw:</code> names must exactly match the column names in the file — they are used by <code>schema_guess</code> to identify which versioned schema applies to a given file.</p>
+</section><section class="level3"><h3 id="txt-nohead">
+<code>txt-nohead</code><a class="anchor" aria-label="anchor" href="#txt-nohead"></a>
+</h3>
+<p>No header row; columns are identified purely by position. The <code>raw:</code> names are always <code>X1, X2, …, XN</code> (where N = number of columns). This makes version tracking unambiguous: adding or removing a column is reflected by updating the <code>versions:</code> array for the affected positional label. The tidy step renames <code>X1 =&gt; tidy_name_1</code>, <code>X2 =&gt; tidy_name_2</code>, etc. positionally.</p>
+</section><section class="level3"><h3 id="txt-keyvalue">
+<code>txt-keyvalue</code><a class="anchor" aria-label="anchor" href="#txt-keyvalue"></a>
+</h3>
+<p>A special case of <code>txt-nohead</code> with exactly two columns where the first column is a key and the second is its value. The file is pivoted wide so that each key becomes a column name. The <code>raw:</code> names are the actual key values (e.g. <code>SampleID</code>, <code>TotalReads</code>), which are matched by <code>schema_guess</code> after the pivot.</p>
+</section><section class="level3"><h3 id="csv-nohead-long">
+<code>csv-nohead-long</code><a class="anchor" aria-label="anchor" href="#csv-nohead-long"></a>
+</h3>
+<p>No header; long format where one column holds metric names and adjacent columns hold their values (e.g. count and percentage). The <code>columns:</code> block only maps raw metric names to tidy column names. The structural logic (which column is the key, <code>_pct</code> suffix generation, section cleaning) lives in the tool’s <code>tidy_*</code> method, not in the schema.</p>
+</section></section><section class="level2"><h2 id="versioning-versions">Versioning (<code>versions:</code>)<a class="anchor" aria-label="anchor" href="#versioning-versions"></a>
+</h2>
+<p>The <code>versions:</code> field on each column is an explicit array of every tool version that column appears in. This gives a full picture of column history, including additions and removals across versions.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">table1 columns</span><span class="kw">:</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">SampleID   versions</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">v1</span><span class="fl">.2.3</span><span class="kw">,</span><span class="at"> v4</span><span class="fl">.5.6</span><span class="kw">,</span><span class="at"> latest</span><span class="kw">]</span><span class="co">  # present in all versions</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">Chromosome versions</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">v1</span><span class="fl">.2.3</span><span class="kw">,</span><span class="at"> v4</span><span class="fl">.5.6</span><span class="kw">,</span><span class="at"> latest</span><span class="kw">]</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">Start      versions</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">v1</span><span class="fl">.2.3</span><span class="kw">,</span><span class="at"> v4</span><span class="fl">.5.6</span><span class="kw">,</span><span class="at"> latest</span><span class="kw">]</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">End        versions</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">v1</span><span class="fl">.2.3</span><span class="kw">,</span><span class="at"> v4</span><span class="fl">.5.6</span><span class="kw">,</span><span class="at"> latest</span><span class="kw">]</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">metricX    versions</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">v1</span><span class="fl">.2.3</span><span class="kw">]</span><span class="co">                   # dropped in v4.5.6</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">metricY    versions</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">latest</span><span class="kw">]</span><span class="co">                   # added in latest</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">metricZ    versions</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">latest</span><span class="kw">]</span></span></code></pre></div>
+<p>The effective schema for version <code>V</code> is all columns whose <code>versions</code> array contains <code>V</code>. <code>schema_guess</code> uses this to automatically match a file’s column names against the correct versioned snapshot. Tables with a single version (all columns <code>versions: [latest]</code>) are the common case and require no special handling.</p>
+</section><section class="level2"><h2 id="live-example">Live example<a class="anchor" aria-label="anchor" href="#live-example"></a>
+</h2>
+<p><code>Config$new()</code> reads the <code>schema.yaml</code> and exposes the derived schemas:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">conf</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/Config.html">Config</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="st">"tool1"</span>, pkg <span class="op">=</span> <span class="st">"nemo"</span><span class="op">)</span></span>
+<span><span class="va">conf</span></span>
+<span><span class="co">#&gt; #--- Config nemo::tool1 ---#</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; |var  |value |</span></span>
+<span><span class="co">#&gt; |:----|:-----|</span></span>
+<span><span class="co">#&gt; |tool |tool1 |</span></span>
+<span><span class="co">#&gt; |pkg  |nemo  |</span></span>
+<span><span class="co">#&gt; |nraw |10    |</span></span></code></pre></div>
+</div>
+<section class="level3"><h3 id="patterns-and-file-types">Patterns and file types<a class="anchor" aria-label="anchor" href="#patterns-and-file-types"></a>
+</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">conf</span><span class="op">$</span><span class="fu">get_patterns</span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu">kable</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<div class="cell-output-display">
+<table class="table caption-top">
+<thead><tr class="header">
+<th style="text-align: left;">name</th>
+<th style="text-align: left;">pattern</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">table1</td>
+<td style="text-align: left;">.tool1.table1.tsv$</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">table2</td>
+<td style="text-align: left;">.tool1.table2.tsv$</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">table3</td>
+<td style="text-align: left;">.tool1.table3.tsv$</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">table4</td>
+<td style="text-align: left;">.tool1.table4.tsv$</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">table5</td>
+<td style="text-align: left;">.tool1.table5.csv$</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">conf</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/Config.html">Config</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="st">"tool1"</span>, pkg <span class="op">=</span> <span class="st">"nemo"</span><span class="op">)</span></span>
-<span><span class="va">conf</span><span class="op">$</span><span class="fu">get_raw_schema</span><span class="op">(</span><span class="st">"table2"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; # A tibble: 3 × 5</span></span>
-<span><span class="co">#&gt;   name   tbl_description  version field    type </span></span>
-<span><span class="co">#&gt;   &lt;chr&gt;  &lt;chr&gt;            &lt;chr&gt;   &lt;chr&gt;    &lt;chr&gt;</span></span>
-<span><span class="co">#&gt; 1 table2 Table2 raw file. latest  SampleID c    </span></span>
-<span><span class="co">#&gt; 2 table2 Table2 raw file. latest  metricA  c    </span></span>
-<span><span class="co">#&gt; 3 table2 Table2 raw file. latest  metricB  d</span></span>
-<span><span class="va">conf</span><span class="op">$</span><span class="fu">get_tidy_schema</span><span class="op">(</span><span class="st">"table2"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; # A tibble: 3 × 7</span></span>
-<span><span class="co">#&gt;   name   tbl_description     version tbl   field     type  description</span></span>
-<span><span class="co">#&gt;   &lt;chr&gt;  &lt;chr&gt;               &lt;chr&gt;   &lt;chr&gt; &lt;chr&gt;     &lt;chr&gt; &lt;chr&gt;      </span></span>
-<span><span class="co">#&gt; 1 table2 Table2 tidy output. latest  tbl1  sample_id c     Sample ID  </span></span>
-<span><span class="co">#&gt; 2 table2 Table2 tidy output. latest  tbl1  metric_a  c     Metric A   </span></span>
-<span><span class="co">#&gt; 3 table2 Table2 tidy output. latest  tbl1  metric_b  d     Metric B</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">conf</span><span class="op">$</span><span class="fu">get_ftypes</span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu">kable</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<div class="cell-output-display">
+<table class="table caption-top">
+<thead><tr class="header">
+<th style="text-align: left;">name</th>
+<th style="text-align: left;">ftype</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">table1</td>
+<td style="text-align: left;">txt</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">table2</td>
+<td style="text-align: left;">txt</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">table3</td>
+<td style="text-align: left;">txt-keyvalue</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">table4</td>
+<td style="text-align: left;">txt-nohead</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">table5</td>
+<td style="text-align: left;">csv-nohead-long</td>
+</tr>
+</tbody>
+</table>
 </div>
-</section><section class="level3"><h3 id="multi-version-schema-slot-level-in_subset">2. Multi-version schema (slot-level <code>in_subset</code>)<a class="anchor" aria-label="anchor" href="#multi-version-schema-slot-level-in_subset"></a>
+</div>
+</section><section class="level3"><h3 id="versioned-raw-schemas-used-by-schema_guess">Versioned raw schemas (used by <code>schema_guess</code>)<a class="anchor" aria-label="anchor" href="#versioned-raw-schemas-used-by-schema_guess"></a>
 </h3>
-<p>When a tool’s output schema changes between versions, <strong>slot-level</strong> <code>in_subset</code> tags declare which fields belong to which version. The class-level <code>in_subset</code> should include <strong>only</strong> <code>raw</code> (or <code>tidy</code>); version membership is inferred from the slots.</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">classes</span><span class="kw">:</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">RawTable1</span><span class="kw">:</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">description</span><span class="kw">:</span><span class="at"> Table1 raw file.</span></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">in_subset</span><span class="kw">:</span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> raw</span><span class="co">            # &lt;-- version tags omitted; slots carry them</span></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">annotations</span><span class="kw">:</span></span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">name</span><span class="kw">:</span><span class="at"> table1</span></span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">pattern</span><span class="kw">:</span><span class="at"> </span><span class="st">"</span><span class="sc">\\</span><span class="st">.tool1</span><span class="sc">\\</span><span class="st">.table1</span><span class="sc">\\</span><span class="st">.tsv$"</span></span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">ftype</span><span class="kw">:</span><span class="at"> tsv</span></span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">attributes</span><span class="kw">:</span></span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">SampleID</span><span class="kw">:</span></span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">range</span><span class="kw">:</span><span class="at"> string</span></span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">in_subset</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">v1</span><span class="fl">.2.3</span><span class="kw">,</span><span class="at"> latest</span><span class="kw">]</span><span class="co">   # present in both versions</span></span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">Chromosome</span><span class="kw">:</span></span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">range</span><span class="kw">:</span><span class="at"> string</span></span>
-<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">in_subset</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">v1</span><span class="fl">.2.3</span><span class="kw">,</span><span class="at"> latest</span><span class="kw">]</span></span>
-<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">Start</span><span class="kw">:</span></span>
-<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">range</span><span class="kw">:</span><span class="at"> integer</span></span>
-<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">in_subset</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">v1</span><span class="fl">.2.3</span><span class="kw">,</span><span class="at"> latest</span><span class="kw">]</span></span>
-<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">End</span><span class="kw">:</span></span>
-<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">range</span><span class="kw">:</span><span class="at"> integer</span></span>
-<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">in_subset</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">v1</span><span class="fl">.2.3</span><span class="kw">,</span><span class="at"> latest</span><span class="kw">]</span></span>
-<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">metricX</span><span class="kw">:</span></span>
-<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">range</span><span class="kw">:</span><span class="at"> float</span></span>
-<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">in_subset</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">v1</span><span class="fl">.2.3</span><span class="kw">,</span><span class="at"> latest</span><span class="kw">]</span></span>
-<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">metricY</span><span class="kw">:</span></span>
-<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">range</span><span class="kw">:</span><span class="at"> float</span></span>
-<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">in_subset</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">latest</span><span class="kw">]</span><span class="co">           # added after v1.2.3</span></span>
-<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">metricZ</span><span class="kw">:</span></span>
-<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">range</span><span class="kw">:</span><span class="at"> float</span></span>
-<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">in_subset</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">latest</span><span class="kw">]</span><span class="co">           # added after v1.2.3</span></span></code></pre></div>
-<p>The Config API handles version resolution automatically:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">conf</span><span class="op">$</span><span class="fu">get_schemas_all</span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">select</span><span class="op">(</span><span class="st">"name"</span>, <span class="st">"version"</span>, <span class="st">"schema"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 10 × 3</span></span>
+<span><span class="co">#&gt;    name   version schema          </span></span>
+<span><span class="co">#&gt;    &lt;chr&gt;  &lt;chr&gt;   &lt;list&gt;          </span></span>
+<span><span class="co">#&gt;  1 table1 v1.2.3  &lt;tibble [5 × 2]&gt;</span></span>
+<span><span class="co">#&gt;  2 table1 v4.5.6  &lt;tibble [4 × 2]&gt;</span></span>
+<span><span class="co">#&gt;  3 table1 latest  &lt;tibble [6 × 2]&gt;</span></span>
+<span><span class="co">#&gt;  4 table2 v1.0.0  &lt;tibble [2 × 2]&gt;</span></span>
+<span><span class="co">#&gt;  5 table2 latest  &lt;tibble [3 × 2]&gt;</span></span>
+<span><span class="co">#&gt;  6 table3 v1.0.0  &lt;tibble [3 × 2]&gt;</span></span>
+<span><span class="co">#&gt;  7 table3 latest  &lt;tibble [5 × 2]&gt;</span></span>
+<span><span class="co">#&gt;  8 table4 v1.0.0  &lt;tibble [3 × 2]&gt;</span></span>
+<span><span class="co">#&gt;  9 table4 latest  &lt;tibble [5 × 2]&gt;</span></span>
+<span><span class="co">#&gt; 10 table5 latest  &lt;tibble [4 × 2]&gt;</span></span></code></pre></div>
+</div>
+<p>The <code>schema</code> list-col holds the <code>(field, type)</code> pairs used when reading a file:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">conf</span><span class="op">$</span><span class="fu">get_raw_schema</span><span class="op">(</span><span class="st">"table1"</span>, v <span class="op">=</span> <span class="st">"v1.2.3"</span><span class="op">)</span> <span class="co"># 5 fields</span></span>
-<span><span class="co">#&gt; # A tibble: 5 × 5</span></span>
-<span><span class="co">#&gt;   name   tbl_description  version field      type </span></span>
-<span><span class="co">#&gt;   &lt;chr&gt;  &lt;chr&gt;            &lt;chr&gt;   &lt;chr&gt;      &lt;chr&gt;</span></span>
-<span><span class="co">#&gt; 1 table1 Table1 raw file. v1.2.3  SampleID   c    </span></span>
-<span><span class="co">#&gt; 2 table1 Table1 raw file. v1.2.3  Chromosome c    </span></span>
-<span><span class="co">#&gt; 3 table1 Table1 raw file. v1.2.3  Start      i    </span></span>
-<span><span class="co">#&gt; 4 table1 Table1 raw file. v1.2.3  End        i    </span></span>
-<span><span class="co">#&gt; 5 table1 Table1 raw file. v1.2.3  metricX    d</span></span>
-<span><span class="va">conf</span><span class="op">$</span><span class="fu">get_raw_schema</span><span class="op">(</span><span class="st">"table1"</span>, v <span class="op">=</span> <span class="st">"latest"</span><span class="op">)</span> <span class="co"># 7 fields</span></span>
-<span><span class="co">#&gt; # A tibble: 7 × 5</span></span>
-<span><span class="co">#&gt;   name   tbl_description  version field      type </span></span>
-<span><span class="co">#&gt;   &lt;chr&gt;  &lt;chr&gt;            &lt;chr&gt;   &lt;chr&gt;      &lt;chr&gt;</span></span>
-<span><span class="co">#&gt; 1 table1 Table1 raw file. latest  SampleID   c    </span></span>
-<span><span class="co">#&gt; 2 table1 Table1 raw file. latest  Chromosome c    </span></span>
-<span><span class="co">#&gt; 3 table1 Table1 raw file. latest  Start      i    </span></span>
-<span><span class="co">#&gt; 4 table1 Table1 raw file. latest  End        i    </span></span>
-<span><span class="co">#&gt; 5 table1 Table1 raw file. latest  metricX    d    </span></span>
-<span><span class="co">#&gt; 6 table1 Table1 raw file. latest  metricY    d    </span></span>
-<span><span class="co">#&gt; 7 table1 Table1 raw file. latest  metricZ    d</span></span>
-<span><span class="va">conf</span><span class="op">$</span><span class="fu">get_raw_versions</span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt; # A tibble: 4 × 2</span></span>
-<span><span class="co">#&gt;   name   value </span></span>
-<span><span class="co">#&gt;   &lt;chr&gt;  &lt;chr&gt; </span></span>
-<span><span class="co">#&gt; 1 table1 v1.2.3</span></span>
-<span><span class="co">#&gt; 2 table1 latest</span></span>
-<span><span class="co">#&gt; 3 table2 latest</span></span>
-<span><span class="co">#&gt; 4 table3 latest</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">conf</span><span class="op">$</span><span class="fu">get_schema</span><span class="op">(</span><span class="st">"table1"</span>, v <span class="op">=</span> <span class="st">"v1.2.3"</span>, raw_or_tidy <span class="op">=</span> <span class="st">"raw"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">select</span><span class="op">(</span><span class="st">"field"</span>, <span class="st">"type"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">kable</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<div class="cell-output-display">
+<table class="table caption-top">
+<thead><tr class="header">
+<th style="text-align: left;">field</th>
+<th style="text-align: left;">type</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">SampleID</td>
+<td style="text-align: left;">c</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Chromosome</td>
+<td style="text-align: left;">c</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Start</td>
+<td style="text-align: left;">i</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">End</td>
+<td style="text-align: left;">i</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">metricX</td>
+<td style="text-align: left;">d</td>
+</tr>
+</tbody>
+</table>
 </div>
-<p>The <code><a href="../reference/schema_guess.html">schema_guess()</a></code> function (called internally by <code><a href="../reference/parse_file.html">parse_file()</a></code>) uses exact column-count and column-name matching to select the correct version for any given file automatically.</p>
-</section><section class="level3"><h3 id="no-header-file-ftype-txt-nohead">3. No-header file (<code>ftype: txt-nohead</code>)<a class="anchor" aria-label="anchor" href="#no-header-file-ftype-txt-nohead"></a>
+</div>
+</section><section class="level3"><h3 id="tidy-schema-used-for-column-renaming">Tidy schema (used for column renaming)<a class="anchor" aria-label="anchor" href="#tidy-schema-used-for-column-renaming"></a>
 </h3>
-<p>Some tools write key-value or fixed-column files without a header row. Set <code>ftype: txt-nohead</code> and list the column names in positional order. The parser assigns names in the order they appear in <code>attributes</code>.</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">RawTable3</span><span class="kw">:</span></span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">description</span><span class="kw">:</span><span class="at"> Table3 raw file (no header).</span></span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">in_subset</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">raw</span><span class="kw">,</span><span class="at"> latest</span><span class="kw">]</span></span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">annotations</span><span class="kw">:</span></span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">name</span><span class="kw">:</span><span class="at"> table3</span></span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">pattern</span><span class="kw">:</span><span class="at"> </span><span class="st">"</span><span class="sc">\\</span><span class="st">.tool1</span><span class="sc">\\</span><span class="st">.table3</span><span class="sc">\\</span><span class="st">.tsv$"</span></span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">ftype</span><span class="kw">:</span><span class="at"> txt-nohead</span></span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">attributes</span><span class="kw">:</span></span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">SampleID</span><span class="kw">:</span></span>
-<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">range</span><span class="kw">:</span><span class="at"> string</span></span>
-<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">QCStatus</span><span class="kw">:</span></span>
-<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">range</span><span class="kw">:</span><span class="at"> string</span></span>
-<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">TotalReads</span><span class="kw">:</span></span>
-<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">range</span><span class="kw">:</span><span class="at"> float</span></span>
-<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">MappedReads</span><span class="kw">:</span></span>
-<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">range</span><span class="kw">:</span><span class="at"> float</span></span>
-<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">UnmappedReads</span><span class="kw">:</span></span>
-<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">range</span><span class="kw">:</span><span class="at"> float</span></span></code></pre></div>
-<p>The corresponding <code>tool1/table3.tsv</code> file has no header, where columns are bound by position:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">conf</span><span class="op">$</span><span class="fu">get_schema</span><span class="op">(</span><span class="st">"table1"</span>, raw_or_tidy <span class="op">=</span> <span class="st">"tidy"</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu">kable</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<div class="cell-output-display">
+<table class="table caption-top">
+<thead><tr class="header">
+<th style="text-align: left;">version</th>
+<th style="text-align: left;">field</th>
+<th style="text-align: left;">type</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">v1.2.3</td>
+<td style="text-align: left;">sample_id</td>
+<td style="text-align: left;">c</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">v1.2.3</td>
+<td style="text-align: left;">chromosome</td>
+<td style="text-align: left;">c</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">v1.2.3</td>
+<td style="text-align: left;">start</td>
+<td style="text-align: left;">i</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">v1.2.3</td>
+<td style="text-align: left;">end</td>
+<td style="text-align: left;">i</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">v1.2.3</td>
+<td style="text-align: left;">metric_x</td>
+<td style="text-align: left;">d</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">v4.5.6</td>
+<td style="text-align: left;">sample_id</td>
+<td style="text-align: left;">c</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">v4.5.6</td>
+<td style="text-align: left;">chromosome</td>
+<td style="text-align: left;">c</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">v4.5.6</td>
+<td style="text-align: left;">start</td>
+<td style="text-align: left;">i</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">v4.5.6</td>
+<td style="text-align: left;">end</td>
+<td style="text-align: left;">i</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">latest</td>
+<td style="text-align: left;">sample_id</td>
+<td style="text-align: left;">c</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">latest</td>
+<td style="text-align: left;">chromosome</td>
+<td style="text-align: left;">c</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">latest</td>
+<td style="text-align: left;">start</td>
+<td style="text-align: left;">i</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">latest</td>
+<td style="text-align: left;">end</td>
+<td style="text-align: left;">i</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">latest</td>
+<td style="text-align: left;">metric_y</td>
+<td style="text-align: left;">d</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">latest</td>
+<td style="text-align: left;">metric_z</td>
+<td style="text-align: left;">d</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section><section class="level3"><h3 id="column-map-for-csv-nohead-long-tables">Column map for <code>csv-nohead-long</code> tables<a class="anchor" aria-label="anchor" href="#column-map-for-csv-nohead-long-tables"></a>
+</h3>
+<p>For <code>csv-nohead-long</code> tables, <code>get_col_map()</code> returns the metric-name mapping used inside the <code>tidy_*</code> method:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">conf</span><span class="op">$</span><span class="fu">get_raw_schema</span><span class="op">(</span><span class="st">"table3"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; # A tibble: 5 × 5</span></span>
-<span><span class="co">#&gt;   name   tbl_description              version field         type </span></span>
-<span><span class="co">#&gt;   &lt;chr&gt;  &lt;chr&gt;                        &lt;chr&gt;   &lt;chr&gt;         &lt;chr&gt;</span></span>
-<span><span class="co">#&gt; 1 table3 Table3 raw file (no header). latest  SampleID      c    </span></span>
-<span><span class="co">#&gt; 2 table3 Table3 raw file (no header). latest  QCStatus      c    </span></span>
-<span><span class="co">#&gt; 3 table3 Table3 raw file (no header). latest  TotalReads    d    </span></span>
-<span><span class="co">#&gt; 4 table3 Table3 raw file (no header). latest  MappedReads   d    </span></span>
-<span><span class="co">#&gt; 5 table3 Table3 raw file (no header). latest  UnmappedReads d</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">conf</span><span class="op">$</span><span class="fu">get_col_map</span><span class="op">(</span><span class="st">"table5"</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu">kable</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<div class="cell-output-display">
+<table class="table caption-top">
+<thead><tr class="header">
+<th style="text-align: left;">raw</th>
+<th style="text-align: left;">tidy</th>
+<th style="text-align: left;">type</th>
+<th style="text-align: left;">description</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Total reads</td>
+<td style="text-align: left;">reads_total</td>
+<td style="text-align: left;">d</td>
+<td style="text-align: left;">total reads</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Mapped reads</td>
+<td style="text-align: left;">reads_map</td>
+<td style="text-align: left;">d</td>
+<td style="text-align: left;">mapped reads</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Unmapped reads</td>
+<td style="text-align: left;">reads_unmap</td>
+<td style="text-align: left;">d</td>
+<td style="text-align: left;">unmapped reads</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Total bases</td>
+<td style="text-align: left;">bases_total</td>
+<td style="text-align: left;">d</td>
+<td style="text-align: left;">total bases</td>
+</tr>
+</tbody>
+</table>
 </div>
-</section><section class="level3"><h3 id="multiple-tidy-subtables-from-one-parser">4. Multiple tidy subtables from one parser<a class="anchor" aria-label="anchor" href="#multiple-tidy-subtables-from-one-parser"></a>
-</h3>
-<p>Sometimes a single raw file is parsed into multiple tidy tibbles (e.g. for normalisation or because the file mixes different entity types). Use a distinct <code>subtbl</code> annotation on each tidy class; both share the same <code>name</code>.</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">TidySummaryTbl1</span><span class="kw">:</span></span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">description</span><span class="kw">:</span><span class="at"> Summary metrics.</span></span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">in_subset</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">tidy</span><span class="kw">,</span><span class="at"> latest</span><span class="kw">]</span></span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">annotations</span><span class="kw">:</span></span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">name</span><span class="kw">:</span><span class="at"> summary</span><span class="co">       # same logical name</span></span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">subtbl</span><span class="kw">:</span><span class="at"> tbl1</span><span class="co">        # different subtable</span></span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">attributes</span><span class="kw">:</span></span>
-<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">metric_a</span><span class="kw">:</span></span>
-<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">range</span><span class="kw">:</span><span class="at"> float</span></span>
-<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">description</span><span class="kw">:</span><span class="at"> Metric A</span></span>
-<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">metric_b</span><span class="kw">:</span></span>
-<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">range</span><span class="kw">:</span><span class="at"> float</span></span>
-<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">description</span><span class="kw">:</span><span class="at"> Metric B</span></span>
-<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">TidySummaryCovx</span><span class="kw">:</span></span>
-<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">description</span><span class="kw">:</span><span class="at"> Coverage per depth bucket.</span></span>
-<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">in_subset</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">tidy</span><span class="kw">,</span><span class="at"> latest</span><span class="kw">]</span></span>
-<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">annotations</span><span class="kw">:</span></span>
-<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">name</span><span class="kw">:</span><span class="at"> summary</span><span class="co">       # same logical name</span></span>
-<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">subtbl</span><span class="kw">:</span><span class="at"> tbl2</span><span class="co">        # different subtable</span></span>
-<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">attributes</span><span class="kw">:</span></span>
-<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">covx</span><span class="kw">:</span></span>
-<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">range</span><span class="kw">:</span><span class="at"> integer</span></span>
-<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">description</span><span class="kw">:</span><span class="at"> Coverage depth threshold</span></span>
-<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">value</span><span class="kw">:</span></span>
-<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">range</span><span class="kw">:</span><span class="at"> float</span></span>
-<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">description</span><span class="kw">:</span><span class="at"> Fraction of bases &gt;= covx</span></span></code></pre></div>
-<p>The tidy method retrieves each subtable by name:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">schema_tbl1</span> <span class="op">&lt;-</span> <span class="va">self</span><span class="op">$</span><span class="fu">get_tidy_schema</span><span class="op">(</span><span class="st">"summary"</span>, subtbl <span class="op">=</span> <span class="st">"tbl1"</span><span class="op">)</span></span>
-<span><span class="va">schema_tbl2</span> <span class="op">&lt;-</span> <span class="va">self</span><span class="op">$</span><span class="fu">get_tidy_schema</span><span class="op">(</span><span class="st">"summary"</span>, subtbl <span class="op">=</span> <span class="st">"tbl2"</span><span class="op">)</span></span></code></pre></div>
-</section><section class="level3"><h3 id="custom-parser-with-a-dummy-raw-field">5. Custom parser with a dummy raw field<a class="anchor" aria-label="anchor" href="#custom-parser-with-a-dummy-raw-field"></a>
-</h3>
-<p>When the raw file format is too irregular for the generic <code>readr</code>-based parser (e.g. <code>samtools flagstat</code> output), the Tool subclass implements its own <code>parse_*</code> method. The raw class in the schema still needs to exist for file discovery (pattern matching), but its attributes section is a single placeholder:</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">RawFlagstats</span><span class="kw">:</span></span>
-<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">description</span><span class="kw">:</span><span class="at"> Counts of alignments for each FLAG type.</span></span>
-<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">in_subset</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">raw</span><span class="kw">,</span><span class="at"> latest</span><span class="kw">]</span></span>
-<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">annotations</span><span class="kw">:</span></span>
-<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">name</span><span class="kw">:</span><span class="at"> flagstats</span></span>
-<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">pattern</span><span class="kw">:</span><span class="at"> </span><span class="st">"</span><span class="sc">\\</span><span class="st">.flagstat$"</span></span>
-<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">ftype</span><span class="kw">:</span><span class="at"> txt</span></span>
-<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">attributes</span><span class="kw">:</span></span>
-<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">dummy</span><span class="kw">:</span></span>
-<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">range</span><span class="kw">:</span><span class="at"> string</span></span></code></pre></div>
-<p>The tidy class is written normally, where the custom <code>parse_flagstats()</code> method returns a tibble whose columns match <code>TidyFlagstats</code> exactly.</p>
-</section><section class="level3"><h3 id="field-names-with-dots">6. Field names with dots<a class="anchor" aria-label="anchor" href="#field-names-with-dots"></a>
-</h3>
-<p>YAML keys that contain a dot (<code>.</code>) must be quoted, otherwise YAML parses them incorrectly:</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">attributes</span><span class="kw">:</span></span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">"build.date"</span><span class="kw">:</span></span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">range</span><span class="kw">:</span><span class="at"> string</span></span></code></pre></div>
-<p>This applies to any special character in a field name. Without quotes the key will be silently misread.</p>
-</section><section class="level3"><h3 id="intermediate-tidy-form-raw-rename-before-custom-split">7. Intermediate tidy form (raw rename before custom split)<a class="anchor" aria-label="anchor" href="#intermediate-tidy-form-raw-rename-before-custom-split"></a>
-</h3>
-<p>When a Tool’s <code>tidy_*</code> method calls <code>self$.tidy_file(x, "parser")</code> as an intermediate step before custom R code splits or reshapes the result, the <code>Tidy*</code> class must declare <strong>all columns present after the rename step</strong> — not just the final output columns.</p>
-<p>For example, <code>tidy_genecvg()</code> calls <code>.tidy_file()</code> (which renames all columns from CamelCase to snake_case) and then splits the wide tibble into two narrow tibbles (genes and per-base coverage). The schema’s <code>TidyGenecvg</code> class must list all ~70 renamed columns (which sucks I know).</p>
-<div class="sourceCode" id="cb14"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">TidyGenecvg</span><span class="kw">:</span></span>
-<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="co">    # All ~70 post-rename columns must be listed here so that</span></span>
-<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a><span class="co">    # get_tidy_schema() can build the correct readr column spec.</span></span>
-<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">in_subset</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">tidy</span><span class="kw">,</span><span class="at"> latest</span><span class="kw">]</span></span>
-<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">annotations</span><span class="kw">:</span></span>
-<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">name</span><span class="kw">:</span><span class="at"> genecvg</span></span>
-<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">subtbl</span><span class="kw">:</span><span class="at"> tbl1</span></span>
-<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">attributes</span><span class="kw">:</span></span>
-<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">gene</span><span class="kw">:</span></span>
-<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">range</span><span class="kw">:</span><span class="at"> string</span></span>
-<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">description</span><span class="kw">:</span><span class="at"> Gene name</span></span>
-<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">chrom</span><span class="kw">:</span></span>
-<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">range</span><span class="kw">:</span><span class="at"> string</span></span>
-<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">description</span><span class="kw">:</span><span class="at"> Chromosome</span></span>
-<span id="cb14-15"><a href="#cb14-15" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">pos_start</span><span class="kw">:</span></span>
-<span id="cb14-16"><a href="#cb14-16" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">range</span><span class="kw">:</span><span class="at"> integer</span></span>
-<span id="cb14-17"><a href="#cb14-17" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">description</span><span class="kw">:</span><span class="at"> Start position</span></span>
-<span id="cb14-18"><a href="#cb14-18" aria-hidden="true" tabindex="-1"></a><span class="co">      # ...</span></span></code></pre></div>
-<ul>
-<li>Rule of thumb: <code>Tidy*</code> class must match whatever <code><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames()</a></code> the tibble has at the point where <code>get_tidy_schema()</code> is called in the <code>tidy_*</code> method.</li>
-</ul></section></section><script id="quarto-html-after-body" type="application/javascript">
+</div>
+</section></section><script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {
       var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
       var mailtoRegex = new RegExp(/^mailto:/);

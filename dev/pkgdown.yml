@@ -1,4 +1,4 @@
-pandoc: 3.6.3
+pandoc: 3.8.3
 pkgdown: 2.2.0
 pkgdown_sha: ~
 articles:
@@ -8,9 +8,10 @@ articles:
   NEWS: NEWS.html
   notes: notes.html
   schema: schema.html
+  schemas: schemas.html
   structure: structure.html
   uml: uml.html
-last_built: 2026-03-26T03:12Z
+last_built: 2026-04-28T23:33Z
 urls:
   reference: https://tidywf.github.io/nemo/reference
   article: https://tidywf.github.io/nemo/articles

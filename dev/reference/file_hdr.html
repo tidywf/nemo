@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">nemo</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.0.3.9007</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.0.3.9010</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -20,10 +20,10 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/installation.html">Installation</a></li>
     <li><a class="dropdown-item" href="../articles/structure.html">Structure</a></li>
+    <li><a class="dropdown-item" href="../articles/schema.html">Schema</a></li>
     <li><a class="dropdown-item" href="../articles/contribute.html">Contribute</a></li>
     <li><a class="dropdown-item" href="../articles/devnotes.html">Devnotes</a></li>
     <li><a class="dropdown-item" href="../articles/uml.html">UML</a></li>
-    <li><a class="dropdown-item" href="../articles/schema.html">Schema</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../articles/NEWS.html">NEWS</a></li>
       </ul><ul class="navbar-nav"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
@@ -80,8 +80,8 @@ Maximum number of lines to read.</p></dd>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">dir1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata/tool1"</span>, package <span class="op">=</span> <span class="st">"nemo"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">fpath</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">dir1</span>, <span class="st">"latest"</span>, <span class="st">"sampleA.tool1.table1.tsv"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">(</span><span class="va">hdr</span> <span class="op">&lt;-</span> <span class="fu">file_hdr</span><span class="op">(</span><span class="va">fpath</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "SampleID"   "Chromosome" "Start"      "End"        "metricX"   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [6] "metricY"    "metricZ"   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "SampleID"   "Chromosome" "Start"      "End"        "metricY"   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [6] "metricZ"   </span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

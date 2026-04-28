@@ -28,7 +28,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">nemo</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.0.3.9007</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.0.3.9010</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -43,10 +43,10 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/installation.html">Installation</a></li>
     <li><a class="dropdown-item" href="../articles/structure.html">Structure</a></li>
+    <li><a class="dropdown-item" href="../articles/schema.html">Schema</a></li>
     <li><a class="dropdown-item" href="../articles/contribute.html">Contribute</a></li>
     <li><a class="dropdown-item" href="../articles/devnotes.html">Devnotes</a></li>
     <li><a class="dropdown-item" href="../articles/uml.html">UML</a></li>
-    <li><a class="dropdown-item" href="../articles/schema.html">Schema</a></li>
   </ul>
 </li>
 <li class="active nav-item"><a class="nav-link" href="../articles/NEWS.html">NEWS</a></li>
@@ -79,11 +79,19 @@
 
 
 
-    <section class="level2"><h2 id="dev-2026-02-26">dev (2026-02-26)<a class="anchor" aria-label="anchor" href="#dev-2026-02-26"></a>
+    <section class="level2"><h2 id="dev-2026-04-26">dev (2026-04-26)<a class="anchor" aria-label="anchor" href="#dev-2026-04-26"></a>
 </h2>
 <ul>
-<li>Add support for LinkML schemas (<a href="https://github.com/tidywf/nemo/pull/33" class="external-link">pr33</a>, <a href="https://github.com/tidywf/nemo/issues/22" class="external-link">iss22</a>)</li>
 <li>GitHub Actions: refactor deploy workflow for dev and main branches (<a href="https://github.com/tidywf/nemo/pull/34" class="external-link">pr34</a>)</li>
+<li>Schema simplification: replace separate <code>raw.yaml</code> + <code>tidy.yaml</code> per tool with a single unified <code>schema.yaml</code>. Each table entry now has a flat <code>columns:</code> list where each column carries its raw name, tidy name, type, description, and <code>versions</code> array. <code>Config</code> derives versioned raw and tidy views from this unified source on demand.</li>
+<li>
+<code>Tool</code>: refactor parse/tidy dispatch — subclasses can now override per-table <code>parse_&lt;tname&gt;()</code> and <code>tidy_&lt;tname&gt;()</code> methods; falls back to ftype-based dispatch otherwise. Add support for <code>txt-nohead</code> and <code>csv-nohead-long</code> file types.</li>
+<li>
+<code>Tool1</code>: add <code>table4</code> (txt-nohead) and <code>table5</code> (csv-nohead-long) as examples of the new file type support.</li>
+<li>
+<code>Workflow1</code>: add to CLI workflow dispatcher (<code>nemoverse_wf_dispatch</code>) for end-to-end CLI testing.</li>
+<li>
+<code>inst/scripts/file_to_yaml.R</code>: refactor to generate <code>schema.yaml</code> skeletons from sample files; output goes to <code>inst/config/tools/_tmp/</code> to avoid overwriting real schemas.</li>
 </ul></section><section class="level2"><h2 id="v0-0-3-2026-02-09">v0.0.3 (2026-02-09)<a class="anchor" aria-label="anchor" href="#v0-0-3-2026-02-09"></a>
 </h2>
 <ul>
