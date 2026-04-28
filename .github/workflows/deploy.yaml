@@ -10,7 +10,7 @@ jobs:
   umlise:
     name: 🎨 Umlise
     if: "startsWith(github.event.head_commit.message, 'Bump version:')"
-    uses: tidywf/.github/.github/workflows/umlise.yaml@main
+    uses: tidywf/actions/.github/workflows/umlise.yaml@main
     permissions:
       contents: write
     secrets: inherit
@@ -18,7 +18,7 @@ jobs:
   condarise:
     name: 🐍 Condarise
     needs: [umlise]
-    uses: tidywf/.github/.github/workflows/condarise.yaml@main
+    uses: tidywf/actions/.github/workflows/condarise.yaml@main
     permissions:
       contents: write
     with:
@@ -29,7 +29,7 @@ jobs:
   tag:
     name: 🔖 Tag
     needs: [condarise]
-    uses: tidywf/.github/.github/workflows/tag.yaml@main
+    uses: tidywf/actions/.github/workflows/tag.yaml@main
     permissions:
       contents: write
     with:
@@ -39,7 +39,7 @@ jobs:
   pkgdownise:
     name: 🌐 Pkgdownise
     needs: [tag]
-    uses: tidywf/.github/.github/workflows/pkgdownise.yaml@main
+    uses: tidywf/actions/.github/workflows/pkgdownise.yaml@main
     permissions:
       contents: write
     with:

@@ -10,7 +10,7 @@ on:
 
 jobs:
   bump:
-    uses: tidywf/.github/.github/workflows/bump.yaml@main
+    uses: tidywf/actions/.github/workflows/bump.yaml@main
     permissions:
       contents: write
     with:
