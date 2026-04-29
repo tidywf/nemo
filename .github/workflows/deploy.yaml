@@ -23,7 +23,7 @@ jobs:
       contents: write
     with:
       pkg_name: nemo
-      pkg_version: '0.0.3.9011' # bump
+      pkg_version: '0.0.3.9012' # bump
     secrets: inherit
 
   tag:
@@ -33,7 +33,7 @@ jobs:
     permissions:
       contents: write
     with:
-      pkg_version: '0.0.3.9011' # bump
+      pkg_version: '0.0.3.9012' # bump
     secrets: inherit
 
   pkgdownise:
@@ -44,5 +44,5 @@ jobs:
       contents: write
     with:
       pkg_name: nemo
-      pkg_version: '0.0.3.9011' # bump
+      pkg_version: '0.0.3.9012' # bump
     secrets: inherit
