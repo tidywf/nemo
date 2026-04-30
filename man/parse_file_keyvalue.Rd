@@ -29,9 +29,10 @@ path <- system.file("extdata/tool1", package = "nemo")
 x <- Tool1$new(path)
 schemas_all <- x$raw_schemas_all
 pname <- "table3"
+f <- function(ver) file.path(path, ver, "sampleA.tool1.table3.tsv")
 # v1.0.0: 3 key-value pairs (SampleID, QCStatus, TotalReads)
-(d3_v1  <- parse_file_keyvalue(file.path(path, "v1.0.0", "sampleA.tool1.table3.tsv"), pname, schemas_all))
+(d3_v1  <- parse_file_keyvalue(f("v1.0.0"), pname, schemas_all))
 # latest: 5 key-value pairs
-(d3_lat <- parse_file_keyvalue(file.path(path, "latest", "sampleA.tool1.table3.tsv"), pname, schemas_all))
+(d3_lat <- parse_file_keyvalue(f("latest"), pname, schemas_all))
 
 }

@@ -17,13 +17,14 @@
 #' path <- system.file("extdata/tool1", package = "nemo")
 #' x <- Tool$new("tool1", pkg = "nemo", path)
 #' schemas_all <- x$raw_schemas_all
+#' f <- function(ver, tbl) file.path(path, ver, paste0("sampleA.tool1.", tbl, ".tsv"))
 #' # table1: three versions with different column sets
-#' (d1_v123 <- parse_file(file.path(path, "v1.2.3", "sampleA.tool1.table1.tsv"), "table1", schemas_all))
-#' (d1_v456 <- parse_file(file.path(path, "v4.5.6", "sampleA.tool1.table1.tsv"), "table1", schemas_all))
-#' (d1_lat  <- parse_file(file.path(path, "latest", "sampleA.tool1.table1.tsv"), "table1", schemas_all))
+#' (d1_v123 <- parse_file(f("v1.2.3", "table1"), "table1", schemas_all))
+#' (d1_v456 <- parse_file(f("v4.5.6", "table1"), "table1", schemas_all))
+#' (d1_lat  <- parse_file(f("latest", "table1"), "table1", schemas_all))
 #' # table2: two versions (v1.0.0 drops metricB)
-#' (d2_v1  <- parse_file(file.path(path, "v1.0.0", "sampleA.tool1.table2.tsv"), "table2", schemas_all))
-#' (d2_lat <- parse_file(file.path(path, "latest", "sampleA.tool1.table2.tsv"), "table2", schemas_all))
+#' (d2_v1  <- parse_file(f("v1.0.0", "table2"), "table2", schemas_all))
+#' (d2_lat <- parse_file(f("latest", "table2"), "table2", schemas_all))
 #'
 #' @testexamples
 #' # table1 version detection
@@ -232,10 +233,11 @@ schema_guess <- function(pname, cnames, schemas_all) {
 #' x <- Tool1$new(path)
 #' schemas_all <- x$raw_schemas_all
 #' pname <- "table3"
+#' f <- function(ver) file.path(path, ver, "sampleA.tool1.table3.tsv")
 #' # v1.0.0: 3 key-value pairs (SampleID, QCStatus, TotalReads)
-#' (d3_v1  <- parse_file_keyvalue(file.path(path, "v1.0.0", "sampleA.tool1.table3.tsv"), pname, schemas_all))
+#' (d3_v1  <- parse_file_keyvalue(f("v1.0.0"), pname, schemas_all))
 #' # latest: 5 key-value pairs
-#' (d3_lat <- parse_file_keyvalue(file.path(path, "latest", "sampleA.tool1.table3.tsv"), pname, schemas_all))
+#' (d3_lat <- parse_file_keyvalue(f("latest"), pname, schemas_all))
 #'
 #' @testexamples
 #' expect_equal(attr(d3_v1,  "file_version"), "v1.0.0")
