@@ -5,6 +5,7 @@
 <url><loc>https://tidywf.github.io/nemo/dev/articles/NEWS.html</loc></url>
 <url><loc>https://tidywf.github.io/nemo/dev/articles/contribute.html</loc></url>
 <url><loc>https://tidywf.github.io/nemo/dev/articles/devnotes.html</loc></url>
+<url><loc>https://tidywf.github.io/nemo/dev/articles/gha.html</loc></url>
 <url><loc>https://tidywf.github.io/nemo/dev/articles/index.html</loc></url>
 <url><loc>https://tidywf.github.io/nemo/dev/articles/installation.html</loc></url>
 <url><loc>https://tidywf.github.io/nemo/dev/articles/notes.html</loc></url>
@@ -33,6 +34,7 @@
 <url><loc>https://tidywf.github.io/nemo/dev/reference/list_files_dir.html</loc></url>
 <url><loc>https://tidywf.github.io/nemo/dev/reference/nemo-package.html</loc></url>
 <url><loc>https://tidywf.github.io/nemo/dev/reference/nemo_cli.html</loc></url>
+<url><loc>https://tidywf.github.io/nemo/dev/reference/nemo_gha_mermaid.html</loc></url>
 <url><loc>https://tidywf.github.io/nemo/dev/reference/nemo_log.html</loc></url>
 <url><loc>https://tidywf.github.io/nemo/dev/reference/nemo_log_date.html</loc></url>
 <url><loc>https://tidywf.github.io/nemo/dev/reference/nemo_metadata.html</loc></url>

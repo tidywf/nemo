@@ -4,6 +4,7 @@ pkgdown_sha: ~
 articles:
   contribute: contribute.html
   devnotes: devnotes.html
+  gha: gha.html
   installation: installation.html
   NEWS: NEWS.html
   notes: notes.html
@@ -11,7 +12,7 @@ articles:
   schemas: schemas.html
   structure: structure.html
   uml: uml.html
-last_built: 2026-04-29T05:41Z
+last_built: 2026-04-30T14:13Z
 urls:
   reference: https://tidywf.github.io/nemo/reference
   article: https://tidywf.github.io/nemo/articles

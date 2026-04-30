@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Devnotes • nemo</title>
+<title>CI/CD Workflow • nemo</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="../favicon-96x96.png">
 <link rel="icon" type="”image/svg+xml”" href="../favicon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
@@ -14,9 +14,10 @@
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><script src="devnotes_files/libs/quarto-html/popper.min.js"></script><script src="devnotes_files/libs/quarto-html/tippy.umd.min.js"></script><link href="devnotes_files/libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="devnotes_files/libs/quarto-html/light-border.css" rel="stylesheet">
-<!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Devnotes">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><script src="gha_files/libs/quarto-html/popper.min.js"></script><script src="gha_files/libs/quarto-html/tippy.umd.min.js"></script><link href="gha_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="gha_files/libs/quarto-html/light-border.css" rel="stylesheet">
+<script src="gha_files/libs/quarto-diagram/mermaid.min.js"></script><script src="gha_files/libs/quarto-diagram/mermaid-init.js"></script><link href="gha_files/libs/quarto-diagram/mermaid.css" rel="stylesheet">
+<!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="CI/CD Workflow">
 <meta property="og:image" content="https://tidywf.github.io/nemo/logo.png">
 <meta name="robots" content="noindex">
 </head>
@@ -67,12 +68,12 @@
 </nav><div class="container template-quarto">
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-      <img src="../logo.png" class="logo" alt=""><h1>Devnotes</h1>
+      <img src="../logo.png" class="logo" alt=""><h1>CI/CD Workflow</h1>
 
 
 
 
-      <small class="dont-index">Source: <a href="https://github.com/tidywf/nemo/blob/dev/vignettes/devnotes.qmd" class="external-link"><code>vignettes/devnotes.qmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/tidywf/nemo/blob/dev/vignettes/gha.qmd" class="external-link"><code>vignettes/gha.qmd</code></a></small>
       <div class="d-none name"><code></code></div>
     </div>
 
@@ -81,161 +82,66 @@
 
 
 
-    <section class="level3"><h3 id="r-pkg-dev">R pkg dev<a class="anchor" aria-label="anchor" href="#r-pkg-dev"></a>
-</h3>
-<table class="table caption-top">
-<colgroup>
-<col style="width: 33%">
-<col style="width: 33%">
-<col style="width: 33%">
-</colgroup>
-<thead><tr class="header">
-<th>Command</th>
-<th>Comment</th>
-<th>Shortcut</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td><code>devtools::check()</code></td>
-<td>build and check the pkg</td>
-<td><code>Cmd + Shift + E</code></td>
-</tr>
-<tr class="even">
-<td><code>devtools::load_all()</code></td>
-<td>load the pkg</td>
-<td><code>Cmd + Shift + L</code></td>
-</tr>
-<tr class="odd">
-<td><code>devtools::document()</code></td>
-<td>document the pkg</td>
-<td><code>Cmd + Shift + D</code></td>
-</tr>
-<tr class="even">
-<td><code>pak::local_install(upgrade = FALSE)</code></td>
-<td>install the pkg into the first library of <code><a href="https://rdrr.io/r/base/libPaths.html" class="external-link">.libPaths()</a></code>
-</td>
-<td><code>Cmd + Shift + B</code></td>
-</tr>
-</tbody>
-</table></section><section class="level3"><h3 id="conda">conda<a class="anchor" aria-label="anchor" href="#conda"></a>
-</h3>
-<table class="table caption-top">
-<colgroup>
-<col style="width: 50%">
-<col style="width: 50%">
-</colgroup>
-<thead><tr class="header">
-<th>Command</th>
-<th>Comment</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td><code>conda install foo -c bar</code></td>
-<td>install pkg <code>foo</code> from channel <code>bar</code>
-</td>
-</tr>
-<tr class="even">
-<td><code>conda create --file env.yml --prefix ./bar</code></td>
-<td>install conda pkgs listed in <code>env.yml</code> into the <code>./bar</code> directory</td>
-</tr>
-<tr class="odd">
-<td><code>conda info -e</code></td>
-<td>list conda environments installed on this machine</td>
-</tr>
-<tr class="even">
-<td><code>rattler-build build -r recipe.yaml --output-dir ${HOME}/tmp</code></td>
-<td>build conda pkg from a recipe file</td>
-</tr>
-<tr class="odd">
-<td><code>rattler-build upload anaconda -o umccr --api-key &lt;xxx&gt; ${HOME}/tmp/r-tidywigits.conda</code></td>
-<td>upload conda pkg to anaconda</td>
-</tr>
-</tbody>
-</table></section><section class="level3"><h3 id="pkgdown">pkgdown<a class="anchor" aria-label="anchor" href="#pkgdown"></a>
-</h3>
-<table class="table caption-top">
-<colgroup>
-<col style="width: 50%">
-<col style="width: 50%">
-</colgroup>
-<thead><tr class="header">
-<th>Command</th>
-<th>Comment</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td><code><a href="https://pkgdown.r-lib.org/reference/build_site.html" class="external-link">pkgdown::build_site()</a></code></td>
-<td>builds entire site</td>
-</tr>
-<tr class="even">
-<td><code>pkgdown::build_articles(quiet = FALSE)</code></td>
-<td>builds vignettes in debug mode</td>
-</tr>
-<tr class="odd">
-<td><code>pkgdown::build_article("developers")</code></td>
-<td>builds developers vignette only</td>
-</tr>
-</tbody>
-</table></section><section class="level3"><h3 id="data-version-control">Data Version Control<a class="anchor" aria-label="anchor" href="#data-version-control"></a>
-</h3>
-<p>Instead of committing big data files into <code>git</code>, we can store the files remotely (e.g. Google Drive, AWS S3, Cloudflare R2) and just keep track of the data updates in <code>git</code> using <a href="https://dvc.org/" class="external-link">DVC</a>.</p>
-<p>The R package uses the data files when running the code examples and tests, and when rendering the vignettes. A simple <code>dvc pull</code> will pull the data from the remote storage and allow these processes to take place.</p>
-<table class="table caption-top">
-<colgroup>
-<col style="width: 47%">
-<col style="width: 52%">
-</colgroup>
-<thead><tr class="header">
-<th>Command</th>
-<th>Comments</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td><code>dvc init</code></td>
-<td>initialise dvc</td>
-</tr>
-<tr class="even">
-<td><code>dvc remote add -d storage gdrive://&lt;...&gt;</code></td>
-<td>add GDrive remote</td>
-</tr>
-<tr class="odd">
-<td><code>dvc remote add -d my_r2 s3://&lt;...&gt;</code></td>
-<td>add Cloudflare R2 remote</td>
-</tr>
-<tr class="even">
-<td><code>dvc remote modify my_r2 endpointurl https://&lt;...&gt;.r2.cloudflarestorage.com</code></td>
-<td>add Cloudflare R2 remote endpointurl</td>
-</tr>
-<tr class="odd">
-<td><code>dvc remote list</code></td>
-<td>list all remotes</td>
-</tr>
-<tr class="even">
-<td><code>dvc check-ignore *</code></td>
-<td>check what is dvc-ignored</td>
-</tr>
-<tr class="odd">
-<td><code>dvc list https://github.com/tidywf/tidywigits inst/extdata</code></td>
-<td>list dvc’ed data</td>
-</tr>
-<tr class="even">
-<td><code>dvc add path/to/folder</code></td>
-<td>adds <code>folder</code> (and its contents) to dvc</td>
-</tr>
-<tr class="odd">
-<td><code>dvc add path/to/file.txt</code></td>
-<td>adds <code>file.txt</code> to dvc</td>
-</tr>
-<tr class="even">
-<td><code>dvc push</code></td>
-<td>pushes dvc data to remote</td>
-</tr>
-<tr class="odd">
-<td><code>dvc pull</code></td>
-<td>pulls dvc data from remote</td>
-</tr>
-</tbody>
-</table></section><script id="quarto-html-after-body" type="application/javascript">
+    <div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p>
+<figure class=""><p></p>
+<div>
+<pre class="mermaid mermaid-js">flowchart TD
+
+    subgraph BUMP ["🔧 Bump Version"]
+    B1["👾 Miniforge setup"]
+    B2["🔖 Bump version"]
+    B3["📦 Install from source"]
+    B4["📖 Render README"]
+    B5["💾 Commit and push"]
+    B1 --&gt; B2
+    B2 --&gt; B3
+    B3 --&gt; B4
+    B4 --&gt; B5
+    end
+
+    BUMP --&gt; DEPLOY
+
+    subgraph DEPLOY ["🔧 conda-docs"]
+        subgraph condarise ["🐍 Condarise"]
+        CS1["👾 Miniforge setup"]
+        CS2["🐍 Conda pkg build"]
+        CS3["🐍 Conda pkg upload"]
+        CS4["🔒 Conda lock"]
+        CS5["💾 Commit lockfiles"]
+        CS1 --&gt; CS2
+        CS2 --&gt; CS3
+        CS3 --&gt; CS4
+        CS4 --&gt; CS5
+        end
+        subgraph tag ["🔖 Tag"]
+        TS1["📥 Pull latest commits"]
+        TS2["🔖 Create tag"]
+        TS1 --&gt; TS2
+        end
+        subgraph pkgdownise ["🌐 Pkgdownise"]
+        PS1["👾 Miniforge setup"]
+        PS2["📦 Install from source"]
+        PS3["🌐 Website publish"]
+        PS1 --&gt; PS2
+        PS2 --&gt; PS3
+        end
+
+        condarise --&gt; tag
+        tag --&gt; pkgdownise
+    end
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+
+
+
+<script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {
       var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
       var mailtoRegex = new RegExp(/^mailto:/);
@@ -318,8 +224,7 @@
       }
     }
   });
-  </script></main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
-    </nav></aside>
+  </script></main>
 </div>
 
 
