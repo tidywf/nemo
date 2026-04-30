@@ -34,11 +34,11 @@
 #' @export
 nemo_uml <- function(classes, out_dir = NULL, pkg = "nemo") {
   assertthat::assert_that(
-    "R6toPlant",
+    pkg_found("R6toPlant"),
     msg = "Install R6toPlant from gitlab::b-rowlingson/R6toPlant"
   )
   if (!nzchar(Sys.which("plantuml"))) {
-    stop("plantuml binary not found. Install it via conda: 'conda install plantuml'.")
+    stop("plantuml binary not found. Install it via conda: 'conda install conda-forge::plantuml'.")
   }
   ns <- asNamespace(pkg)
   classes_as_fun <- classes |> purrr::map(\(x) get(x, envir = ns))
