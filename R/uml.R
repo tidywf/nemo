@@ -33,18 +33,36 @@
 #' }
 #' @export
 nemo_uml <- function(classes, out_dir = NULL, pkg = "nemo") {
-  stopifnot(pkg_found("R6toPlant"))
+  assertthat::assert_that(
+    "R6toPlant",
+    msg = "Install R6toPlant from gitlab::b-rowlingson/R6toPlant"
+  )
+  if (!nzchar(Sys.which("plantuml"))) {
+    stop("plantuml binary not found. Install it via conda: 'conda install plantuml'.")
+  }
   ns <- asNamespace(pkg)
   classes_as_fun <- classes |> purrr::map(\(x) get(x, envir = ns))
   tmp_uml <- tempfile(fileext = ".uml")
   R6toPlant::make_plant(classes = classes_as_fun, output = tmp_uml)
   if (is.null(out_dir)) {
-    svg1 <- system2("plantuml", args = c("-tsvg", "-pipe"), stdin = tmp_uml, stdout = TRUE)
+    svg1 <- system2(
+      "plantuml",
+      args = c("-tsvg", "-pipe"),
+      stdin = tmp_uml,
+      stdout = TRUE,
+      stderr = TRUE
+    )
+    if (!is.null(attr(svg1, "status")) && attr(svg1, "status") != 0L) {
+      stop("plantuml failed (exit ", attr(svg1, "status"), "):\n", paste(svg1, collapse = "\n"))
+    }
     return(paste(svg1, collapse = "\n"))
   }
   fs::dir_create(out_dir)
   out_uml <- file.path(out_dir, paste0(pkg, ".uml"))
   file.copy(tmp_uml, out_uml, overwrite = TRUE)
-  system2("plantuml", args = c("-tsvg", out_uml))
+  status <- system2("plantuml", args = c("-tsvg", out_uml))
+  if (status != 0L) {
+    stop("plantuml failed (exit ", status, ").")
+  }
   invisible(out_uml)
 }
