@@ -4,24 +4,38 @@
 \alias{nemo_uml}
 \title{Generate UML diagram for nemo R6 classes}
 \usage{
-nemo_uml(classes, out_dir, pkg = "nemo")
+nemo_uml(classes, out_dir = NULL, pkg = "nemo")
 }
 \arguments{
 \item{classes}{(\code{character(n)})\cr
 Names of R6 classes to include in the diagram.}
 
-\item{out_dir}{(\code{character(1)})\cr
-Output directory for the \code{.uml} and \code{.svg} files.}
+\item{out_dir}{(\code{character(1)} or \code{NULL})\cr
+Output directory for the \code{.uml} and \code{.svg} files. If \code{NULL}, returns the
+SVG as a string.}
 
 \item{pkg}{(\code{character(1)})\cr
 Package namespace to look up class objects from.}
 }
+\value{
+When \code{out_dir} is \code{NULL}, a character string containing the SVG.
+Otherwise, the path to the \code{.uml} file (invisibly).
+}
 \description{
 Uses \code{R6toPlant} to generate a PlantUML file from a set of R6 classes,
 then calls \code{plantuml} to render it as an SVG.
+
+When \code{out_dir} is \code{NULL} (default), the SVG is piped from \code{plantuml} to
+stdout and returned as a character string — suitable for inline rendering
+in a vignette chunk with \code{output: asis}. When \code{out_dir} is provided, the
+\code{.uml} and \code{.svg} files are written to that directory instead.
 }
 \examples{
 \dontrun{
+# inline SVG for vignette use
+svg <- nemo_uml(c("Config", "Tool", "Tool1", "Workflow", "Workflow1"))
+
+# write files to disk
 nemo_uml(
   classes = c("Config", "Tool", "Tool1", "Workflow", "Workflow1"),
   out_dir = here::here("vignettes", "fig", "uml")
