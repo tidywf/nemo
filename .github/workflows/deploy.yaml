@@ -7,17 +7,9 @@ on:
       - dev
 
 jobs:
-  umlise:
-    name: 🎨 Umlise
-    if: "startsWith(github.event.head_commit.message, 'Bump version:')"
-    uses: tidywf/actions/.github/workflows/umlise.yaml@main
-    permissions:
-      contents: write
-    secrets: inherit
-
   condarise:
     name: 🐍 Condarise
-    needs: [umlise]
+    if: "startsWith(github.event.head_commit.message, 'Bump version:')"
     uses: tidywf/actions/.github/workflows/condarise.yaml@main
     permissions:
       contents: write

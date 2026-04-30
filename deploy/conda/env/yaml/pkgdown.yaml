@@ -8,3 +8,6 @@ dependencies:
   - r-pkgdown
   - r-quarto
   - quarto
+  - r-here
+  - r-r6toplant
+  - plantuml

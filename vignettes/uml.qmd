@@ -8,9 +8,17 @@ knitr:
   opts_chunk:
     collapse: true
     comment: '#>'
-lightbox: true
 ---
 
-### nemo R6 Class UML diagram
+```{r}
+#| label: pkgs
+#| echo: false
+use("nemo", "nemo_uml")
+```
 
-![](fig/uml/nemo.svg "nemo UML diagram"){.lightbox}
+```{r}
+#| label: uml
+#| echo: false
+#| output: asis
+cat(nemo_uml(c("Config", "Tool", "Tool1", "Workflow", "Workflow1")))
+```
