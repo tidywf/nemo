@@ -3,3 +3,18 @@
     font-family: monospace;
     font-size: 13px;
 }
+
+// Mermaid diagram light theme (overrides Quarto's CSS variable defaults)
+:root {
+    --mermaid-bg-color: #ffffff;
+    --mermaid-fg-color: #333333;
+    --mermaid-fg-color--lighter: rgba(51, 51, 51, 0.4);
+    --mermaid-fg-color--lightest: rgba(51, 51, 51, 0.1);
+    --mermaid-font-family: inherit;
+    --mermaid-font-weight: normal;
+    --mermaid-node-bg-color: #e8eef7;
+    --mermaid-node-fg-color: #1a1a2e;
+    --mermaid-edge-color: #666666;
+    --mermaid-label-bg-color: #ffffff;
+    --mermaid-label-fg-color: #1a1a2e;
+}

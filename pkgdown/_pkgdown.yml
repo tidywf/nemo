@@ -28,14 +28,18 @@ navbar:
           href: articles/installation.html
         - text: Structure
           href: articles/structure.html
-        - text: Schema
+        - text: Schema Walkthrough
           href: articles/schema.html
+        - text: Schema Table
+          href: articles/schemas.html
         - text: Contribute
           href: articles/contribute.html
         - text: Devnotes
           href: articles/devnotes.html
-        - text: UML
+        - text: UML Diagram
           href: articles/uml.html
+        - text: CI/CD Workflow
+          href: articles/gha.html
     news:
       text: NEWS
       href: articles/NEWS.html
@@ -75,6 +79,7 @@ reference:
       - set_tbl_version_attr
       - enframe_data
       - get_python
+      - nemo_gha_mermaid
       - nemo_cli
       - nemo_log
       - nemo_log_date

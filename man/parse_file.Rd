@@ -28,12 +28,13 @@ Parses files.
 path <- system.file("extdata/tool1", package = "nemo")
 x <- Tool$new("tool1", pkg = "nemo", path)
 schemas_all <- x$raw_schemas_all
+f <- function(ver, tbl) file.path(path, ver, paste0("sampleA.tool1.", tbl, ".tsv"))
 # table1: three versions with different column sets
-(d1_v123 <- parse_file(file.path(path, "v1.2.3", "sampleA.tool1.table1.tsv"), "table1", schemas_all))
-(d1_v456 <- parse_file(file.path(path, "v4.5.6", "sampleA.tool1.table1.tsv"), "table1", schemas_all))
-(d1_lat  <- parse_file(file.path(path, "latest", "sampleA.tool1.table1.tsv"), "table1", schemas_all))
+(d1_v123 <- parse_file(f("v1.2.3", "table1"), "table1", schemas_all))
+(d1_v456 <- parse_file(f("v4.5.6", "table1"), "table1", schemas_all))
+(d1_lat  <- parse_file(f("latest", "table1"), "table1", schemas_all))
 # table2: two versions (v1.0.0 drops metricB)
-(d2_v1  <- parse_file(file.path(path, "v1.0.0", "sampleA.tool1.table2.tsv"), "table2", schemas_all))
-(d2_lat <- parse_file(file.path(path, "latest", "sampleA.tool1.table2.tsv"), "table2", schemas_all))
+(d2_v1  <- parse_file(f("v1.0.0", "table2"), "table2", schemas_all))
+(d2_lat <- parse_file(f("latest", "table2"), "table2", schemas_all))
 
 }
