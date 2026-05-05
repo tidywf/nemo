@@ -269,6 +269,19 @@ Tool <- R6::R6Class(
           group = dplyr::if_else(.data$group == 1, glue(""), glue("_{.data$group}")),
           prefix = glue("{.data$prefix}{.data$group}")
         ) |>
+        # two files with different basenames can reduce to the same prefix when
+        # matched by different patterns for the same table (e.g. *.flagstat and
+        # *.flag_counts.tsv both stripping to "sample1"). Append _2, _3, ... to
+        # disambiguate so outputs don't overwrite each other.
+        dplyr::mutate(grp2 = dplyr::row_number(), .by = c("tool_parser", "prefix")) |>
+        dplyr::mutate(
+          prefix = dplyr::if_else(
+            .data$grp2 == 1,
+            .data$prefix,
+            glue("{.data$prefix}_{.data$grp2}")
+          )
+        ) |>
+        dplyr::select(-"grp2") |>
         dplyr::relocate("tool_parser", .before = 1)
     },
     #' @description Dispatch parse for a table: calls custom `parse_{name}()` if
