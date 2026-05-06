@@ -32,13 +32,13 @@
 #' # initialize
 #' expect_error(Config$new("foo", pkg))
 #' # get_patterns
-#' expect_equal(nrow(patterns), 5)
+#' expect_equal(nrow(patterns), 6)
 #' # get_ftypes
-#' expect_equal(dplyr::distinct(ftypes, .data$ftype) |> nrow(), 4)
+#' expect_equal(dplyr::distinct(ftypes, .data$ftype) |> nrow(), 5)
 #' # get_ftype
 #' expect_equal(ftype1, "txt")
 #' # get_descriptions
-#' expect_equal(nrow(descr), 5)
+#' expect_equal(nrow(descr), 6)
 #' # get_schemas_all
 #' expect_equal(dplyr::filter(rs, .data$name == "table1") |> nrow(), 3)
 #' expect_equal(dplyr::filter(ts, .data$name == "table1") |> nrow(), 3)

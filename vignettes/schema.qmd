@@ -43,22 +43,29 @@ escapes are processed correctly (e.g. `"\\.tool1\\.table1\\.tsv$"`).
 
 ## File types (`ftype`)
 
-The `ftype` field signals the parsing strategy for that table.
-Tab-delimited is the default; other delimiters are handled inside the
-specific parser, not in `ftype`.
+The `ftype` field signals the parsing strategy for that table, including the
+delimiter. Tab-delimited files use `txt` or `txt-nohead`; comma-delimited files
+with a header use `csv`. More exotic formats require a custom `parse_*` method.
 
 | `ftype`           | Description                        | `raw:` names        | Parse function |
 |-------------------|------------------------------------|---------------------|----------------|
-| `txt`             | Header present; cols named in file | actual column names | `parse_file` |
+| `txt`             | Header present; tab-delimited      | actual column names | `parse_file` |
+| `csv`             | Header present; comma-delimited    | actual column names | `parse_file` (delim=`,`) |
 | `txt-nohead`      | No header; positional columns      | `X1, X2, …, XN`     | `parse_file_nohead` |
 | `txt-keyvalue`    | No header; exactly 2 cols (key, value); pivoted wide | actual key values | `parse_file_keyvalue` |
 | `csv-nohead-long` | No header; long format with a metric-name col; custom pivot logic | metric names (values in the key column) | custom `tidy_*` method |
 
 ### `txt`
 
-Standard delimited file with a header row.
+Standard tab-delimited file with a header row.
 The `raw:` names must exactly match the column names in the file — they are used
 by `schema_guess` to identify which versioned schema applies to a given file.
+
+### `csv`
+
+Same as `txt` but comma-delimited. No `parse_*` override is needed in the
+subclass — `ftype: 'csv'` is auto-dispatched to `parse_file` with `delim = ","`.
+Use this for any tool that produces `.csv` output files with a header row.
 
 ### `txt-nohead`
 
@@ -145,6 +152,15 @@ conf$get_schema("table1", v = "v1.2.3", raw_or_tidy = "raw") |>
 
 ```{r}
 conf$get_schema("table1", raw_or_tidy = "tidy") |> kable()
+```
+
+### Tidy schema for a `csv` table
+
+`csv` tables work identically to `txt` — the schema drives column renaming
+automatically:
+
+```{r}
+conf$get_schema("table6", raw_or_tidy = "tidy") |> kable()
 ```
 
 ### Column map for `csv-nohead-long` tables

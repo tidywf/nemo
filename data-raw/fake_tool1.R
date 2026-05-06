@@ -105,6 +105,28 @@ tool1 <- list(
       )
     )
   ),
+  # csv: header present, comma-delimited
+  table6 = list(
+    list(
+      version = "v1.0.0",
+      format = "csv",
+      data = tibble::tibble(
+        GeneId = c("ENSG001", "ENSG002", "ENSG003"),
+        GeneName = c("BRCA1", "TP53", "EGFR"),
+        AdjTPM = c(12.3, 45.6, 7.89)
+      )
+    ),
+    list(
+      version = "latest",
+      format = "csv",
+      data = tibble::tibble(
+        GeneId = c("ENSG001", "ENSG002", "ENSG003"),
+        GeneName = c("BRCA1", "TP53", "EGFR"),
+        AdjTPM = c(12.3, 45.6, 7.89),
+        RawTPM = c(11.1, 44.4, 6.66)
+      )
+    )
+  ),
   # csv-nohead-long: no header, comma-delimited, long format with metric name column
   # mimics DRAGEN-style metrics files (category, rg, variable, count, pct)
   # includes TUMOR/NORMAL sections for both SUMMARY and PER RG
@@ -144,6 +166,9 @@ purrr::map2(tool1, names(tool1), \(tab, tab_name) {
     if (entry$format == "csv-nohead-long") {
       fname <- file.path(odir, glue::glue("sampleA.tool1.{tab_name}.csv"))
       readr::write_csv(entry$data, fname, col_names = FALSE, na = "")
+    } else if (entry$format == "csv") {
+      fname <- file.path(odir, glue::glue("sampleA.tool1.{tab_name}.csv"))
+      readr::write_csv(entry$data, fname, col_names = TRUE, na = "NA")
     } else {
       fname <- file.path(odir, glue::glue("sampleA.tool1.{tab_name}.tsv"))
       has_header <- entry$format == "tsv"

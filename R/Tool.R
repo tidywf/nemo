@@ -329,6 +329,7 @@ Tool <- R6::R6Class(
       switch(
         ftype,
         "txt" = self$.parse_file(x, tname),
+        "csv" = self$.parse_file(x, tname, delim = ","),
         "txt-nohead" = self$.parse_file_nohead(x, tname),
         "txt-keyvalue" = self$.parse_file_keyvalue(x, tname),
         stop(glue(
