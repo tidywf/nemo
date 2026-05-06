@@ -119,6 +119,31 @@ tables:
         type: 'float'
         description: 'depth'
         versions: ['latest']
+  table6:
+    description: 'Table6 for tool1 (csv: header present, comma-delimited).'
+    pattern: "\\.tool1\\.table6\\.csv$"
+    ftype: 'csv'
+    columns:
+      - raw: 'GeneId'
+        tidy: 'gene_id'
+        type: 'char'
+        description: 'Ensembl gene ID'
+        versions: ['v1.0.0', 'latest']
+      - raw: 'GeneName'
+        tidy: 'gene_name'
+        type: 'char'
+        description: 'gene name'
+        versions: ['v1.0.0', 'latest']
+      - raw: 'AdjTPM'
+        tidy: 'tpm_adj'
+        type: 'float'
+        description: 'adjusted TPM'
+        versions: ['v1.0.0', 'latest']
+      - raw: 'RawTPM'
+        tidy: 'tpm_raw'
+        type: 'float'
+        description: 'raw TPM'
+        versions: ['latest']
   table5:
     description: 'Table5 for tool1 (csv-nohead-long: no header, long format with metric name col).'
     pattern: "\\.tool1\\.table5\\.csv$"

@@ -29,17 +29,17 @@ navbar:
         - text: Structure
           href: articles/structure.html
         - text: Schema Walkthrough
-          href: articles/schema.html
+          href: articles/schema_walkthrough.html
         - text: Schema Table
-          href: articles/schemas.html
+          href: articles/schema_table.html
         - text: Contribute
           href: articles/contribute.html
-        - text: Devnotes
-          href: articles/devnotes.html
         - text: UML Diagram
           href: articles/uml.html
         - text: CI/CD Workflow
-          href: articles/gha.html
+          href: articles/cicd.html
+        - text: Devnotes
+          href: articles/devnotes.html
     news:
       text: NEWS
       href: articles/NEWS.html

@@ -20,5 +20,5 @@ use("nemo", "nemo_uml")
 #| label: uml
 #| echo: false
 #| output: asis
-cat(nemo_uml(c("Config", "Tool", "Tool1", "Workflow", "Workflow1")))
+cat(nemo_uml(classes = c("Config", "Tool", "Tool1", "Workflow", "Workflow1"), pkg = "nemo"))
 ```
