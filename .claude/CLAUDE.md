@@ -32,13 +32,34 @@ Both subcommands accept `-w WORKFLOW` (workflow name) and `-q` (quiet). The `tid
 
 | Function | File type (`ftype`) | Notes |
 |----------|---------------------|-------|
-| `parse_file()` | `tsv` | Header present; schema version auto-detected via `schema_guess()` |
+| `parse_file()` | `txt` | Header present, tab-delimited; schema version auto-detected via `schema_guess()` |
+| `parse_file()` | `csv` | Header present, comma-delimited; dispatched automatically by `.parse_by_ftype()` — no subclass override needed |
 | `parse_file_nohead()` | `txt-nohead` | No header; column count validated against schema |
-| `parse_file_keyvalue()` | key-value tsv | Two-column file pivoted wide |
+| `parse_file_keyvalue()` | `txt-keyvalue` | Two-column key=value file pivoted wide |
+| *(custom method)* | `csv-nohead-long` | No header, long format; `.parse_by_ftype()` errors — subclass must implement `parse_{tname}()` |
 | `file_hdr()` | any delimited | Returns column names without reading full file |
 | `schema_guess()` | — | Matches column names against all versioned schemas; errors if not exactly one match |
 
 All parse functions attach a `file_version` attribute to the returned tibble.
+
+## Logging (`R/log.R`)
+
+`log4r`-based logging initialised in `.onLoad`. Controlled by two env vars:
+- `NEMO_LOG_ENABLE` — set to `"FALSE"` to disable entirely (default `"TRUE"`)
+- `NEMO_LOG_LEVEL` — threshold level: `"DEBUG"`, `"INFO"` (default), `"WARN"`, `"ERROR"`, `"FATAL"`
+
+Public API: `nemo_log(level, msg, ...)` (sprintf-style) and `nemo_log_date()`.
+
+## Schema Visualization (`R/schema_vis.R`)
+
+Interactive `reactable`-based schema explorer:
+- `nemo_schema_data(tools, pkg)` — returns a tibble with per-table schema info (versions, columns)
+- `nemo_schema_reactable(tools, pkg, ...)` — renders the full interactive widget
+- `reactable_schema(dat, ...)` — low-level renderer; most callers should use `nemo_schema_reactable()` instead
+
+## Metadata (`R/metadata.R`)
+
+`nemo_metadata(files, pkgs, input_id, output_id, input_dir, output_dir)` — assembles a run-level metadata list (package versions, file manifest, IDs, dirs) suitable for JSON serialisation.
 
 ## Writing (`R/write.R`)
 
@@ -94,6 +115,12 @@ make bump VERSION=x.y.z BRANCH=main
 ```
 
 This calls `gh workflow run bump.yaml --ref BRANCH --field version=VERSION` under the hood. Can also be triggered via the GitHub Actions UI: Actions → Bump Version → Run workflow.
+
+## CI/CD Mermaid Diagram (`R/gha.R`)
+
+`nemo_gha_mermaid(actions_url, deploy_yaml)` reads the local `deploy.yaml` and fetches reusable workflow YAML files from the tidywf/actions repo to build a Mermaid flowchart of the full CI/CD pipeline. Used in `vignettes/cicd.qmd`.
+
+Known limitations tracked in `.claude/TODO.md`
 
 ## UML Generation
 
