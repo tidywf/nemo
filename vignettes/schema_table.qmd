@@ -1,7 +1,7 @@
 ---
-title: "Schemas"
+title: "Schema Table"
 vignette: >
-  %\VignetteIndexEntry{Schemas}
+  %\VignetteIndexEntry{Schema Table}
   %\VignetteEngine{quarto::html}
   %\VignetteEncoding{UTF-8}
 knitr:

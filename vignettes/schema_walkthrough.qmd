@@ -1,7 +1,7 @@
 ---
-title: "Schema"
+title: "Schema Walkthrough"
 vignette: >
-  %\VignetteIndexEntry{Schema}
+  %\VignetteIndexEntry{Schema Walkthrough}
   %\VignetteEngine{quarto::html}
   %\VignetteEncoding{UTF-8}
 knitr:
@@ -13,7 +13,7 @@ knitr:
 ```{r}
 #| label: setup
 #| include: false
-use("nemo")
+use("nemo", c("Config"))
 use("dplyr", c("select", "filter", "mutate"))
 use("knitr", "kable")
 ```
@@ -114,11 +114,12 @@ names against the correct versioned snapshot.
 Tables with a single version (all columns `versions: [latest]`) are the common
 case and require no special handling.
 
-## Live example
+## Example
 
 `Config$new()` reads the `schema.yaml` and exposes the derived schemas:
 
 ```{r}
+#| label: config_new
 conf <- Config$new("tool1", pkg = "nemo")
 conf
 ```
@@ -126,16 +127,19 @@ conf
 ### Patterns and file types
 
 ```{r}
+#| label: get_pats
 conf$get_patterns() |> kable()
 ```
 
 ```{r}
+#| label: get_ftypes
 conf$get_ftypes() |> kable()
 ```
 
 ### Versioned raw schemas (used by `schema_guess`)
 
 ```{r}
+#| label: get_schemas_all
 conf$get_schemas_all() |>
   select("name", "version", "schema")
 ```
@@ -143,6 +147,7 @@ conf$get_schemas_all() |>
 The `schema` list-col holds the `(field, type)` pairs used when reading a file:
 
 ```{r}
+#| label: get_schema_table1_raw
 conf$get_schema("table1", v = "v1.2.3", raw_or_tidy = "raw") |>
   select("field", "type") |>
   kable()
@@ -151,15 +156,17 @@ conf$get_schema("table1", v = "v1.2.3", raw_or_tidy = "raw") |>
 ### Tidy schema (used for column renaming)
 
 ```{r}
+#| label: get_schema_table1_tidy
 conf$get_schema("table1", raw_or_tidy = "tidy") |> kable()
 ```
 
 ### Tidy schema for a `csv` table
 
-`csv` tables work identically to `txt` — the schema drives column renaming
+`csv` tables work identically to `txt`, where the schema drives column renaming
 automatically:
 
 ```{r}
+#| label: get_schema_table6_tidy
 conf$get_schema("table6", raw_or_tidy = "tidy") |> kable()
 ```
 
@@ -169,5 +176,6 @@ For `csv-nohead-long` tables, `get_col_map()` returns the metric-name mapping
 used inside the `tidy_*` method:
 
 ```{r}
+#| label: get_col_map_table5
 conf$get_col_map("table5") |> kable()
 ```
