@@ -542,7 +542,7 @@ Tool <- R6::R6Class(
           tbl_name = dplyr::if_else(
             .data$parser == .data$tidy_name,
             .data$tool_parser,
-            paste(.data$tool_parser, .data$tidy_name, sep = "_")
+            paste0(.data$tool_parser, .data$tidy_name)
           ),
           # used to write when non-db format
           fpfix = paste(file.path(diro, .data$prefix), .data$tbl_name, sep = "_"),
