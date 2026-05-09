@@ -8,7 +8,7 @@ authors:
 home:
   title: "Tidy Bioinformatic Pipeline Outputs"
   description: >
-    A tidyverse R6 approach for working with bioinformatic pipeline outputs.
+    Tidy and explore outputs from bioinformatic pipelines.
 template:
   bootstrap: 5
   bootswatch: zephyr
