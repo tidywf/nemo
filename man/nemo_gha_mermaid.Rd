@@ -22,8 +22,20 @@ Reads the local \code{deploy.yaml} GHA file and fetches reusable GHA files from
 the tidywf/actions repo to build a Mermaid flowchart of the full CI/CD pipeline.
 }
 \examples{
-#repo <- "https://raw.githubusercontent.com/tidywf/actions/"
-#actions_url <- paste0(repo, "refs/heads/main/.github/workflows")
-#deploy_yaml <- here::here(".github/workflows/deploy.yaml")
-#nemo_gha_mermaid(actions_url, deploy_yaml)
+# Real usage (requires network):
+# repo <- "https://raw.githubusercontent.com/tidywf/actions/"
+# actions_url <- paste0(repo, "refs/heads/main/.github/workflows")
+# nemo_gha_mermaid(actions_url, here::here(".github/workflows/deploy.yaml"))
+d <- tempfile() |> fs::dir_create()
+bump_wf <- list(jobs = list(bump = list(steps = list(
+  list(name = "Setup"), list(name = "Bump version")
+))))
+job_wf <- list(jobs = list(deploy = list(steps = list(list(name = "Run deploy")))))
+deploy_wf <- list(jobs = list(
+  myjob = list(name = "My Job", uses = "org/repo/.github/workflows/myjob.yaml@main")
+))
+yaml::write_yaml(bump_wf, file.path(d, "bump.yaml"))
+yaml::write_yaml(job_wf, file.path(d, "myjob.yaml"))
+yaml::write_yaml(deploy_wf, file.path(d, "deploy.yaml"))
+diagram <- nemo_gha_mermaid(actions_url = d, deploy_yaml = file.path(d, "deploy.yaml"))
 }
