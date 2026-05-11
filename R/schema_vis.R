@@ -14,7 +14,7 @@
 #' @return An htmlwidget.
 #' @examples
 #' \dontrun{
-#' d <- nemo_schema_data("tool1", pkg = "nemo")
+#' d <- nemo_schemavis_data("tool1", pkg = "nemo")
 #' reactable_schema(d)
 #' }
 #' @export
@@ -187,13 +187,13 @@ reactable_schema <- function(dat, ...) {
 #' @return A tibble with columns `n`, `tool`, `tbl`, `schema_version`,
 #'   `description`, `row_id`.
 #' @examples
-#' nemo_schema_data("tool1", pkg = "nemo")
+#' nemo_schemavis_data("tool1", pkg = "nemo")
 #' @testexamples
-#' expect_s3_class(nemo_schema_data("tool1", pkg = "nemo"), "tbl_df")
+#' expect_s3_class(nemo_schemavis_data("tool1", pkg = "nemo"), "tbl_df")
 #' expect_true(all(c("n", "tool", "tbl", "schema_version", "description") %in%
-#'   names(nemo_schema_data("tool1", pkg = "nemo"))))
+#'   names(nemo_schemavis_data("tool1", pkg = "nemo"))))
 #' @export
-nemo_schema_data <- function(tools, pkg = "nemo") {
+nemo_schemavis_data <- function(tools, pkg = "nemo") {
   get_one <- function(tool) {
     conf <- Config$new(tool, pkg = pkg)
     conf$get_schemas_all("both") |>
@@ -225,5 +225,5 @@ nemo_schema_data <- function(tools, pkg = "nemo") {
 #' }
 #' @export
 nemo_schema_reactable <- function(tools, pkg = "nemo", ...) {
-  reactable_schema(nemo_schema_data(tools, pkg = pkg), ...)
+  reactable_schema(nemo_schemavis_data(tools, pkg = pkg), ...)
 }
