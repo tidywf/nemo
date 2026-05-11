@@ -71,6 +71,9 @@ Workflow <- R6::R6Class(
     #' @field files_tbl (`tibble(n)`)\cr
     #' Tibble of files from [list_files_dir()].
     files_tbl = NULL,
+    #' @field pkg (`character(1)`)\cr
+    #' Package name used for metadata version reporting.
+    pkg = NULL,
     #' @field written_files (`tibble(n)`)\cr
     #' Tibble of files written from `self$write()`.
     written_files = NULL,
@@ -82,10 +85,13 @@ Workflow <- R6::R6Class(
     #' Path(s) to workflow results.
     #' @param tools (`list(n)`)\cr
     #' List of Tools that compose a Workflow.
+    #' @param pkg (`character(1)`)\cr
+    #' Package name used for metadata version reporting.
     #' @return (`R6::R6Class()`)\cr
     #' R6 object.
-    initialize = function(name = NULL, path = NULL, tools = NULL) {
+    initialize = function(name = NULL, path = NULL, tools = NULL, pkg = "nemo") {
       self$name <- name
+      self$pkg <- pkg
       private$validate_tools(tools)
       private$is_tidied <- FALSE
       private$is_written <- FALSE
@@ -188,7 +194,8 @@ Workflow <- R6::R6Class(
       # Write metadata
       if (format != "db" && !is.null(res)) {
         meta <- self$get_metadata(input_id = input_id, output_id = output_id, output_dir = diro)
-        jsonlite::write_json(meta, file.path(diro, "metadata.json"), pretty = TRUE)
+        meta_diro <- file.path(diro, "_metadata") |> fs::dir_create()
+        jsonlite::write_json(meta, file.path(meta_diro, "metadata.json"), pretty = TRUE)
       }
       return(invisible(self))
     },
@@ -273,13 +280,21 @@ Workflow <- R6::R6Class(
     #' @return (`list()`)\cr
     #' List with `input_id`, `output_id`, `input_dir`, `output_dir`,
     #' `pkg_versions`, and `files`.
-    get_metadata = function(input_id, output_id, output_dir, pkgs = c("nemo")) {
+    get_metadata = function(input_id, output_id, output_dir, pkgs = NULL) {
+      if (is.null(pkgs)) {
+        pkgs <- self$pkg
+      }
       files <- NULL
-      # just keep bname and provide diro
       if (private$is_written) {
+        # just keep bname and provide diro, no need for full outpath since
+        # it's a flat output structure.
         files <- self$written_files |>
           dplyr::mutate(outpath = basename(.data$outpath)) |>
-          dplyr::select("tbl_name", "prefix", "outpath")
+          dplyr::select(tbl = "tbl_name", "prefix", fout = "outpath", fin = "raw_path")
+      } else {
+        # just select raw path and size
+        files <- self$files_tbl |>
+          dplyr::select(fin = "path", "size")
       }
       meta <- nemo_metadata(
         files = files,
