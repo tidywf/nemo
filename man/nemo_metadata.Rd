@@ -2,7 +2,7 @@
 % Please edit documentation in R/metadata.R
 \name{nemo_metadata}
 \alias{nemo_metadata}
-\title{Title}
+\title{Assemble run metadata}
 \usage{
 nemo_metadata(files, pkgs, input_id, output_id, input_dir, output_dir)
 }
@@ -28,7 +28,7 @@ Output directory.}
 List of metadata.
 }
 \description{
-Title
+Assemble run metadata
 }
 \examples{
 files <- tibble::tibble(

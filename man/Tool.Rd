@@ -460,7 +460,7 @@ Write tidy tibbles.
   diro = ".",
   format = "tsv",
   input_id = NULL,
-  output_id = ulid::ulid(),
+  output_id = NULL,
   dbconn = NULL
 )}\if{html}{\out{</div>}}
 }
@@ -501,7 +501,7 @@ Parse, filter, tidy and write files.
   diro = ".",
   format = "tsv",
   input_id = NULL,
-  output_id = ulid::ulid(),
+  output_id = NULL,
   dbconn = NULL,
   include = NULL,
   exclude = NULL

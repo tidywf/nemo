@@ -1,4 +1,4 @@
-#' Title
+#' Assemble run metadata
 #'
 #' @param files (`tibble()`)\cr
 #' Written files.
@@ -32,8 +32,6 @@ nemo_metadata <- function(files, pkgs, input_id, output_id, input_dir, output_di
   stopifnot(
     is.data.frame(files),
     rlang::is_character(pkgs),
-    rlang::is_character(input_id, n = 1),
-    rlang::is_character(output_id, n = 1),
     rlang::is_character(input_dir),
     rlang::is_character(output_dir, n = 1)
   )
@@ -46,7 +44,7 @@ nemo_metadata <- function(files, pkgs, input_id, output_id, input_dir, output_di
   list(
     input_id = jsonlite::unbox(input_id),
     output_id = jsonlite::unbox(output_id),
-    input_dir = I(input_dir),
+    input_dirs = I(input_dir),
     output_dir = jsonlite::unbox(output_dir),
     pkg_versions = pkg_versions,
     files = files
