@@ -4,7 +4,7 @@
 \alias{nemo_metadata}
 \title{Assemble run metadata}
 \usage{
-nemo_metadata(files, pkgs, input_id, output_id, input_dir, output_dir)
+nemo_metadata(files, pkgs, input_id, output_id, input_dirs, output_dir)
 }
 \arguments{
 \item{files}{(\code{tibble()})\cr
@@ -18,7 +18,7 @@ Packages to include versions of.}
 \item{output_id}{(\code{character(1)})\cr
 Output ID to use for the dataset (e.g. \code{run123}).}
 
-\item{input_dir}{(\code{character(n)})\cr
+\item{input_dirs}{(\code{character(n)})\cr
 Input directory (can be multiple).}
 
 \item{output_dir}{(\code{character(1)})\cr
@@ -39,7 +39,7 @@ files <- tibble::tibble(
 pkgs <- c("nemo")
 input_id <- "run123"
 output_id <- ulid::ulid()
-input_dir <- "/path/to/wigits/run123"
+input_dirs <- "/path/to/wigits/run123"
 output_dir <- "/path/to/nemo/outputs/run123"
-nemo_metadata(files, pkgs, input_id, output_id, input_dir, output_dir)
+nemo_metadata(files, pkgs, input_id, output_id, input_dirs, output_dir)
 }

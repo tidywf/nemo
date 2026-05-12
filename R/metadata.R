@@ -8,7 +8,7 @@
 #' Input ID to use for the dataset (e.g. `run123`).
 #' @param output_id (`character(1)`)\cr
 #' Output ID to use for the dataset (e.g. `run123`).
-#' @param input_dir (`character(n)`)\cr
+#' @param input_dirs (`character(n)`)\cr
 #' Input directory (can be multiple).
 #' @param output_dir (`character(1)`)\cr
 #' Output directory.
@@ -24,16 +24,18 @@
 #' pkgs <- c("nemo")
 #' input_id <- "run123"
 #' output_id <- ulid::ulid()
-#' input_dir <- "/path/to/wigits/run123"
+#' input_dirs <- "/path/to/wigits/run123"
 #' output_dir <- "/path/to/nemo/outputs/run123"
-#' nemo_metadata(files, pkgs, input_id, output_id, input_dir, output_dir)
+#' nemo_metadata(files, pkgs, input_id, output_id, input_dirs, output_dir)
 #' @export
-nemo_metadata <- function(files, pkgs, input_id, output_id, input_dir, output_dir) {
+nemo_metadata <- function(files, pkgs, input_id, output_id, input_dirs, output_dir) {
   stopifnot(
     is.data.frame(files),
     rlang::is_character(pkgs),
-    rlang::is_character(input_dir),
-    rlang::is_character(output_dir, n = 1)
+    rlang::is_character(input_dirs),
+    rlang::is_scalar_character(output_dir),
+    rlang::is_scalar_character(input_id) || is.null(input_id),
+    rlang::is_scalar_character(output_id) || is.null(output_id)
   )
   stopifnot(all(purrr::map_lgl(pkgs, pkg_found)))
   pkg_versions <- pkgs |>
@@ -42,11 +44,10 @@ nemo_metadata <- function(files, pkgs, input_id, output_id, input_dir, output_di
     dplyr::mutate(version = as.character(utils::packageVersion(.data$name))) |>
     dplyr::ungroup()
   list(
-    # TODO: figure out unbox alternative
-    input_id = jsonlite::unbox(input_id),
-    output_id = jsonlite::unbox(output_id),
-    input_dirs = I(input_dir),
-    output_dir = jsonlite::unbox(output_dir),
+    input_id = jsonlite::unbox(input_id) %||% NA_character_,
+    output_id = jsonlite::unbox(output_id) %||% NA_character_,
+    input_dirs = I(input_dirs),
+    output_dir = jsonlite::unbox(output_dir) %||% NA_character_,
     pkg_versions = pkg_versions,
     files = files
   )
