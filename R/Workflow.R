@@ -71,9 +71,9 @@ Workflow <- R6::R6Class(
     #' @field files_tbl (`tibble(n)`)\cr
     #' Tibble of files from [list_files_dir()].
     files_tbl = NULL,
-    #' @field pkg (`character(1)`)\cr
+    #' @field metapkg (`character(1)`)\cr
     #' Package name used for metadata version reporting.
-    pkg = NULL,
+    metapkg = NULL,
     #' @field written_files (`tibble(n)`)\cr
     #' Tibble of files written from `self$write()`.
     written_files = NULL,
@@ -85,13 +85,13 @@ Workflow <- R6::R6Class(
     #' Path(s) to workflow results.
     #' @param tools (`list(n)`)\cr
     #' List of Tools that compose a Workflow.
-    #' @param pkg (`character(1)`)\cr
+    #' @param metapkg (`character(1)`)\cr
     #' Package name used for metadata version reporting.
     #' @return (`R6::R6Class()`)\cr
     #' R6 object.
-    initialize = function(name = NULL, path = NULL, tools = NULL, pkg = "nemo") {
+    initialize = function(name = NULL, path = NULL, tools = NULL, metapkg = "nemo") {
       self$name <- name
-      self$pkg <- pkg
+      self$metapkg <- metapkg
       private$validate_tools(tools)
       private$is_tidied <- FALSE
       private$is_written <- FALSE
@@ -282,7 +282,7 @@ Workflow <- R6::R6Class(
     #' `pkg_versions`, and `files`.
     get_metadata = function(input_id, output_id, output_dir, pkgs = NULL) {
       if (is.null(pkgs)) {
-        pkgs <- self$pkg
+        pkgs <- self$metapkg
       }
       files <- NULL
       if (private$is_written) {

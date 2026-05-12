@@ -54,7 +54,7 @@ List of Tools that compose a Workflow.}
 \item{\code{files_tbl}}{(\code{tibble(n)})\cr
 Tibble of files from \code{\link[=list_files_dir]{list_files_dir()}}.}
 
-\item{\code{pkg}}{(\code{character(1)})\cr
+\item{\code{metapkg}}{(\code{character(1)})\cr
 Package name used for metadata version reporting.}
 
 \item{\code{written_files}}{(\code{tibble(n)})\cr
@@ -85,7 +85,7 @@ Tibble of files written from \code{self$write()}.}
 \subsection{Method \code{new()}}{
 Create a new Workflow object.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Workflow$new(name = NULL, path = NULL, tools = NULL, pkg = "nemo")}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Workflow$new(name = NULL, path = NULL, tools = NULL, metapkg = "nemo")}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -100,7 +100,7 @@ Path(s) to workflow results.}
 \item{\code{tools}}{(\code{list(n)})\cr
 List of Tools that compose a Workflow.}
 
-\item{\code{pkg}}{(\code{character(1)})\cr
+\item{\code{metapkg}}{(\code{character(1)})\cr
 Package name used for metadata version reporting.}
 }
 \if{html}{\out{</div>}}
