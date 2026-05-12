@@ -107,12 +107,14 @@ Workflow <- R6::R6Class(
     #' R6 object invisibly.
     print = function(...) {
       res <- tibble::tribble(
-        ~var      , ~value                                     ,
-        "name"    , self$name                                  ,
-        "path"    , glue::glue_collapse(self$path, sep = ", ") ,
-        "ntools"  , as.character(length(self$tools))           ,
-        "tidied"  , as.character(private$is_tidied)            ,
-        "written" , as.character(private$is_written)
+        ~var         , ~value                                     ,
+        "name"       , self$name                                  ,
+        "path"       , glue::glue_collapse(self$path, sep = ", ") ,
+        "ntools"     , as.character(length(self$tools))           ,
+        "nfiles_tot" , as.character(nrow(self$files_tbl))         ,
+        "nfiles_pat" , as.character(nrow(self$list_files()))      ,
+        "tidied"     , tolower(as.character(private$is_tidied))   ,
+        "written"    , tolower(as.character(private$is_written))
       )
       cat("#--- Workflow ---#\n")
       print(res)
@@ -130,7 +132,9 @@ Workflow <- R6::R6Class(
         purrr::map(\(x) x$filter_files(include = include, exclude = exclude))
       invisible(self)
     },
-    #' @description List files in given workflow directory.
+    #' @description List only files of interest in given workflow directory, i.e.
+    #' only those files that match the patterns listed in the individual tool
+    #' config.
     #' @param type (`character(1)`)\cr
     #' File types(s) to return (e.g. any, file, directory, symlink).
     #' See `fs::dir_info`.
@@ -175,7 +179,7 @@ Workflow <- R6::R6Class(
       diro = ".",
       format = "tsv",
       input_id = NULL,
-      output_id = ulid::ulid(),
+      output_id = NULL,
       dbconn = NULL
     ) {
       res <- self$tools |>
@@ -193,8 +197,9 @@ Workflow <- R6::R6Class(
       self$written_files <- res
       # Write metadata
       if (format != "db" && !is.null(res)) {
-        meta <- self$get_metadata(input_id = input_id, output_id = output_id, output_dir = diro)
+        diro <- normalizePath(diro)
         meta_diro <- file.path(diro, "_metadata") |> fs::dir_create()
+        meta <- self$get_metadata(input_id = input_id, output_id = output_id, output_dir = diro)
         jsonlite::write_json(meta, file.path(meta_diro, "metadata.json"), pretty = TRUE)
       }
       return(invisible(self))
@@ -220,7 +225,7 @@ Workflow <- R6::R6Class(
       diro = ".",
       format = "tsv",
       input_id = NULL,
-      output_id = ulid::ulid(),
+      output_id = NULL,
       dbconn = NULL,
       include = NULL,
       exclude = NULL

@@ -214,7 +214,8 @@ Tool <- R6::R6Class(
       }
       return(invisible(self))
     },
-    #' @description List files in given tool directory.
+    #' @description List only files of interest in given tool directory, i.e.
+    #' only those files that match the patterns listed in the tool config.
     #' @param type (`character(1)`)\cr
     #' File type(s) to return (e.g. any, file, directory, symlink).
     #' See `fs::dir_info`.

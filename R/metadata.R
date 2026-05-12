@@ -42,6 +42,7 @@ nemo_metadata <- function(files, pkgs, input_id, output_id, input_dir, output_di
     dplyr::mutate(version = as.character(utils::packageVersion(.data$name))) |>
     dplyr::ungroup()
   list(
+    # TODO: figure out unbox alternative
     input_id = jsonlite::unbox(input_id),
     output_id = jsonlite::unbox(output_id),
     input_dirs = I(input_dir),

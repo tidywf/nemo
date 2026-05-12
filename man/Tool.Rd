@@ -197,7 +197,8 @@ R6 object invisibly.
 \if{html}{\out{<a id="method-Tool-list_files"></a>}}
 \if{latex}{\out{\hypertarget{method-Tool-list_files}{}}}
 \subsection{Method \code{list_files()}}{
-List files in given tool directory.
+List only files of interest in given tool directory, i.e.
+only those files that match the patterns listed in the tool config.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Tool$list_files(type = "file")}\if{html}{\out{</div>}}
 }

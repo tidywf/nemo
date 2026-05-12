@@ -160,7 +160,9 @@ R6 object invisibly.
 \if{html}{\out{<a id="method-Workflow-list_files"></a>}}
 \if{latex}{\out{\hypertarget{method-Workflow-list_files}{}}}
 \subsection{Method \code{list_files()}}{
-List files in given workflow directory.
+List only files of interest in given workflow directory, i.e.
+only those files that match the patterns listed in the individual tool
+config.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Workflow$list_files(type = c("file", "symlink"))}\if{html}{\out{</div>}}
 }
@@ -214,7 +216,7 @@ Write tidy tibbles.
   diro = ".",
   format = "tsv",
   input_id = NULL,
-  output_id = ulid::ulid(),
+  output_id = NULL,
   dbconn = NULL
 )}\if{html}{\out{</div>}}
 }
@@ -254,7 +256,7 @@ Parse, filter, tidy and write files.
   diro = ".",
   format = "tsv",
   input_id = NULL,
-  output_id = ulid::ulid(),
+  output_id = NULL,
   dbconn = NULL,
   include = NULL,
   exclude = NULL
