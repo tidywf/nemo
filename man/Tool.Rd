@@ -197,7 +197,8 @@ R6 object invisibly.
 \if{html}{\out{<a id="method-Tool-list_files"></a>}}
 \if{latex}{\out{\hypertarget{method-Tool-list_files}{}}}
 \subsection{Method \code{list_files()}}{
-List files in given tool directory.
+List only files of interest in given tool directory, i.e.
+only those files that match the patterns listed in the tool config.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Tool$list_files(type = "file")}\if{html}{\out{</div>}}
 }
@@ -460,7 +461,7 @@ Write tidy tibbles.
   diro = ".",
   format = "tsv",
   input_id = NULL,
-  output_id = ulid::ulid(),
+  output_id = NULL,
   dbconn = NULL
 )}\if{html}{\out{</div>}}
 }
@@ -487,8 +488,8 @@ Database connection object (see \code{DBI::dbConnect}).}
 }
 \subsection{Returns}{
 (\code{tibble()} or \code{NULL})\cr
-A tibble with columns \code{tool_parser}, \code{prefix}, \code{tidy_data}, \code{tbl_name},
-\code{outpath}, invisibly. \code{NULL} if no files were found.
+A tibble with columns \code{raw_path}, \code{tool_parser}, \code{prefix}, \code{tidy_data},
+\code{tbl_name} and \code{outpath}, invisibly. \code{NULL} if no files were found.
 }
 }
 \if{html}{\out{<hr>}}
@@ -501,7 +502,7 @@ Parse, filter, tidy and write files.
   diro = ".",
   format = "tsv",
   input_id = NULL,
-  output_id = ulid::ulid(),
+  output_id = NULL,
   dbconn = NULL,
   include = NULL,
   exclude = NULL

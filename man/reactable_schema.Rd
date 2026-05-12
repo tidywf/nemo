@@ -25,7 +25,7 @@ instead.
 }
 \examples{
 \dontrun{
-d <- nemo_schema_data("tool1", pkg = "nemo")
+d <- nemo_schemavis_data("tool1", pkg = "nemo")
 reactable_schema(d)
 }
 }

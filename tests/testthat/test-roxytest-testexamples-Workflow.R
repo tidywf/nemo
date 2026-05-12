@@ -2,7 +2,7 @@
 
 # File R/Workflow.R: @testexamples
 
-test_that("Function Workflow() @ L59", {
+test_that("Function Workflow() @ L61", {
   
   fs::path(tempdir(), letters[1:5]) |>
     fs::file_temp_push() |>
@@ -37,9 +37,11 @@ test_that("Function Workflow() @ L59", {
   expect_named(rs, c("tool", "name", "tbl_description", "version", "schema"))
   # write: two table4 output files (one per version)
   expect_equal(sum(grepl("table4", basename(lf1))), 2)
-  expect_named(wf$written_files, c("tool_parser", "prefix", "tidy_data", "tbl_name", "outpath"))
+  expect_named(
+    wf$written_files, c("raw_path", "tool_parser", "prefix", "tidy_data", "tbl_name", "outpath")
+  )
   # get_metadata
-  expect_named(meta, c("input_id", "output_id", "input_dir", "output_dir", "pkg_versions", "files"))
+  expect_named(meta, c("input_id", "output_id", "input_dirs", "output_dir", "pkg_versions", "files"))
   # nemofy: all parsers written
   expect_true(all(c("tool1_table1", "tool1_table4") %in% sub(".*_(tool1_table\\d).*", "\\1", basename(lf2))))
 })

@@ -49,9 +49,11 @@
 #' expect_named(rs, c("tool", "name", "tbl_description", "version", "schema"))
 #' # write: two table4 output files (one per version)
 #' expect_equal(sum(grepl("table4", basename(lf1))), 2)
-#' expect_named(wf$written_files, c("tool_parser", "prefix", "tidy_data", "tbl_name", "outpath"))
+#' expect_named(
+#'   wf$written_files, c("raw_path", "tool_parser", "prefix", "tidy_data", "tbl_name", "outpath")
+#' )
 #' # get_metadata
-#' expect_named(meta, c("input_id", "output_id", "input_dir", "output_dir", "pkg_versions", "files"))
+#' expect_named(meta, c("input_id", "output_id", "input_dirs", "output_dir", "pkg_versions", "files"))
 #' # nemofy: all parsers written
 #' expect_true(all(c("tool1_table1", "tool1_table4") %in% sub(".*_(tool1_table\\d).*", "\\1", basename(lf2))))
 #'
@@ -71,6 +73,9 @@ Workflow <- R6::R6Class(
     #' @field files_tbl (`tibble(n)`)\cr
     #' Tibble of files from [list_files_dir()].
     files_tbl = NULL,
+    #' @field metapkg (`character(1)`)\cr
+    #' Package name used for metadata version reporting.
+    metapkg = NULL,
     #' @field written_files (`tibble(n)`)\cr
     #' Tibble of files written from `self$write()`.
     written_files = NULL,
@@ -82,10 +87,13 @@ Workflow <- R6::R6Class(
     #' Path(s) to workflow results.
     #' @param tools (`list(n)`)\cr
     #' List of Tools that compose a Workflow.
+    #' @param metapkg (`character(1)`)\cr
+    #' Package name used for metadata version reporting.
     #' @return (`R6::R6Class()`)\cr
     #' R6 object.
-    initialize = function(name = NULL, path = NULL, tools = NULL) {
+    initialize = function(name = NULL, path = NULL, tools = NULL, metapkg = "nemo") {
       self$name <- name
+      self$metapkg <- metapkg
       private$validate_tools(tools)
       private$is_tidied <- FALSE
       private$is_written <- FALSE
@@ -101,12 +109,14 @@ Workflow <- R6::R6Class(
     #' R6 object invisibly.
     print = function(...) {
       res <- tibble::tribble(
-        ~var      , ~value                                     ,
-        "name"    , self$name                                  ,
-        "path"    , glue::glue_collapse(self$path, sep = ", ") ,
-        "ntools"  , as.character(length(self$tools))           ,
-        "tidied"  , as.character(private$is_tidied)            ,
-        "written" , as.character(private$is_written)
+        ~var         , ~value                                     ,
+        "name"       , self$name                                  ,
+        "path"       , glue::glue_collapse(self$path, sep = ", ") ,
+        "ntools"     , as.character(length(self$tools))           ,
+        "nfiles_tot" , as.character(nrow(self$files_tbl))         ,
+        "nfiles_pat" , as.character(nrow(self$list_files()))      ,
+        "tidied"     , tolower(as.character(private$is_tidied))   ,
+        "written"    , tolower(as.character(private$is_written))
       )
       cat("#--- Workflow ---#\n")
       print(res)
@@ -124,7 +134,9 @@ Workflow <- R6::R6Class(
         purrr::map(\(x) x$filter_files(include = include, exclude = exclude))
       invisible(self)
     },
-    #' @description List files in given workflow directory.
+    #' @description List only files of interest in given workflow directory, i.e.
+    #' only those files that match the patterns listed in the individual tool
+    #' config.
     #' @param type (`character(1)`)\cr
     #' File types(s) to return (e.g. any, file, directory, symlink).
     #' See `fs::dir_info`.
@@ -169,7 +181,7 @@ Workflow <- R6::R6Class(
       diro = ".",
       format = "tsv",
       input_id = NULL,
-      output_id = ulid::ulid(),
+      output_id = NULL,
       dbconn = NULL
     ) {
       res <- self$tools |>
@@ -187,8 +199,10 @@ Workflow <- R6::R6Class(
       self$written_files <- res
       # Write metadata
       if (format != "db" && !is.null(res)) {
+        diro <- normalizePath(diro)
+        meta_diro <- file.path(diro, "_metadata") |> fs::dir_create()
         meta <- self$get_metadata(input_id = input_id, output_id = output_id, output_dir = diro)
-        jsonlite::write_json(meta, file.path(diro, "metadata.json"), pretty = TRUE)
+        jsonlite::write_json(meta, file.path(meta_diro, "metadata.json"), pretty = TRUE)
       }
       return(invisible(self))
     },
@@ -213,7 +227,7 @@ Workflow <- R6::R6Class(
       diro = ".",
       format = "tsv",
       input_id = NULL,
-      output_id = ulid::ulid(),
+      output_id = NULL,
       dbconn = NULL,
       include = NULL,
       exclude = NULL
@@ -271,22 +285,30 @@ Workflow <- R6::R6Class(
     #' @param pkgs (`character(n)`)\cr
     #' Which R packages to extract versions for.
     #' @return (`list()`)\cr
-    #' List with `input_id`, `output_id`, `input_dir`, `output_dir`,
+    #' List with `input_id`, `output_id`, `input_dirs`, `output_dir`,
     #' `pkg_versions`, and `files`.
-    get_metadata = function(input_id, output_id, output_dir, pkgs = c("nemo")) {
+    get_metadata = function(input_id, output_id, output_dir, pkgs = NULL) {
+      if (is.null(pkgs)) {
+        pkgs <- self$metapkg
+      }
       files <- NULL
-      # just keep bname and provide diro
       if (private$is_written) {
+        # just keep bname and provide diro, no need for full outpath since
+        # it's a flat output structure.
         files <- self$written_files |>
           dplyr::mutate(outpath = basename(.data$outpath)) |>
-          dplyr::select("tbl_name", "prefix", "outpath")
+          dplyr::select(tbl = "tbl_name", "prefix", fout = "outpath", fin = "raw_path")
+      } else {
+        # just select raw path and size
+        files <- self$files_tbl |>
+          dplyr::select(fin = "path", "size")
       }
       meta <- nemo_metadata(
         files = files,
         pkgs = pkgs,
         input_id = input_id,
         output_id = output_id,
-        input_dir = self$path,
+        input_dirs = self$path,
         output_dir = output_dir
       )
       return(meta)

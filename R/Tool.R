@@ -75,7 +75,7 @@
 #' expect_setequal(t4_ncols, c(3L, 5L))
 #' # write: two table4 output files (one per version)
 #' expect_equal(sum(grepl("table4", lfC)), 2)
-#' expect_named(toolD, c("tool_parser", "prefix", "tidy_data", "tbl_name", "outpath"))
+#' expect_named(toolD, c("raw_path", "tool_parser", "prefix", "tidy_data", "tbl_name", "outpath"))
 #'
 #' @export
 Tool <- R6::R6Class(
@@ -214,7 +214,8 @@ Tool <- R6::R6Class(
       }
       return(invisible(self))
     },
-    #' @description List files in given tool directory.
+    #' @description List only files of interest in given tool directory, i.e.
+    #' only those files that match the patterns listed in the tool config.
     #' @param type (`character(1)`)\cr
     #' File type(s) to return (e.g. any, file, directory, symlink).
     #' See `fs::dir_info`.
@@ -496,13 +497,13 @@ Tool <- R6::R6Class(
     #' @param dbconn (`DBIConnection`)\cr
     #' Database connection object (see `DBI::dbConnect`).
     #' @return (`tibble()` or `NULL`)\cr
-    #' A tibble with columns `tool_parser`, `prefix`, `tidy_data`, `tbl_name`,
-    #' `outpath`, invisibly. `NULL` if no files were found.
+    #' A tibble with columns `raw_path`, `tool_parser`, `prefix`, `tidy_data`,
+    #' `tbl_name` and `outpath`, invisibly. `NULL` if no files were found.
     write = function(
       diro = ".",
       format = "tsv",
       input_id = NULL,
-      output_id = ulid::ulid(),
+      output_id = NULL,
       dbconn = NULL
     ) {
       if (format != "db") {
@@ -512,7 +513,6 @@ Tool <- R6::R6Class(
         fs::dir_create(diro)
         diro <- normalizePath(diro)
       }
-      stopifnot(!is.null(input_id), !is.null(output_id))
       stopifnot("Did you forget to tidy?" = private$is_tidied)
       if (is.null(self$tbls)) {
         # even though tidying is not needed, there must be no files detected
@@ -520,7 +520,9 @@ Tool <- R6::R6Class(
         return(NULL)
       }
       d_write <- self$tbls |>
+        dplyr::rename(raw_path = "path") |>
         dplyr::select(
+          "raw_path",
           "tool_parser",
           "parser",
           "prefix",
@@ -529,15 +531,17 @@ Tool <- R6::R6Class(
         tidyr::unnest("tidy", names_sep = "_") |>
         dplyr::rowwise() |>
         dplyr::mutate(
-          tidy_data = list(
-            tidy_data |>
-              tibble::add_column(
-                input_id = as.character(input_id),
-                input_pfix = as.character(prefix),
-                output_id = as.character(output_id),
-                .before = 1
-              )
-          ),
+          tidy_data = list({
+            d <- tidy_data
+            if (!is.null(output_id)) {
+              d <- tibble::add_column(d, output_id = as.character(output_id), .before = 1)
+            }
+            d <- tibble::add_column(d, input_pfix = as.character(prefix), .before = 1)
+            if (!is.null(input_id)) {
+              d <- tibble::add_column(d, input_id = as.character(input_id), .before = 1)
+            }
+            d
+          }),
           # handle sub-tbls
           tbl_name = dplyr::if_else(
             .data$parser == .data$tidy_name,
@@ -564,6 +568,7 @@ Tool <- R6::R6Class(
         ) |>
         dplyr::ungroup() |>
         dplyr::select(
+          "raw_path",
           "tool_parser",
           "prefix",
           "tidy_data",
@@ -595,7 +600,7 @@ Tool <- R6::R6Class(
       diro = ".",
       format = "tsv",
       input_id = NULL,
-      output_id = ulid::ulid(),
+      output_id = NULL, #ulid::ulid(),
       dbconn = NULL,
       include = NULL,
       exclude = NULL

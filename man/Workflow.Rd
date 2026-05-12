@@ -54,6 +54,9 @@ List of Tools that compose a Workflow.}
 \item{\code{files_tbl}}{(\code{tibble(n)})\cr
 Tibble of files from \code{\link[=list_files_dir]{list_files_dir()}}.}
 
+\item{\code{metapkg}}{(\code{character(1)})\cr
+Package name used for metadata version reporting.}
+
 \item{\code{written_files}}{(\code{tibble(n)})\cr
 Tibble of files written from \code{self$write()}.}
 }
@@ -82,7 +85,7 @@ Tibble of files written from \code{self$write()}.}
 \subsection{Method \code{new()}}{
 Create a new Workflow object.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Workflow$new(name = NULL, path = NULL, tools = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Workflow$new(name = NULL, path = NULL, tools = NULL, metapkg = "nemo")}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -96,6 +99,9 @@ Path(s) to workflow results.}
 
 \item{\code{tools}}{(\code{list(n)})\cr
 List of Tools that compose a Workflow.}
+
+\item{\code{metapkg}}{(\code{character(1)})\cr
+Package name used for metadata version reporting.}
 }
 \if{html}{\out{</div>}}
 }
@@ -154,7 +160,9 @@ R6 object invisibly.
 \if{html}{\out{<a id="method-Workflow-list_files"></a>}}
 \if{latex}{\out{\hypertarget{method-Workflow-list_files}{}}}
 \subsection{Method \code{list_files()}}{
-List files in given workflow directory.
+List only files of interest in given workflow directory, i.e.
+only those files that match the patterns listed in the individual tool
+config.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Workflow$list_files(type = c("file", "symlink"))}\if{html}{\out{</div>}}
 }
@@ -208,7 +216,7 @@ Write tidy tibbles.
   diro = ".",
   format = "tsv",
   input_id = NULL,
-  output_id = ulid::ulid(),
+  output_id = NULL,
   dbconn = NULL
 )}\if{html}{\out{</div>}}
 }
@@ -248,7 +256,7 @@ Parse, filter, tidy and write files.
   diro = ".",
   format = "tsv",
   input_id = NULL,
-  output_id = ulid::ulid(),
+  output_id = NULL,
   dbconn = NULL,
   include = NULL,
   exclude = NULL
@@ -334,7 +342,7 @@ Bound \code{tbls} tibbles from all Tools.
 \subsection{Method \code{get_metadata()}}{
 Get metadata for the workflow run.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Workflow$get_metadata(input_id, output_id, output_dir, pkgs = c("nemo"))}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Workflow$get_metadata(input_id, output_id, output_dir, pkgs = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -356,7 +364,7 @@ Which R packages to extract versions for.}
 }
 \subsection{Returns}{
 (\code{list()})\cr
-List with \code{input_id}, \code{output_id}, \code{input_dir}, \code{output_dir},
+List with \code{input_id}, \code{output_id}, \code{input_dirs}, \code{output_dir},
 \code{pkg_versions}, and \code{files}.
 }
 }
