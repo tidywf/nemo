@@ -46,7 +46,7 @@ Public API: `nemo_log(level, msg, ...)` (sprintf-style), `nemo_log_date()`.
 | `nemo_out_formats()` | `write.R` | Returns valid format strings: `parquet`, `db`, `tsv`, `csv`, `rds` |
 | `nemo_metadata(files, pkgs, ...)` | `metadata.R` | Assembles run-level metadata list for JSON serialisation |
 | `nemo_schema_reactable(tools, pkg, ...)` | `schema_vis.R` | Interactive reactable schema explorer |
-| `nemo_schema_data(tools, pkg)` | `schema_vis.R` | Per-table schema tibble (versions, columns) |
+| `nemo_schemavis_data(tools, pkg)` | `schema_vis.R` | Per-table schema tibble (versions, columns) |
 | `nemo_gha_mermaid(actions_url, deploy_yaml)` | `gha.R` | Builds Mermaid CI/CD flowchart from local + remote YAML |
 | `nemo_uml()` | `uml.R` | Generates PlantUML SVG from R6 class names |
 

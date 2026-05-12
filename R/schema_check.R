@@ -53,7 +53,7 @@ nemo_schema_check <- function(tool, pkg = "nemo") {
 }
 
 .schema_check_structure <- function(cfg) {
-  valid_ftypes <- c("txt", "tsv", "csv", "txt-nohead", "txt-keyvalue", "csv-nohead-long")
+  valid_ftypes <- c("txt", "csv", "txt-nohead", "txt-keyvalue", "csv-nohead-long")
   valid_types <- c("char", "int", "float")
   req_tab_fields <- c("description", "pattern", "ftype", "columns")
   req_col_fields <- c("raw", "tidy", "type", "description", "versions")

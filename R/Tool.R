@@ -75,7 +75,7 @@
 #' expect_setequal(t4_ncols, c(3L, 5L))
 #' # write: two table4 output files (one per version)
 #' expect_equal(sum(grepl("table4", lfC)), 2)
-#' expect_named(toolD, c("tool_parser", "prefix", "tidy_data", "tbl_name", "outpath"))
+#' expect_named(toolD, c("raw_path", "tool_parser", "prefix", "tidy_data", "tbl_name", "outpath"))
 #'
 #' @export
 Tool <- R6::R6Class(
@@ -497,8 +497,8 @@ Tool <- R6::R6Class(
     #' @param dbconn (`DBIConnection`)\cr
     #' Database connection object (see `DBI::dbConnect`).
     #' @return (`tibble()` or `NULL`)\cr
-    #' A tibble with columns `tool_parser`, `prefix`, `tidy_data`, `tbl_name`,
-    #' `outpath`, invisibly. `NULL` if no files were found.
+    #' A tibble with columns `raw_path`, `tool_parser`, `prefix`, `tidy_data`,
+    #' `tbl_name` and `outpath`, invisibly. `NULL` if no files were found.
     write = function(
       diro = ".",
       format = "tsv",

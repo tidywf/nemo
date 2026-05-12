@@ -61,6 +61,6 @@ test_that("Function Tool() @ L81", {
   expect_setequal(t4_ncols, c(3L, 5L))
   # write: two table4 output files (one per version)
   expect_equal(sum(grepl("table4", lfC)), 2)
-  expect_named(toolD, c("tool_parser", "prefix", "tidy_data", "tbl_name", "outpath"))
+  expect_named(toolD, c("raw_path", "tool_parser", "prefix", "tidy_data", "tbl_name", "outpath"))
 })
 

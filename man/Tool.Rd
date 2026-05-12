@@ -488,8 +488,8 @@ Database connection object (see \code{DBI::dbConnect}).}
 }
 \subsection{Returns}{
 (\code{tibble()} or \code{NULL})\cr
-A tibble with columns \code{tool_parser}, \code{prefix}, \code{tidy_data}, \code{tbl_name},
-\code{outpath}, invisibly. \code{NULL} if no files were found.
+A tibble with columns \code{raw_path}, \code{tool_parser}, \code{prefix}, \code{tidy_data},
+\code{tbl_name} and \code{outpath}, invisibly. \code{NULL} if no files were found.
 }
 }
 \if{html}{\out{<hr>}}

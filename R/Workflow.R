@@ -49,9 +49,11 @@
 #' expect_named(rs, c("tool", "name", "tbl_description", "version", "schema"))
 #' # write: two table4 output files (one per version)
 #' expect_equal(sum(grepl("table4", basename(lf1))), 2)
-#' expect_named(wf$written_files, c("tool_parser", "prefix", "tidy_data", "tbl_name", "outpath"))
+#' expect_named(
+#'   wf$written_files, c("raw_path", "tool_parser", "prefix", "tidy_data", "tbl_name", "outpath")
+#' )
 #' # get_metadata
-#' expect_named(meta, c("input_id", "output_id", "input_dir", "output_dir", "pkg_versions", "files"))
+#' expect_named(meta, c("input_id", "output_id", "input_dirs", "output_dir", "pkg_versions", "files"))
 #' # nemofy: all parsers written
 #' expect_true(all(c("tool1_table1", "tool1_table4") %in% sub(".*_(tool1_table\\d).*", "\\1", basename(lf2))))
 #'
@@ -283,7 +285,7 @@ Workflow <- R6::R6Class(
     #' @param pkgs (`character(n)`)\cr
     #' Which R packages to extract versions for.
     #' @return (`list()`)\cr
-    #' List with `input_id`, `output_id`, `input_dir`, `output_dir`,
+    #' List with `input_id`, `output_id`, `input_dirs`, `output_dir`,
     #' `pkg_versions`, and `files`.
     get_metadata = function(input_id, output_id, output_dir, pkgs = NULL) {
       if (is.null(pkgs)) {
@@ -306,7 +308,7 @@ Workflow <- R6::R6Class(
         pkgs = pkgs,
         input_id = input_id,
         output_id = output_id,
-        input_dir = self$path,
+        input_dirs = self$path,
         output_dir = output_dir
       )
       return(meta)
