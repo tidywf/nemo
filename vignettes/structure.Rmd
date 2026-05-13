@@ -233,11 +233,10 @@ t2$files
 
 After tidying the data of interest, we can write the tidy tibbles to various
 formats, like Apache Parquet, PostgreSQL, CSV/TSV and R's RDS.
-Below we can see that the `id` specified is added to the written files in
-an additional `nemo_id` column. This can be used e.g. to distinguish results
-from different runs in a data pipeline.
-When writing to a database like PostgreSQL, another column `nemo_pfix` is used
-to distinguish results from the same run from the same tool.
+Below we can see that the `input_id` specified is added to the written files in
+an additional `input_id` column. This can be used e.g. to distinguish results
+from different runs in a data pipeline. An optional `output_id` column can also
+be added, and an `input_pfix` column can be included via `pfix_include = TRUE`.
 
 ```{r tool1_write}
 t2$tidy() # first need to tidy

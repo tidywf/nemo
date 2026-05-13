@@ -43,11 +43,14 @@ nemo_metadata <- function(files, pkgs, input_id, output_id, input_dirs, output_d
     dplyr::rowwise() |>
     dplyr::mutate(version = as.character(utils::packageVersion(.data$name))) |>
     dplyr::ungroup()
+  # handle NULLs
+  input_id <- input_id %||% NA_character_
+  output_id <- output_id %||% NA_character_
   list(
-    input_id = jsonlite::unbox(input_id) %||% NA_character_,
-    output_id = jsonlite::unbox(output_id) %||% NA_character_,
+    input_id = jsonlite::unbox(input_id),
+    output_id = jsonlite::unbox(output_id),
     input_dirs = I(input_dirs),
-    output_dir = jsonlite::unbox(output_dir) %||% NA_character_,
+    output_dir = jsonlite::unbox(output_dir),
     pkg_versions = pkg_versions,
     files = files
   )
