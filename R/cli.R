@@ -18,7 +18,7 @@ nemo_cli <- function(pkg = NULL, descr = NULL, wf = NULL) {
   p <- argparse::ArgumentParser(
     description = descr,
     prog = prog_nm,
-    python_cmd = nemo::get_python()
+    python_cmd = get_python()
   )
   p$add_argument("-v", "--version", action = "version", version = paste(pkg, version))
   subparser_name <- "subparser_name"
