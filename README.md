@@ -41,7 +41,7 @@ Using {remotes} directly from GitHub:
 ``` r
 install.packages("remotes")
 remotes::install_github("tidywf/nemo") # latest main commit
-remotes::install_github("tidywf/nemo@v0.0.3.9013") # released version
+remotes::install_github("tidywf/nemo@v0.0.3.9014") # released version
 ```
 
 Alternatively:
@@ -66,7 +66,7 @@ export PATH="${nemo_cli}:${PATH}"
 ```
 
     $ nemo.R --version
-    nemo 0.0.3.9013
+    nemo 0.0.3.9014
 
     #-----------------------------------#
     $ nemo.R --help
@@ -85,9 +85,10 @@ export PATH="${nemo_cli}:${PATH}"
     '
     #-----------------------------------#
     $ nemo.R tidy --help
-    usage: nemo.R tidy [-h] -w WORKFLOW -d IN_DIR [-o OUT_DIR] [-f FORMAT] -i ID
+    usage: nemo.R tidy [-h] -w WORKFLOW -d IN_DIR [-o OUT_DIR] [-f FORMAT]
+                       [--input_id INPUT_ID] [--output_id OUTPUT_ID | --ulid]
                        [--dbname DBNAME] [--dbuser DBUSER] [--include INCLUDE]
-                       [--exclude EXCLUDE] [-q]
+                       [--exclude EXCLUDE] [--prefix_include] [-q]
 
     options:
       -h, --help            show this help message and exit
@@ -98,16 +99,20 @@ export PATH="${nemo_cli}:${PATH}"
                             Output directory.
       -f, --format FORMAT   Format of output [def: parquet] (parquet, db, tsv,
                             csv, rds)
-      -i, --id ID           ID to use for this run.
+      --input_id INPUT_ID   Input ID for this run.
+      --output_id OUTPUT_ID
+                            Output ID for this run.
+      --ulid                Generate a ULID as output ID.
       --dbname DBNAME       Database name.
       --dbuser DBUSER       Database user.
-      --include INCLUDE     Include only these files (comma,sep).
-      --exclude EXCLUDE     Exclude these files (comma,sep).
+      --include INCLUDE     Include only these files (comma sep tool_parsers).
+      --exclude EXCLUDE     Exclude only these files (comma sep tool_parsers).
+      --prefix_include      Include input prefix column in output tables.
       -q, --quiet           Shush all the logs.
 
     #-----------------------------------#
     $ nemo.R list --help
-    usage: nemo.R list [-h] -w WORKFLOW -d IN_DIR [-f FORMAT] [-q]
+    usage: nemo.R list [-h] -w WORKFLOW -d IN_DIR [-f FORMAT] [-m MAX] [-q]
 
     options:
       -h, --help            show this help message and exit
@@ -115,4 +120,5 @@ export PATH="${nemo_cli}:${PATH}"
                             Workflow name.
       -d, --in_dir IN_DIR   Input directory.
       -f, --format FORMAT   Format of list output [def: pretty] (tsv, pretty)
+      -m, --max MAX         Max rows to show.
       -q, --quiet           Shush all the logs.
