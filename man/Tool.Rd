@@ -507,6 +507,7 @@ Parse, filter, tidy and write files.
   format = "tsv",
   input_id = NULL,
   output_id = NULL,
+  pfix_include = FALSE,
   dbconn = NULL,
   include = NULL,
   exclude = NULL
@@ -527,6 +528,9 @@ Input ID to use for the dataset (e.g. \code{run123}).}
 
 \item{\code{output_id}}{(\code{character(1)})\cr
 Output ID to use for the dataset (e.g. \code{run123}).}
+
+\item{\code{pfix_include}}{(\code{logical(1)})\cr
+If \code{TRUE}, prepend an \code{input_pfix} column to each tidy table.}
 
 \item{\code{dbconn}}{(\code{DBIConnection})\cr
 Database connection object (see \code{DBI::dbConnect}).}

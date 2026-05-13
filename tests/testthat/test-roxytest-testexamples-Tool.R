@@ -2,7 +2,7 @@
 
 # File R/Tool.R: @testexamples
 
-test_that("Function Tool() @ L81", {
+test_that("Function Tool() @ L95", {
   
   fs::path(tempdir(), letters[1:5]) |>
     fs::file_temp_push() |>
@@ -62,5 +62,19 @@ test_that("Function Tool() @ L81", {
   # write: two table4 output files (one per version)
   expect_equal(sum(grepl("table4", lfC)), 2)
   expect_named(toolD, c("raw_path", "tool_parser", "prefix", "tidy_data", "tbl_name", "outpath"))
+  # input_id / output_id / pfix_include column tests
+  toolE <- Tool$new(name = name, pkg = pkg, path = path)$
+    filter_files(include = "tool1_table1")$tidy()
+  read_pq <- function(d) arrow::read_parquet(list.files(d, pattern = "[.]parquet$", full.names = TRUE)[1])
+  dE0 <- fs::file_temp(); toolE$write(diro = dE0, format = "parquet")
+  dEi <- fs::file_temp(); toolE$write(diro = dEi, format = "parquet", input_id = "run1")
+  dEo <- fs::file_temp(); toolE$write(diro = dEo, format = "parquet", output_id = "out1")
+  dEp <- fs::file_temp(); toolE$write(diro = dEp, format = "parquet", pfix_include = TRUE)
+  dEa <- fs::file_temp(); toolE$write(diro = dEa, format = "parquet", input_id = "run1", output_id = "out1", pfix_include = TRUE)
+  expect_false(any(c("input_id", "output_id", "input_pfix") %in% names(read_pq(dE0))))
+  expect_equal(read_pq(dEi)$input_id[1], "run1")
+  expect_equal(read_pq(dEo)$output_id[1], "out1")
+  expect_true("input_pfix" %in% names(read_pq(dEp)))
+  expect_equal(names(read_pq(dEa))[1:3], c("input_id", "input_pfix", "output_id"))
 })
 
