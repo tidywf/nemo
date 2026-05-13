@@ -173,6 +173,8 @@ Workflow <- R6::R6Class(
     #' Input ID to use for the dataset (e.g. `run123`).
     #' @param output_id (`character(1)`)\cr
     #' Output ID to use for the dataset (e.g. `run123`).
+    #' @param pfix_include (`logical(1)`)\cr
+    #' If `TRUE`, prepend an `input_pfix` column to each tidy table.
     #' @param dbconn (`DBIConnection`)\cr
     #' Database connection object (see `DBI::dbConnect`).
     #' @return (`R6::R6Class()`)\cr
@@ -182,6 +184,7 @@ Workflow <- R6::R6Class(
       format = "tsv",
       input_id = NULL,
       output_id = NULL,
+      pfix_include = FALSE,
       dbconn = NULL
     ) {
       res <- self$tools |>
@@ -191,6 +194,7 @@ Workflow <- R6::R6Class(
             format = format,
             input_id = input_id,
             output_id = output_id,
+            pfix_include = pfix_include,
             dbconn = dbconn
           )
         }) |>
@@ -215,6 +219,8 @@ Workflow <- R6::R6Class(
     #' Input ID to use for the dataset (e.g. `run123`).
     #' @param output_id (`character(1)`)\cr
     #' Output ID to use for the dataset (e.g. `run123`).
+    #' @param pfix_include (`logical(1)`)\cr
+    #' If `TRUE`, prepend an `input_pfix` column to each tidy table.
     #' @param dbconn (`DBIConnection`)\cr
     #' Database connection object (see `DBI::dbConnect`).
     #' @param include (`character(n)`)\cr
@@ -228,6 +234,7 @@ Workflow <- R6::R6Class(
       format = "tsv",
       input_id = NULL,
       output_id = NULL,
+      pfix_include = FALSE,
       dbconn = NULL,
       include = NULL,
       exclude = NULL
@@ -240,6 +247,7 @@ Workflow <- R6::R6Class(
           format = format,
           input_id = input_id,
           output_id = output_id,
+          pfix_include = pfix_include,
           dbconn = dbconn
       )
     },

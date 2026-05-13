@@ -36,8 +36,8 @@ cli_list_add_args <- function(subp, wf = NULL) {
 #' e.g. `tidywigits.R`).
 #'
 #' @param args Named list of parsed CLI arguments, as returned by argparse.
-#'   Expected fields: `format`, `in_dir`, `workflow` (may be `NULL` when `wf`
-#'   is provided), `max`, `quiet`.
+#' Expected fields: `format`, `in_dir`, `workflow` (may be `NULL` when `wf`
+#' is provided), `max`, `quiet`.
 #' @param wf (`character(1)` or `NULL`)\cr
 #' Workflow override. When non-NULL, replaces `args$workflow`.
 #' @examples
@@ -61,10 +61,9 @@ cli_list_parse_args <- function(args, wf = NULL) {
     max = args$max
   )
   if (args$quiet) {
-    suppressMessages(do.call(cli_nemo_list, list_args))
-  } else {
-    do.call(cli_nemo_list, list_args)
+    Sys.setenv(NEMO_LOG_ENABLE = "FALSE")
   }
+  do.call(cli_nemo_list, list_args)
 }
 
 #' List parsable workflow output files
@@ -88,11 +87,11 @@ cli_list_parse_args <- function(args, wf = NULL) {
 #'   cli_nemo_list(in_dir = path, workflow = "workflow1", format = "pretty", max = 3)
 #' )
 #' @testexamples
-#' expect_true(any(grepl("tool_parser", out_pretty)))
-#' expect_true(any(grepl("\\|", out_pretty)))
-#' expect_true(any(grepl("tool_parser", out_tsv)))
+#' expect_true(grepl("tool_parser", out_pretty[1]))
+#' expect_true(grepl("\\|", out_pretty[1]))
+#' expect_true(grepl("tool_parser", out_tsv[1]))
 #' expect_true(grepl("\t", out_tsv[1]))
-#' expect_equal(sum(grepl("^\\| *[0-9]", out_max)), 3)
+#' expect_equal(length(out_max), 5)
 #' expect_error(cli_nemo_list(in_dir = path, workflow = "workflow1", format = "parquet"))
 #' expect_error(cli_nemo_list(in_dir = path, workflow = "notaworkflow", format = "pretty"))
 #' @export

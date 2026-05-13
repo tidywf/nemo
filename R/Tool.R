@@ -494,6 +494,8 @@ Tool <- R6::R6Class(
     #' Input ID to use for the dataset (e.g. `run123`).
     #' @param output_id (`character(1)`)\cr
     #' Output ID to use for the dataset (e.g. `run123`).
+    #' @param pfix_include (`logical(1)`)\cr
+    #' If `TRUE`, prepend an `input_pfix` column to each tidy table.
     #' @param dbconn (`DBIConnection`)\cr
     #' Database connection object (see `DBI::dbConnect`).
     #' @return (`tibble()` or `NULL`)\cr
@@ -504,6 +506,7 @@ Tool <- R6::R6Class(
       format = "tsv",
       input_id = NULL,
       output_id = NULL,
+      pfix_include = FALSE,
       dbconn = NULL
     ) {
       if (format != "db") {
@@ -536,7 +539,9 @@ Tool <- R6::R6Class(
             if (!is.null(output_id)) {
               d <- tibble::add_column(d, output_id = as.character(output_id), .before = 1)
             }
-            d <- tibble::add_column(d, input_pfix = as.character(prefix), .before = 1)
+            if (pfix_include) {
+              d <- tibble::add_column(d, input_pfix = as.character(prefix), .before = 1)
+            }
             if (!is.null(input_id)) {
               d <- tibble::add_column(d, input_id = as.character(input_id), .before = 1)
             }

@@ -18,7 +18,10 @@
 #' @param ... Values to format into the message. See [sprintf] for details.
 #' @export
 nemo_log <- function(level, msg, ...) {
-  if (exists("logger", envir = parent.env(environment()))) {
+  if (
+    Sys.getenv("NEMO_LOG_ENABLE", "TRUE") == "TRUE" &&
+      exists("logger", envir = parent.env(environment()))
+  ) {
     logger <- get("logger", envir = parent.env(environment()))
     log4r::levellog(logger, level, sprintf(msg, ...))
   }
