@@ -72,7 +72,7 @@ cli_list_parse_args <- function(args, wf = NULL) {
 #' table to stdout.
 #'
 #' @param in_dir (`character(1)`)\cr Input directory to search.
-#' @param workflow (`character(1)`)\cr Workflow name (e.g. `"tidywigits"`).
+#' @param workflow (`character(1)`)\cr Workflow name (e.g. `"wigits"`).
 #' @param format (`character(1)`)\cr Output format: `"pretty"` or `"tsv"`.
 #' @param max (`integer(1)` or `NULL`)\cr Max rows to show. `NULL` shows all.
 #' @examples

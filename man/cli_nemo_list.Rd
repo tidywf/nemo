@@ -9,7 +9,7 @@ cli_nemo_list(in_dir, workflow, format = "pretty", max = NULL)
 \arguments{
 \item{in_dir}{(\code{character(1)})\cr Input directory to search.}
 
-\item{workflow}{(\code{character(1)})\cr Workflow name (e.g. \code{"tidywigits"}).}
+\item{workflow}{(\code{character(1)})\cr Workflow name (e.g. \code{"wigits"}).}
 
 \item{format}{(\code{character(1)})\cr Output format: \code{"pretty"} or \code{"tsv"}.}
 

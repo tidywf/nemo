@@ -85,9 +85,18 @@ reference:
       - nemo_log_date
       - nemoverse_wf_dispatch
       - pkg_found
+  - title: "CLI"
+    contents:
+      - cli_tidy_add_args
+      - cli_tidy_parse_args
+      - cli_nemo_tidy
+      - cli_list_add_args
+      - cli_list_parse_args
+      - cli_nemo_list
   - title: "Schema Visualisation"
     contents:
-      - nemo_schema_data
+      - nemo_schemavis_data
+      - nemo_schema_check
       - nemo_schema_reactable
       - reactable_schema
       - nemo_uml

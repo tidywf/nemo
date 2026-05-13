@@ -50,8 +50,18 @@ pr <- function(n) {
 }
 ```
 
-## dev (2026-05-07)
+## dev (2026-05-14)
 
+- CLI `tidy`: rename `-i ID` to `--input_id`; add `--output_id` and `--ulid`
+  (mutually exclusive) for attaching an output run identifier; `--ulid`
+  auto-generates a ULID
+- CLI `tidy`: add `--prefix_include` flag to opt in to an `input_pfix` column in
+  outputs; previously `input_pfix` was always prepended
+- `Tool$write`, `Workflow$write`, `Workflow$nemofy`: add `pfix_include` argument
+  (default `FALSE`) to control whether `input_pfix` is prepended to tidy tables
+- CLI `tidy` + `list`: fix `-q`/`--quiet` to set `NEMO_LOG_ENABLE=FALSE` instead
+  of using `suppressMessages()`; `nemo_log()` now re-checks the env var at call
+  time so the flag takes effect after package load
 - `nemo_uml()`: refactor UML generation. Cleaner entry-point, improved docs (`r pr(51)`)
 - Vignettes: reorganise and make names clearer
 - CI: add dedicated conda env for version bumping (`r pr(50)`)

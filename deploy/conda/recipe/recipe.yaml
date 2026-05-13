@@ -47,6 +47,7 @@ requirements:
     - r-fs
     - r-glue
     - r-htmltools
+    - r-jsonlite
     - r-knitr
     - r-log4r
     - r-purrr
