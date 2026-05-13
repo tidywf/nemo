@@ -17,7 +17,7 @@ test_that("Function cli_list_parse_args() @ L56", {
 })
 
 
-test_that("Function cli_nemo_list() @ L99", {
+test_that("Function cli_nemo_list() @ L98", {
   
   path <- system.file("extdata/tool1", package = "nemo")
   out_pretty <- capture.output(
@@ -29,11 +29,11 @@ test_that("Function cli_nemo_list() @ L99", {
   out_max <- capture.output(
     cli_nemo_list(in_dir = path, workflow = "workflow1", format = "pretty", max = 3)
   )
-  expect_true(any(grepl("tool_parser", out_pretty)))
-  expect_true(any(grepl("\\|", out_pretty)))
-  expect_true(any(grepl("tool_parser", out_tsv)))
+  expect_true(grepl("tool_parser", out_pretty[1]))
+  expect_true(grepl("\\|", out_pretty[1]))
+  expect_true(grepl("tool_parser", out_tsv[1]))
   expect_true(grepl("\t", out_tsv[1]))
-  expect_equal(sum(grepl("^\\| *[0-9]", out_max)), 3)
+  expect_equal(length(out_max), 5)
   expect_error(cli_nemo_list(in_dir = path, workflow = "workflow1", format = "parquet"))
   expect_error(cli_nemo_list(in_dir = path, workflow = "notaworkflow", format = "pretty"))
 })

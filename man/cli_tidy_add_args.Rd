@@ -10,7 +10,7 @@ cli_tidy_add_args(subp, wf = NULL)
 \item{subp}{Argparse subparsers object (from \verb{$add_subparsers()}).}
 
 \item{wf}{(\code{character(1)} or \code{NULL})\cr
-Workflow name. When non-NULL, \code{-w/--workflow} is not added.}
+Workflow name passed to \code{\link[=nemoverse_wf_dispatch]{nemoverse_wf_dispatch()}}.}
 }
 \description{
 Registers arguments for the \code{tidy} subcommand on an argparse subparsers

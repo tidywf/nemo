@@ -9,7 +9,9 @@ cli_nemo_tidy(
   in_dir,
   out_dir,
   out_format,
-  id,
+  input_id = NULL,
+  output_id = NULL,
+  pfix_include = FALSE,
   dbname,
   dbuser,
   include,
@@ -28,7 +30,12 @@ unless \code{out_format} is \code{"db"}.}
 \item{out_format}{(\code{character(1)})\cr Output format. One of \code{"parquet"},
 \code{"tsv"}, \code{"csv"}, \code{"rds"}, or \code{"db"}.}
 
-\item{id}{(\code{character(1)})\cr Run identifier attached to each output.}
+\item{input_id}{(\code{character(1)} or \code{NULL})\cr Input run identifier.}
+
+\item{output_id}{(\code{character(1)} or \code{NULL})\cr Output run identifier.}
+
+\item{pfix_include}{(\code{logical(1)})\cr
+If \code{TRUE}, prepend an \code{input_pfix} column to each tidy table.}
 
 \item{dbname}{(\code{character(1)} or \code{NULL})\cr Database name. Required when
 \code{out_format} is \code{"db"}.}
@@ -51,7 +58,7 @@ path <- system.file("extdata/tool1", package = "nemo")
 out <- tempfile()
 res <- cli_nemo_tidy(
   workflow = "workflow1", in_dir = path, out_dir = out,
-  out_format = "parquet", id = "run1",
+  out_format = "parquet", input_id = "run1", output_id = NULL,
   dbname = NULL, dbuser = NULL, include = NULL, exclude = NULL
 )
 }
