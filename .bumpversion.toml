@@ -35,6 +35,11 @@ search = "version: {current_version}"
 replace = "version: {new_version}"
 
 [[tool.bumpversion.files]]
+filename = "deploy/conda/env/yaml/bump.yaml"
+search = "r-nemo =={current_version}"
+replace = "r-nemo =={new_version}"
+
+[[tool.bumpversion.files]]
 filename = "deploy/conda/env/yaml/nemo.yaml"
 search = "r-nemo =={current_version}"
 replace = "r-nemo =={new_version}"
