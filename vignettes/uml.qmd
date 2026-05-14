@@ -8,6 +8,7 @@ knitr:
   opts_chunk:
     collapse: true
     comment: '#>'
+    echo: false
 ---
 
 ```{r}
@@ -18,7 +19,9 @@ use("nemo", "nemo_uml")
 
 ```{r}
 #| label: uml
-#| echo: false
-#| output: asis
-cat(nemo_uml(classes = c("Config", "Tool", "Tool1", "Workflow", "Workflow1"), pkg = "nemo"))
+# hand it over directly to knitr for rendering, cat somehow doesn't work any more
+knitr::asis_output(nemo_uml(
+  classes = c("Config", "Tool", "Tool1", "Workflow", "Workflow1"),
+  pkg = "nemo"
+))
 ```
