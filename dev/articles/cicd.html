@@ -14,9 +14,9 @@
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><script src="gha_files/libs/quarto-html/popper.min.js"></script><script src="gha_files/libs/quarto-html/tippy.umd.min.js"></script><link href="gha_files/libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="gha_files/libs/quarto-html/light-border.css" rel="stylesheet">
-<script src="gha_files/libs/quarto-diagram/mermaid.min.js"></script><script src="gha_files/libs/quarto-diagram/mermaid-init.js"></script><link href="gha_files/libs/quarto-diagram/mermaid.css" rel="stylesheet">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><script src="cicd_files/libs/quarto-html/popper.min.js"></script><script src="cicd_files/libs/quarto-html/tippy.umd.min.js"></script><link href="cicd_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="cicd_files/libs/quarto-html/light-border.css" rel="stylesheet">
+<script src="cicd_files/libs/quarto-diagram/mermaid.min.js"></script><script src="cicd_files/libs/quarto-diagram/mermaid-init.js"></script><link href="cicd_files/libs/quarto-diagram/mermaid.css" rel="stylesheet">
 <!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="CI/CD Workflow">
 <meta property="og:image" content="https://tidywf.github.io/nemo/logo.png">
 <meta name="robots" content="noindex">
@@ -29,7 +29,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">nemo</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.0.3.9013</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.0.3.9015</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -44,12 +44,12 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/installation.html">Installation</a></li>
     <li><a class="dropdown-item" href="../articles/structure.html">Structure</a></li>
-    <li><a class="dropdown-item" href="../articles/schema.html">Schema Walkthrough</a></li>
-    <li><a class="dropdown-item" href="../articles/schemas.html">Schema Table</a></li>
+    <li><a class="dropdown-item" href="../articles/schema_walkthrough.html">Schema Walkthrough</a></li>
+    <li><a class="dropdown-item" href="../articles/schema_table.html">Schema Table</a></li>
     <li><a class="dropdown-item" href="../articles/contribute.html">Contribute</a></li>
-    <li><a class="dropdown-item" href="../articles/devnotes.html">Devnotes</a></li>
     <li><a class="dropdown-item" href="../articles/uml.html">UML Diagram</a></li>
-    <li><a class="dropdown-item" href="../articles/gha.html">CI/CD Workflow</a></li>
+    <li><a class="dropdown-item" href="../articles/cicd.html">CI/CD Workflow</a></li>
+    <li><a class="dropdown-item" href="../articles/devnotes.html">Devnotes</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../articles/NEWS.html">NEWS</a></li>
@@ -73,7 +73,7 @@
 
 
 
-      <small class="dont-index">Source: <a href="https://github.com/tidywf/nemo/blob/dev/vignettes/gha.qmd" class="external-link"><code>vignettes/gha.qmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/tidywf/nemo/blob/dev/vignettes/cicd.qmd" class="external-link"><code>vignettes/cicd.qmd</code></a></small>
       <div class="d-none name"><code></code></div>
     </div>
 
@@ -102,35 +102,35 @@
     B4 --&gt; B5
     end
 
-    BUMP --&gt; DEPLOY
+    B5 --&gt; J1S1
 
     subgraph DEPLOY ["🔧 conda-docs"]
         subgraph condarise ["🐍 Condarise"]
-        CS1["👾 Miniforge setup"]
-        CS2["🐍 Conda pkg build"]
-        CS3["🐍 Conda pkg upload"]
-        CS4["🔒 Conda lock"]
-        CS5["💾 Commit lockfiles"]
-        CS1 --&gt; CS2
-        CS2 --&gt; CS3
-        CS3 --&gt; CS4
-        CS4 --&gt; CS5
+        J1S1["👾 Miniforge setup"]
+        J1S2["🐍 Conda pkg build"]
+        J1S3["🐍 Conda pkg upload"]
+        J1S4["🔒 Conda lock"]
+        J1S5["💾 Commit lockfiles"]
+        J1S1 --&gt; J1S2
+        J1S2 --&gt; J1S3
+        J1S3 --&gt; J1S4
+        J1S4 --&gt; J1S5
         end
         subgraph tag ["🔖 Tag"]
-        TS1["📥 Pull latest commits"]
-        TS2["🔖 Create tag"]
-        TS1 --&gt; TS2
+        J2S1["📥 Pull latest commits"]
+        J2S2["🔖 Create tag"]
+        J2S1 --&gt; J2S2
         end
         subgraph pkgdownise ["🌐 Pkgdownise"]
-        PS1["👾 Miniforge setup"]
-        PS2["📦 Install from source"]
-        PS3["🌐 Website publish"]
-        PS1 --&gt; PS2
-        PS2 --&gt; PS3
+        J3S1["👾 Miniforge setup"]
+        J3S2["📦 Install from source"]
+        J3S3["🌐 Website publish"]
+        J3S1 --&gt; J3S2
+        J3S2 --&gt; J3S3
         end
 
-        condarise --&gt; tag
-        tag --&gt; pkgdownise
+        J1S5 --&gt; J2S1
+        J2S2 --&gt; J3S1
     end
 </pre>
 </div>

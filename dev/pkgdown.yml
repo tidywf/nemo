@@ -2,17 +2,17 @@ pandoc: 3.8.3
 pkgdown: 2.2.0
 pkgdown_sha: ~
 articles:
+  cicd: cicd.html
   contribute: contribute.html
   devnotes: devnotes.html
-  gha: gha.html
   installation: installation.html
   NEWS: NEWS.html
   notes: notes.html
-  schema: schema.html
-  schemas: schemas.html
+  schema_table: schema_table.html
+  schema_walkthrough: schema_walkthrough.html
   structure: structure.html
   uml: uml.html
-last_built: 2026-04-30T14:13Z
+last_built: 2026-05-14T13:46Z
 urls:
   reference: https://tidywf.github.io/nemo/reference
   article: https://tidywf.github.io/nemo/articles

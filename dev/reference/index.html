@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">nemo</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.0.3.9013</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.0.3.9015</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -20,12 +20,12 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/installation.html">Installation</a></li>
     <li><a class="dropdown-item" href="../articles/structure.html">Structure</a></li>
-    <li><a class="dropdown-item" href="../articles/schema.html">Schema Walkthrough</a></li>
-    <li><a class="dropdown-item" href="../articles/schemas.html">Schema Table</a></li>
+    <li><a class="dropdown-item" href="../articles/schema_walkthrough.html">Schema Walkthrough</a></li>
+    <li><a class="dropdown-item" href="../articles/schema_table.html">Schema Table</a></li>
     <li><a class="dropdown-item" href="../articles/contribute.html">Contribute</a></li>
-    <li><a class="dropdown-item" href="../articles/devnotes.html">Devnotes</a></li>
     <li><a class="dropdown-item" href="../articles/uml.html">UML Diagram</a></li>
-    <li><a class="dropdown-item" href="../articles/gha.html">CI/CD Workflow</a></li>
+    <li><a class="dropdown-item" href="../articles/cicd.html">CI/CD Workflow</a></li>
+    <li><a class="dropdown-item" href="../articles/devnotes.html">Devnotes</a></li>
   </ul></li>
 <li class="nav-item"><a class="nav-link" href="../articles/NEWS.html">NEWS</a></li>
       </ul><ul class="navbar-nav"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
@@ -212,7 +212,7 @@
           <code><a href="nemo_metadata.html">nemo_metadata()</a></code>
 
         </dt>
-        <dd>Title</dd>
+        <dd>Assemble run metadata</dd>
 
         <dt>
 
@@ -305,6 +305,57 @@
         </dt>
         <dd>Check if Package is Installed</dd>
       </dl></div><div class="section level2">
+      <h2 id="cli">CLI<a class="anchor" aria-label="anchor" href="#cli"></a></h2>
+
+
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="cli_tidy_add_args.html">cli_tidy_add_args()</a></code>
+
+        </dt>
+        <dd>Add 'tidy' subparser arguments</dd>
+
+        <dt>
+
+          <code><a href="cli_tidy_parse_args.html">cli_tidy_parse_args()</a></code>
+
+        </dt>
+        <dd>Parse and dispatch the 'tidy' subcommand</dd>
+
+        <dt>
+
+          <code><a href="cli_nemo_tidy.html">cli_nemo_tidy()</a></code>
+
+        </dt>
+        <dd>Tidy workflow output files</dd>
+
+        <dt>
+
+          <code><a href="cli_list_add_args.html">cli_list_add_args()</a></code>
+
+        </dt>
+        <dd>Add 'list' subparser arguments</dd>
+
+        <dt>
+
+          <code><a href="cli_list_parse_args.html">cli_list_parse_args()</a></code>
+
+        </dt>
+        <dd>Parse and dispatch the 'list' subcommand</dd>
+
+        <dt>
+
+          <code><a href="cli_nemo_list.html">cli_nemo_list()</a></code>
+
+        </dt>
+        <dd>List parsable workflow output files</dd>
+      </dl></div><div class="section level2">
       <h2 id="schema-visualisation">Schema Visualisation<a class="anchor" aria-label="anchor" href="#schema-visualisation"></a></h2>
 
 
@@ -316,10 +367,17 @@
 
       <dl><dt>
 
-          <code><a href="nemo_schema_data.html">nemo_schema_data()</a></code>
+          <code><a href="nemo_schemavis_data.html">nemo_schemavis_data()</a></code>
 
         </dt>
         <dd>Build schema data for use with reactable_schema</dd>
+
+        <dt>
+
+          <code><a href="nemo_schema_check.html">nemo_schema_check()</a></code>
+
+        </dt>
+        <dd>Validate a tool's schema.yaml against nemo conventions</dd>
 
         <dt>
 
