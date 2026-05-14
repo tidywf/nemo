@@ -4,7 +4,7 @@ channels:
   - tidywf
   - conda-forge
 dependencies:
-  - r-nemo ==0.0.3.9014 # bump
+  - r-nemo ==0.0.3.9015 # bump
   - r-pkgdown
   - r-quarto
   - quarto
