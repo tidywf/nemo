@@ -4,6 +4,8 @@ with the deployed conda package:
 ```{r}
 #| label: installation-pixi
 #| results: asis
+#| echo: false
+
 glue(
   "
   ```bash

@@ -18,11 +18,6 @@ use("dplyr", c("select", "filter", "mutate"))
 use("knitr", "kable")
 ```
 
-```{r}
-#| label: setup
-pkg_nm <- "nemo"
-```
-
 Each tool has a single `schema.yaml` under `inst/config/tools/<tool>/`.
 It is a flat `tables` map, with one entry per output file that drives both
 file discovery and raw-to-tidy transformation.
@@ -52,8 +47,8 @@ of the raw file. Example: `Table foo contains one row per somatic variant.`.
 
 ## Pattern (`pattern`)
 
-A character string containing a regular expression to be matched across the
-contents of a given file directory. You must use **double-quoted** strings in
+A character string containing a regular expression to be matched against
+each discovered file's basename. You must use **double-quoted** strings in
 the YAML so that backslash escapes are processed correctly.
 Example: `"\\.tool1\\.table1\\.tsv$"`.
 
@@ -115,13 +110,13 @@ additions and removals across versions.
 
 ```yaml
 table1 columns:
-  SampleID   versions: [v1.2.3, v4.5.6, latest]  # present in all versions
-  Chromosome versions: [v1.2.3, v4.5.6, latest]
-  Start      versions: [v1.2.3, v4.5.6, latest]
-  End        versions: [v1.2.3, v4.5.6, latest]
-  metricX    versions: [v1.2.3]                   # dropped in v4.5.6
-  metricY    versions: [latest]                   # added in latest
-  metricZ    versions: [latest]
+  SampleID   versions: ['v1.2.3', 'v4.5.6', 'latest']  # present in all versions
+  Chromosome versions: ['v1.2.3', 'v4.5.6', 'latest']
+  Start      versions: ['v1.2.3', 'v4.5.6', 'latest']
+  End        versions: ['v1.2.3', 'v4.5.6', 'latest']
+  metricX    versions: ['v1.2.3']                      # dropped in v4.5.6
+  metricY    versions: ['latest']                      # added in latest
+  metricZ    versions: ['latest']
 ```
 
 The effective schema for version `V` is all columns whose `versions` array

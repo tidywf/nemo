@@ -1,6 +1,8 @@
 ```{r}
 #| label: installation-docker
 #| results: asis
+#| echo: false
+
 glue(
   "
   [![ghcr-latest] ![ghcr-size]](https://github.com/{org_nm}/{pkg_nm}/pkgs/container/{pkg_nm})

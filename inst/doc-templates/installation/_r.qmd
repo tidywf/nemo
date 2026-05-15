@@ -3,6 +3,8 @@ Using {remotes} directly from GitHub:
 ```{r}
 #| label: installation-r
 #| results: asis
+#| echo: false
+
 glue(
   "
   ```r
@@ -13,5 +15,4 @@ glue(
   "```"
 )
 ```
-
 

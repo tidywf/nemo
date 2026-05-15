@@ -19,7 +19,6 @@ use("glue", "glue")
 
 ```{r}
 #| label: setup
-#| echo: false
 pkg_nm <- "nemo"
 org_nm <- "tidywf"
 ver <- as.character(utils::packageVersion(pkg_nm))

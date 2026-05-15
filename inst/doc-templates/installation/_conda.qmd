@@ -1,6 +1,7 @@
 ```{r}
 #| label: installation-conda
 #| results: asis
+#| echo: false
 glue(
   "
   [![conda-version] ![conda-latest]]({conda$url})

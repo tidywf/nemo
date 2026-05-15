@@ -71,7 +71,7 @@ bioinformatic tools and workflows.
 
 [R6]: <https://github.com/r-lib/R6> "R6 package repo"
 [tidywigits]: <https://github.com/tidywf/tidywigits> "tidywigits"
-[dracarys]: <https://github.com/tidywf/dracarys> "dracarys"
+[tidydragen]: <https://github.com/tidywf/tidydragen> "tidydragen"
 
 Here we use the `Tool1` and `Workflow1` classes as examples to illustrate the
 structure of the package.
@@ -81,7 +81,7 @@ structure of the package.
 A `Config` object reads a single `schema.yaml` file from `inst/config/tools/<tool>/`.
 Each table entry defines its file pattern, file type, description, and a list of
 columns — each column carrying both its raw name (as produced by the tool) and its
-tidy name (snake\_case), type, description, and the `versions` array listing every
+tidy name (snake_case), type, description, and the `versions` array listing every
 tool version the column appears in.
 `Config` derives versioned raw and tidy views from this unified source on demand.
 See `?Config`.
