@@ -49,17 +49,3 @@ filename = "deploy/conda/env/yaml/pkgdown.yaml"
 search = "r-nemo =={current_version}"
 replace = "r-nemo =={new_version}"
 
-[[tool.bumpversion.files]]
-filename = "inst/doc-templates/installation/_conda.qmd"
-search = "r-nemo=={current_version}"
-replace = "r-nemo=={new_version}"
-
-[[tool.bumpversion.files]]
-filename = "inst/doc-templates/installation/_r.qmd"
-search = "nemo@v{current_version}"
-replace = "nemo@v{new_version}"
-
-[[tool.bumpversion.files]]
-filename = "inst/doc-templates/installation/_pixi.qmd"
-search = "r-nemo=={current_version}"
-replace = "r-nemo=={new_version}"
