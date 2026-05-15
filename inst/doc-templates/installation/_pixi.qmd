@@ -2,6 +2,7 @@ If you use [Pixi](https://pixi.sh/), you can create a new isolated environment
 with the deployed conda package:
 
 ```{r}
+#| label: installation-pixi
 #| results: asis
 glue(
   "

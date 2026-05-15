@@ -1,4 +1,5 @@
 ```{r}
+#| label: installation-conda
 #| results: asis
 glue(
   "

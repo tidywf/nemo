@@ -64,8 +64,8 @@ implementation, which helps with code organisation. It consists of several base
 classes like `Config`, `Tool`, and `Workflow` which we describe below.
 Each R6 class can contain public and private functions and non-functions (fields).
 
-Other R packages like {[tidywigits]} and {[dracarys]} can create their own `Tool` and
-`Workflow` children classes that inherit (or override) functions from
+Other R packages like {[tidywigits]} and {[tidydragen]} (in _dev_) can create their
+own `Tool` and `Workflow` children classes that inherit (or override) functions from
 the {nemo} parent classes. This allows for custom parsers and tidiers for specific
 bioinformatic tools and workflows.
 
@@ -81,7 +81,7 @@ structure of the package.
 A `Config` object reads a single `schema.yaml` file from `inst/config/tools/<tool>/`.
 Each table entry defines its file pattern, file type, description, and a list of
 columns — each column carrying both its raw name (as produced by the tool) and its
-tidy name (snake_case), type, description, and the `versions` array listing every
+tidy name (snake\_case), type, description, and the `versions` array listing every
 tool version the column appears in.
 `Config` derives versioned raw and tidy views from this unified source on demand.
 See `?Config`.

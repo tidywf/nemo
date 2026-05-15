@@ -1,4 +1,5 @@
 ```{r}
+#| label: installation-docker
 #| results: asis
 glue(
   "
