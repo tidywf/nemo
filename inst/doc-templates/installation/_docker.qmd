@@ -1,0 +1,21 @@
+```{r}
+#| label: installation-docker
+#| results: asis
+#| echo: false
+
+glue(
+  "
+  [![ghcr-latest] ![ghcr-size]](https://github.com/{org_nm}/{pkg_nm}/pkgs/container/{pkg_nm})
+
+  [ghcr-latest]: <https://ghcr-badge.egpl.dev/{org_nm}/{pkg_nm}/latest_tag?color=%2344cc11&ignore=latest&label=version&trim=> \"GHCR latest tag\"
+  [ghcr-size]: <https://ghcr-badge.egpl.dev/{org_nm}/{pkg_nm}/size?tag={ver}> \"GHCR image size\"
+
+  The Docker image is available from the GitHub Container Registry at
+  <https://github.com/{org_nm}/{pkg_nm}/pkgs/container/{pkg_nm}>.
+
+  ```bash
+  docker pull --platform linux/amd64 ghcr.io/{org_nm}/{pkg_nm}:{ver}
+  ",
+  "```"
+)
+```

@@ -15,7 +15,7 @@ Just a dump of random notes!
 ```{r}
 #| label: vars
 #| echo: false
-dir1 <- system.file("documentation", "notes", package = "nemo")
+dir1 <- system.file("doc-templates", "notes", package = "nemo")
 ```
 
 ## SQL

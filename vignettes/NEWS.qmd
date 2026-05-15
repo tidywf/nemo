@@ -8,20 +8,21 @@ knitr:
   opts_chunk:
     collapse: true
     comment: '#>'
+    echo: false
 ---
 
 ```{r}
 #| label: pkgs
 #| message: false
 #| warning: false
-#| echo: false
 {
   use("htmltools", "a")
   use("glue", "glue")
 }
 ```
 
-```{r echo=FALSE}
+```{r}
+#| label: setup
 repo <- "https://github.com/tidywf/nemo"
 vdiff <- function(new, old) {
   stopifnot(utils::compareVersion(new, old) == 1)

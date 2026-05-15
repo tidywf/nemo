@@ -1,0 +1,18 @@
+Using {remotes} directly from GitHub:
+
+```{r}
+#| label: installation-r
+#| results: asis
+#| echo: false
+
+glue(
+  "
+  ```r
+  install.packages(\"remotes\")
+  remotes::install_github(\"{org_nm}/{pkg_nm}\") # latest main commit
+  remotes::install_github(\"{org_nm}/{pkg_nm}@v{ver}\") # specific version
+  ",
+  "```"
+)
+```
+

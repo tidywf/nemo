@@ -8,15 +8,29 @@ knitr:
   opts_chunk:
     collapse: true
     comment: '#>'
+    echo: false
 ---
 
-There are several ways to install {nemo}:
+```{r}
+#| label: pkgs
+use("tibble", "lst")
+use("glue", "glue")
+```
 
 ```{r}
-#| label: vars
-#| echo: false
-dir1 <- system.file("documentation/installation", package = "nemo")
+#| label: setup
+pkg_nm <- "nemo"
+org_nm <- "tidywf"
+ver <- as.character(utils::packageVersion(pkg_nm))
+conda <- tibble::lst(
+  pkg = paste0("r-", pkg_nm),
+  env = paste0(pkg_nm, "_env"),
+  url = glue("https://anaconda.org/{org_nm}/{pkg}")
+)
+dir1 <- system.file("doc-templates/installation", package = pkg_nm)
 ```
+
+There are several ways to install {`r pkg_nm`}:
 
 ### R
 
