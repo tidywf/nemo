@@ -1,0 +1,39 @@
+If you use [Pixi](https://pixi.sh/), you can create a new isolated environment
+with the deployed conda package:
+
+```{r}
+#| results: asis
+glue(
+  "
+  ```bash
+  pixi init -c {org_nm} -c conda-forge ./tidy_env
+  cd ./tidy_env
+  pixi add {conda$pkg}=={ver}
+  ",
+  "```",
+  "
+
+  Then you can create a task to run the `{pkg_nm}.R` CLI script:
+
+  ```bash
+  pixi task add {pkg_nm} \"{pkg_nm}.R\"
+  pixi run {pkg_nm} --help
+  ",
+  "```",
+  "
+
+  Or activate the environment and use {pkg_nm} directly in an R environment:
+
+  ```bash
+  pixi shell
+  R
+  ",
+  "```",
+  "
+
+  ```r
+  library({pkg_nm})
+  ",
+  "```"
+)
+```
