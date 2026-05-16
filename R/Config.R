@@ -166,6 +166,12 @@ Config <- R6::R6Class(
     #' Table `name`, `tbl_description`, `version`, and `schema`
     #' (list-col of tibble(field, type) for `"raw"`/`"tidy"`, or tibble(raw, tidy, type) for `"both"`).
     get_schemas_all = function(raw_or_tidy = "raw") {
+      rt <- c("raw", "tidy", "both")
+      rt_col <- glue::glue_collapse(rt, sep = ", ", last = " or ")
+      assertthat::assert_that(
+        raw_or_tidy %in% rt,
+        msg = glue("raw_or_tidy must be one of {rt_col}, got '{raw_or_tidy}'.")
+      )
       tabs <- self$config[["tables"]]
       .get_schema <- function(tab, tab_name) {
         cols_df <- tab[["columns"]] |>
@@ -274,6 +280,7 @@ Config <- R6::R6Class(
           tibble::as_tibble_row(col)
         }) |>
         dplyr::bind_rows()
+      # sorted so versions[length(versions)] picks "latest" if present, else highest semver
       versions <- config_sort_versions(unique(unlist(cols_df[["versions"]])))
       if (is.null(v)) {
         v <- versions[length(versions)]
@@ -297,7 +304,10 @@ Config <- R6::R6Class(
 #' @returns Sorted character vector with `"latest"` last.
 #' @keywords internal
 config_sort_versions <- function(versions) {
-  non_latest <- sort(versions[versions != "latest"])
+  non_latest <- versions[versions != "latest"]
+  if (length(non_latest) > 0) {
+    non_latest <- non_latest[order(numeric_version(gsub("^[vV]", "", non_latest)))]
+  }
   c(non_latest, if ("latest" %in% versions) "latest")
 }
 

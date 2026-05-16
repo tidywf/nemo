@@ -50,7 +50,7 @@ cli_tidy_add_args <- function(subp, wf = NULL) {
 #'
 #' @param args Named list of parsed CLI arguments, as returned by argparse.
 #' Expected fields: `format`, `in_dir`, `out_dir`, `input_id` (optional),
-#' `output_id` (optional), `ulid`, `pfix_include`, `dbname`, `dbuser`,
+#' `output_id` (optional), `ulid`, `prefix_include`, `dbname`, `dbuser`,
 #' `include`, `exclude`, `workflow` (may be `NULL` when `wf` is provided),
 #' `quiet`.
 #' `output_id` and `ulid` are mutually exclusive at the CLI level (enforced by
@@ -160,7 +160,7 @@ cli_tidy_parse_args <- function(args, wf = NULL) {
 #' expect_true(length(res$written_files) > 0)
 #' expect_error(cli_nemo_tidy(
 #'   workflow = "workflow1", in_dir = path, out_dir = tempfile(),
-#'   out_format = "badformat", id = "run1", output_id = NULL,
+#'   out_format = "badformat", input_id = "run1", output_id = NULL,
 #'   dbname = NULL, dbuser = NULL, include = NULL, exclude = NULL
 #' ))
 #' expect_error(cli_nemo_tidy(
