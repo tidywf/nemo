@@ -30,6 +30,7 @@ Imports:
     R6,
     readr,
     rlang,
+    stringr,
     tibble,
     tidyr,
     ulid,
