@@ -11,8 +11,8 @@
 <link rel="icon" sizes="any" href="../favicon.ico">
 <link rel="manifest" href="../site.webmanifest">
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><script src="schema_walkthrough_files/libs/quarto-html/popper.min.js"></script><script src="schema_walkthrough_files/libs/quarto-html/tippy.umd.min.js"></script><link href="schema_walkthrough_files/libs/quarto-html/tippy.css" rel="stylesheet">
 <link href="schema_walkthrough_files/libs/quarto-html/light-border.css" rel="stylesheet">
@@ -28,7 +28,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">nemo</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.0.3.9016</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.0.3.9017</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -81,10 +81,7 @@
 
 
 
-    <p>Each nemo tool has a single <code>schema.yaml</code> under <code>inst/config/tools/&lt;tool&gt;/</code>. It is a flat <code>tables:</code> map — one entry per output file type — that drives both file discovery and raw =&gt; tidy transformation.</p>
-<section class="level2"><h2 id="schema-yaml-structure">
-<code>schema.yaml</code> structure<a class="anchor" aria-label="anchor" href="#schema-yaml-structure"></a>
-</h2>
+    <p>Each tool has a single <code>schema.yaml</code> under <code>inst/config/tools/&lt;tool&gt;/</code>. It is a flat <code>tables</code> map, with one entry per output file that drives both file discovery and raw-to-tidy transformation.</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tables</span><span class="kw">:</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">&lt;table_name&gt;</span><span class="kw">:</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">description</span><span class="kw">:</span><span class="at"> </span><span class="st">'&lt;human-readable description&gt;'</span></span>
@@ -96,8 +93,16 @@
 <span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">type</span><span class="kw">:</span><span class="at"> </span><span class="st">'char | int | float'</span></span>
 <span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">description</span><span class="kw">:</span><span class="at"> </span><span class="st">'&lt;human-readable description&gt;'</span></span>
 <span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">versions</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="st">'&lt;version1&gt;'</span><span class="kw">,</span><span class="at"> </span><span class="st">'&lt;version2&gt;'</span><span class="kw">]</span></span></code></pre></div>
-<p>The <code>pattern</code> value must use YAML <strong>double-quoted</strong> strings so that backslash escapes are processed correctly (e.g. <code>"\\.tool1\\.table1\\.tsv$"</code>).</p>
-</section><section class="level2"><h2 id="file-types-ftype">File types (<code>ftype</code>)<a class="anchor" aria-label="anchor" href="#file-types-ftype"></a>
+<section class="level2"><h2 id="table-name">Table name<a class="anchor" aria-label="anchor" href="#table-name"></a>
+</h2>
+<p>We keep table names as all lowercase, alphanumeric characters. Example: <code>table1</code>.</p>
+</section><section class="level2"><h2 id="description-description">Description (<code>description</code>)<a class="anchor" aria-label="anchor" href="#description-description"></a>
+</h2>
+<p>A short description for the table that can be used to summarise the contents of the raw file. Example: <code>Table foo contains one row per somatic variant.</code>.</p>
+</section><section class="level2"><h2 id="pattern-pattern">Pattern (<code>pattern</code>)<a class="anchor" aria-label="anchor" href="#pattern-pattern"></a>
+</h2>
+<p>A character string containing a regular expression to be matched against each discovered file’s basename. You must use <strong>double-quoted</strong> strings in the YAML so that backslash escapes are processed correctly. Example: <code>"\\.tool1\\.table1\\.tsv$"</code>.</p>
+</section><section class="level2"><h2 id="file-type-ftype">File type (<code>ftype</code>)<a class="anchor" aria-label="anchor" href="#file-type-ftype"></a>
 </h2>
 <p>The <code>ftype</code> field signals the parsing strategy for that table, including the delimiter. Tab-delimited files use <code>txt</code> or <code>txt-nohead</code>; comma-delimited files with a header use <code>csv</code>. More exotic formats require a custom <code>parse_*</code> method.</p>
 <table class="table caption-top">
@@ -131,7 +136,7 @@
 <tr class="odd">
 <td><code>txt-nohead</code></td>
 <td>No header; positional columns</td>
-<td><code>X1, X2, …, XN</code></td>
+<td><code>X1, X2, ..., XN</code></td>
 <td><code>parse_file_nohead</code></td>
 </tr>
 <tr class="even">
@@ -151,38 +156,38 @@
 <section class="level3"><h3 id="txt">
 <code>txt</code><a class="anchor" aria-label="anchor" href="#txt"></a>
 </h3>
-<p>Standard tab-delimited file with a header row. The <code>raw:</code> names must exactly match the column names in the file — they are used by <code>schema_guess</code> to identify which versioned schema applies to a given file.</p>
+<p>Standard tab-delimited file with a header row. The <code>raw:</code> names must exactly match the column names in the file — they are used by <code><a href="../reference/schema_guess.html">nemo::schema_guess</a></code> to identify which versioned schema applies to a given file.</p>
 </section><section class="level3"><h3 id="csv">
 <code>csv</code><a class="anchor" aria-label="anchor" href="#csv"></a>
 </h3>
-<p>Same as <code>txt</code> but comma-delimited. No <code>parse_*</code> override is needed in the subclass — <code>ftype: 'csv'</code> is auto-dispatched to <code>parse_file</code> with <code>delim = ","</code>. Use this for any tool that produces <code>.csv</code> output files with a header row.</p>
+<p>Same as <code>txt</code> but comma-delimited. Auto-dispatched to <code>parse_file</code> with <code>delim = ","</code>. Use this for any tool that produces <code>.csv</code> output files with a header row.</p>
 </section><section class="level3"><h3 id="txt-nohead">
 <code>txt-nohead</code><a class="anchor" aria-label="anchor" href="#txt-nohead"></a>
 </h3>
-<p>No header row; columns are identified purely by position. The <code>raw:</code> names are always <code>X1, X2, …, XN</code> (where N = number of columns). This makes version tracking unambiguous: adding or removing a column is reflected by updating the <code>versions:</code> array for the affected positional label. The tidy step renames <code>X1 =&gt; tidy_name_1</code>, <code>X2 =&gt; tidy_name_2</code>, etc. positionally.</p>
+<p>No header row; columns are identified purely by position. The <code>raw</code> names are always <code>X1, X2, ..., XN</code> (where N = number of columns). This makes version tracking unambiguous: adding or removing a column is reflected by updating the <code>versions</code> array for the affected positional label. The tidy step renames <code>X1 =&gt; tidy_name_1</code>, <code>X2 =&gt; tidy_name_2</code>, etc. positionally.</p>
 </section><section class="level3"><h3 id="txt-keyvalue">
 <code>txt-keyvalue</code><a class="anchor" aria-label="anchor" href="#txt-keyvalue"></a>
 </h3>
-<p>A special case of <code>txt-nohead</code> with exactly two columns where the first column is a key and the second is its value. The file is pivoted wide so that each key becomes a column name. The <code>raw:</code> names are the actual key values (e.g. <code>SampleID</code>, <code>TotalReads</code>), which are matched by <code>schema_guess</code> after the pivot.</p>
+<p>A special case of <code>txt-nohead</code> with exactly two columns where the first column is a key and the second is its value. The file is pivoted wide so that each key becomes a column name. The <code>raw</code> names are the actual key values (e.g. <code>SampleID</code>, <code>TotalReads</code>), which are matched by <code><a href="../reference/schema_guess.html">nemo::schema_guess</a></code> after the pivot.</p>
 </section><section class="level3"><h3 id="csv-nohead-long">
 <code>csv-nohead-long</code><a class="anchor" aria-label="anchor" href="#csv-nohead-long"></a>
 </h3>
-<p>No header; long format where one column holds metric names and adjacent columns hold their values (e.g. count and percentage). The <code>columns:</code> block only maps raw metric names to tidy column names. The structural logic (which column is the key, <code>_pct</code> suffix generation, section cleaning) lives in the tool’s <code>tidy_*</code> method, not in the schema.</p>
-</section></section><section class="level2"><h2 id="versioning-versions">Versioning (<code>versions:</code>)<a class="anchor" aria-label="anchor" href="#versioning-versions"></a>
+<p>No header; long format where one column holds metric names and adjacent columns hold their values (e.g. count and percentage). The <code>columns</code> block only maps raw metric names to tidy column names. The structural logic (which column is the key, <code>_pct</code> suffix generation, section cleaning) lives in the tool’s <code>tidy_*</code> method, not in the schema.</p>
+</section></section><section class="level2"><h2 id="versioning-versions">Versioning (<code>versions</code>)<a class="anchor" aria-label="anchor" href="#versioning-versions"></a>
 </h2>
-<p>The <code>versions:</code> field on each column is an explicit array of every tool version that column appears in. This gives a full picture of column history, including additions and removals across versions.</p>
+<p>The <code>versions</code> field for each column is an explicit array of every tool version that column appears in. This gives a full picture of column history, including additions and removals across versions.</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">table1 columns</span><span class="kw">:</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">SampleID   versions</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">v1</span><span class="fl">.2.3</span><span class="kw">,</span><span class="at"> v4</span><span class="fl">.5.6</span><span class="kw">,</span><span class="at"> latest</span><span class="kw">]</span><span class="co">  # present in all versions</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">Chromosome versions</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">v1</span><span class="fl">.2.3</span><span class="kw">,</span><span class="at"> v4</span><span class="fl">.5.6</span><span class="kw">,</span><span class="at"> latest</span><span class="kw">]</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">Start      versions</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">v1</span><span class="fl">.2.3</span><span class="kw">,</span><span class="at"> v4</span><span class="fl">.5.6</span><span class="kw">,</span><span class="at"> latest</span><span class="kw">]</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">End        versions</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">v1</span><span class="fl">.2.3</span><span class="kw">,</span><span class="at"> v4</span><span class="fl">.5.6</span><span class="kw">,</span><span class="at"> latest</span><span class="kw">]</span></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">metricX    versions</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">v1</span><span class="fl">.2.3</span><span class="kw">]</span><span class="co">                   # dropped in v4.5.6</span></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">metricY    versions</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">latest</span><span class="kw">]</span><span class="co">                   # added in latest</span></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">metricZ    versions</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="at">latest</span><span class="kw">]</span></span></code></pre></div>
-<p>The effective schema for version <code>V</code> is all columns whose <code>versions</code> array contains <code>V</code>. <code>schema_guess</code> uses this to automatically match a file’s column names against the correct versioned snapshot. Tables with a single version (all columns <code>versions: [latest]</code>) are the common case and require no special handling.</p>
-</section><section class="level2"><h2 id="example">Example<a class="anchor" aria-label="anchor" href="#example"></a>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">SampleID   versions</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="st">'v1.2.3'</span><span class="kw">,</span><span class="at"> </span><span class="st">'v4.5.6'</span><span class="kw">,</span><span class="at"> </span><span class="st">'latest'</span><span class="kw">]</span><span class="co">  # present in all versions</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">Chromosome versions</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="st">'v1.2.3'</span><span class="kw">,</span><span class="at"> </span><span class="st">'v4.5.6'</span><span class="kw">,</span><span class="at"> </span><span class="st">'latest'</span><span class="kw">]</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">Start      versions</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="st">'v1.2.3'</span><span class="kw">,</span><span class="at"> </span><span class="st">'v4.5.6'</span><span class="kw">,</span><span class="at"> </span><span class="st">'latest'</span><span class="kw">]</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">End        versions</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="st">'v1.2.3'</span><span class="kw">,</span><span class="at"> </span><span class="st">'v4.5.6'</span><span class="kw">,</span><span class="at"> </span><span class="st">'latest'</span><span class="kw">]</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">metricX    versions</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="st">'v1.2.3'</span><span class="kw">]</span><span class="co">                      # dropped in v4.5.6</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">metricY    versions</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="st">'latest'</span><span class="kw">]</span><span class="co">                      # added in latest</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">metricZ    versions</span><span class="kw">:</span><span class="at"> </span><span class="kw">[</span><span class="st">'latest'</span><span class="kw">]</span></span></code></pre></div>
+<p>The effective schema for version <code>V</code> is all columns whose <code>versions</code> array contains <code>V</code>. <code>schema_guess</code> uses this to automatically match a file’s column names against the correct versioned snapshot.</p>
+</section><section class="level2"><h2 id="examples">Examples<a class="anchor" aria-label="anchor" href="#examples"></a>
 </h2>
-<p><code>Config$new()</code> reads the <code>schema.yaml</code> and exposes the derived schemas:</p>
+<p><code>nemo::Config$new()</code> reads the <code>schema.yaml</code> and exposes the derived schemas:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">conf</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/Config.html">Config</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="st">"tool1"</span>, pkg <span class="op">=</span> <span class="st">"nemo"</span><span class="op">)</span></span>
@@ -273,7 +278,7 @@
 </table>
 </div>
 </div>
-</section><section class="level3"><h3 id="versioned-raw-schemas-used-by-schema_guess">Versioned raw schemas (used by <code>schema_guess</code>)<a class="anchor" aria-label="anchor" href="#versioned-raw-schemas-used-by-schema_guess"></a>
+</section><section class="level3"><h3 id="versioned-raw-schemas-used-by-nemoschema_guess">Versioned raw schemas (used by <code>nemo::schema_guess</code>)<a class="anchor" aria-label="anchor" href="#versioned-raw-schemas-used-by-nemoschema_guess"></a>
 </h3>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb6"><pre class="downlit sourceCode r">
@@ -336,7 +341,7 @@
 </h3>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">conf</span><span class="op">$</span><span class="fu">get_schema</span><span class="op">(</span><span class="st">"table1"</span>, raw_or_tidy <span class="op">=</span> <span class="st">"tidy"</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu">kable</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">conf</span><span class="op">$</span><span class="fu">get_schema</span><span class="op">(</span><span class="st">"table1"</span>, raw_or_tidy <span class="op">=</span> <span class="st">"tidy"</span>, v <span class="op">=</span> <span class="st">"latest"</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu">kable</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <div class="cell-output-display">
 <table class="table caption-top">
 <thead><tr class="header">
@@ -346,131 +351,33 @@
 </tr></thead>
 <tbody>
 <tr class="odd">
-<td style="text-align: left;">v1.2.3</td>
-<td style="text-align: left;">sample_id</td>
-<td style="text-align: left;">c</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">v1.2.3</td>
-<td style="text-align: left;">chromosome</td>
-<td style="text-align: left;">c</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">v1.2.3</td>
-<td style="text-align: left;">start</td>
-<td style="text-align: left;">i</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">v1.2.3</td>
-<td style="text-align: left;">end</td>
-<td style="text-align: left;">i</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">v1.2.3</td>
-<td style="text-align: left;">metric_x</td>
-<td style="text-align: left;">d</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">v4.5.6</td>
-<td style="text-align: left;">sample_id</td>
-<td style="text-align: left;">c</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">v4.5.6</td>
-<td style="text-align: left;">chromosome</td>
-<td style="text-align: left;">c</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">v4.5.6</td>
-<td style="text-align: left;">start</td>
-<td style="text-align: left;">i</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">v4.5.6</td>
-<td style="text-align: left;">end</td>
-<td style="text-align: left;">i</td>
-</tr>
-<tr class="even">
 <td style="text-align: left;">latest</td>
 <td style="text-align: left;">sample_id</td>
 <td style="text-align: left;">c</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;">latest</td>
 <td style="text-align: left;">chromosome</td>
 <td style="text-align: left;">c</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;">latest</td>
 <td style="text-align: left;">start</td>
 <td style="text-align: left;">i</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;">latest</td>
 <td style="text-align: left;">end</td>
 <td style="text-align: left;">i</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td style="text-align: left;">latest</td>
 <td style="text-align: left;">metric_y</td>
 <td style="text-align: left;">d</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td style="text-align: left;">latest</td>
 <td style="text-align: left;">metric_z</td>
-<td style="text-align: left;">d</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-</section><section class="level3"><h3 id="tidy-schema-for-a-csv-table">Tidy schema for a <code>csv</code> table<a class="anchor" aria-label="anchor" href="#tidy-schema-for-a-csv-table"></a>
-</h3>
-<p><code>csv</code> tables work identically to <code>txt</code>, where the schema drives column renaming automatically:</p>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">conf</span><span class="op">$</span><span class="fu">get_schema</span><span class="op">(</span><span class="st">"table6"</span>, raw_or_tidy <span class="op">=</span> <span class="st">"tidy"</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu">kable</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<div class="cell-output-display">
-<table class="table caption-top">
-<thead><tr class="header">
-<th style="text-align: left;">version</th>
-<th style="text-align: left;">field</th>
-<th style="text-align: left;">type</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td style="text-align: left;">v1.0.0</td>
-<td style="text-align: left;">gene_id</td>
-<td style="text-align: left;">c</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">v1.0.0</td>
-<td style="text-align: left;">gene_name</td>
-<td style="text-align: left;">c</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">v1.0.0</td>
-<td style="text-align: left;">tpm_adj</td>
-<td style="text-align: left;">d</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">latest</td>
-<td style="text-align: left;">gene_id</td>
-<td style="text-align: left;">c</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">latest</td>
-<td style="text-align: left;">gene_name</td>
-<td style="text-align: left;">c</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">latest</td>
-<td style="text-align: left;">tpm_adj</td>
-<td style="text-align: left;">d</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">latest</td>
-<td style="text-align: left;">tpm_raw</td>
 <td style="text-align: left;">d</td>
 </tr>
 </tbody>
@@ -481,7 +388,7 @@
 </h3>
 <p>For <code>csv-nohead-long</code> tables, <code>get_col_map()</code> returns the metric-name mapping used inside the <code>tidy_*</code> method:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode cell-code" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">conf</span><span class="op">$</span><span class="fu">get_col_map</span><span class="op">(</span><span class="st">"table5"</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu">kable</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <div class="cell-output-display">
 <table class="table caption-top">
