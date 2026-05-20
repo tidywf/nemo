@@ -12,7 +12,13 @@
 - 📚 Docs: <https://tidywf.github.io/nemo>
   - [Installation](https://tidywf.github.io/nemo/articles/installation)
   - [R6 structure](https://tidywf.github.io/nemo/articles/structure)
+  - [Example files/tables
+    supported](https://tidywf.github.io/nemo/articles/schema_table)
+  - [Schema
+    walkthrough](https://tidywf.github.io/nemo/articles/schema_walkthrough)
   - [Changelog](https://tidywf.github.io/nemo/articles/NEWS)
+  - [UML diagram](https://tidywf.github.io/nemo/articles/uml)
+  - [CI/CD diagram](https://tidywf.github.io/nemo/articles/cicd)
 
 ## Overview
 
@@ -41,7 +47,7 @@ Using {remotes} directly from GitHub:
 ``` r
 install.packages("remotes")
 remotes::install_github("tidywf/nemo") # latest main commit
-remotes::install_github("tidywf/nemo@v0.0.3.9016") # released version
+remotes::install_github("tidywf/nemo@v0.0.3.9017") # specific version
 ```
 
 Alternatively:
@@ -66,7 +72,7 @@ export PATH="${nemo_cli}:${PATH}"
 ```
 
     $ nemo.R --version
-    nemo 0.0.3.9016
+    nemo 0.0.3.9017
 
     #-----------------------------------#
     $ nemo.R --help
