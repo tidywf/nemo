@@ -204,9 +204,8 @@ Workflow <- R6::R6Class(
       # Write metadata
       if (format != "db" && !is.null(res)) {
         diro <- normalizePath(diro)
-        meta_diro <- file.path(diro, "_metadata") |> fs::dir_create()
         meta <- self$get_metadata(input_id = input_id, output_id = output_id, output_dir = diro)
-        jsonlite::write_json(meta, file.path(meta_diro, "metadata.json"), pretty = TRUE)
+        arrow::write_parquet(meta, file.path(diro, "metadata.parquet"))
       }
       return(invisible(self))
     },
@@ -292,9 +291,9 @@ Workflow <- R6::R6Class(
     #' Output directory.
     #' @param pkgs (`character(n)`)\cr
     #' Which R packages to extract versions for.
-    #' @return (`list()`)\cr
-    #' List with `input_id`, `output_id`, `input_dirs`, `output_dir`,
-    #' `pkg_versions`, and `files`.
+    #' @return (`tibble()`)\cr
+    #' Single-row tibble with columns `input_id`, `output_id`, `input_dirs`,
+    #' `output_dir`, `pkg_versions`, and `files`.
     get_metadata = function(input_id, output_id, output_dir, pkgs = NULL) {
       if (is.null(pkgs)) {
         pkgs <- self$metapkg
@@ -305,11 +304,14 @@ Workflow <- R6::R6Class(
         # it's a flat output structure.
         files <- self$written_files |>
           dplyr::mutate(outpath = basename(.data$outpath)) |>
-          dplyr::select(tbl = "tbl_name", "prefix", fout = "outpath", fin = "raw_path")
+          dplyr::select(tbl = "tbl_name", "prefix", fout = "outpath", fin = "raw_path") |>
+          # Arrow treats glue/fs_byte as an extension type and refuses to write_parquet
+          dplyr::mutate(dplyr::across(dplyr::where(is.character), as.character))
       } else {
         # just select raw path and size
         files <- self$files_tbl |>
-          dplyr::select(fin = "path", "size")
+          dplyr::select(fin = "path", "size") |>
+          dplyr::mutate(size = as.numeric(.data$size))
       }
       meta <- nemo_metadata(
         files = files,

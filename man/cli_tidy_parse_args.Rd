@@ -9,7 +9,7 @@ cli_tidy_parse_args(args, wf = NULL)
 \arguments{
 \item{args}{Named list of parsed CLI arguments, as returned by argparse.
 Expected fields: \code{format}, \code{in_dir}, \code{out_dir}, \code{input_id} (optional),
-\code{output_id} (optional), \code{ulid}, \code{pfix_include}, \code{dbname}, \code{dbuser},
+\code{output_id} (optional), \code{ulid}, \code{prefix_include}, \code{dbname}, \code{dbuser},
 \code{include}, \code{exclude}, \code{workflow} (may be \code{NULL} when \code{wf} is provided),
 \code{quiet}.
 \code{output_id} and \code{ulid} are mutually exclusive at the CLI level (enforced by
