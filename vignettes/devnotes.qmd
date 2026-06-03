@@ -44,7 +44,7 @@ knitr::opts_chunk$set(
 | ---------                                | ---------                       |
 | `pkgdown::build_site()`                  | builds entire site              |
 | `pkgdown::build_articles(quiet = FALSE)` | builds vignettes in debug mode  |
-| `pkgdown::build_article("developers")`   | builds developers vignette only |
+| `pkgdown::build_article("foo")`           | builds foo vignette only        |
 
 ### Data Version Control
 

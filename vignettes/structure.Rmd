@@ -49,6 +49,7 @@ params <- list(
   use("tidyr", "unnest")
   use("fs", "dir_info")
   use("knitr", "kable")
+  use("arrow", "read_parquet")
 }
 ```
 
@@ -233,21 +234,29 @@ t2$files
 
 After tidying the data of interest, we can write the tidy tibbles to various
 formats, like Apache Parquet, PostgreSQL, CSV/TSV and R's RDS.
-Below we can see that the `input_id` specified is added to the written files in
-an additional `input_id` column. This can be used e.g. to distinguish results
-from different runs in a data pipeline. An optional `output_id` column can also
-be added, and an `input_pfix` column can be included via `pfix_include = TRUE`.
+Below we can see that the (optional) `input_id` specified is added to the written
+files in an additional `input_id` column. This can be used e.g. to distinguish results
+from different samples in a data pipeline. An optional `output_id` column can also
+be added (e.g. to distinguish between runs for the same input sample). An
+`input_pfix` column can be included via `pfix_include = TRUE`, which would
+use the prefix of the file basename.
 
 ```{r tool1_write}
 t2$tidy() # first need to tidy
 outdir1 <- tempdir()
 fmt <- "csv"
-t2$write(diro = outdir1, format = fmt, input_id = "run123")
+t2$write(
+  diro = outdir1,
+  format = fmt,
+  input_id = "run123",
+  output_id = "out123",
+  pfix_include = TRUE
+)
 wfiles <- fs::dir_info(outdir1) |> dplyr::select(1:5)
 wfiles |>
   dplyr::mutate(bname = basename(.data$path)) |>
   dplyr::select("bname", "size", "type")
-# readr::read_csv(wfiles$path[1], show_col_types = F) # see bug #137
+# readr::read_csv(wfiles$path[1], show_col_types = F) # see tidywf/tidywigits#137
 ```
 
 ### nemofy
@@ -268,6 +277,7 @@ wfiles2 <- fs::dir_info(outdir2) |>
   dplyr::mutate(bname = basename(.data$path))
 wfiles2 |>
   dplyr::select("bname", "size", "type")
+# no output_id or input_pfix specified
 readr::read_tsv(wfiles2$path[2], show_col_types = F)
 ```
 
@@ -290,11 +300,36 @@ w$list_files()
 x <- w$nemofy(
   diro = outdir3,
   format = "tsv",
-  input_id = "workflow1_run1"
+  input_id = "workflow1_run1",
+  output_id = "out1",
+  pfix_include = TRUE
 )
 wfiles3 <- fs::dir_info(outdir3) |>
   dplyr::select(1:5) |>
   dplyr::mutate(bname = basename(.data$path))
 wfiles3 |>
   dplyr::select("bname", "size", "type")
+```
+
+## Metadata
+
+After each `Workflow$write()` or `Workflow$nemofy()` call (for non-`db` formats),
+a `metadata.parquet` file is written directly to the output directory alongside
+the tidy tables.
+It is a single-row tibble capturing the run context: IDs, input/output paths,
+package versions, and the list of files written.
+
+```{r metadata_read}
+meta <- arrow::read_parquet(file.path(outdir3, "metadata.parquet"))
+meta |> dplyr::glimpse()
+```
+
+The nested list columns can be unpacked with `tidyr::unnest()`:
+
+```{r metadata_pkgs}
+meta |> dplyr::select("pkg_versions") |> tidyr::unnest("pkg_versions")
+```
+
+```{r metadata_files}
+meta |> dplyr::select("files") |> tidyr::unnest("files")
 ```
