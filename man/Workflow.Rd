@@ -371,9 +371,9 @@ Which R packages to extract versions for.}
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-(\code{list()})\cr
-List with \code{input_id}, \code{output_id}, \code{input_dirs}, \code{output_dir},
-\code{pkg_versions}, and \code{files}.
+(\code{tibble()})\cr
+Single-row tibble with columns \code{input_id}, \code{output_id}, \code{input_dirs},
+\code{output_dir}, \code{pkg_versions}, and \code{files}.
 }
 }
 \if{html}{\out{<hr>}}

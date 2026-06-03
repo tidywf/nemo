@@ -23,7 +23,6 @@ Imports:
     dplyr,
     fs,
     glue,
-    jsonlite,
     knitr,
     log4r,
     purrr,

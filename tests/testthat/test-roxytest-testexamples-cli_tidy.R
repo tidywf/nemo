@@ -44,7 +44,7 @@ test_that("Function cli_nemo_tidy() @ L172", {
   expect_true(length(res$written_files) > 0)
   expect_error(cli_nemo_tidy(
     workflow = "workflow1", in_dir = path, out_dir = tempfile(),
-    out_format = "badformat", id = "run1", output_id = NULL,
+    out_format = "badformat", input_id = "run1", output_id = NULL,
     dbname = NULL, dbuser = NULL, include = NULL, exclude = NULL
   ))
   expect_error(cli_nemo_tidy(

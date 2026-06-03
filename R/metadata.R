@@ -13,7 +13,8 @@
 #' @param output_dir (`character(1)`)\cr
 #' Output directory.
 #'
-#' @returns List of metadata.
+#' @returns Single-row tibble of metadata with list columns for `input_dirs`,
+#'   `pkg_versions`, and `files`.
 #'
 #' @examples
 #' files <- tibble::tibble(
@@ -43,15 +44,14 @@ nemo_metadata <- function(files, pkgs, input_id, output_id, input_dirs, output_d
     dplyr::rowwise() |>
     dplyr::mutate(version = as.character(utils::packageVersion(.data$name))) |>
     dplyr::ungroup()
-  # handle NULLs
   input_id <- input_id %||% NA_character_
   output_id <- output_id %||% NA_character_
-  list(
-    input_id = jsonlite::unbox(input_id),
-    output_id = jsonlite::unbox(output_id),
-    input_dirs = I(input_dirs),
-    output_dir = jsonlite::unbox(output_dir),
-    pkg_versions = pkg_versions,
-    files = files
+  tibble::tibble(
+    input_id = input_id,
+    output_id = output_id,
+    input_dirs = list(input_dirs),
+    output_dir = output_dir,
+    pkg_versions = list(as.data.frame(pkg_versions)),
+    files = list(as.data.frame(files))
   )
 }

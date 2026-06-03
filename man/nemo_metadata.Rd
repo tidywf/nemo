@@ -25,7 +25,8 @@ Input directory (can be multiple).}
 Output directory.}
 }
 \value{
-List of metadata.
+Single-row tibble of metadata with list columns for \code{input_dirs},
+\code{pkg_versions}, and \code{files}.
 }
 \description{
 Assemble run metadata
