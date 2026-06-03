@@ -51,44 +51,59 @@ pr <- function(n) {
 }
 ```
 
-## dev (2026-05-14)
+## v0.1.0 (2026-06-04)
 
-- CLI `tidy`: rename `-i ID` to `--input_id`; add `--output_id` and `--ulid`
+### CLI
+
+- `tidy`: rename `-i ID` to `--input_id`; add `--output_id` and `--ulid`
   (mutually exclusive) for attaching an output run identifier; `--ulid`
   auto-generates a ULID
-- CLI `tidy`: add `--prefix_include` flag to opt in to an `input_pfix` column in
+- `tidy`: add `--prefix_include` flag to opt in to an `input_pfix` column in
   outputs; previously `input_pfix` was always prepended
-- `Tool$write`, `Workflow$write`, `Workflow$nemofy`: add `pfix_include` argument
-  (default `FALSE`) to control whether `input_pfix` is prepended to tidy tables
-- CLI `tidy` + `list`: fix `-q`/`--quiet` to set `NEMO_LOG_ENABLE=FALSE` instead
+- `tidy` + `list`: fix `-q`/`--quiet` to set `NEMO_LOG_ENABLE=FALSE` instead
   of using `suppressMessages()`; `nemo_log()` now re-checks the env var at call
   time so the flag takes effect after package load
-- `nemo_uml()`: refactor UML generation. Cleaner entry-point, improved docs (`r pr(51)`)
-- Vignettes: reorganise and make names clearer
-- CI: add dedicated conda env for version bumping (`r pr(50)`)
-- Add `nemo_gha_mermaid()` and CI/CD vignette: reads local `deploy.yaml` and fetches
-  reusable workflow YAMLs from tidywf/actions to generate a Mermaid flowchart of the
-  full CI/CD pipeline (`r pr(52)`)
-- GitHub Actions: refactor deploy workflow for dev and main branches (`r pr(34)`)
-- Schema simplification: replace separate `raw.yaml` + `tidy.yaml` per tool with a
-  single unified `schema.yaml`. Each table entry now has a flat `columns:` list where
-  each column carries its raw name, tidy name, type, description, and `versions` array.
-  `Config` derives versioned raw and tidy views from this unified source on demand.
+- Add `Workflow1` to CLI workflow dispatcher (`nemoverse_wf_dispatch`) for
+  end-to-end CLI testing
+
+### API
+
+- `Tool$write`, `Workflow$write`, `Workflow$nemofy`: add `pfix_include` argument
+  (default `FALSE`) to control whether `input_pfix` is prepended to tidy tables
 - `Tool`: refactor parse/tidy dispatch — subclasses can now override per-table
   `parse_<tname>()` and `tidy_<tname>()` methods; falls back to ftype-based dispatch
   otherwise. Add support for `txt-nohead`, `csv-nohead-long`, and `csv` file types.
   `csv` auto-dispatches to `.parse_file()` with `delim = ","` so no subclass override
-  is needed for standard comma-delimited files with a header.
-- `Tool`: `list_files()` — disambiguate when file names with different basenames reduce to
+  is needed for standard comma-delimited files with a header
+- `Tool$list_files()`: disambiguate when file names with different basenames reduce to
   the same prefix when matched by different patterns for the same table
-  (e.g. `sample1.flagstat` and `sample1.flag_counts.tsv` both stripping to sample1)
+  (e.g. `sample1.flagstat` and `sample1.flag_counts.tsv` both stripping to `sample1`)
+- `nemo_uml()`: refactor UML generation — cleaner entry-point, improved docs (`r pr(51)`)
+- Metadata: export to `metadata.parquet` at the result level (`r pr(62)`, `r iss(61)`)
+
+### Schema
+
+- Replace separate `raw.yaml` + `tidy.yaml` per tool with a single unified
+  `schema.yaml`. Each table entry now has a flat `columns` list where each column
+  carries its raw name, tidy name, type, description, and `versions` array.
+  `Config` derives versioned raw and tidy views from this unified source on demand
 - `Tool1`: add `table4` (txt-nohead), `table5` (csv-nohead-long), and `table6` (csv)
-  as examples of the new file type support.
-- Schema vignette: document the `csv` ftype with a live `table6` example.
-- `Workflow1`: add to CLI workflow dispatcher (`nemoverse_wf_dispatch`) for
-  end-to-end CLI testing.
+  as examples of the new file type support
 - `inst/scripts/file_to_yaml.R`: refactor to generate `schema.yaml` skeletons from
-  sample files; output goes to `inst/config/tools/_tmp/` to avoid overwriting real schemas.
+  sample files; output goes to `inst/config/tools/_tmp/` to avoid overwriting real schemas
+
+### CI
+
+- Refactor deploy workflow for dev and main branches (`r pr(34)`)
+- Add dedicated conda env for version bumping (`r pr(50)`)
+
+### Docs
+
+- Add `nemo_gha_mermaid()` and CI/CD vignette: reads local `deploy.yaml` and fetches
+  reusable workflow YAMLs from tidywf/actions to generate a Mermaid flowchart of the
+  full CI/CD pipeline (`r pr(52)`)
+- Reorganise vignettes and make names clearer
+- Schema vignette: document the `csv` ftype with a live `table6` example
 
 ## v0.0.3 (2026-02-09)
 

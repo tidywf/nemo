@@ -49,7 +49,7 @@ Public API: `nemo_log(level, msg, ...)` (sprintf-style), `nemo_log_date()`.
 | `nemo_write(d, fpfix, format, dbconn, dbtab)` | `write.R` | Dispatches to correct writer by format |
 | `nemo_osfx(fpfix, format)` | `write.R` | Constructs output path with right extension |
 | `nemo_out_formats()` | `write.R` | Returns valid format strings: `parquet`, `db`, `tsv`, `csv`, `rds` |
-| `nemo_metadata(files, pkgs, ...)` | `metadata.R` | Assembles run-level metadata list for JSON serialisation |
+| `nemo_metadata(files, pkgs, ...)` | `metadata.R` | Assembles run-level metadata as a single-row tibble written to `metadata.parquet` |
 | `nemo_schema_reactable(tools, pkg, ...)` | `schema_vis.R` | Interactive reactable schema explorer |
 | `nemo_schemavis_data(tools, pkg)` | `schema_vis.R` | Per-table schema tibble (versions, columns) |
 | `nemo_gha_mermaid(actions_url, deploy_yaml)` | `gha.R` | Builds Mermaid CI/CD flowchart from local + remote YAML |
