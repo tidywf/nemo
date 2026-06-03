@@ -20,25 +20,98 @@
   - [UML diagram](https://tidywf.github.io/nemo/articles/uml)
   - [CI/CD diagram](https://tidywf.github.io/nemo/articles/cicd)
 
+## The Problem
+
+Bioinformatic pipelines produce a lot of output files, but consuming
+them downstream is harder than it should be:
+
+- **Inconsistent formats**: tools write TSV, CSV, plain text, key-value
+  pairs, headerless files, and custom layouts, often mixed within the
+  same pipeline
+- **Messy column names**: raw names are frequently uppercase,
+  space-separated, dot-delimited, or otherwise non-standard; joining
+  across tools requires manual renaming
+- **Schema drift**: column names and file layouts change silently
+  between tool versions, breaking downstream code with no clear signal
+  of what changed
+- **Not machine-readable by default**: many outputs are formatted for
+  human inspection: summary blocks, mixed text/data sections, or values
+  embedded in free-text fields
+- **No run-level provenance**: it is hard to tell which output file came
+  from which sample or processing run once files are collected into a
+  shared directory
+
+{nemo} addresses this by providing a schema-driven parsing and tidying
+layer that turns raw pipeline outputs into consistently structured,
+versioned, analysis-ready tables.
+
 ## Overview
 
-{nemo} is an R package that contains the building blocks for parsing,
-tidying, and writing bioinformatic pipeline results in a more consistent
-structure.
+{nemo} provides base R6 classes (`Tool`, `Workflow`, `Config`) for
+parsing, tidying, and writing bioinformatic pipeline outputs. Given a
+directory of results, it identifies files by YAML-defined schemas,
+reshapes and renames columns to a consistent tidy form, and writes to
+Apache Parquet, TSV, CSV, RDS, or PostgreSQL. Each run also produces a
+`metadata.parquet` file alongside the tidy tables, capturing IDs, paths,
+and package versions.
 
-In short, it traverses through a directory containing results from one
-or more runs of certain bioinformatic tools, parses any files it
-recognises, tidies them up (which includes data reshaping,
-normalisation, column name cleanup etc.), and writes them to the output
-format of choice e.g. Apache Parquet, PostgreSQL, TSV, RDS.
+Tool-specific schemas and parsers live in child packages —
+{[tidywigits](https://github.com/tidywf/tidywigits "tidywigits")} for
+the WiGiTS suite and
+{[tidydragen](https://github.com/tidywf/tidydragen "tidydragen")} (WIP)
+for Illumina DRAGEN — under `inst/config/tools/` in each respective
+package.
 
-The specific tools it can handle are controlled by configuration files
-written in YAML that are part of ‘child’ {nemo} packages, like
-{[tidywigits](https://github.com/tidywf/tidywigits "tidywigits")} and
-{[dracarys](https://github.com/tidywf/dracarys "dracarys")}. These
-configuration files (under `inst/config` in those respective packages)
-specify the schemas, types, patterns and field descriptions for the
-*raw* input *files* and *tidy* output *tbls*.
+Three optional columns can be appended to every written table to support
+downstream tracing and joining. All are opt-in and off by default, but
+highly recommended for any multi-sample or multi-run pipeline:
+
+| Column | R argument | CLI flag | Purpose |
+|----|----|----|----|
+| `input_id` | `input_id = "run1"` | `--input_id run1` | identifies the sample or input run |
+| `output_id` | `output_id = "abc"` | `--output_id abc` / `--ulid` | identifies the processing run |
+| `input_pfix` | `pfix_include = TRUE` | `--prefix_include` | filename prefix (e.g. sample name) |
+
+## ⚡ Quickstart
+
+``` r
+library(nemo)
+
+path   <- system.file("extdata/tool1", package = "nemo")
+outdir <- file.path(tempdir(), "quickstart")
+
+Workflow1$new(path = path)$nemofy(
+  diro         = outdir,
+  format       = "parquet",
+  input_id     = "run1",
+  output_id    = "out1",
+  pfix_include = TRUE
+)
+
+list.files(outdir, pattern = "\\.parquet$")
+ [1] "metadata.parquet"               "sampleA_2_tool1_table1.parquet"
+ [3] "sampleA_2_tool1_table2.parquet" "sampleA_2_tool1_table3.parquet"
+ [5] "sampleA_2_tool1_table4.parquet" "sampleA_2_tool1_table6.parquet"
+ [7] "sampleA_3_tool1_table1.parquet" "sampleA_tool1_table1.parquet"  
+ [9] "sampleA_tool1_table2.parquet"   "sampleA_tool1_table3.parquet"  
+[11] "sampleA_tool1_table4.parquet"   "sampleA_tool1_table5.parquet"  
+[13] "sampleA_tool1_table6.parquet"  
+```
+
+Read back any tidy table or the run metadata:
+
+``` r
+arrow::read_parquet(file.path(outdir, "metadata.parquet")) |>
+  dplyr::select("input_id", "output_dir", "pkg_versions", "files")
+# A tibble: 1 × 4
+  input_id output_dir                                                       pkg_versions      files
+  <chr>    <chr>                      <list<
+  tbl_df<
+    name   : character
+    version:> <list<
+  t>
+1 run1     /tmp/Rtmpy7iU6d/quickstart                                            [1 × 2]   [12 × 4]
+```
 
 ## 🍕 Installation
 
@@ -47,7 +120,7 @@ Using {remotes} directly from GitHub:
 ``` r
 install.packages("remotes")
 remotes::install_github("tidywf/nemo") # latest main commit
-remotes::install_github("tidywf/nemo@v0.0.3.9017") # specific version
+remotes::install_github("tidywf/nemo@v0.0.3.9018") # specific version
 ```
 
 Alternatively:
@@ -72,7 +145,7 @@ export PATH="${nemo_cli}:${PATH}"
 ```
 
     $ nemo.R --version
-    nemo 0.0.3.9017
+    nemo 0.0.3.9018
 
     #-----------------------------------#
     $ nemo.R --help
