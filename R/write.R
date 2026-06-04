@@ -20,14 +20,15 @@
 #' format <- "csv"
 #' nemo_write(d = d, fpfix = fpfix, format = format)
 #' (res <- readr::read_csv(glue::glue("{fpfix}.csv.gz"), show_col_types = FALSE))
-#' @examplesIf RPostgres::postgresHasDefault()
-#' # for database writing
-#' con <- DBI::dbConnect(RPostgres::Postgres())
+#' \dontrun{
+#' # for database writing — supply a DBI driver from e.g. RPostgres or duckdb
+#' con <- DBI::dbConnect(RPostgres::Postgres(), dbname = "mydb", user = "me")
 #' tbl_nm <- "awesome_tbl"
 #' nemo_write(d = d, fpfix = basename(fpfix), format = "db", dbconn = con, dbtab = tbl_nm)
 #' DBI::dbListTables(con)
 #' DBI::dbReadTable(con, tbl_nm)
 #' DBI::dbDisconnect(con)
+#' }
 #' @testexamples
 #' expect_equal(nrow(res), 1)
 #' @export

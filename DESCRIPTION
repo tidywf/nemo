@@ -40,7 +40,6 @@ Suggests:
     quarto,
     R6toPlant,
     reactable,
-    RPostgres,
     testthat (>= 3.0.0)
 Remotes:
     gitlab::b-rowlingson/R6toPlant

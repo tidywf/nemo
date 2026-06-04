@@ -12,10 +12,11 @@ cli_nemo_tidy(
   input_id = NULL,
   output_id = NULL,
   pfix_include = FALSE,
-  dbname,
-  dbuser,
-  include,
-  exclude
+  dbdrv = NULL,
+  dbname = NULL,
+  dbuser = NULL,
+  include = NULL,
+  exclude = NULL
 )
 }
 \arguments{
@@ -36,6 +37,9 @@ unless \code{out_format} is \code{"db"}.}
 
 \item{pfix_include}{(\code{logical(1)})\cr
 If \code{TRUE}, prepend an \code{input_pfix} column to each tidy table.}
+
+\item{dbdrv}{(\code{DBIDriver} or \code{NULL})\cr DBI driver object (e.g.
+\code{RPostgres::Postgres()}). Required when \code{out_format} is \code{"db"}.}
 
 \item{dbname}{(\code{character(1)} or \code{NULL})\cr Database name. Required when
 \code{out_format} is \code{"db"}.}
@@ -58,7 +62,6 @@ path <- system.file("extdata/tool1", package = "nemo")
 out <- tempfile()
 res <- cli_nemo_tidy(
   workflow = "workflow1", in_dir = path, out_dir = out,
-  out_format = "parquet", input_id = "run1", output_id = NULL,
-  dbname = NULL, dbuser = NULL, include = NULL, exclude = NULL
+  out_format = "parquet", input_id = "run1"
 )
 }

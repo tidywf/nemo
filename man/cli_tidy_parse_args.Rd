@@ -4,7 +4,7 @@
 \alias{cli_tidy_parse_args}
 \title{Parse and dispatch the 'tidy' subcommand}
 \usage{
-cli_tidy_parse_args(args, wf = NULL)
+cli_tidy_parse_args(args, wf = NULL, dbdrv = NULL)
 }
 \arguments{
 \item{args}{Named list of parsed CLI arguments, as returned by argparse.
@@ -18,6 +18,11 @@ and \code{output_id} is silently ignored.}
 
 \item{wf}{(\code{character(1)} or \code{NULL})\cr
 Workflow override. When non-NULL, replaces \code{args$workflow}.}
+
+\item{dbdrv}{(\code{DBIDriver} or \code{NULL})\cr
+DBI driver object (e.g. \code{RPostgres::Postgres()}). Required when
+\code{args$format} is \code{"db"}; ignored otherwise. Supplied by the caller so that
+nemo does not depend on any specific database backend.}
 }
 \description{
 Validates and normalises arguments from the parsed argparse result, then

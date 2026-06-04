@@ -2,7 +2,7 @@
 
 # File R/cli_tidy.R: @testexamples
 
-test_that("Function cli_tidy_parse_args() @ L88", {
+test_that("Function cli_tidy_parse_args() @ L92", {
   
   path <- system.file("extdata/tool1", package = "nemo")
   args <- list(
@@ -31,26 +31,23 @@ test_that("Function cli_tidy_parse_args() @ L88", {
 })
 
 
-test_that("Function cli_nemo_tidy() @ L172", {
+test_that("Function cli_nemo_tidy() @ L176", {
   
   path <- system.file("extdata/tool1", package = "nemo")
   out <- tempfile()
   res <- cli_nemo_tidy(
     workflow = "workflow1", in_dir = path, out_dir = out,
-    out_format = "parquet", input_id = "run1", output_id = NULL,
-    dbname = NULL, dbuser = NULL, include = NULL, exclude = NULL
+    out_format = "parquet", input_id = "run1"
   )
   expect_true(inherits(res, "Workflow"))
   expect_true(length(res$written_files) > 0)
   expect_error(cli_nemo_tidy(
     workflow = "workflow1", in_dir = path, out_dir = tempfile(),
-    out_format = "badformat", input_id = "run1", output_id = NULL,
-    dbname = NULL, dbuser = NULL, include = NULL, exclude = NULL
+    out_format = "badformat", input_id = "run1"
   ))
   expect_error(cli_nemo_tidy(
     workflow = "notaworkflow", in_dir = path, out_dir = tempfile(),
-    out_format = "parquet", input_id = "run1", output_id = NULL,
-    dbname = NULL, dbuser = NULL, include = NULL, exclude = NULL
+    out_format = "parquet", input_id = "run1"
   ))
 })
 

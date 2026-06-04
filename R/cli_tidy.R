@@ -58,6 +58,10 @@ cli_tidy_add_args <- function(subp, wf = NULL) {
 #' and `output_id` is silently ignored.
 #' @param wf (`character(1)` or `NULL`)\cr
 #' Workflow override. When non-NULL, replaces `args$workflow`.
+#' @param dbdrv (`DBIDriver` or `NULL`)\cr
+#' DBI driver object (e.g. `RPostgres::Postgres()`). Required when
+#' `args$format` is `"db"`; ignored otherwise. Supplied by the caller so that
+#' nemo does not depend on any specific database backend.
 #' @examples
 #' path <- system.file("extdata/tool1", package = "nemo")
 #' args <- list(
@@ -85,7 +89,7 @@ cli_tidy_add_args <- function(subp, wf = NULL) {
 #' args_quiet <- modifyList(args, list(quiet = TRUE, out_dir = tempfile()))
 #' expect_no_error(cli_tidy_parse_args(args_quiet, wf = "workflow1"))
 #' @export
-cli_tidy_parse_args <- function(args, wf = NULL) {
+cli_tidy_parse_args <- function(args, wf = NULL, dbdrv = NULL) {
   out_dir <- args$out_dir
   if (args$format != "db") {
     if (is.null(out_dir)) {
@@ -112,6 +116,7 @@ cli_tidy_parse_args <- function(args, wf = NULL) {
     input_id = args$input_id,
     output_id = output_id,
     pfix_include = args$prefix_include,
+    dbdrv = dbdrv,
     dbname = args$dbname,
     dbuser = args$dbuser,
     include = include,
@@ -139,6 +144,8 @@ cli_tidy_parse_args <- function(args, wf = NULL) {
 #' @param output_id (`character(1)` or `NULL`)\cr Output run identifier.
 #' @param pfix_include (`logical(1)`)\cr
 #' If `TRUE`, prepend an `input_pfix` column to each tidy table.
+#' @param dbdrv (`DBIDriver` or `NULL`)\cr DBI driver object (e.g.
+#' `RPostgres::Postgres()`). Required when `out_format` is `"db"`.
 #' @param dbname (`character(1)` or `NULL`)\cr Database name. Required when
 #' `out_format` is `"db"`.
 #' @param dbuser (`character(1)` or `NULL`)\cr Database user. Required when
@@ -152,21 +159,18 @@ cli_tidy_parse_args <- function(args, wf = NULL) {
 #' out <- tempfile()
 #' res <- cli_nemo_tidy(
 #'   workflow = "workflow1", in_dir = path, out_dir = out,
-#'   out_format = "parquet", input_id = "run1", output_id = NULL,
-#'   dbname = NULL, dbuser = NULL, include = NULL, exclude = NULL
+#'   out_format = "parquet", input_id = "run1"
 #' )
 #' @testexamples
 #' expect_true(inherits(res, "Workflow"))
 #' expect_true(length(res$written_files) > 0)
 #' expect_error(cli_nemo_tidy(
 #'   workflow = "workflow1", in_dir = path, out_dir = tempfile(),
-#'   out_format = "badformat", input_id = "run1", output_id = NULL,
-#'   dbname = NULL, dbuser = NULL, include = NULL, exclude = NULL
+#'   out_format = "badformat", input_id = "run1"
 #' ))
 #' expect_error(cli_nemo_tidy(
 #'   workflow = "notaworkflow", in_dir = path, out_dir = tempfile(),
-#'   out_format = "parquet", input_id = "run1", output_id = NULL,
-#'   dbname = NULL, dbuser = NULL, include = NULL, exclude = NULL
+#'   out_format = "parquet", input_id = "run1"
 #' ))
 #' @export
 cli_nemo_tidy <- function(
@@ -177,18 +181,19 @@ cli_nemo_tidy <- function(
   input_id = NULL,
   output_id = NULL,
   pfix_include = FALSE,
-  dbname,
-  dbuser,
-  include,
-  exclude
+  dbdrv = NULL,
+  dbname = NULL,
+  dbuser = NULL,
+  include = NULL,
+  exclude = NULL
 ) {
   valid_out_fmt(out_format)
   fun <- nemoverse_wf_dispatch(workflow)
   dbconn <- NULL
   if (out_format == "db") {
-    stopifnot(!is.null(dbname), !is.null(dbuser))
+    stopifnot(!is.null(dbdrv), !is.null(dbname), !is.null(dbuser))
     dbconn <- DBI::dbConnect(
-      drv = RPostgres::Postgres(),
+      drv = dbdrv,
       dbname = dbname,
       user = dbuser
     )

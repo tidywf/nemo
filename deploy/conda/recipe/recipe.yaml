@@ -24,7 +24,6 @@ requirements:
     - r-fs
     - r-glue
     - r-htmltools
-    - r-jsonlite
     - r-knitr
     - r-log4r
     - r-purrr
@@ -33,7 +32,6 @@ requirements:
     - r-readr
     - r-rlang
     - r-stringr
-    - r-rpostgres
     - r-tibble
     - r-tidyr
     - r-ulid
@@ -48,7 +46,6 @@ requirements:
     - r-fs
     - r-glue
     - r-htmltools
-    - r-jsonlite
     - r-knitr
     - r-log4r
     - r-purrr
@@ -57,7 +54,6 @@ requirements:
     - r-readr
     - r-rlang
     - r-stringr
-    - r-rpostgres
     - r-tibble
     - r-tidyr
     - r-ulid
