@@ -9,7 +9,7 @@ results to out_dir in the requested format."><meta property="og:image" content="
 
     <a class="navbar-brand me-2" href="../index.html">nemo</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.0.3.9017</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.0.3.9019</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -61,10 +61,11 @@ results to <code>out_dir</code> in the requested format.</p>
 <span>  input_id <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  output_id <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  pfix_include <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  <span class="va">dbname</span>,</span>
-<span>  <span class="va">dbuser</span>,</span>
-<span>  <span class="va">include</span>,</span>
-<span>  <span class="va">exclude</span></span>
+<span>  dbdrv <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  dbname <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  dbuser <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  include <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  exclude <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -104,6 +105,11 @@ unless <code>out_format</code> is <code>"db"</code>.</p></dd>
 If <code>TRUE</code>, prepend an <code>input_pfix</code> column to each tidy table.</p></dd>
 
 
+<dt id="arg-dbdrv">dbdrv<a class="anchor" aria-label="anchor" href="#arg-dbdrv"></a></dt>
+<dd><p>(<code>DBIDriver</code> or <code>NULL</code>)<br> DBI driver object (e.g.
+<code>RPostgres::Postgres()</code>). Required when <code>out_format</code> is <code>"db"</code>.</p></dd>
+
+
 <dt id="arg-dbname">dbname<a class="anchor" aria-label="anchor" href="#arg-dbname"></a></dt>
 <dd><p>(<code>character(1)</code> or <code>NULL</code>)<br> Database name. Required when
 <code>out_format</code> is <code>"db"</code>.</p></dd>
@@ -131,11 +137,10 @@ If <code>TRUE</code>, prepend an <code>input_pfix</code> column to each tidy tab
 <span class="r-in"><span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu">cli_nemo_tidy</span><span class="op">(</span></span></span>
 <span class="r-in"><span>  workflow <span class="op">=</span> <span class="st">"workflow1"</span>, in_dir <span class="op">=</span> <span class="va">path</span>, out_dir <span class="op">=</span> <span class="va">out</span>,</span></span>
-<span class="r-in"><span>  out_format <span class="op">=</span> <span class="st">"parquet"</span>, input_id <span class="op">=</span> <span class="st">"run1"</span>, output_id <span class="op">=</span> <span class="cn">NULL</span>,</span></span>
-<span class="r-in"><span>  dbname <span class="op">=</span> <span class="cn">NULL</span>, dbuser <span class="op">=</span> <span class="cn">NULL</span>, include <span class="op">=</span> <span class="cn">NULL</span>, exclude <span class="op">=</span> <span class="cn">NULL</span></span></span>
+<span class="r-in"><span>  out_format <span class="op">=</span> <span class="st">"parquet"</span>, input_id <span class="op">=</span> <span class="st">"run1"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [2026-05-20T04:44:06UTC] nemo INFO: Tidying dir: /home/runner/miniconda3/envs/pkgdown_env/lib/R/library/nemo/extdata/tool1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [2026-05-20T04:44:07UTC] nemo INFO: Tidy results written to dir: /tmp/Rtmp8UnF34/file1028366fe367</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [2026-06-04T02:03:52UTC] nemo INFO: Tidying dir: /home/runner/miniconda3/envs/pkgdown_env/lib/R/library/nemo/extdata/tool1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [2026-06-04T02:03:53UTC] nemo INFO: Tidy results written to dir: /tmp/RtmpG3v4S2/fileffd4fdd0dc6</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

@@ -13,7 +13,7 @@ e.g. tidywigits.R)."><meta property="og:image" content="https://tidywf.github.io
 
     <a class="navbar-brand me-2" href="../index.html">nemo</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.0.3.9017</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.0.3.9019</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -59,7 +59,7 @@ e.g. <code>tidywigits.R</code>).</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">cli_tidy_parse_args</span><span class="op">(</span><span class="va">args</span>, wf <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">cli_tidy_parse_args</span><span class="op">(</span><span class="va">args</span>, wf <span class="op">=</span> <span class="cn">NULL</span>, dbdrv <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -69,7 +69,7 @@ e.g. <code>tidywigits.R</code>).</p>
 <dl><dt id="arg-args">args<a class="anchor" aria-label="anchor" href="#arg-args"></a></dt>
 <dd><p>Named list of parsed CLI arguments, as returned by argparse.
 Expected fields: <code>format</code>, <code>in_dir</code>, <code>out_dir</code>, <code>input_id</code> (optional),
-<code>output_id</code> (optional), <code>ulid</code>, <code>pfix_include</code>, <code>dbname</code>, <code>dbuser</code>,
+<code>output_id</code> (optional), <code>ulid</code>, <code>prefix_include</code>, <code>dbname</code>, <code>dbuser</code>,
 <code>include</code>, <code>exclude</code>, <code>workflow</code> (may be <code>NULL</code> when <code>wf</code> is provided),
 <code>quiet</code>.
 <code>output_id</code> and <code>ulid</code> are mutually exclusive at the CLI level (enforced by
@@ -80,6 +80,13 @@ and <code>output_id</code> is silently ignored.</p></dd>
 <dt id="arg-wf">wf<a class="anchor" aria-label="anchor" href="#arg-wf"></a></dt>
 <dd><p>(<code>character(1)</code> or <code>NULL</code>)<br>
 Workflow override. When non-NULL, replaces <code>args$workflow</code>.</p></dd>
+
+
+<dt id="arg-dbdrv">dbdrv<a class="anchor" aria-label="anchor" href="#arg-dbdrv"></a></dt>
+<dd><p>(<code>DBIDriver</code> or <code>NULL</code>)<br>
+DBI driver object (e.g. <code>RPostgres::Postgres()</code>). Required when
+<code>args$format</code> is <code>"db"</code>; ignored otherwise. Supplied by the caller so that
+nemo does not depend on any specific database backend.</p></dd>
 
 </dl></div>
 
@@ -93,8 +100,8 @@ Workflow override. When non-NULL, replaces <code>args$workflow</code>.</p></dd>
 <span class="r-in"><span>  include <span class="op">=</span> <span class="cn">NULL</span>, exclude <span class="op">=</span> <span class="cn">NULL</span>, quiet <span class="op">=</span> <span class="cn">FALSE</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu">cli_tidy_parse_args</span><span class="op">(</span><span class="va">args</span>, wf <span class="op">=</span> <span class="st">"workflow1"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [2026-05-20T04:44:08UTC] nemo INFO: Tidying dir: /home/runner/miniconda3/envs/pkgdown_env/lib/R/library/nemo/extdata/tool1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [2026-05-20T04:44:09UTC] nemo INFO: Tidy results written to dir: /tmp/Rtmp8UnF34/file10283d2ed831</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [2026-06-04T02:03:54UTC] nemo INFO: Tidying dir: /home/runner/miniconda3/envs/pkgdown_env/lib/R/library/nemo/extdata/tool1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [2026-06-04T02:03:55UTC] nemo INFO: Tidy results written to dir: /tmp/RtmpG3v4S2/fileffd7c8e57af</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

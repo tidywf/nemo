@@ -29,7 +29,7 @@ tidy(), then write with write(). nemofy() chains all three steps."><meta propert
 
     <a class="navbar-brand me-2" href="../index.html">nemo</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.0.3.9017</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.0.3.9019</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -460,9 +460,9 @@ Which R packages to extract versions for.</p></dd>
 </div>
 <div class="section">
 <h4 id="returns-10">Returns<a class="anchor" aria-label="anchor" href="#returns-10"></a></h4>
-<p>(<code><a href="https://rdrr.io/r/base/list.html" class="external-link">list()</a></code>)<br>
-List with <code>input_id</code>, <code>output_id</code>, <code>input_dirs</code>, <code>output_dir</code>,
-<code>pkg_versions</code>, and <code>files</code>.</p>
+<p>(<code>tibble()</code>)<br>
+Single-row tibble with columns <code>input_id</code>, <code>output_id</code>, <code>input_dirs</code>,
+<code>output_dir</code>, <code>pkg_versions</code>, and <code>files</code>.</p>
 </div>
 
 </div><p></p><hr><a id="method-Workflow-clone"></a><div class="section">
@@ -497,35 +497,35 @@ List with <code>input_id</code>, <code>output_id</code>, <code>input_dirs</code>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 12 × 9</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    tool_parser parser bname  size lastmodified        path  pattern prefix group</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;glue&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;fs:&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dttm&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;glue&gt;</span> <span style="color: #949494; font-style: italic;">&lt;glu&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> tool1_tabl… table1 samp…    93 2026-05-20 <span style="color: #949494;">04:41:39</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl…      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> tool1_tabl… table1 samp…   113 2026-05-20 <span style="color: #949494;">04:41:39</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl… _2   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> tool1_tabl… table1 samp…   133 2026-05-20 <span style="color: #949494;">04:41:39</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl… _3   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> tool1_tabl… table2 samp…    47 2026-05-20 <span style="color: #949494;">04:41:39</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl…      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> tool1_tabl… table2 samp…    70 2026-05-20 <span style="color: #949494;">04:41:39</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl… _2   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> tool1_tabl… table3 samp…    48 2026-05-20 <span style="color: #949494;">04:41:39</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl…      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> tool1_tabl… table3 samp…    83 2026-05-20 <span style="color: #949494;">04:41:39</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl… _2   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> tool1_tabl… table4 samp…    34 2026-05-20 <span style="color: #949494;">04:41:39</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl…      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> tool1_tabl… table4 samp…    52 2026-05-20 <span style="color: #949494;">04:41:39</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl… _2   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> tool1_tabl… table5 samp…   994 2026-05-20 <span style="color: #949494;">04:41:39</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl…      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">11</span> tool1_tabl… table6 samp…    78 2026-05-20 <span style="color: #949494;">04:41:39</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl…      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">12</span> tool1_tabl… table6 samp…   100 2026-05-20 <span style="color: #949494;">04:41:39</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl… _2   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> tool1_tabl… table1 samp…    93 2026-06-04 <span style="color: #949494;">02:01:17</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl…      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> tool1_tabl… table1 samp…   113 2026-06-04 <span style="color: #949494;">02:01:17</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl… _2   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> tool1_tabl… table1 samp…   133 2026-06-04 <span style="color: #949494;">02:01:17</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl… _3   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> tool1_tabl… table2 samp…    47 2026-06-04 <span style="color: #949494;">02:01:17</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl…      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> tool1_tabl… table2 samp…    70 2026-06-04 <span style="color: #949494;">02:01:17</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl… _2   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> tool1_tabl… table3 samp…    48 2026-06-04 <span style="color: #949494;">02:01:17</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl…      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> tool1_tabl… table3 samp…    83 2026-06-04 <span style="color: #949494;">02:01:17</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl… _2   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> tool1_tabl… table4 samp…    34 2026-06-04 <span style="color: #949494;">02:01:17</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl…      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> tool1_tabl… table4 samp…    52 2026-06-04 <span style="color: #949494;">02:01:17</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl… _2   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> tool1_tabl… table5 samp…   994 2026-06-04 <span style="color: #949494;">02:01:17</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl…      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">11</span> tool1_tabl… table6 samp…    78 2026-06-04 <span style="color: #949494;">02:01:17</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl…      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">12</span> tool1_tabl… table6 samp…   100 2026-06-04 <span style="color: #949494;">02:01:17</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl… _2   </span>
 <span class="r-in"><span><span class="va">wf</span><span class="op">$</span><span class="fu">filter_files</span><span class="op">(</span>exclude <span class="op">=</span> <span class="st">"tool1_table5"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">wf</span><span class="op">$</span><span class="fu">tidy</span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">(</span><span class="va">tbls</span> <span class="op">&lt;-</span> <span class="va">wf</span><span class="op">$</span><span class="fu">get_tbls</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 11 × 10</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    tool_parser parser bname  size lastmodified        path  pattern prefix group</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;glue&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;fs:&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dttm&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;glue&gt;</span> <span style="color: #949494; font-style: italic;">&lt;glu&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> tool1_tabl… table1 samp…    93 2026-05-20 <span style="color: #949494;">04:41:39</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl…      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> tool1_tabl… table1 samp…   113 2026-05-20 <span style="color: #949494;">04:41:39</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl… _2   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> tool1_tabl… table1 samp…   133 2026-05-20 <span style="color: #949494;">04:41:39</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl… _3   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> tool1_tabl… table2 samp…    47 2026-05-20 <span style="color: #949494;">04:41:39</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl…      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> tool1_tabl… table2 samp…    70 2026-05-20 <span style="color: #949494;">04:41:39</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl… _2   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> tool1_tabl… table3 samp…    48 2026-05-20 <span style="color: #949494;">04:41:39</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl…      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> tool1_tabl… table3 samp…    83 2026-05-20 <span style="color: #949494;">04:41:39</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl… _2   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> tool1_tabl… table4 samp…    34 2026-05-20 <span style="color: #949494;">04:41:39</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl…      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> tool1_tabl… table4 samp…    52 2026-05-20 <span style="color: #949494;">04:41:39</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl… _2   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> tool1_tabl… table6 samp…    78 2026-05-20 <span style="color: #949494;">04:41:39</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl…      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">11</span> tool1_tabl… table6 samp…   100 2026-05-20 <span style="color: #949494;">04:41:39</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl… _2   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> tool1_tabl… table1 samp…    93 2026-06-04 <span style="color: #949494;">02:01:17</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl…      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> tool1_tabl… table1 samp…   113 2026-06-04 <span style="color: #949494;">02:01:17</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl… _2   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> tool1_tabl… table1 samp…   133 2026-06-04 <span style="color: #949494;">02:01:17</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl… _3   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> tool1_tabl… table2 samp…    47 2026-06-04 <span style="color: #949494;">02:01:17</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl…      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> tool1_tabl… table2 samp…    70 2026-06-04 <span style="color: #949494;">02:01:17</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl… _2   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> tool1_tabl… table3 samp…    48 2026-06-04 <span style="color: #949494;">02:01:17</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl…      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> tool1_tabl… table3 samp…    83 2026-06-04 <span style="color: #949494;">02:01:17</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl… _2   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> tool1_tabl… table4 samp…    34 2026-06-04 <span style="color: #949494;">02:01:17</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl…      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> tool1_tabl… table4 samp…    52 2026-06-04 <span style="color: #949494;">02:01:17</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl… _2   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> tool1_tabl… table6 samp…    78 2026-06-04 <span style="color: #949494;">02:01:17</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl…      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">11</span> tool1_tabl… table6 samp…   100 2026-06-04 <span style="color: #949494;">02:01:17</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl… _2   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 1 more variable: tidy &lt;list&gt;</span></span>
 <span class="r-in"><span><span class="op">(</span><span class="va">rs</span> <span class="op">&lt;-</span> <span class="va">wf</span><span class="op">$</span><span class="fu">get_raw_schemas_all</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 12 × 5</span></span>
@@ -546,67 +546,37 @@ List with <code>input_id</code>, <code>output_id</code>, <code>input_dirs</code>
 <span class="r-in"><span><span class="va">dir1</span> <span class="op">&lt;-</span> <span class="fu">fs</span><span class="fu">::</span><span class="fu"><a href="https://fs.r-lib.org/reference/file_temp.html" class="external-link">file_temp</a></span><span class="op">(</span><span class="op">)</span>; <span class="va">dir2</span> <span class="op">&lt;-</span> <span class="fu">fs</span><span class="fu">::</span><span class="fu"><a href="https://fs.r-lib.org/reference/file_temp.html" class="external-link">file_temp</a></span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">wf</span><span class="op">$</span><span class="fu">write</span><span class="op">(</span>diro <span class="op">=</span> <span class="va">dir1</span>, format <span class="op">=</span> <span class="st">"parquet"</span>, input_id <span class="op">=</span> <span class="st">"run1"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">(</span><span class="va">lf1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="va">dir1</span>, pattern <span class="op">=</span> <span class="st">"tool1.*parquet"</span>, full.names <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] "/tmp/Rtmp8UnF34/c/sampleA_2_tool1_table1.parquet"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [2] "/tmp/Rtmp8UnF34/c/sampleA_2_tool1_table2.parquet"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [3] "/tmp/Rtmp8UnF34/c/sampleA_2_tool1_table3.parquet"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [4] "/tmp/Rtmp8UnF34/c/sampleA_2_tool1_table4.parquet"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [5] "/tmp/Rtmp8UnF34/c/sampleA_2_tool1_table6.parquet"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [6] "/tmp/Rtmp8UnF34/c/sampleA_3_tool1_table1.parquet"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [7] "/tmp/Rtmp8UnF34/c/sampleA_tool1_table1.parquet"  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [8] "/tmp/Rtmp8UnF34/c/sampleA_tool1_table2.parquet"  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [9] "/tmp/Rtmp8UnF34/c/sampleA_tool1_table3.parquet"  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [10] "/tmp/Rtmp8UnF34/c/sampleA_tool1_table4.parquet"  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [11] "/tmp/Rtmp8UnF34/c/sampleA_tool1_table6.parquet"  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] "/tmp/RtmpG3v4S2/c/sampleA_2_tool1_table1.parquet"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [2] "/tmp/RtmpG3v4S2/c/sampleA_2_tool1_table2.parquet"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [3] "/tmp/RtmpG3v4S2/c/sampleA_2_tool1_table3.parquet"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [4] "/tmp/RtmpG3v4S2/c/sampleA_2_tool1_table4.parquet"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [5] "/tmp/RtmpG3v4S2/c/sampleA_2_tool1_table6.parquet"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [6] "/tmp/RtmpG3v4S2/c/sampleA_3_tool1_table1.parquet"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [7] "/tmp/RtmpG3v4S2/c/sampleA_tool1_table1.parquet"  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [8] "/tmp/RtmpG3v4S2/c/sampleA_tool1_table2.parquet"  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [9] "/tmp/RtmpG3v4S2/c/sampleA_tool1_table3.parquet"  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [10] "/tmp/RtmpG3v4S2/c/sampleA_tool1_table4.parquet"  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [11] "/tmp/RtmpG3v4S2/c/sampleA_tool1_table6.parquet"  </span>
 <span class="r-in"><span><span class="op">(</span><span class="va">meta</span> <span class="op">&lt;-</span> <span class="va">wf</span><span class="op">$</span><span class="fu">get_metadata</span><span class="op">(</span>input_id <span class="op">=</span> <span class="st">"run1"</span>, output_id <span class="op">=</span> <span class="st">"out1"</span>, output_dir <span class="op">=</span> <span class="va">dir1</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $input_id</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [x] "run1"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $output_id</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [x] "out1"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $input_dirs</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "/home/runner/miniconda3/envs/pkgdown_env/lib/R/library/nemo/extdata/tool1"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $output_dir</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [x] "/tmp/Rtmp8UnF34/c"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $pkg_versions</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 1 × 2</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   name  version   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> nemo  0.0.3.9017</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $files</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 11 × 4</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    tbl          prefix    fout                           fin                    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;glue&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;glue&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                          <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> tool1_table1 sampleA   sampleA_tool1_table1.parquet   /home/runner/miniconda…</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> tool1_table1 sampleA_2 sampleA_2_tool1_table1.parquet /home/runner/miniconda…</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> tool1_table1 sampleA_3 sampleA_3_tool1_table1.parquet /home/runner/miniconda…</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> tool1_table2 sampleA   sampleA_tool1_table2.parquet   /home/runner/miniconda…</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> tool1_table2 sampleA_2 sampleA_2_tool1_table2.parquet /home/runner/miniconda…</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> tool1_table3 sampleA   sampleA_tool1_table3.parquet   /home/runner/miniconda…</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> tool1_table3 sampleA_2 sampleA_2_tool1_table3.parquet /home/runner/miniconda…</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> tool1_table4 sampleA   sampleA_tool1_table4.parquet   /home/runner/miniconda…</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> tool1_table4 sampleA_2 sampleA_2_tool1_table4.parquet /home/runner/miniconda…</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> tool1_table6 sampleA   sampleA_tool1_table6.parquet   /home/runner/miniconda…</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">11</span> tool1_table6 sampleA_2 sampleA_2_tool1_table6.parquet /home/runner/miniconda…</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 1 × 6</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   input_id output_id input_dirs output_dir        pkg_versions files        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;list&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;fs::path&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;list&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;list&gt;</span>       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> run1     out1      <span style="color: #949494;">&lt;chr [1]&gt;</span>  <span style="color: #0000BB; font-weight: bold;">/tmp/RtmpG3v4S2/c</span> <span style="color: #949494;">&lt;df [1 × 2]&gt;</span> <span style="color: #949494;">&lt;df [11 × 4]&gt;</span></span>
 <span class="r-in"><span><span class="va">wf2</span> <span class="op">&lt;-</span> <span class="va">Workflow</span><span class="op">$</span><span class="fu">new</span><span class="op">(</span>name <span class="op">=</span> <span class="st">"wf2"</span>, path <span class="op">=</span> <span class="va">path</span>, tools <span class="op">=</span> <span class="va">tools</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">wf2</span><span class="op">$</span><span class="fu">nemofy</span><span class="op">(</span>diro <span class="op">=</span> <span class="va">dir2</span>, format <span class="op">=</span> <span class="st">"parquet"</span>, input_id <span class="op">=</span> <span class="st">"run2"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">(</span><span class="va">lf2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="va">dir2</span>, pattern <span class="op">=</span> <span class="st">"tool1.*parquet"</span>, full.names <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] "/tmp/Rtmp8UnF34/d/sampleA_2_tool1_table1.parquet"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [2] "/tmp/Rtmp8UnF34/d/sampleA_2_tool1_table2.parquet"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [3] "/tmp/Rtmp8UnF34/d/sampleA_2_tool1_table3.parquet"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [4] "/tmp/Rtmp8UnF34/d/sampleA_2_tool1_table4.parquet"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [5] "/tmp/Rtmp8UnF34/d/sampleA_2_tool1_table6.parquet"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [6] "/tmp/Rtmp8UnF34/d/sampleA_3_tool1_table1.parquet"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [7] "/tmp/Rtmp8UnF34/d/sampleA_tool1_table1.parquet"  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [8] "/tmp/Rtmp8UnF34/d/sampleA_tool1_table2.parquet"  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [9] "/tmp/Rtmp8UnF34/d/sampleA_tool1_table3.parquet"  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [10] "/tmp/Rtmp8UnF34/d/sampleA_tool1_table4.parquet"  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [11] "/tmp/Rtmp8UnF34/d/sampleA_tool1_table5.parquet"  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [12] "/tmp/Rtmp8UnF34/d/sampleA_tool1_table6.parquet"  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] "/tmp/RtmpG3v4S2/d/sampleA_2_tool1_table1.parquet"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [2] "/tmp/RtmpG3v4S2/d/sampleA_2_tool1_table2.parquet"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [3] "/tmp/RtmpG3v4S2/d/sampleA_2_tool1_table3.parquet"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [4] "/tmp/RtmpG3v4S2/d/sampleA_2_tool1_table4.parquet"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [5] "/tmp/RtmpG3v4S2/d/sampleA_2_tool1_table6.parquet"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [6] "/tmp/RtmpG3v4S2/d/sampleA_3_tool1_table1.parquet"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [7] "/tmp/RtmpG3v4S2/d/sampleA_tool1_table1.parquet"  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [8] "/tmp/RtmpG3v4S2/d/sampleA_tool1_table2.parquet"  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [9] "/tmp/RtmpG3v4S2/d/sampleA_tool1_table3.parquet"  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [10] "/tmp/RtmpG3v4S2/d/sampleA_tool1_table4.parquet"  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [11] "/tmp/RtmpG3v4S2/d/sampleA_tool1_table5.parquet"  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [12] "/tmp/RtmpG3v4S2/d/sampleA_tool1_table6.parquet"  </span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
