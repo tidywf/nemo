@@ -110,7 +110,7 @@ arrow::read_parquet(file.path(outdir, "metadata.parquet")) |>
     name   : character
     version:> <list<
   t>
-1 run1     /tmp/Rtmpy7iU6d/quickstart                                            [1 × 2]   [12 × 4]
+1 run1     /tmp/RtmpeF6eRv/quickstart                                            [1 × 2]   [12 × 4]
 ```
 
 ## 🍕 Installation
@@ -120,7 +120,7 @@ Using {remotes} directly from GitHub:
 ``` r
 install.packages("remotes")
 remotes::install_github("tidywf/nemo") # latest main commit
-remotes::install_github("tidywf/nemo@v0.0.3.9018") # specific version
+remotes::install_github("tidywf/nemo@v0.0.3.9019") # specific version
 ```
 
 Alternatively:
@@ -145,7 +145,7 @@ export PATH="${nemo_cli}:${PATH}"
 ```
 
     $ nemo.R --version
-    nemo 0.0.3.9018
+    nemo 0.0.3.9019
 
     #-----------------------------------#
     $ nemo.R --help
