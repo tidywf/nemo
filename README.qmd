@@ -66,16 +66,15 @@ glue("
 Bioinformatic pipelines produce a lot of output files, but consuming them
 downstream is harder than it should be:
 
-- **Inconsistent formats**: tools write TSV, CSV, plain text, key-value pairs,
-  headerless files, and custom layouts, often mixed within the same pipeline
+- **Format variety**: tools write TSV, CSV and various other proprietary formats,
+  often mixed within the same pipeline
+- **Non-standard structure**: files may be transposed, headerless, or embed
+  section labels alongside data, requiring custom parsing logic for each tool
 - **Messy column names**: raw names are frequently uppercase, space-separated,
   dot-delimited, or otherwise non-standard; joining across tools requires manual
   renaming
 - **Schema drift**: column names and file layouts change silently between tool
   versions, breaking downstream code with no clear signal of what changed
-- **Not machine-readable by default**: many outputs are formatted for human
-  inspection: summary blocks, mixed text/data sections, or values embedded in
-  free-text fields
 - **No run-level provenance**: it is hard to tell which output file came from
   which sample or processing run once files are collected into a shared directory
 
@@ -111,12 +110,23 @@ recommended for any multi-sample or multi-run pipeline:
 
 ## ⚡ Quickstart
 
+Raw pipeline outputs often have non-standard layouts. This file stores QC
+metrics as key-value rows rather than columns:
+
 ```{r}
-#| label: quickstart
+#| label: quickstart_raw
 #| message: false
 library(nemo)
 
-path   <- system.file("extdata/tool1", package = "nemo")
+path <- system.file("extdata/tool1/latest", package = "nemo")
+writeLines(readLines(file.path(path, "sampleA.tool1.table3.tsv")))
+```
+
+`nemofy()` parses, tidies, and writes all tables in one call:
+
+```{r}
+#| label: quickstart
+#| message: false
 outdir <- file.path(tempdir(), "quickstart")
 
 Workflow1$new(path = path)$nemofy(
@@ -130,12 +140,11 @@ Workflow1$new(path = path)$nemofy(
 list.files(outdir, pattern = "\\.parquet$")
 ```
 
-Read back any tidy table or the run metadata:
+Read back the tidied table:
 
 ```{r}
 #| label: quickstart_read
-arrow::read_parquet(file.path(outdir, "metadata.parquet")) |>
-  dplyr::select("input_id", "output_dir", "pkg_versions", "files")
+arrow::read_parquet(file.path(outdir, "sampleA_tool1_table3.parquet"))
 ```
 
 ## 🍕 Installation
