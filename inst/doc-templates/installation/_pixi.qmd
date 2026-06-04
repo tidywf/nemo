@@ -34,7 +34,7 @@ glue(
   "```",
   "
 
-  ```r
+  ```text
   library({pkg_nm})
   ",
   "```"

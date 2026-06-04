@@ -49,19 +49,19 @@ options(width = 100)
 #| echo: false
 #| results: asis
 base <- glue("https://{org_nm}.github.io/{pkg_nm}")
-glue("
-- 📚 Docs: <{base}>
-  - [Installation]({base}/articles/installation)
-  - [R6 structure]({base}/articles/structure)
-  - [Example files/tables supported]({base}/articles/schema_table)
-  - [Schema walkthrough]({base}/articles/schema_walkthrough)
-  - [Changelog]({base}/articles/NEWS)
-  - [UML diagram]({base}/articles/uml)
-  - [CI/CD diagram]({base}/articles/cicd)
-")
+glue(
+  "📚 Docs: ",
+  "[Installation]({base}/articles/installation) | ",
+  "[Files/tables supported]({base}/articles/schema_table) | ",
+  "[Schema walkthrough]({base}/articles/schema_walkthrough) | ",
+  "[Changelog]({base}/articles/NEWS) | ",
+  "[R6 structure]({base}/articles/structure) | ",
+  "[UML]({base}/articles/uml) | ",
+  "[CI/CD]({base}/articles/cicd)"
+)
 ```
 
-## The Problem
+## 🤔 The Problem
 
 Bioinformatic pipelines produce a lot of output files, but consuming them
 downstream is harder than it should be:
@@ -81,10 +81,7 @@ downstream is harder than it should be:
 {nemo} addresses this by providing a schema-driven parsing and tidying layer
 that turns raw pipeline outputs into consistently structured, versioned,
 analysis-ready tables.
-
-## Overview
-
-{nemo} provides base R6 classes (`Tool`, `Workflow`, `Config`) for parsing,
+Its R6 classes (`Tool`, `Workflow`, `Config`) are used for parsing,
 tidying, and writing bioinformatic pipeline outputs. Given a directory of
 results, it identifies files by YAML-defined schemas, reshapes and renames
 columns to a consistent tidy form, and writes to Apache Parquet, TSV, CSV,
@@ -95,15 +92,15 @@ Tool-specific schemas and parsers live in child packages — {[tidywigits]} for
 the WiGiTS suite and {[tidydragen]} (WIP) for Illumina DRAGEN — under
 `inst/config/tools/` in each respective package.
 
-Three optional columns can be appended to every written table to support
+Three optional columns can be prepended to every written table to support
 downstream tracing and joining. All are opt-in and off by default, but highly
 recommended for any multi-sample or multi-run pipeline:
 
-| Column | R argument | CLI flag | Purpose |
-|---|---|---|---|
-| `input_id` | `input_id = "run1"` | `--input_id run1` | identifies the sample or input run |
-| `output_id` | `output_id = "abc"` | `--output_id abc` / `--ulid` | identifies the processing run |
-| `input_pfix` | `pfix_include = TRUE` | `--prefix_include` | filename prefix (e.g. sample name) |
+| Column       | R argument            | CLI flag                     | Purpose                            |
+| ------------ | --------------------- | ---------------------------- | ---------------------------------- |
+| `input_id`   | `input_id = "run1"`   | `--input_id run1`            | identifies the sample or input run |
+| `output_id`  | `output_id = "abc"`   | `--output_id abc` / `--ulid` | identifies the processing run      |
+| `input_pfix` | `pfix_include = TRUE` | `--prefix_include`           | filename prefix (e.g. sample name) |
 
 [tidywigits]: <https://github.com/tidywf/tidywigits> "tidywigits"
 [tidydragen]: <https://github.com/tidywf/tidydragen> "tidydragen"
