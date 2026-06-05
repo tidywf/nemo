@@ -14,7 +14,7 @@ test_that("Function Config() @ L57", {
   (rs <- conf$get_schemas_raw())
   (ts <- conf$get_schemas_tidy())
   (s1 <- conf$get_schema_raw("table1"))
-  conf$get_schema_raw("table1", v = "v1.2.3")
+  conf$get_schema_raw("table1", version = "v1.2.3")
   conf$get_schema_tidy("table1")
   conf$validate_schemas()
   (cm <- conf$get_col_map("table5"))
@@ -34,10 +34,10 @@ test_that("Function Config() @ L57", {
   expect_equal(dplyr::filter(ts, .data$name == "table1") |> nrow(), 3)
   # get_schema_raw
   expect_named(s1, c("version", "field", "type"))
-  expect_equal(nrow(conf$get_schema_raw("table1", v = "v1.2.3")), 5)
-  expect_equal(nrow(conf$get_schema_raw("table1", v = "v4.5.6")), 4)
+  expect_equal(nrow(conf$get_schema_raw("table1", version = "v1.2.3")), 5)
+  expect_equal(nrow(conf$get_schema_raw("table1", version = "v4.5.6")), 4)
   expect_error(conf$get_schema_raw("foo"))
-  expect_error(conf$get_schema_raw("table1", v = "foo"))
+  expect_error(conf$get_schema_raw("table1", version = "foo"))
   # validate_schemas
   expect_true(conf$validate_schemas())
   # get_col_map

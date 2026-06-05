@@ -23,7 +23,7 @@
 #' (rs <- conf$get_schemas_raw())
 #' (ts <- conf$get_schemas_tidy())
 #' (s1 <- conf$get_schema_raw("table1"))
-#' conf$get_schema_raw("table1", v = "v1.2.3")
+#' conf$get_schema_raw("table1", version = "v1.2.3")
 #' conf$get_schema_tidy("table1")
 #' conf$validate_schemas()
 #' (cm <- conf$get_col_map("table5"))
@@ -44,10 +44,10 @@
 #' expect_equal(dplyr::filter(ts, .data$name == "table1") |> nrow(), 3)
 #' # get_schema_raw
 #' expect_named(s1, c("version", "field", "type"))
-#' expect_equal(nrow(conf$get_schema_raw("table1", v = "v1.2.3")), 5)
-#' expect_equal(nrow(conf$get_schema_raw("table1", v = "v4.5.6")), 4)
+#' expect_equal(nrow(conf$get_schema_raw("table1", version = "v1.2.3")), 5)
+#' expect_equal(nrow(conf$get_schema_raw("table1", version = "v4.5.6")), 4)
 #' expect_error(conf$get_schema_raw("foo"))
-#' expect_error(conf$get_schema_raw("table1", v = "foo"))
+#' expect_error(conf$get_schema_raw("table1", version = "foo"))
 #' # validate_schemas
 #' expect_true(conf$validate_schemas())
 #' # get_col_map
@@ -182,22 +182,22 @@ Config <- R6::R6Class(
     #' @description Get raw schema for a specific table and optional version.
     #' @param x (`character(1)`)\cr
     #' Table name.
-    #' @param v (`character(1)`)\cr
+    #' @param version (`character(1)`)\cr
     #' Version. If NULL, returns all versions.
     #' @return (`tibble()`)\cr
     #' Table `version`, `field` and `type`.
-    get_schema_raw = function(x = NULL, v = NULL) {
-      private$get_schema(x, v, self$schemas_raw)
+    get_schema_raw = function(x = NULL, version = NULL) {
+      private$get_schema(x, version, self$schemas_raw)
     },
     #' @description Get tidy schema for a specific table and optional version.
     #' @param x (`character(1)`)\cr
     #' Table name.
-    #' @param v (`character(1)`)\cr
+    #' @param version (`character(1)`)\cr
     #' Version. If NULL, returns all versions.
     #' @return (`tibble()`)\cr
     #' Table `version`, `field` and `type`.
-    get_schema_tidy = function(x = NULL, v = NULL) {
-      private$get_schema(x, v, self$get_schemas_tidy())
+    get_schema_tidy = function(x = NULL, version = NULL) {
+      private$get_schema(x, version, self$get_schemas_tidy())
     },
     #' @description Validate schemas.
     #' @return (`logical(1)`)\cr
@@ -230,9 +230,9 @@ Config <- R6::R6Class(
     #' Used for tables with custom parse logic (e.g. csv-nohead-long).
     #' @param x (`character(1)`)\cr
     #' Table name.
-    #' @param v (`character(1)`)\cr
+    #' @param version (`character(1)`)\cr
     #' Version. If NULL, uses the latest version.
-    get_col_map = function(x = NULL, v = NULL) {
+    get_col_map = function(x = NULL, version = NULL) {
       stopifnot(!is.null(x))
       assertthat::assert_that(
         x %in% names(self$tables),
@@ -246,15 +246,15 @@ Config <- R6::R6Class(
         dplyr::bind_rows()
       # sorted so versions[length(versions)] picks "latest" if present, else highest semver
       versions <- config_sort_versions(unique(unlist(cols_df[["versions"]])))
-      if (is.null(v)) {
-        v <- versions[length(versions)]
+      if (is.null(version)) {
+        version <- versions[length(versions)]
       }
       assertthat::assert_that(
-        v %in% versions,
-        msg = glue("{v} not found in versions for {x} in {self$tool}.")
+        version %in% versions,
+        msg = glue("{version} not found in versions for {x} in {self$tool}.")
       )
       cols_df |>
-        dplyr::filter(purrr::map_lgl(.data$versions, \(vs) v %in% vs)) |>
+        dplyr::filter(purrr::map_lgl(.data$versions, \(vs) version %in% vs)) |>
         dplyr::mutate(type = schema_type_remap(.data$type)) |>
         dplyr::select("raw", "tidy", "type", "description")
     }
@@ -290,7 +290,7 @@ Config <- R6::R6Class(
         purrr::imap(.get_one) |>
         dplyr::bind_rows()
     },
-    get_schema = function(x, v, schemas) {
+    get_schema = function(x, version, schemas) {
       stopifnot(!is.null(x))
       assertthat::assert_that(
         x %in% schemas[["name"]],
@@ -298,13 +298,13 @@ Config <- R6::R6Class(
       )
       res <- schemas |>
         dplyr::filter(.data$name == x)
-      if (!is.null(v)) {
+      if (!is.null(version)) {
         assertthat::assert_that(
-          v %in% res[["version"]],
-          msg = glue("{v} not found in versions for {x} in {self$tool}.")
+          version %in% res[["version"]],
+          msg = glue("{version} not found in versions for {x} in {self$tool}.")
         )
         res <- res |>
-          dplyr::filter(.data$version == v)
+          dplyr::filter(.data$version == .env$version)
       }
       res |>
         tidyr::unnest("schema") |>
@@ -459,6 +459,5 @@ config_prep_multi <- function(x, tool_descr = NULL) {
 #' @export
 config_prep_write <- function(x, out) {
   yaml::write_yaml(x, out, column.major = FALSE)
-  cmd <- glue("sed -i '' \"s/'''/'/g\" {out}")
-  system(cmd)
+  system2("sed", args = c("-i", "", "s/'''/'/g", out))
 }

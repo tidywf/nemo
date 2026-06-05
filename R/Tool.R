@@ -140,10 +140,7 @@ Tool <- R6::R6Class(
       )
       if (!is.null(files_tbl)) {
         stopifnot(is_files_tbl(files_tbl))
-        if (!is.null(path)) {
-          # ignore if files_tbl is specified
-          path <- NULL
-        }
+        path <- NULL
       }
       self$name <- name
       self$pkg <- pkg
@@ -276,7 +273,7 @@ Tool <- R6::R6Class(
     #' @return (`tibble()`)\cr
     #' Tidy schema tibble.
     get_schema_tidy = function(table_name = NULL, version = NULL) {
-      self$config$get_schema_tidy(x = table_name, v = version)
+      self$config$get_schema_tidy(x = table_name, version = version)
     },
     #' @description Get specific raw schema.
     #' @param table_name (`character(1)`)\cr
@@ -286,7 +283,7 @@ Tool <- R6::R6Class(
     #' @return (`tibble()`)\cr
     #' Raw schema tibble.
     get_schema_raw = function(table_name = NULL, version = NULL) {
-      self$config$get_schema_raw(x = table_name, v = version)
+      self$config$get_schema_raw(x = table_name, version = version)
     },
     #' @description Get column mapping (raw -> tidy) for a table.
     #' @param table_name (`character(1)`)\cr
@@ -294,9 +291,9 @@ Tool <- R6::R6Class(
     #' @param version (`character(1)`)\cr
     #' Version string.
     #' @return (`tibble()`)\cr
-    #' Column map tibble with `raw`, `tidy`, and `type` columns.
+    #' Column map tibble with `raw`, `tidy`, `type`, and `description` columns.
     get_col_map = function(table_name = NULL, version = NULL) {
-      self$config$get_col_map(x = table_name, v = version)
+      self$config$get_col_map(x = table_name, version = version)
     },
     #' @description Dispatch parse for a table: calls custom `parse_{table_name}()` if
     #' defined in the subclass, otherwise falls back to `.parse_by_ftype()`.

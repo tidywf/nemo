@@ -29,7 +29,7 @@ conf <- Config$new(tool, pkg)
 (rs <- conf$get_schemas_raw())
 (ts <- conf$get_schemas_tidy())
 (s1 <- conf$get_schema_raw("table1"))
-conf$get_schema_raw("table1", v = "v1.2.3")
+conf$get_schema_raw("table1", version = "v1.2.3")
 conf$get_schema_tidy("table1")
 conf$validate_schemas()
 (cm <- conf$get_col_map("table5"))
@@ -247,7 +247,7 @@ Table \code{name}, \code{tbl_description}, \code{version}, and \code{schema}
 \subsection{Method \code{get_schema_raw()}}{
 Get raw schema for a specific table and optional version.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Config$get_schema_raw(x = NULL, v = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Config$get_schema_raw(x = NULL, version = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -256,7 +256,7 @@ Get raw schema for a specific table and optional version.
 \item{\code{x}}{(\code{character(1)})\cr
 Table name.}
 
-\item{\code{v}}{(\code{character(1)})\cr
+\item{\code{version}}{(\code{character(1)})\cr
 Version. If NULL, returns all versions.}
 }
 \if{html}{\out{</div>}}
@@ -272,7 +272,7 @@ Table \code{version}, \code{field} and \code{type}.
 \subsection{Method \code{get_schema_tidy()}}{
 Get tidy schema for a specific table and optional version.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Config$get_schema_tidy(x = NULL, v = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Config$get_schema_tidy(x = NULL, version = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -281,7 +281,7 @@ Get tidy schema for a specific table and optional version.
 \item{\code{x}}{(\code{character(1)})\cr
 Table name.}
 
-\item{\code{v}}{(\code{character(1)})\cr
+\item{\code{version}}{(\code{character(1)})\cr
 Version. If NULL, returns all versions.}
 }
 \if{html}{\out{</div>}}
@@ -312,7 +312,7 @@ TRUE or FALSE.
 Get column mapping (raw -> tidy) for a table.
 Used for tables with custom parse logic (e.g. csv-nohead-long).
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Config$get_col_map(x = NULL, v = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Config$get_col_map(x = NULL, version = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -321,7 +321,7 @@ Used for tables with custom parse logic (e.g. csv-nohead-long).
 \item{\code{x}}{(\code{character(1)})\cr
 Table name.}
 
-\item{\code{v}}{(\code{character(1)})\cr
+\item{\code{version}}{(\code{character(1)})\cr
 Version. If NULL, uses the latest version.}
 }
 \if{html}{\out{</div>}}

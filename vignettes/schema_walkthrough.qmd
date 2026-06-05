@@ -157,7 +157,7 @@ The `schema` list-col holds the `(field, type)` pairs used when reading a file:
 
 ```{r}
 #| label: get_schema_table1_raw
-conf$get_schema_raw("table1", v = "v1.2.3") |>
+conf$get_schema_raw("table1", version = "v1.2.3") |>
   select("field", "type") |>
   kable()
 ```
@@ -166,7 +166,7 @@ conf$get_schema_raw("table1", v = "v1.2.3") |>
 
 ```{r}
 #| label: get_schema_table1_tidy
-conf$get_schema_tidy("table1", v = "latest") |> kable()
+conf$get_schema_tidy("table1", version = "latest") |> kable()
 ```
 
 ### Column map for `csv-nohead-long` tables
