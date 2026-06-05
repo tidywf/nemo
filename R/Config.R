@@ -277,7 +277,7 @@ Config <- R6::R6Class(
           cols_v <- if (raw_or_tidy == "both") {
             cols_filtered |> dplyr::select("raw", "tidy", "type")
           } else {
-            cols_filtered |> dplyr::select(field = dplyr::all_of({{ raw_or_tidy }}), "type")
+            cols_filtered |> dplyr::select(field = dplyr::all_of(raw_or_tidy), "type")
           }
           tibble::tibble(version = v, schema = list(cols_v))
         }
