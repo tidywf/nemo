@@ -24,7 +24,7 @@ test_that("Function Workflow() @ L61", {
   (lf2 <- list.files(dir2, pattern = "tool1.*parquet", full.names = TRUE))
   # list_files
   nms1 <- c(
-    "tool_parser", "parser", "bname", "size", "lastmodified", "path",
+    "tool", "tool_parser", "parser", "bname", "size", "lastmodified", "path",
     "pattern", "prefix", "group"
   )
   expect_true(all(c("tool1_table1", "tool1_table2", "tool1_table4") %in% lf_all$tool_parser))

@@ -164,21 +164,12 @@ List only files of interest in given workflow directory, i.e.
 only those files that match the patterns listed in the individual tool
 config.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Workflow$list_files(type = c("file", "symlink"))}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Workflow$list_files()}\if{html}{\out{</div>}}
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{type}}{(\code{character(1)})\cr
-File types(s) to return (e.g. any, file, directory, symlink).
-See \code{fs::dir_info}.}
-}
-\if{html}{\out{</div>}}
-}
 \subsection{Returns}{
 (\code{tibble()})\cr
-Bound \code{list_files()} tibbles from all Tools.
+Bound \code{list_files()} tibbles from all Tools, with a leading \code{tool} column.
 }
 }
 \if{html}{\out{<hr>}}
@@ -341,7 +332,7 @@ Get tidy tibbles for all Tools.
 
 \subsection{Returns}{
 (\code{tibble()})\cr
-Bound \code{tbls} tibbles from all Tools.
+Bound \code{tbls} tibbles from all Tools, with a leading \code{tool} column.
 }
 }
 \if{html}{\out{<hr>}}

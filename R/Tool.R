@@ -263,9 +263,6 @@ Tool <- R6::R6Class(
           "path",
           pattern = "pat_value"
         )
-      if (nrow(res) == 0) {
-        return(res)
-      }
       res |>
         dplyr::mutate(
           prefix = stringr::str_remove(.data$bname, .data$pattern),

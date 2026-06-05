@@ -36,7 +36,7 @@
 #' @testexamples
 #' # list_files
 #' nms1 <- c(
-#'   "tool_parser", "parser", "bname", "size", "lastmodified", "path",
+#'   "tool", "tool_parser", "parser", "bname", "size", "lastmodified", "path",
 #'   "pattern", "prefix", "group"
 #' )
 #' expect_true(all(c("tool1_table1", "tool1_table2", "tool1_table4") %in% lf_all$tool_parser))
@@ -169,14 +169,14 @@ Workflow <- R6::R6Class(
     #' @description List only files of interest in given workflow directory, i.e.
     #' only those files that match the patterns listed in the individual tool
     #' config.
-    #' @param type (`character(1)`)\cr
-    #' File types(s) to return (e.g. any, file, directory, symlink).
-    #' See `fs::dir_info`.
     #' @return (`tibble()`)\cr
-    #' Bound `list_files()` tibbles from all Tools.
-    list_files = function(type = c("file", "symlink")) {
+    #' Bound `list_files()` tibbles from all Tools, with a leading `tool` column.
+    list_files = function() {
       self$tools |>
-        purrr::map(\(x) x$list_files(type = type)) |>
+        purrr::map(\(x) {
+          x$list_files() |>
+            dplyr::mutate(tool = x$name, .before = 1)
+        }) |>
         dplyr::bind_rows()
     },
     #' @description Tidy Workflow files.
@@ -313,10 +313,15 @@ Workflow <- R6::R6Class(
     },
     #' @description Get tidy tibbles for all Tools.
     #' @return (`tibble()`)\cr
-    #' Bound `tbls` tibbles from all Tools.
+    #' Bound `tbls` tibbles from all Tools, with a leading `tool` column.
     get_tbls = function() {
       self$tools |>
-        purrr::map(\(x) x$tbls) |>
+        purrr::map(\(x) {
+          if (is.null(x$tbls)) {
+            return(NULL)
+          }
+          x$tbls |> dplyr::mutate(tool = x$name, .before = 1)
+        }) |>
         dplyr::bind_rows()
     },
     #' @description Get metadata for the workflow run.
