@@ -30,7 +30,7 @@ Built with `argparse` via `nemo_cli()`. Two subcommands:
 Both accept `-w WORKFLOW` and `-q` (quiet). `tidy` also accepts:
 - `--input_id` — adds an `input_id` column to all output tables
 - `--output_id` / `--ulid` — adds an `output_id` column (mutually exclusive; `--ulid` generates one automatically)
-- `--prefix_include` — adds an `input_pfix` column derived from the input filename prefix
+- `--prefix_include` — adds an `input_prefix` column derived from the input filename prefix
 - `--include`/`--exclude` — filter tool parsers (comma-separated)
 - `--dbname`/`--dbuser` — required when `--format db`
 

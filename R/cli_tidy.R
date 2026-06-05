@@ -115,7 +115,7 @@ cli_tidy_parse_args <- function(args, wf = NULL, dbdrv = NULL) {
     out_format = args$format,
     input_id = args$input_id,
     output_id = output_id,
-    pfix_include = args$prefix_include,
+    prefix_include = args$prefix_include,
     dbdrv = dbdrv,
     dbname = args$dbname,
     dbuser = args$dbuser,
@@ -142,8 +142,8 @@ cli_tidy_parse_args <- function(args, wf = NULL, dbdrv = NULL) {
 #' `"tsv"`, `"csv"`, `"rds"`, or `"db"`.
 #' @param input_id (`character(1)` or `NULL`)\cr Input run identifier.
 #' @param output_id (`character(1)` or `NULL`)\cr Output run identifier.
-#' @param pfix_include (`logical(1)`)\cr
-#' If `TRUE`, prepend an `input_pfix` column to each tidy table.
+#' @param prefix_include (`logical(1)`)\cr
+#' If `TRUE`, prepend an `input_prefix` column to each tidy table.
 #' @param dbdrv (`DBIDriver` or `NULL`)\cr DBI driver object (e.g.
 #' `RPostgres::Postgres()`). Required when `out_format` is `"db"`.
 #' @param dbname (`character(1)` or `NULL`)\cr Database name. Required when
@@ -180,7 +180,7 @@ cli_nemo_tidy <- function(
   out_format,
   input_id = NULL,
   output_id = NULL,
-  pfix_include = FALSE,
+  prefix_include = FALSE,
   dbdrv = NULL,
   dbname = NULL,
   dbuser = NULL,
@@ -205,7 +205,7 @@ cli_nemo_tidy <- function(
     format = out_format,
     input_id = input_id,
     output_id = output_id,
-    pfix_include = pfix_include,
+    prefix_include = prefix_include,
     dbconn = dbconn,
     include = include,
     exclude = exclude

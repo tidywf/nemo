@@ -100,7 +100,7 @@ recommended for any multi-sample or multi-run pipeline:
 | ------------ | ---------------------------------- |
 | `input_id`   | identifies the sample or input run |
 | `output_id`  | identifies the processing run      |
-| `input_pfix` | filename prefix (e.g. sample name) |
+| `input_prefix` | filename prefix (e.g. sample name) |
 
 [tidywigits]: <https://github.com/tidywf/tidywigits> "tidywigits"
 [tidydragen]: <https://github.com/tidywf/tidydragen> "tidydragen"
@@ -131,7 +131,7 @@ Workflow1$new(path = path)$wrangle(
   format       = "parquet",
   input_id     = "run1",
   output_id    = "out1",
-  pfix_include = TRUE
+  prefix_include = TRUE
 )
 
 list.files(outdir, pattern = "\\.parquet$")
