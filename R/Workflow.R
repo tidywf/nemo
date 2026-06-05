@@ -96,6 +96,20 @@ Workflow <- R6::R6Class(
         rlang::is_scalar_character(name),
         msg = "`name` must be a single character string."
       )
+      assertthat::assert_that(
+        rlang::is_scalar_character(metapkg),
+        msg = "`metapkg` must be a single character string."
+      )
+      assertthat::assert_that(
+        !is.null(path) && is.character(path),
+        msg = "`path` must be a character vector."
+      )
+      assertthat::assert_that(
+        all(dir.exists(path)),
+        msg = glue(
+          "Path(s) do not exist: {glue::glue_collapse(path[!dir.exists(path)], sep = ', ')}."
+        )
+      )
       self$name <- name
       self$metapkg <- metapkg
       private$validate_tools(tools)
@@ -219,6 +233,12 @@ Workflow <- R6::R6Class(
       prefix_include = FALSE,
       dbconn = NULL
     ) {
+      assertthat::assert_that(
+        format %in% nemo_out_formats(),
+        msg = glue(
+          "Invalid format '{format}'. Must be one of: {glue::glue_collapse(nemo_out_formats(), sep = ', ')}."
+        )
+      )
       stopifnot("Did you forget to tidy?" = private$is_tidied)
       res <- self$tools |>
         purrr::map(\(x) {

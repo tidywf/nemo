@@ -79,6 +79,14 @@ Config <- R6::R6Class(
     #' @return (`R6::R6Class()`)\cr
     #' R6 object.
     initialize = function(tool, pkg) {
+      assertthat::assert_that(
+        rlang::is_scalar_character(tool),
+        msg = "`tool` must be a single character string."
+      )
+      assertthat::assert_that(
+        rlang::is_scalar_character(pkg),
+        msg = "`pkg` must be a single character string."
+      )
       tool <- tolower(tool)
       self$tool <- tool
       self$pkg <- pkg
@@ -120,7 +128,10 @@ Config <- R6::R6Class(
         msg = glue("schema.yaml not found for {self$tool} at {schema_path}")
       )
       cfg <- yaml::read_yaml(schema_path)
-      stopifnot("tables" %in% names(cfg))
+      assertthat::assert_that(
+        "tables" %in% names(cfg),
+        msg = glue("schema.yaml for {self$tool} is missing the top-level 'tables' key.")
+      )
       cfg
     },
     #' @description Return all output file patterns.
@@ -237,7 +248,10 @@ Config <- R6::R6Class(
     #' @param version (`character(1)`)\cr
     #' Version. If NULL, uses the latest version.
     get_col_map = function(x = NULL, version = NULL) {
-      stopifnot(!is.null(x))
+      assertthat::assert_that(
+        rlang::is_scalar_character(x),
+        msg = "`x` must be a single character string."
+      )
       assertthat::assert_that(
         x %in% names(self$tables),
         msg = glue("{x} not found in tables for {self$tool}.")
@@ -299,7 +313,10 @@ Config <- R6::R6Class(
         dplyr::bind_rows()
     },
     get_schema = function(x, version, schemas) {
-      stopifnot(!is.null(x))
+      assertthat::assert_that(
+        rlang::is_scalar_character(x),
+        msg = "`x` must be a single character string."
+      )
       assertthat::assert_that(
         x %in% schemas[["name"]],
         msg = glue("{x} not found in schemas for {self$tool}.")
