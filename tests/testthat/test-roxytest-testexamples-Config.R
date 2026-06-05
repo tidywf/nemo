@@ -11,12 +11,12 @@ test_that("Function Config() @ L57", {
   (ftypes <- conf$get_ftypes())
   (ftype1 <- conf$get_ftype("table1"))
   (descr <- conf$get_descriptions())
-  (rs <- conf$get_schemas_all("raw"))
-  (ts <- conf$get_schemas_all("tidy"))
-  (s1 <- conf$get_schema("table1"))
-  conf$get_schema("table1", v = "v1.2.3")
-  conf$get_schema("table1", raw_or_tidy = "tidy")
-  conf$are_schemas_valid()
+  (rs <- conf$get_schemas_raw())
+  (ts <- conf$get_schemas_tidy())
+  (s1 <- conf$get_schema_raw("table1"))
+  conf$get_schema_raw("table1", v = "v1.2.3")
+  conf$get_schema_tidy("table1")
+  conf$validate_schemas()
   (cm <- conf$get_col_map("table5"))
   
   # initialize
@@ -29,23 +29,23 @@ test_that("Function Config() @ L57", {
   expect_equal(ftype1, "txt")
   # get_descriptions
   expect_equal(nrow(descr), 6)
-  # get_schemas_all
+  # get_schemas_raw / get_schemas_tidy
   expect_equal(dplyr::filter(rs, .data$name == "table1") |> nrow(), 3)
   expect_equal(dplyr::filter(ts, .data$name == "table1") |> nrow(), 3)
-  # get_schema
+  # get_schema_raw
   expect_named(s1, c("version", "field", "type"))
-  expect_equal(nrow(conf$get_schema("table1", v = "v1.2.3")), 5)
-  expect_equal(nrow(conf$get_schema("table1", v = "v4.5.6")), 4)
-  expect_error(conf$get_schema("foo"))
-  expect_error(conf$get_schema("table1", v = "foo"))
-  # are_schemas_valid
-  expect_true(conf$are_schemas_valid())
+  expect_equal(nrow(conf$get_schema_raw("table1", v = "v1.2.3")), 5)
+  expect_equal(nrow(conf$get_schema_raw("table1", v = "v4.5.6")), 4)
+  expect_error(conf$get_schema_raw("foo"))
+  expect_error(conf$get_schema_raw("table1", v = "foo"))
+  # validate_schemas
+  expect_true(conf$validate_schemas())
   # get_col_map
   expect_named(cm, c("raw", "tidy", "type", "description"))
 })
 
 
-test_that("Function config_prep_raw_schema() @ L330", {
+test_that("Function config_prep_raw_schema() @ L346", {
   
   path <- system.file("extdata", "tool1/latest/sampleA.tool1.table1.tsv", package = "nemo")
   (x <- config_prep_raw_schema(path = path, delim = "\t"))
@@ -53,7 +53,7 @@ test_that("Function config_prep_raw_schema() @ L330", {
 })
 
 
-test_that("Function config_prep_raw() @ L375", {
+test_that("Function config_prep_raw() @ L391", {
   
   path <- system.file("extdata", "tool1/latest/sampleA.tool1.table1.tsv", package = "nemo")
   name <- "table1"

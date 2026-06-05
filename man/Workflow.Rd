@@ -30,7 +30,7 @@ wf <- Workflow$new(name = "wf1", path = path, tools = tools)
 wf$filter_files(exclude = "tool1_table5")
 wf$tidy()
 (tbls <- wf$get_tbls())
-(rs <- wf$get_raw_schemas_all())
+(rs <- wf$get_schemas_raw())
 dir1 <- fs::file_temp(); dir2 <- fs::file_temp()
 wf$write(output_dir = dir1, format = "parquet", input_id = "run1")
 (lf1 <- list.files(dir1, pattern = "tool1.*parquet", full.names = TRUE))
@@ -72,8 +72,8 @@ Tibble of files written from \code{self$write()}.}
 \item \href{#method-Workflow-tidy}{\code{Workflow$tidy()}}
 \item \href{#method-Workflow-write}{\code{Workflow$write()}}
 \item \href{#method-Workflow-wrangle}{\code{Workflow$wrangle()}}
-\item \href{#method-Workflow-get_raw_schemas_all}{\code{Workflow$get_raw_schemas_all()}}
-\item \href{#method-Workflow-get_tidy_schemas_all}{\code{Workflow$get_tidy_schemas_all()}}
+\item \href{#method-Workflow-get_schemas_raw}{\code{Workflow$get_schemas_raw()}}
+\item \href{#method-Workflow-get_schemas_tidy}{\code{Workflow$get_schemas_tidy()}}
 \item \href{#method-Workflow-get_tbls}{\code{Workflow$get_tbls()}}
 \item \href{#method-Workflow-get_metadata}{\code{Workflow$get_metadata()}}
 \item \href{#method-Workflow-clone}{\code{Workflow$clone()}}
@@ -303,31 +303,31 @@ R6 object invisibly.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Workflow-get_raw_schemas_all"></a>}}
-\if{latex}{\out{\hypertarget{method-Workflow-get_raw_schemas_all}{}}}
-\subsection{Method \code{get_raw_schemas_all()}}{
+\if{html}{\out{<a id="method-Workflow-get_schemas_raw"></a>}}
+\if{latex}{\out{\hypertarget{method-Workflow-get_schemas_raw}{}}}
+\subsection{Method \code{get_schemas_raw()}}{
 Get raw schemas for all Tools.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Workflow$get_raw_schemas_all()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Workflow$get_schemas_raw()}\if{html}{\out{</div>}}
 }
 
 \subsection{Returns}{
 (\code{tibble()})\cr
-Bound \code{raw_schemas_all} tibbles from all Tools, with a leading \code{tool} column.
+Bound \code{schemas_raw} tibbles from all Tools, with a leading \code{tool} column.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Workflow-get_tidy_schemas_all"></a>}}
-\if{latex}{\out{\hypertarget{method-Workflow-get_tidy_schemas_all}{}}}
-\subsection{Method \code{get_tidy_schemas_all()}}{
+\if{html}{\out{<a id="method-Workflow-get_schemas_tidy"></a>}}
+\if{latex}{\out{\hypertarget{method-Workflow-get_schemas_tidy}{}}}
+\subsection{Method \code{get_schemas_tidy()}}{
 Get tidy schemas for all Tools.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Workflow$get_tidy_schemas_all()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Workflow$get_schemas_tidy()}\if{html}{\out{</div>}}
 }
 
 \subsection{Returns}{
 (\code{tibble()})\cr
-Bound tidy schema tibbles from all Tools, with a leading \code{tool} column.
+Bound \code{schemas_tidy} tibbles from all Tools, with a leading \code{tool} column.
 }
 }
 \if{html}{\out{<hr>}}

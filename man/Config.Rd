@@ -14,8 +14,8 @@ A Config object:
 \itemize{
 \item belongs to a package (\code{pkg});
 \item has a tool name (\code{tool});
-\item has a parsed config list (\code{config});
-\item caches all raw schemas as a flat tibble (\code{raw_schemas_all});
+\item has a parsed tables list (\code{tables});
+\item caches all raw schemas as a flat tibble (\code{schemas_raw});
 }
 }
 \examples{
@@ -26,12 +26,12 @@ conf <- Config$new(tool, pkg)
 (ftypes <- conf$get_ftypes())
 (ftype1 <- conf$get_ftype("table1"))
 (descr <- conf$get_descriptions())
-(rs <- conf$get_schemas_all("raw"))
-(ts <- conf$get_schemas_all("tidy"))
-(s1 <- conf$get_schema("table1"))
-conf$get_schema("table1", v = "v1.2.3")
-conf$get_schema("table1", raw_or_tidy = "tidy")
-conf$are_schemas_valid()
+(rs <- conf$get_schemas_raw())
+(ts <- conf$get_schemas_tidy())
+(s1 <- conf$get_schema_raw("table1"))
+conf$get_schema_raw("table1", v = "v1.2.3")
+conf$get_schema_tidy("table1")
+conf$validate_schemas()
 (cm <- conf$get_col_map("table5"))
 
 }
@@ -44,10 +44,10 @@ Tool name.}
 \item{\code{pkg}}{(\code{character(1)})\cr
 Package name tool belongs to (for config lookup).}
 
-\item{\code{config}}{(\code{list()})\cr
-Config list (parsed schema.yaml).}
+\item{\code{tables}}{(\code{list()})\cr
+Tables list (parsed from schema.yaml).}
 
-\item{\code{raw_schemas_all}}{(\code{tibble()})\cr
+\item{\code{schemas_raw}}{(\code{tibble()})\cr
 All raw schemas for tool (versioned, for schema_guess).}
 }
 \if{html}{\out{</div>}}
@@ -62,9 +62,12 @@ All raw schemas for tool (versioned, for schema_guess).}
 \item \href{#method-Config-get_ftypes}{\code{Config$get_ftypes()}}
 \item \href{#method-Config-get_ftype}{\code{Config$get_ftype()}}
 \item \href{#method-Config-get_descriptions}{\code{Config$get_descriptions()}}
-\item \href{#method-Config-get_schemas_all}{\code{Config$get_schemas_all()}}
-\item \href{#method-Config-get_schema}{\code{Config$get_schema()}}
-\item \href{#method-Config-are_schemas_valid}{\code{Config$are_schemas_valid()}}
+\item \href{#method-Config-get_schemas_raw}{\code{Config$get_schemas_raw()}}
+\item \href{#method-Config-get_schemas_tidy}{\code{Config$get_schemas_tidy()}}
+\item \href{#method-Config-get_schemas_both}{\code{Config$get_schemas_both()}}
+\item \href{#method-Config-get_schema_raw}{\code{Config$get_schema_raw()}}
+\item \href{#method-Config-get_schema_tidy}{\code{Config$get_schema_tidy()}}
+\item \href{#method-Config-validate_schemas}{\code{Config$validate_schemas()}}
 \item \href{#method-Config-get_col_map}{\code{Config$get_col_map()}}
 \item \href{#method-Config-clone}{\code{Config$clone()}}
 }
@@ -194,35 +197,57 @@ Table \code{name} and its \code{description}.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Config-get_schemas_all"></a>}}
-\if{latex}{\out{\hypertarget{method-Config-get_schemas_all}{}}}
-\subsection{Method \code{get_schemas_all()}}{
-Return all raw or tidy schemas.
+\if{html}{\out{<a id="method-Config-get_schemas_raw"></a>}}
+\if{latex}{\out{\hypertarget{method-Config-get_schemas_raw}{}}}
+\subsection{Method \code{get_schemas_raw()}}{
+Return raw schemas for all tables.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Config$get_schemas_all(raw_or_tidy = "raw")}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Config$get_schemas_raw()}\if{html}{\out{</div>}}
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{raw_or_tidy}}{(\code{character(1)})\cr
-Either the raw or the tidy schema, or both.}
-}
-\if{html}{\out{</div>}}
-}
 \subsection{Returns}{
 (\code{tibble()})\cr
 Table \code{name}, \code{tbl_description}, \code{version}, and \code{schema}
-(list-col of tibble(field, type) for \code{"raw"}/\code{"tidy"}, or tibble(raw, tidy, type) for \code{"both"}).
+(list-col of tibble(field, type)).
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Config-get_schema"></a>}}
-\if{latex}{\out{\hypertarget{method-Config-get_schema}{}}}
-\subsection{Method \code{get_schema()}}{
+\if{html}{\out{<a id="method-Config-get_schemas_tidy"></a>}}
+\if{latex}{\out{\hypertarget{method-Config-get_schemas_tidy}{}}}
+\subsection{Method \code{get_schemas_tidy()}}{
+Return tidy schemas for all tables.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Config$get_schemas_tidy()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+(\code{tibble()})\cr
+Table \code{name}, \code{tbl_description}, \code{version}, and \code{schema}
+(list-col of tibble(field, type)).
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Config-get_schemas_both"></a>}}
+\if{latex}{\out{\hypertarget{method-Config-get_schemas_both}{}}}
+\subsection{Method \code{get_schemas_both()}}{
+Return both raw and tidy schemas for all tables.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Config$get_schemas_both()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+(\code{tibble()})\cr
+Table \code{name}, \code{tbl_description}, \code{version}, and \code{schema}
+(list-col of tibble(raw, tidy, type)).
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Config-get_schema_raw"></a>}}
+\if{latex}{\out{\hypertarget{method-Config-get_schema_raw}{}}}
+\subsection{Method \code{get_schema_raw()}}{
 Get raw schema for a specific table and optional version.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Config$get_schema(x = NULL, v = NULL, raw_or_tidy = "raw")}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Config$get_schema_raw(x = NULL, v = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -233,9 +258,6 @@ Table name.}
 
 \item{\code{v}}{(\code{character(1)})\cr
 Version. If NULL, returns all versions.}
-
-\item{\code{raw_or_tidy}}{(\code{character(1)})\cr
-Either the raw or the tidy schema.}
 }
 \if{html}{\out{</div>}}
 }
@@ -245,12 +267,37 @@ Table \code{version}, \code{field} and \code{type}.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Config-are_schemas_valid"></a>}}
-\if{latex}{\out{\hypertarget{method-Config-are_schemas_valid}{}}}
-\subsection{Method \code{are_schemas_valid()}}{
+\if{html}{\out{<a id="method-Config-get_schema_tidy"></a>}}
+\if{latex}{\out{\hypertarget{method-Config-get_schema_tidy}{}}}
+\subsection{Method \code{get_schema_tidy()}}{
+Get tidy schema for a specific table and optional version.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Config$get_schema_tidy(x = NULL, v = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{x}}{(\code{character(1)})\cr
+Table name.}
+
+\item{\code{v}}{(\code{character(1)})\cr
+Version. If NULL, returns all versions.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+(\code{tibble()})\cr
+Table \code{version}, \code{field} and \code{type}.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Config-validate_schemas"></a>}}
+\if{latex}{\out{\hypertarget{method-Config-validate_schemas}{}}}
+\subsection{Method \code{validate_schemas()}}{
 Validate schemas.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Config$are_schemas_valid()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Config$validate_schemas()}\if{html}{\out{</div>}}
 }
 
 \subsection{Returns}{

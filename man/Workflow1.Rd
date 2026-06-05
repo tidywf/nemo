@@ -29,9 +29,9 @@ wf$wrangle(output_dir = dir1, format = "parquet", input_id = "run1")
 <ul>
 <li><span class="pkg-link" data-pkg="nemo" data-topic="Workflow" data-id="filter_files"><a href='../../nemo/html/Workflow.html#method-Workflow-filter_files'><code>nemo::Workflow$filter_files()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="nemo" data-topic="Workflow" data-id="get_metadata"><a href='../../nemo/html/Workflow.html#method-Workflow-get_metadata'><code>nemo::Workflow$get_metadata()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="nemo" data-topic="Workflow" data-id="get_raw_schemas_all"><a href='../../nemo/html/Workflow.html#method-Workflow-get_raw_schemas_all'><code>nemo::Workflow$get_raw_schemas_all()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="nemo" data-topic="Workflow" data-id="get_schemas_raw"><a href='../../nemo/html/Workflow.html#method-Workflow-get_schemas_raw'><code>nemo::Workflow$get_schemas_raw()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="nemo" data-topic="Workflow" data-id="get_schemas_tidy"><a href='../../nemo/html/Workflow.html#method-Workflow-get_schemas_tidy'><code>nemo::Workflow$get_schemas_tidy()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="nemo" data-topic="Workflow" data-id="get_tbls"><a href='../../nemo/html/Workflow.html#method-Workflow-get_tbls'><code>nemo::Workflow$get_tbls()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="nemo" data-topic="Workflow" data-id="get_tidy_schemas_all"><a href='../../nemo/html/Workflow.html#method-Workflow-get_tidy_schemas_all'><code>nemo::Workflow$get_tidy_schemas_all()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="nemo" data-topic="Workflow" data-id="list_files"><a href='../../nemo/html/Workflow.html#method-Workflow-list_files'><code>nemo::Workflow$list_files()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="nemo" data-topic="Workflow" data-id="print"><a href='../../nemo/html/Workflow.html#method-Workflow-print'><code>nemo::Workflow$print()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="nemo" data-topic="Workflow" data-id="tidy"><a href='../../nemo/html/Workflow.html#method-Workflow-tidy'><code>nemo::Workflow$tidy()</code></a></span></li>

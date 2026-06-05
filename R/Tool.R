@@ -119,18 +119,18 @@ Tool <- R6::R6Class(
     #' @field tbls (`tibble()`)\cr
     #' Tibble of tidy tibbles.
     tbls = NULL,
-    #' @field raw_schemas_all (`tibble()`)\cr
+    #' @field schemas_raw (`tibble()`)\cr
     #' All raw schemas for tool.
-    raw_schemas_all = NULL,
-    #' @field tidy_schemas_all (`tibble()`)\cr
+    schemas_raw = NULL,
+    #' @field schemas_tidy (`tibble()`)\cr
     #' All tidy schemas for tool.
-    tidy_schemas_all = NULL,
-    #' @field get_tidy_schema (`function()`)\cr
+    schemas_tidy = NULL,
+    #' @field get_schema_tidy (`function()`)\cr
     #' Get specific tidy schema.
-    get_tidy_schema = NULL,
-    #' @field get_raw_schema (`function()`)\cr
+    get_schema_tidy = NULL,
+    #' @field get_schema_raw (`function()`)\cr
     #' Get specific raw schema.
-    get_raw_schema = NULL,
+    get_schema_raw = NULL,
     #' @field get_col_map (`function()`)\cr
     #' Get column mapping (raw -> tidy) for a table.
     get_col_map = NULL,
@@ -167,13 +167,13 @@ Tool <- R6::R6Class(
       self$pkg <- pkg
       self$path <- path
       self$config <- Config$new(self$name, pkg = self$pkg)
-      self$raw_schemas_all <- self$config$raw_schemas_all
-      self$tidy_schemas_all <- self$config$get_schemas_all("tidy")
-      self$get_tidy_schema <- function(x = NULL, v = NULL) {
-        self$config$get_schema(x = x, v = v, raw_or_tidy = "tidy")
+      self$schemas_raw <- self$config$schemas_raw
+      self$schemas_tidy <- self$config$get_schemas_tidy()
+      self$get_schema_tidy <- function(x = NULL, v = NULL) {
+        self$config$get_schema_tidy(x = x, v = v)
       }
-      self$get_raw_schema <- function(x = NULL, v = NULL) {
-        self$config$get_schema(x = x, v = v, raw_or_tidy = "raw")
+      self$get_schema_raw <- function(x = NULL, v = NULL) {
+        self$config$get_schema_raw(x = x, v = v)
       }
       self$get_col_map <- self$config$get_col_map
       self$files_tbl <- files_tbl
@@ -367,7 +367,7 @@ Tool <- R6::R6Class(
       parse_file(
         fpath = x,
         pname = name,
-        schemas_all = self$raw_schemas_all,
+        schemas_all = self$schemas_raw,
         delim = delim,
         ...
       )
@@ -387,7 +387,7 @@ Tool <- R6::R6Class(
       }
       version <- get_tbl_version_attr(x)
       stopifnot(!is.null(version))
-      schema <- self$get_tidy_schema(name, v = version)
+      schema <- self$get_schema_tidy(name, v = version)
       colnames(x) <- schema[["field"]]
       if (convert_types) {
         ctypes <- schema |>
@@ -417,7 +417,7 @@ Tool <- R6::R6Class(
       parse_file_keyvalue(
         fpath = x,
         pname = name,
-        schemas_all = self$raw_schemas_all,
+        schemas_all = self$schemas_raw,
         delim = delim,
         ...
       )
@@ -434,7 +434,7 @@ Tool <- R6::R6Class(
     #' Parsed data in tibble.
     .parse_file_nohead = function(x, pname, delim = "\t", ...) {
       ncols <- file_hdr(x, delim = delim, ...) |> length()
-      schema <- self$raw_schemas_all |>
+      schema <- self$schemas_raw |>
         dplyr::filter(.data$name == pname) |>
         dplyr::select("version", "schema") |>
         dplyr::rowwise() |>

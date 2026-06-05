@@ -196,7 +196,7 @@ reactable_schema <- function(dat, ...) {
 nemo_schemavis_data <- function(tools, pkg = "nemo") {
   get_one <- function(tool) {
     conf <- Config$new(tool, pkg = pkg)
-    conf$get_schemas_all("both") |>
+    conf$get_schemas_both() |>
       dplyr::select(tbl = "name", description = "tbl_description", "version", "schema") |>
       tidyr::nest(schema_version = c("version", "schema")) |>
       dplyr::mutate(tool = toupper(tool))
