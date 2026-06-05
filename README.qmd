@@ -88,19 +88,19 @@ columns to a consistent tidy form, and writes to Apache Parquet, TSV, CSV,
 RDS, or PostgreSQL. Each run also produces a `metadata.parquet` file alongside
 the tidy tables, capturing IDs, paths, and package versions.
 
-Tool-specific schemas and parsers live in child packages — {[tidywigits]} for
-the WiGiTS suite and {[tidydragen]} (WIP) for Illumina DRAGEN — under
+Tool-specific schemas and parsers live in child packages - {[tidywigits]} for
+the WiGiTS suite and {[tidydragen]} (WIP) for Illumina DRAGEN - under
 `inst/config/tools/` in each respective package.
 
 Three optional columns can be prepended to every written table to support
 downstream tracing and joining. All are opt-in and off by default, but highly
 recommended for any multi-sample or multi-run pipeline:
 
-| Column       | R argument            | CLI flag                     | Purpose                            |
-| ------------ | --------------------- | ---------------------------- | ---------------------------------- |
-| `input_id`   | `input_id = "run1"`   | `--input_id run1`            | identifies the sample or input run |
-| `output_id`  | `output_id = "abc"`   | `--output_id abc` / `--ulid` | identifies the processing run      |
-| `input_pfix` | `pfix_include = TRUE` | `--prefix_include`           | filename prefix (e.g. sample name) |
+| Column       | Purpose                            |
+| ------------ | ---------------------------------- |
+| `input_id`   | identifies the sample or input run |
+| `output_id`  | identifies the processing run      |
+| `input_pfix` | filename prefix (e.g. sample name) |
 
 [tidywigits]: <https://github.com/tidywf/tidywigits> "tidywigits"
 [tidydragen]: <https://github.com/tidywf/tidydragen> "tidydragen"
@@ -119,15 +119,15 @@ path <- system.file("extdata/tool1/latest", package = "nemo")
 writeLines(readLines(file.path(path, "sampleA.tool1.table3.tsv")))
 ```
 
-`nemofy()` parses, tidies, and writes all tables in one call:
+`wrangle()` parses, tidies, and writes all tables in one call:
 
 ```{r}
 #| label: quickstart
 #| message: false
 outdir <- file.path(tempdir(), "quickstart")
 
-Workflow1$new(path = path)$nemofy(
-  diro         = outdir,
+Workflow1$new(path = path)$wrangle(
+  out_dir      = outdir,
   format       = "parquet",
   input_id     = "run1",
   output_id    = "out1",

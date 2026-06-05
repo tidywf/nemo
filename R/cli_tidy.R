@@ -200,8 +200,8 @@ cli_nemo_tidy <- function(
   }
   nemo_log("INFO", paste("Tidying dir:", in_dir))
   obj <- fun$new(in_dir)
-  res <- obj$nemofy(
-    diro = out_dir,
+  res <- obj$wrangle(
+    out_dir = out_dir,
     format = out_format,
     input_id = input_id,
     output_id = output_id,

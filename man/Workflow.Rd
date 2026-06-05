@@ -17,7 +17,7 @@ A Workflow object:
 }
 
 The typical workflow is: optionally filter with \code{filter_files()}, tidy with
-\code{tidy()}, then write with \code{write()}. \code{nemofy()} chains all three steps.
+\code{tidy()}, then write with \code{write()}. \code{wrangle()} chains all three steps.
 }
 \examples{
 fs::path(tempdir(), letters[1:5]) |>
@@ -32,11 +32,11 @@ wf$tidy()
 (tbls <- wf$get_tbls())
 (rs <- wf$get_raw_schemas_all())
 dir1 <- fs::file_temp(); dir2 <- fs::file_temp()
-wf$write(diro = dir1, format = "parquet", input_id = "run1")
+wf$write(out_dir = dir1, format = "parquet", input_id = "run1")
 (lf1 <- list.files(dir1, pattern = "tool1.*parquet", full.names = TRUE))
 (meta <- wf$get_metadata(input_id = "run1", output_id = "out1", output_dir = dir1))
 wf2 <- Workflow$new(name = "wf2", path = path, tools = tools)
-wf2$nemofy(diro = dir2, format = "parquet", input_id = "run2")
+wf2$wrangle(out_dir = dir2, format = "parquet", input_id = "run2")
 (lf2 <- list.files(dir2, pattern = "tool1.*parquet", full.names = TRUE))
 }
 \section{Public fields}{
@@ -71,7 +71,7 @@ Tibble of files written from \code{self$write()}.}
 \item \href{#method-Workflow-list_files}{\code{Workflow$list_files()}}
 \item \href{#method-Workflow-tidy}{\code{Workflow$tidy()}}
 \item \href{#method-Workflow-write}{\code{Workflow$write()}}
-\item \href{#method-Workflow-nemofy}{\code{Workflow$nemofy()}}
+\item \href{#method-Workflow-wrangle}{\code{Workflow$wrangle()}}
 \item \href{#method-Workflow-get_raw_schemas_all}{\code{Workflow$get_raw_schemas_all()}}
 \item \href{#method-Workflow-get_tidy_schemas_all}{\code{Workflow$get_tidy_schemas_all()}}
 \item \href{#method-Workflow-get_tbls}{\code{Workflow$get_tbls()}}
@@ -213,7 +213,7 @@ R6 object invisibly.
 Write tidy tibbles.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Workflow$write(
-  diro = ".",
+  out_dir = ".",
   format = "tsv",
   input_id = NULL,
   output_id = NULL,
@@ -225,7 +225,7 @@ Write tidy tibbles.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{diro}}{(\code{character(1)})\cr
+\item{\code{out_dir}}{(\code{character(1)})\cr
 Directory path to output tidy files.}
 
 \item{\code{format}}{(\code{character(1)})\cr
@@ -251,13 +251,13 @@ R6 object invisibly.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Workflow-nemofy"></a>}}
-\if{latex}{\out{\hypertarget{method-Workflow-nemofy}{}}}
-\subsection{Method \code{nemofy()}}{
+\if{html}{\out{<a id="method-Workflow-wrangle"></a>}}
+\if{latex}{\out{\hypertarget{method-Workflow-wrangle}{}}}
+\subsection{Method \code{wrangle()}}{
 Parse, filter, tidy and write files.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Workflow$nemofy(
-  diro = ".",
+\if{html}{\out{<div class="r">}}\preformatted{Workflow$wrangle(
+  out_dir = ".",
   format = "tsv",
   input_id = NULL,
   output_id = NULL,
@@ -271,7 +271,7 @@ Parse, filter, tidy and write files.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{diro}}{(\code{character(1)})\cr
+\item{\code{out_dir}}{(\code{character(1)})\cr
 Directory path to output tidy files.}
 
 \item{\code{format}}{(\code{character(1)})\cr

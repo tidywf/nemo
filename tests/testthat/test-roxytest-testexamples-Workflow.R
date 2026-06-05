@@ -16,11 +16,11 @@ test_that("Function Workflow() @ L61", {
   (tbls <- wf$get_tbls())
   (rs <- wf$get_raw_schemas_all())
   dir1 <- fs::file_temp(); dir2 <- fs::file_temp()
-  wf$write(diro = dir1, format = "parquet", input_id = "run1")
+  wf$write(out_dir = dir1, format = "parquet", input_id = "run1")
   (lf1 <- list.files(dir1, pattern = "tool1.*parquet", full.names = TRUE))
   (meta <- wf$get_metadata(input_id = "run1", output_id = "out1", output_dir = dir1))
   wf2 <- Workflow$new(name = "wf2", path = path, tools = tools)
-  wf2$nemofy(diro = dir2, format = "parquet", input_id = "run2")
+  wf2$wrangle(out_dir = dir2, format = "parquet", input_id = "run2")
   (lf2 <- list.files(dir2, pattern = "tool1.*parquet", full.names = TRUE))
   # list_files
   nms1 <- c(
@@ -42,7 +42,7 @@ test_that("Function Workflow() @ L61", {
   )
   # get_metadata
   expect_named(meta, c("input_id", "output_id", "input_dirs", "output_dir", "pkg_versions", "files"))
-  # nemofy: all parsers written
+  # wrangle: all parsers written
   expect_true(all(c("tool1_table1", "tool1_table4") %in% sub(".*_(tool1_table\\d).*", "\\1", basename(lf2))))
 })
 

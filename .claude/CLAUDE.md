@@ -25,7 +25,7 @@ Built with `argparse` via `nemo_cli()`. Two subcommands:
 | Subcommand | Key args | What it does |
 |------------|----------|--------------|
 | `list` | `-d IN_DIR -f FORMAT` | Lists parsable files; output as `pretty` or `tsv` |
-| `tidy` | `-d IN_DIR -o OUT_DIR -f FORMAT` | Runs `nemofy()` and writes tidy outputs |
+| `tidy` | `-d IN_DIR -o OUT_DIR -f FORMAT` | Runs `wrangle()` and writes tidy outputs |
 
 Both accept `-w WORKFLOW` and `-q` (quiet). `tidy` also accepts:
 - `--input_id` — adds an `input_id` column to all output tables
@@ -65,5 +65,5 @@ devtools::check()
 
 path <- system.file("extdata/tool1", package = "nemo")
 wf <- Workflow$new(name = "test_wf", path = path, tools = list(tool1 = Tool1))
-wf$nemofy(diro = tempdir(), format = "parquet", input_id = "run1")
+wf$wrangle(out_dir = tempdir(), format = "parquet", input_id = "run1")
 ```

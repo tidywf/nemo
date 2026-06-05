@@ -246,7 +246,7 @@ t2$tidy() # first need to tidy
 outdir1 <- tempdir()
 fmt <- "csv"
 t2$write(
-  diro = outdir1,
+  out_dir = outdir1,
   format = fmt,
   input_id = "run123",
   output_id = "out123",
@@ -259,17 +259,17 @@ wfiles |>
 # readr::read_csv(wfiles$path[1], show_col_types = F) # see tidywf/tidywigits#137
 ```
 
-### nemofy
+### wrangle
 
-The `nemofy` function is a convenient wrapper for the process of filtering,
+The `wrangle` function is a convenient wrapper for the process of filtering,
 tidying, and writing.
 
-```{r nemofy1}
+```{r wrangle1}
 t3 <- nemo::Tool1$new(path = tool1_path)
 outdir2 <- file.path(tempdir(), "t3") |> fs::dir_create()
 t3$files
-t3$nemofy(
-  diro = outdir2,
+t3$wrangle(
+  out_dir = outdir2,
   format = "tsv",
   input_id = "run_t3"
 )
@@ -290,15 +290,15 @@ tidy tables from a variety of bioinformatic tools. See `?Workflow`.
 For example, {nemo} contains a `Workflow1` class as a `Workflow` child (containing
 only a single `Tool1` for simplicity). Similarly to `Tool`, a `Workflow` object
 contains functions such as `filter_files`, `list_files`, `tidy`, `write` and
-`nemofy`:
+`wrangle`:
 
 ```{r w1_init}
 w <- system.file("extdata/tool1", package = "nemo") |>
   nemo::Workflow1$new()
 outdir3 <- file.path(tempdir(), "oa") |> fs::dir_create()
 w$list_files()
-x <- w$nemofy(
-  diro = outdir3,
+x <- w$wrangle(
+  out_dir = outdir3,
   format = "tsv",
   input_id = "workflow1_run1",
   output_id = "out1",
@@ -313,7 +313,7 @@ wfiles3 |>
 
 ## Metadata
 
-After each `Workflow$write()` or `Workflow$nemofy()` call (for non-`db` formats),
+After each `Workflow$write()` or `Workflow$wrangle()` call (for non-`db` formats),
 a `metadata.parquet` file is written directly to the output directory alongside
 the tidy tables.
 It is a single-row tibble capturing the run context: IDs, input/output paths,

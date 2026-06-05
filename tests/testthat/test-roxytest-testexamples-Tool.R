@@ -24,13 +24,13 @@ test_that("Function Tool() @ L95", {
   toolC$files
   toolC$tbls # note the tidy column
   dir1 <- fs::file_temp(); dir2 <- fs::file_temp()
-  toolC$write(diro = dir1, format = "parquet", input_id = "run1")
+  toolC$write(out_dir = dir1, format = "parquet", input_id = "run1")
   (lfC <- list.files(dir1, full.names = TRUE))
   
-  # nemofy
+  # wrangle
   toolD <- Tool$new(name = name, pkg = pkg, path = path)$
     filter_files(exclude = "tool1_table5")$
-    nemofy(diro = dir2, format = "parquet", input_id = "run2")
+    wrangle(out_dir = dir2, format = "parquet", input_id = "run2")
   (lfD <- list.files(dir2, full.names = TRUE))
   
   
@@ -66,11 +66,11 @@ test_that("Function Tool() @ L95", {
   toolE <- Tool$new(name = name, pkg = pkg, path = path)$
     filter_files(include = "tool1_table1")$tidy()
   read_pq <- function(d) arrow::read_parquet(list.files(d, pattern = "[.]parquet$", full.names = TRUE)[1])
-  dE0 <- fs::file_temp(); toolE$write(diro = dE0, format = "parquet")
-  dEi <- fs::file_temp(); toolE$write(diro = dEi, format = "parquet", input_id = "run1")
-  dEo <- fs::file_temp(); toolE$write(diro = dEo, format = "parquet", output_id = "out1")
-  dEp <- fs::file_temp(); toolE$write(diro = dEp, format = "parquet", pfix_include = TRUE)
-  dEa <- fs::file_temp(); toolE$write(diro = dEa, format = "parquet", input_id = "run1", output_id = "out1", pfix_include = TRUE)
+  dE0 <- fs::file_temp(); toolE$write(out_dir = dE0, format = "parquet")
+  dEi <- fs::file_temp(); toolE$write(out_dir = dEi, format = "parquet", input_id = "run1")
+  dEo <- fs::file_temp(); toolE$write(out_dir = dEo, format = "parquet", output_id = "out1")
+  dEp <- fs::file_temp(); toolE$write(out_dir = dEp, format = "parquet", pfix_include = TRUE)
+  dEa <- fs::file_temp(); toolE$write(out_dir = dEa, format = "parquet", input_id = "run1", output_id = "out1", pfix_include = TRUE)
   expect_false(any(c("input_id", "output_id", "input_pfix") %in% names(read_pq(dE0))))
   expect_equal(read_pq(dEi)$input_id[1], "run1")
   expect_equal(read_pq(dEo)$output_id[1], "out1")

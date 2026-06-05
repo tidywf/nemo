@@ -18,7 +18,7 @@ A Tool object:
 }
 
 The typical workflow is: optionally filter files with \code{filter_files()}, parse
-and tidy with \code{tidy()}, then write outputs with \code{write()}. \code{nemofy()} chains
+and tidy with \code{tidy()}, then write outputs with \code{write()}. \code{wrangle()} chains
 all three steps.
 }
 \examples{
@@ -42,13 +42,13 @@ toolC <- Tool$new(name = name, pkg = pkg, path = path)$
 toolC$files
 toolC$tbls # note the tidy column
 dir1 <- fs::file_temp(); dir2 <- fs::file_temp()
-toolC$write(diro = dir1, format = "parquet", input_id = "run1")
+toolC$write(out_dir = dir1, format = "parquet", input_id = "run1")
 (lfC <- list.files(dir1, full.names = TRUE))
 
-# nemofy
+# wrangle
 toolD <- Tool$new(name = name, pkg = pkg, path = path)$
   filter_files(exclude = "tool1_table5")$
-  nemofy(diro = dir2, format = "parquet", input_id = "run2")
+  wrangle(out_dir = dir2, format = "parquet", input_id = "run2")
 (lfD <- list.files(dir2, full.names = TRUE))
 
 
@@ -110,7 +110,7 @@ Tibble of files from \code{\link[=list_files_dir]{list_files_dir()}}.}
 \item \href{#method-Tool-.parse_file_nohead}{\code{Tool$.parse_file_nohead()}}
 \item \href{#method-Tool-tidy}{\code{Tool$tidy()}}
 \item \href{#method-Tool-write}{\code{Tool$write()}}
-\item \href{#method-Tool-nemofy}{\code{Tool$nemofy()}}
+\item \href{#method-Tool-wrangle}{\code{Tool$wrangle()}}
 \item \href{#method-Tool-clone}{\code{Tool$clone()}}
 }
 }
@@ -458,7 +458,7 @@ R6 object invisibly.
 Write tidy tibbles.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Tool$write(
-  diro = ".",
+  out_dir = ".",
   format = "tsv",
   input_id = NULL,
   output_id = NULL,
@@ -470,7 +470,7 @@ Write tidy tibbles.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{diro}}{(\code{character(1)})\cr
+\item{\code{out_dir}}{(\code{character(1)})\cr
 Directory path to output tidy files. Ignored if format is db.}
 
 \item{\code{format}}{(\code{character(1)})\cr
@@ -497,13 +497,13 @@ A tibble with columns \code{raw_path}, \code{tool_parser}, \code{prefix}, \code{
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Tool-nemofy"></a>}}
-\if{latex}{\out{\hypertarget{method-Tool-nemofy}{}}}
-\subsection{Method \code{nemofy()}}{
+\if{html}{\out{<a id="method-Tool-wrangle"></a>}}
+\if{latex}{\out{\hypertarget{method-Tool-wrangle}{}}}
+\subsection{Method \code{wrangle()}}{
 Parse, filter, tidy and write files.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Tool$nemofy(
-  diro = ".",
+\if{html}{\out{<div class="r">}}\preformatted{Tool$wrangle(
+  out_dir = ".",
   format = "tsv",
   input_id = NULL,
   output_id = NULL,
@@ -517,7 +517,7 @@ Parse, filter, tidy and write files.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{diro}}{(\code{character(1)})\cr
+\item{\code{out_dir}}{(\code{character(1)})\cr
 Directory path to output tidy files.}
 
 \item{\code{format}}{(\code{character(1)})\cr

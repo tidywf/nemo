@@ -12,7 +12,7 @@
 #' - has a tibble of written output files, populated after `write()` (`written_files`);
 #'
 #' The typical workflow is: optionally filter with `filter_files()`, tidy with
-#' `tidy()`, then write with `write()`. `nemofy()` chains all three steps.
+#' `tidy()`, then write with `write()`. `wrangle()` chains all three steps.
 #'
 #' @examples
 #' fs::path(tempdir(), letters[1:5]) |>
@@ -27,11 +27,11 @@
 #' (tbls <- wf$get_tbls())
 #' (rs <- wf$get_raw_schemas_all())
 #' dir1 <- fs::file_temp(); dir2 <- fs::file_temp()
-#' wf$write(diro = dir1, format = "parquet", input_id = "run1")
+#' wf$write(out_dir = dir1, format = "parquet", input_id = "run1")
 #' (lf1 <- list.files(dir1, pattern = "tool1.*parquet", full.names = TRUE))
 #' (meta <- wf$get_metadata(input_id = "run1", output_id = "out1", output_dir = dir1))
 #' wf2 <- Workflow$new(name = "wf2", path = path, tools = tools)
-#' wf2$nemofy(diro = dir2, format = "parquet", input_id = "run2")
+#' wf2$wrangle(out_dir = dir2, format = "parquet", input_id = "run2")
 #' (lf2 <- list.files(dir2, pattern = "tool1.*parquet", full.names = TRUE))
 #' @testexamples
 #' # list_files
@@ -54,7 +54,7 @@
 #' )
 #' # get_metadata
 #' expect_named(meta, c("input_id", "output_id", "input_dirs", "output_dir", "pkg_versions", "files"))
-#' # nemofy: all parsers written
+#' # wrangle: all parsers written
 #' expect_true(all(c("tool1_table1", "tool1_table4") %in% sub(".*_(tool1_table\\d).*", "\\1", basename(lf2))))
 #'
 #' @export
@@ -165,7 +165,7 @@ Workflow <- R6::R6Class(
       return(invisible(self))
     },
     #' @description Write tidy tibbles.
-    #' @param diro (`character(1)`)\cr
+    #' @param out_dir (`character(1)`)\cr
     #' Directory path to output tidy files.
     #' @param format (`character(1)`)\cr
     #' Format of output.
@@ -180,7 +180,7 @@ Workflow <- R6::R6Class(
     #' @return (`R6::R6Class()`)\cr
     #' R6 object invisibly.
     write = function(
-      diro = ".",
+      out_dir = ".",
       format = "tsv",
       input_id = NULL,
       output_id = NULL,
@@ -190,7 +190,7 @@ Workflow <- R6::R6Class(
       res <- self$tools |>
         purrr::map(\(x) {
           x$write(
-            diro = diro,
+            out_dir = out_dir,
             format = format,
             input_id = input_id,
             output_id = output_id,
@@ -203,14 +203,14 @@ Workflow <- R6::R6Class(
       self$written_files <- res
       # Write metadata
       if (format != "db" && !is.null(res)) {
-        diro <- normalizePath(diro)
-        meta <- self$get_metadata(input_id = input_id, output_id = output_id, output_dir = diro)
-        arrow::write_parquet(meta, file.path(diro, "metadata.parquet"))
+        out_dir <- normalizePath(out_dir)
+        meta <- self$get_metadata(input_id = input_id, output_id = output_id, output_dir = out_dir)
+        arrow::write_parquet(meta, file.path(out_dir, "metadata.parquet"))
       }
       return(invisible(self))
     },
     #' @description Parse, filter, tidy and write files.
-    #' @param diro (`character(1)`)\cr
+    #' @param out_dir (`character(1)`)\cr
     #' Directory path to output tidy files.
     #' @param format (`character(1)`)\cr
     #' Format of output.
@@ -228,8 +228,8 @@ Workflow <- R6::R6Class(
     #' tool_parser names to exclude (e.g. `"tool1_table5"`).
     #' @return (`R6::R6Class()`)\cr
     #' R6 object invisibly.
-    nemofy = function(
-      diro = ".",
+    wrangle = function(
+      out_dir = ".",
       format = "tsv",
       input_id = NULL,
       output_id = NULL,
@@ -242,7 +242,7 @@ Workflow <- R6::R6Class(
       self$filter_files(include = include, exclude = exclude)$
         tidy()$
         write(
-          diro = diro,
+          out_dir = out_dir,
           format = format,
           input_id = input_id,
           output_id = output_id,
@@ -300,7 +300,7 @@ Workflow <- R6::R6Class(
       }
       files <- NULL
       if (private$is_written) {
-        # just keep bname and provide diro, no need for full outpath since
+        # just keep bname and provide out_dir, no need for full outpath since
         # it's a flat output structure.
         files <- self$written_files |>
           dplyr::mutate(outpath = basename(.data$outpath)) |>
