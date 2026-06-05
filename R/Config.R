@@ -10,8 +10,8 @@
 #' A Config object:
 #' - belongs to a package (`pkg`);
 #' - has a tool name (`tool`);
-#' - has a parsed config list (`config`);
-#' - caches all raw schemas as a flat tibble (`raw_schemas_all`);
+#' - has a parsed tables list (`tables`);
+#' - caches all raw schemas as a flat tibble (`schemas_raw`);
 #' @examples
 #' tool <- "tool1"
 #' pkg <- "nemo"
@@ -20,12 +20,12 @@
 #' (ftypes <- conf$get_ftypes())
 #' (ftype1 <- conf$get_ftype("table1"))
 #' (descr <- conf$get_descriptions())
-#' (rs <- conf$get_schemas_all("raw"))
-#' (ts <- conf$get_schemas_all("tidy"))
-#' (s1 <- conf$get_schema("table1"))
-#' conf$get_schema("table1", v = "v1.2.3")
-#' conf$get_schema("table1", raw_or_tidy = "tidy")
-#' conf$are_schemas_valid()
+#' (rs <- conf$get_schemas_raw())
+#' (ts <- conf$get_schemas_tidy())
+#' (s1 <- conf$get_schema_raw("table1"))
+#' conf$get_schema_raw("table1", v = "v1.2.3")
+#' conf$get_schema_tidy("table1")
+#' conf$validate_schemas()
 #' (cm <- conf$get_col_map("table5"))
 #'
 #' @testexamples
@@ -39,17 +39,17 @@
 #' expect_equal(ftype1, "txt")
 #' # get_descriptions
 #' expect_equal(nrow(descr), 6)
-#' # get_schemas_all
+#' # get_schemas_raw / get_schemas_tidy
 #' expect_equal(dplyr::filter(rs, .data$name == "table1") |> nrow(), 3)
 #' expect_equal(dplyr::filter(ts, .data$name == "table1") |> nrow(), 3)
-#' # get_schema
+#' # get_schema_raw
 #' expect_named(s1, c("version", "field", "type"))
-#' expect_equal(nrow(conf$get_schema("table1", v = "v1.2.3")), 5)
-#' expect_equal(nrow(conf$get_schema("table1", v = "v4.5.6")), 4)
-#' expect_error(conf$get_schema("foo"))
-#' expect_error(conf$get_schema("table1", v = "foo"))
-#' # are_schemas_valid
-#' expect_true(conf$are_schemas_valid())
+#' expect_equal(nrow(conf$get_schema_raw("table1", v = "v1.2.3")), 5)
+#' expect_equal(nrow(conf$get_schema_raw("table1", v = "v4.5.6")), 4)
+#' expect_error(conf$get_schema_raw("foo"))
+#' expect_error(conf$get_schema_raw("table1", v = "foo"))
+#' # validate_schemas
+#' expect_true(conf$validate_schemas())
 #' # get_col_map
 #' expect_named(cm, c("raw", "tidy", "type", "description"))
 #'
@@ -63,12 +63,12 @@ Config <- R6::R6Class(
     #' @field pkg (`character(1)`)\cr
     #' Package name tool belongs to (for config lookup).
     pkg = NULL,
-    #' @field config (`list()`)\cr
-    #' Config list (parsed schema.yaml).
-    config = NULL,
-    #' @field raw_schemas_all (`tibble()`)\cr
+    #' @field tables (`list()`)\cr
+    #' Tables list (parsed from schema.yaml).
+    tables = NULL,
+    #' @field schemas_raw (`tibble()`)\cr
     #' All raw schemas for tool (versioned, for schema_guess).
-    raw_schemas_all = NULL,
+    schemas_raw = NULL,
 
     #' @description Create a new Config object.
     #' @param tool (`character(1)`)\cr
@@ -81,8 +81,8 @@ Config <- R6::R6Class(
       tool <- tolower(tool)
       self$tool <- tool
       self$pkg <- pkg
-      self$config <- self$read()
-      self$raw_schemas_all <- self$get_schemas_all("raw")
+      self$tables <- self$read()[["tables"]]
+      self$schemas_raw <- self$get_schemas_raw()
     },
     #' @description Print details about the Config.
     #' @param ... (ignored).
@@ -90,10 +90,10 @@ Config <- R6::R6Class(
     #' R6 object invisibly.
     print = function(...) {
       res <- tibble::tribble(
-        ~var   , ~value                                   ,
-        "tool" , self$tool                                ,
-        "pkg"  , self$pkg                                 ,
-        "nraw" , as.character(nrow(self$raw_schemas_all))
+        ~var   , ~value                               ,
+        "tool" , self$tool                            ,
+        "pkg"  , self$pkg                             ,
+        "nraw" , as.character(nrow(self$schemas_raw))
       )
       cat(glue("#--- Config {self$pkg}::{self$tool} ---#\n"))
       print(knitr::kable(res))
@@ -123,7 +123,7 @@ Config <- R6::R6Class(
     #' @return (`tibble()`)\cr
     #' Table `name` and its `pattern`.
     get_patterns = function() {
-      self$config[["tables"]] |>
+      self$tables |>
         purrr::map("pattern") |>
         tibble::enframe(value = "pattern") |>
         tidyr::unnest("pattern")
@@ -132,7 +132,7 @@ Config <- R6::R6Class(
     #' @return (`tibble()`)\cr
     #' Table `name` and its `ftype`.
     get_ftypes = function() {
-      self$config[["tables"]] |>
+      self$tables |>
         purrr::map("ftype") |>
         tibble::enframe(value = "ftype") |>
         tidyr::unnest("ftype")
@@ -143,103 +143,69 @@ Config <- R6::R6Class(
     #' @return (`character(1)`)\cr
     #' File type.
     get_ftype = function(x) {
-      tabs <- self$config[["tables"]]
       assertthat::assert_that(
-        x %in% names(tabs),
+        x %in% names(self$tables),
         msg = glue("{x} not found in tables for {self$tool}.")
       )
-      tabs[[x]][["ftype"]]
+      self$tables[[x]][["ftype"]]
     },
     #' @description Return all table descriptions.
     #' @return (`tibble()`)\cr
     #' Table `name` and its `description`.
     get_descriptions = function() {
-      self$config[["tables"]] |>
+      self$tables |>
         purrr::map("description") |>
         tibble::enframe(value = "description") |>
         tidyr::unnest("description")
     },
-    #' @description Return all raw or tidy schemas.
-    #' @param raw_or_tidy (`character(1)`)\cr
-    #' Either the raw or the tidy schema, or both.
+    #' @description Return raw schemas for all tables.
     #' @return (`tibble()`)\cr
     #' Table `name`, `tbl_description`, `version`, and `schema`
-    #' (list-col of tibble(field, type) for `"raw"`/`"tidy"`, or tibble(raw, tidy, type) for `"both"`).
-    get_schemas_all = function(raw_or_tidy = "raw") {
-      rt <- c("raw", "tidy", "both")
-      rt_col <- glue::glue_collapse(rt, sep = ", ", last = " or ")
-      assertthat::assert_that(
-        raw_or_tidy %in% rt,
-        msg = glue("raw_or_tidy must be one of {rt_col}, got '{raw_or_tidy}'.")
-      )
-      tabs <- self$config[["tables"]]
-      .get_schema <- function(tab, tab_name) {
-        cols_df <- tab[["columns"]] |>
-          purrr::map(\(col) {
-            col[["versions"]] <- list(col[["versions"]])
-            tibble::as_tibble_row(col)
-          }) |>
-          dplyr::bind_rows()
-        description <- tibble::tibble(tbl_description = tab[["description"]])
-        versions <- config_sort_versions(unique(unlist(cols_df[["versions"]])))
-        .get_schema_per_version <- function(v) {
-          cols_filtered <- cols_df |>
-            dplyr::filter(purrr::map_lgl(.data$versions, \(vs) v %in% vs)) |>
-            dplyr::mutate(type = schema_type_remap(.data$type))
-          cols_v <- if (raw_or_tidy == "both") {
-            cols_filtered |> dplyr::select("raw", "tidy", "type")
-          } else {
-            cols_filtered |> dplyr::select(field = dplyr::all_of({{ raw_or_tidy }}), "type")
-          }
-          tibble::tibble(version = v, schema = list(cols_v))
-        }
-        schema_rows <- purrr::map(versions, \(v) .get_schema_per_version(v)) |>
-          dplyr::bind_rows()
-        dplyr::bind_cols(description, schema_rows) |>
-          dplyr::mutate(name = tab_name, .before = 1)
-      }
-      tabs |>
-        purrr::imap(\(tab, tab_name) .get_schema(tab, tab_name)) |>
-        dplyr::bind_rows()
+    #' (list-col of tibble(field, type)).
+    get_schemas_raw = function() {
+      private$get_schemas("raw")
+    },
+    #' @description Return tidy schemas for all tables.
+    #' @return (`tibble()`)\cr
+    #' Table `name`, `tbl_description`, `version`, and `schema`
+    #' (list-col of tibble(field, type)).
+    get_schemas_tidy = function() {
+      private$get_schemas("tidy")
+    },
+    #' @description Return both raw and tidy schemas for all tables.
+    #' @return (`tibble()`)\cr
+    #' Table `name`, `tbl_description`, `version`, and `schema`
+    #' (list-col of tibble(raw, tidy, type)).
+    get_schemas_both = function() {
+      private$get_schemas("both")
     },
     #' @description Get raw schema for a specific table and optional version.
     #' @param x (`character(1)`)\cr
     #' Table name.
     #' @param v (`character(1)`)\cr
     #' Version. If NULL, returns all versions.
-    #' @param raw_or_tidy (`character(1)`)\cr
-    #' Either the raw or the tidy schema.
     #' @return (`tibble()`)\cr
     #' Table `version`, `field` and `type`.
-    get_schema = function(x = NULL, v = NULL, raw_or_tidy = "raw") {
-      stopifnot(!is.null(x))
-      s <- self$get_schemas_all(raw_or_tidy = raw_or_tidy)
-      assertthat::assert_that(
-        x %in% s[["name"]],
-        msg = glue("{x} not found in schemas for {self$tool}.")
-      )
-      res <- s |>
-        dplyr::filter(.data$name == x)
-      if (!is.null(v)) {
-        assertthat::assert_that(
-          v %in% res[["version"]],
-          msg = glue("{v} not found in versions for {x} in {self$tool}.")
-        )
-        res <- res |>
-          dplyr::filter(.data$version == v)
-      }
-      res |>
-        tidyr::unnest("schema") |>
-        dplyr::select("version", "field", "type")
+    get_schema_raw = function(x = NULL, v = NULL) {
+      private$get_schema(x, v, self$schemas_raw)
+    },
+    #' @description Get tidy schema for a specific table and optional version.
+    #' @param x (`character(1)`)\cr
+    #' Table name.
+    #' @param v (`character(1)`)\cr
+    #' Version. If NULL, returns all versions.
+    #' @return (`tibble()`)\cr
+    #' Table `version`, `field` and `type`.
+    get_schema_tidy = function(x = NULL, v = NULL) {
+      private$get_schema(x, v, self$get_schemas_tidy())
     },
     #' @description Validate schemas.
     #' @return (`logical(1)`)\cr
     #' TRUE or FALSE.
-    are_schemas_valid = function() {
+    validate_schemas = function() {
       valid_types <- c(char = "c", int = "i", float = "d")
       valid_types_print <- glue::glue_collapse(valid_types, sep = ", ", last = " or ")
-      s <- self$raw_schemas_all
-      invalid <- s |>
+      invalid <- self$schemas_raw |>
         tidyr::unnest("schema") |>
         dplyr::mutate(invalid_type = !.data$type %in% valid_types) |>
         dplyr::filter(.data$invalid_type) |>
@@ -252,11 +218,10 @@ Config <- R6::R6Class(
         msg1 <- invalid |>
           dplyr::pull("warn") |>
           glue::glue_collapse(sep = "; ")
-        msg2 <- glue(
+        warning(glue(
           "Field types need to be one of: {valid_types_print}\n",
           "Check the following in the {self$tool} config:\n{msg1}"
-        )
-        warning(msg2)
+        ))
         return(FALSE)
       }
       return(TRUE)
@@ -269,12 +234,11 @@ Config <- R6::R6Class(
     #' Version. If NULL, uses the latest version.
     get_col_map = function(x = NULL, v = NULL) {
       stopifnot(!is.null(x))
-      tabs <- self$config[["tables"]]
       assertthat::assert_that(
-        x %in% names(tabs),
+        x %in% names(self$tables),
         msg = glue("{x} not found in tables for {self$tool}.")
       )
-      cols_df <- tabs[[x]][["columns"]] |>
+      cols_df <- self$tables[[x]][["columns"]] |>
         purrr::map(\(col) {
           col[["versions"]] <- list(col[["versions"]])
           tibble::as_tibble_row(col)
@@ -294,7 +258,59 @@ Config <- R6::R6Class(
         dplyr::mutate(type = schema_type_remap(.data$type)) |>
         dplyr::select("raw", "tidy", "type", "description")
     }
-  ) # end public
+  ), # end public
+  private = list(
+    get_schemas = function(raw_or_tidy) {
+      .get_one <- function(tab, tab_name) {
+        cols_df <- tab[["columns"]] |>
+          purrr::map(\(col) {
+            col[["versions"]] <- list(col[["versions"]])
+            tibble::as_tibble_row(col)
+          }) |>
+          dplyr::bind_rows()
+        description <- tibble::tibble(tbl_description = tab[["description"]])
+        versions <- config_sort_versions(unique(unlist(cols_df[["versions"]])))
+        .get_version <- function(v) {
+          cols_filtered <- cols_df |>
+            dplyr::filter(purrr::map_lgl(.data$versions, \(vs) v %in% vs)) |>
+            dplyr::mutate(type = schema_type_remap(.data$type))
+          cols_v <- if (raw_or_tidy == "both") {
+            cols_filtered |> dplyr::select("raw", "tidy", "type")
+          } else {
+            cols_filtered |> dplyr::select(field = dplyr::all_of({{ raw_or_tidy }}), "type")
+          }
+          tibble::tibble(version = v, schema = list(cols_v))
+        }
+        schema_rows <- purrr::map(versions, .get_version) |>
+          dplyr::bind_rows()
+        dplyr::bind_cols(description, schema_rows) |>
+          dplyr::mutate(name = tab_name, .before = 1)
+      }
+      self$tables |>
+        purrr::imap(.get_one) |>
+        dplyr::bind_rows()
+    },
+    get_schema = function(x, v, schemas) {
+      stopifnot(!is.null(x))
+      assertthat::assert_that(
+        x %in% schemas[["name"]],
+        msg = glue("{x} not found in schemas for {self$tool}.")
+      )
+      res <- schemas |>
+        dplyr::filter(.data$name == x)
+      if (!is.null(v)) {
+        assertthat::assert_that(
+          v %in% res[["version"]],
+          msg = glue("{v} not found in versions for {x} in {self$tool}.")
+        )
+        res <- res |>
+          dplyr::filter(.data$version == v)
+      }
+      res |>
+        tidyr::unnest("schema") |>
+        dplyr::select("version", "field", "type")
+    }
+  ) # end private
 )
 
 #' Sort version strings with "latest" always last

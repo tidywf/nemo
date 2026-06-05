@@ -25,7 +25,7 @@
 #' wf$filter_files(exclude = "tool1_table5")
 #' wf$tidy()
 #' (tbls <- wf$get_tbls())
-#' (rs <- wf$get_raw_schemas_all())
+#' (rs <- wf$get_schemas_raw())
 #' dir1 <- fs::file_temp(); dir2 <- fs::file_temp()
 #' wf$write(output_dir = dir1, format = "parquet", input_id = "run1")
 #' (lf1 <- list.files(dir1, pattern = "tool1.*parquet", full.names = TRUE))
@@ -45,7 +45,7 @@
 #' expect_false("tool1_table5" %in% tbls$tool_parser)
 #' expect_true("tool1_table4" %in% tbls$tool_parser)
 #' expect_named(tbls, c(nms1, "tidy"))
-#' # get_raw_schemas_all
+#' # get_schemas_raw
 #' expect_named(rs, c("tool", "name", "tbl_description", "version", "schema"))
 #' # write: two table4 output files (one per version)
 #' expect_equal(sum(grepl("table4", basename(lf1))), 2)
@@ -256,11 +256,11 @@ Workflow <- R6::R6Class(
     },
     #' @description Get raw schemas for all Tools.
     #' @return (`tibble()`)\cr
-    #' Bound `raw_schemas_all` tibbles from all Tools, with a leading `tool` column.
-    get_raw_schemas_all = function() {
+    #' Bound `schemas_raw` tibbles from all Tools, with a leading `tool` column.
+    get_schemas_raw = function() {
       self$tools |>
         purrr::map(\(x) {
-          x$raw_schemas_all |>
+          x$schemas_raw |>
             dplyr::mutate(tool = x$name) |>
             dplyr::relocate("tool", .before = 1)
         }) |>
@@ -268,11 +268,11 @@ Workflow <- R6::R6Class(
     },
     #' @description Get tidy schemas for all Tools.
     #' @return (`tibble()`)\cr
-    #' Bound tidy schema tibbles from all Tools, with a leading `tool` column.
-    get_tidy_schemas_all = function() {
+    #' Bound `schemas_tidy` tibbles from all Tools, with a leading `tool` column.
+    get_schemas_tidy = function() {
       self$tools |>
         purrr::map(\(x) {
-          x$tidy_schemas_all |>
+          x$schemas_tidy |>
             dplyr::mutate(tool = x$name) |>
             dplyr::relocate("tool", .before = 1)
         }) |>

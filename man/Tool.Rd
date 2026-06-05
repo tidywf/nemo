@@ -74,16 +74,16 @@ Tibble of files matching available Tool patterns.}
 \item{\code{tbls}}{(\code{tibble()})\cr
 Tibble of tidy tibbles.}
 
-\item{\code{raw_schemas_all}}{(\code{tibble()})\cr
+\item{\code{schemas_raw}}{(\code{tibble()})\cr
 All raw schemas for tool.}
 
-\item{\code{tidy_schemas_all}}{(\code{tibble()})\cr
+\item{\code{schemas_tidy}}{(\code{tibble()})\cr
 All tidy schemas for tool.}
 
-\item{\code{get_tidy_schema}}{(\verb{function()})\cr
+\item{\code{get_schema_tidy}}{(\verb{function()})\cr
 Get specific tidy schema.}
 
-\item{\code{get_raw_schema}}{(\verb{function()})\cr
+\item{\code{get_schema_raw}}{(\verb{function()})\cr
 Get specific raw schema.}
 
 \item{\code{get_col_map}}{(\verb{function()})\cr

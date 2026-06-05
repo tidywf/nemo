@@ -14,7 +14,7 @@ test_that("Function Workflow() @ L61", {
   wf$filter_files(exclude = "tool1_table5")
   wf$tidy()
   (tbls <- wf$get_tbls())
-  (rs <- wf$get_raw_schemas_all())
+  (rs <- wf$get_schemas_raw())
   dir1 <- fs::file_temp(); dir2 <- fs::file_temp()
   wf$write(output_dir = dir1, format = "parquet", input_id = "run1")
   (lf1 <- list.files(dir1, pattern = "tool1.*parquet", full.names = TRUE))
@@ -33,7 +33,7 @@ test_that("Function Workflow() @ L61", {
   expect_false("tool1_table5" %in% tbls$tool_parser)
   expect_true("tool1_table4" %in% tbls$tool_parser)
   expect_named(tbls, c(nms1, "tidy"))
-  # get_raw_schemas_all
+  # get_schemas_raw
   expect_named(rs, c("tool", "name", "tbl_description", "version", "schema"))
   # write: two table4 output files (one per version)
   expect_equal(sum(grepl("table4", basename(lf1))), 2)

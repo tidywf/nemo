@@ -68,6 +68,21 @@ pr <- function(n) {
 
 ### API
 
+- Rename `out_dir` => `output_dir` across `Tool$write/wrangle`, `Workflow$write/wrangle`,
+  `cli_nemo_tidy`, and `nemo_uml`; CLI flag `--out_dir` => `--output_dir`
+- Rename `pfix_include` => `prefix_include` across `Tool$write/wrangle`,
+  `Workflow$write/wrangle`, and `cli_nemo_tidy`; output column `input_pfix` =>
+  `input_prefix`
+- `Config`: rename `config` field => `tables`; `raw_schemas_all` field =>
+  `schemas_raw`; `get_schemas_all(raw_or_tidy)` => `get_schemas_raw()` /
+  `get_schemas_tidy()` / `get_schemas_both()`; `get_schema(x, v, raw_or_tidy)` =>
+  `get_schema_raw(x, v)` / `get_schema_tidy(x, v)`; `are_schemas_valid()` =>
+  `validate_schemas()`
+- `Tool`: rename fields `raw_schemas_all` => `schemas_raw`, `tidy_schemas_all` =>
+  `schemas_tidy`, `get_tidy_schema` => `get_schema_tidy`, `get_raw_schema` =>
+  `get_schema_raw`
+- `Workflow`: rename `get_raw_schemas_all()` => `get_schemas_raw()`,
+  `get_tidy_schemas_all()` => `get_schemas_tidy()`
 - `Tool$write`, `Workflow$write`, `Workflow$nemofy`: add `pfix_include` argument
   (default `FALSE`) to control whether `input_pfix` is prepended to tidy tables
 - `Tool`: refactor parse/tidy dispatch — subclasses can now override per-table
