@@ -32,11 +32,11 @@ wf$tidy()
 (tbls <- wf$get_tbls())
 (rs <- wf$get_raw_schemas_all())
 dir1 <- fs::file_temp(); dir2 <- fs::file_temp()
-wf$write(out_dir = dir1, format = "parquet", input_id = "run1")
+wf$write(output_dir = dir1, format = "parquet", input_id = "run1")
 (lf1 <- list.files(dir1, pattern = "tool1.*parquet", full.names = TRUE))
 (meta <- wf$get_metadata(input_id = "run1", output_id = "out1", output_dir = dir1))
 wf2 <- Workflow$new(name = "wf2", path = path, tools = tools)
-wf2$wrangle(out_dir = dir2, format = "parquet", input_id = "run2")
+wf2$wrangle(output_dir = dir2, format = "parquet", input_id = "run2")
 (lf2 <- list.files(dir2, pattern = "tool1.*parquet", full.names = TRUE))
 }
 \section{Public fields}{
@@ -213,11 +213,11 @@ R6 object invisibly.
 Write tidy tibbles.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Workflow$write(
-  out_dir = ".",
+  output_dir = ".",
   format = "tsv",
   input_id = NULL,
   output_id = NULL,
-  pfix_include = FALSE,
+  prefix_include = FALSE,
   dbconn = NULL
 )}\if{html}{\out{</div>}}
 }
@@ -225,7 +225,7 @@ Write tidy tibbles.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{out_dir}}{(\code{character(1)})\cr
+\item{\code{output_dir}}{(\code{character(1)})\cr
 Directory path to output tidy files.}
 
 \item{\code{format}}{(\code{character(1)})\cr
@@ -237,8 +237,8 @@ Input ID to use for the dataset (e.g. \code{run123}).}
 \item{\code{output_id}}{(\code{character(1)})\cr
 Output ID to use for the dataset (e.g. \code{run123}).}
 
-\item{\code{pfix_include}}{(\code{logical(1)})\cr
-If \code{TRUE}, prepend an \code{input_pfix} column to each tidy table.}
+\item{\code{prefix_include}}{(\code{logical(1)})\cr
+If \code{TRUE}, prepend an \code{input_prefix} column to each tidy table.}
 
 \item{\code{dbconn}}{(\code{DBIConnection})\cr
 Database connection object (see \code{DBI::dbConnect}).}
@@ -257,11 +257,11 @@ R6 object invisibly.
 Parse, filter, tidy and write files.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Workflow$wrangle(
-  out_dir = ".",
+  output_dir = ".",
   format = "tsv",
   input_id = NULL,
   output_id = NULL,
-  pfix_include = FALSE,
+  prefix_include = FALSE,
   dbconn = NULL,
   include = NULL,
   exclude = NULL
@@ -271,7 +271,7 @@ Parse, filter, tidy and write files.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{out_dir}}{(\code{character(1)})\cr
+\item{\code{output_dir}}{(\code{character(1)})\cr
 Directory path to output tidy files.}
 
 \item{\code{format}}{(\code{character(1)})\cr
@@ -283,8 +283,8 @@ Input ID to use for the dataset (e.g. \code{run123}).}
 \item{\code{output_id}}{(\code{character(1)})\cr
 Output ID to use for the dataset (e.g. \code{run123}).}
 
-\item{\code{pfix_include}}{(\code{logical(1)})\cr
-If \code{TRUE}, prepend an \code{input_pfix} column to each tidy table.}
+\item{\code{prefix_include}}{(\code{logical(1)})\cr
+If \code{TRUE}, prepend an \code{input_prefix} column to each tidy table.}
 
 \item{\code{dbconn}}{(\code{DBIConnection})\cr
 Database connection object (see \code{DBI::dbConnect}).}

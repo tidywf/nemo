@@ -42,13 +42,13 @@ toolC <- Tool$new(name = name, pkg = pkg, path = path)$
 toolC$files
 toolC$tbls # note the tidy column
 dir1 <- fs::file_temp(); dir2 <- fs::file_temp()
-toolC$write(out_dir = dir1, format = "parquet", input_id = "run1")
+toolC$write(output_dir = dir1, format = "parquet", input_id = "run1")
 (lfC <- list.files(dir1, full.names = TRUE))
 
 # wrangle
 toolD <- Tool$new(name = name, pkg = pkg, path = path)$
   filter_files(exclude = "tool1_table5")$
-  wrangle(out_dir = dir2, format = "parquet", input_id = "run2")
+  wrangle(output_dir = dir2, format = "parquet", input_id = "run2")
 (lfD <- list.files(dir2, full.names = TRUE))
 
 
@@ -458,11 +458,11 @@ R6 object invisibly.
 Write tidy tibbles.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Tool$write(
-  out_dir = ".",
+  output_dir = ".",
   format = "tsv",
   input_id = NULL,
   output_id = NULL,
-  pfix_include = FALSE,
+  prefix_include = FALSE,
   dbconn = NULL
 )}\if{html}{\out{</div>}}
 }
@@ -470,7 +470,7 @@ Write tidy tibbles.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{out_dir}}{(\code{character(1)})\cr
+\item{\code{output_dir}}{(\code{character(1)})\cr
 Directory path to output tidy files. Ignored if format is db.}
 
 \item{\code{format}}{(\code{character(1)})\cr
@@ -482,8 +482,8 @@ Input ID to use for the dataset (e.g. \code{run123}).}
 \item{\code{output_id}}{(\code{character(1)})\cr
 Output ID to use for the dataset (e.g. \code{run123}).}
 
-\item{\code{pfix_include}}{(\code{logical(1)})\cr
-If \code{TRUE}, prepend an \code{input_pfix} column to each tidy table.}
+\item{\code{prefix_include}}{(\code{logical(1)})\cr
+If \code{TRUE}, prepend an \code{input_prefix} column to each tidy table.}
 
 \item{\code{dbconn}}{(\code{DBIConnection})\cr
 Database connection object (see \code{DBI::dbConnect}).}
@@ -503,11 +503,11 @@ A tibble with columns \code{raw_path}, \code{tool_parser}, \code{prefix}, \code{
 Parse, filter, tidy and write files.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Tool$wrangle(
-  out_dir = ".",
+  output_dir = ".",
   format = "tsv",
   input_id = NULL,
   output_id = NULL,
-  pfix_include = FALSE,
+  prefix_include = FALSE,
   dbconn = NULL,
   include = NULL,
   exclude = NULL
@@ -517,7 +517,7 @@ Parse, filter, tidy and write files.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{out_dir}}{(\code{character(1)})\cr
+\item{\code{output_dir}}{(\code{character(1)})\cr
 Directory path to output tidy files.}
 
 \item{\code{format}}{(\code{character(1)})\cr
@@ -529,8 +529,8 @@ Input ID to use for the dataset (e.g. \code{run123}).}
 \item{\code{output_id}}{(\code{character(1)})\cr
 Output ID to use for the dataset (e.g. \code{run123}).}
 
-\item{\code{pfix_include}}{(\code{logical(1)})\cr
-If \code{TRUE}, prepend an \code{input_pfix} column to each tidy table.}
+\item{\code{prefix_include}}{(\code{logical(1)})\cr
+If \code{TRUE}, prepend an \code{input_prefix} column to each tidy table.}
 
 \item{\code{dbconn}}{(\code{DBIConnection})\cr
 Database connection object (see \code{DBI::dbConnect}).}

@@ -37,13 +37,13 @@
 #' toolC$files
 #' toolC$tbls # note the tidy column
 #' dir1 <- fs::file_temp(); dir2 <- fs::file_temp()
-#' toolC$write(out_dir = dir1, format = "parquet", input_id = "run1")
+#' toolC$write(output_dir = dir1, format = "parquet", input_id = "run1")
 #' (lfC <- list.files(dir1, full.names = TRUE))
 #'
 #' # wrangle
 #' toolD <- Tool$new(name = name, pkg = pkg, path = path)$
 #'   filter_files(exclude = "tool1_table5")$
-#'   wrangle(out_dir = dir2, format = "parquet", input_id = "run2")
+#'   wrangle(output_dir = dir2, format = "parquet", input_id = "run2")
 #' (lfD <- list.files(dir2, full.names = TRUE))
 #'
 #'
@@ -80,11 +80,11 @@
 #' toolE <- Tool$new(name = name, pkg = pkg, path = path)$
 #'   filter_files(include = "tool1_table1")$tidy()
 #' read_pq <- function(d) arrow::read_parquet(list.files(d, pattern = "[.]parquet$", full.names = TRUE)[1])
-#' dE0 <- fs::file_temp(); toolE$write(out_dir = dE0, format = "parquet")
-#' dEi <- fs::file_temp(); toolE$write(out_dir = dEi, format = "parquet", input_id = "run1")
-#' dEo <- fs::file_temp(); toolE$write(out_dir = dEo, format = "parquet", output_id = "out1")
-#' dEp <- fs::file_temp(); toolE$write(out_dir = dEp, format = "parquet", prefix_include = TRUE)
-#' dEa <- fs::file_temp(); toolE$write(out_dir = dEa, format = "parquet", input_id = "run1", output_id = "out1", prefix_include = TRUE)
+#' dE0 <- fs::file_temp(); toolE$write(output_dir = dE0, format = "parquet")
+#' dEi <- fs::file_temp(); toolE$write(output_dir = dEi, format = "parquet", input_id = "run1")
+#' dEo <- fs::file_temp(); toolE$write(output_dir = dEo, format = "parquet", output_id = "out1")
+#' dEp <- fs::file_temp(); toolE$write(output_dir = dEp, format = "parquet", prefix_include = TRUE)
+#' dEa <- fs::file_temp(); toolE$write(output_dir = dEa, format = "parquet", input_id = "run1", output_id = "out1", prefix_include = TRUE)
 #' expect_false(any(c("input_id", "output_id", "input_prefix") %in% names(read_pq(dE0))))
 #' expect_equal(read_pq(dEi)$input_id[1], "run1")
 #' expect_equal(read_pq(dEo)$output_id[1], "out1")
@@ -500,7 +500,7 @@ Tool <- R6::R6Class(
       return(invisible(self))
     },
     #' @description Write tidy tibbles.
-    #' @param out_dir (`character(1)`)\cr
+    #' @param output_dir (`character(1)`)\cr
     #' Directory path to output tidy files. Ignored if format is db.
     #' @param format (`character(1)`)\cr
     #' Format of output.
@@ -516,7 +516,7 @@ Tool <- R6::R6Class(
     #' A tibble with columns `raw_path`, `tool_parser`, `prefix`, `tidy_data`,
     #' `tbl_name` and `outpath`, invisibly. `NULL` if no files were found.
     write = function(
-      out_dir = ".",
+      output_dir = ".",
       format = "tsv",
       input_id = NULL,
       output_id = NULL,
@@ -524,11 +524,11 @@ Tool <- R6::R6Class(
       dbconn = NULL
     ) {
       if (format != "db") {
-        if (is.null(out_dir)) {
+        if (is.null(output_dir)) {
           stop("Output directory must be specified when format is not 'db'.")
         }
-        fs::dir_create(out_dir)
-        out_dir <- normalizePath(out_dir)
+        fs::dir_create(output_dir)
+        output_dir <- normalizePath(output_dir)
       }
       stopifnot("Did you forget to tidy?" = private$is_tidied)
       if (is.null(self$tbls)) {
@@ -568,7 +568,7 @@ Tool <- R6::R6Class(
             paste0(.data$tool_parser, .data$tidy_name)
           ),
           # used to write when non-db format
-          fpfix = paste(file.path(out_dir, .data$prefix), .data$tbl_name, sep = "_"),
+          fpfix = paste(file.path(output_dir, .data$prefix), .data$tbl_name, sep = "_"),
           dbtab = ifelse(
             format == "db",
             list(.data$tbl_name),
@@ -598,7 +598,7 @@ Tool <- R6::R6Class(
       return(invisible(d_write))
     },
     #' @description Parse, filter, tidy and write files.
-    #' @param out_dir (`character(1)`)\cr
+    #' @param output_dir (`character(1)`)\cr
     #' Directory path to output tidy files.
     #' @param format (`character(1)`)\cr
     #' Format of output.
@@ -618,7 +618,7 @@ Tool <- R6::R6Class(
     #' A tibble with columns `tool_parser`, `prefix`, `tidy_data`, `tbl_name`,
     #' `outpath`, invisibly. `NULL` if no files were found.
     wrangle = function(
-      out_dir = ".",
+      output_dir = ".",
       format = "tsv",
       input_id = NULL,
       output_id = NULL,
@@ -632,7 +632,7 @@ Tool <- R6::R6Class(
         filter_files(include = include, exclude = exclude)$
         tidy()$
         write(
-          out_dir = out_dir,
+          output_dir = output_dir,
           format = format,
           input_id = input_id,
           output_id = output_id,

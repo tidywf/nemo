@@ -19,7 +19,7 @@ p5 <- system.file("extdata/tool1/latest/sampleA.tool1.table5.csv", package = "ne
 (raw5 <- obj1$parse_table5(p5))
 (tidy5 <- obj1$tidy_table5(p5))
 
-obj1$wrangle(out_dir = dir1, format = "parquet", input_id = "run1")
+obj1$wrangle(output_dir = dir1, format = "parquet", input_id = "run1")
 (lf <- list.files(dir1, pattern = "tool1.*parquet", full.names = FALSE))
 
 obj2 <- Tool1$new(indir)$tidy()

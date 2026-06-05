@@ -7,11 +7,11 @@
 cli_nemo_tidy(
   workflow,
   in_dir,
-  out_dir,
+  output_dir,
   out_format,
   input_id = NULL,
   output_id = NULL,
-  pfix_include = FALSE,
+  prefix_include = FALSE,
   dbdrv = NULL,
   dbname = NULL,
   dbuser = NULL,
@@ -25,7 +25,7 @@ cli_nemo_tidy(
 
 \item{in_dir}{(\code{character(1)})\cr Input directory to search.}
 
-\item{out_dir}{(\code{character(1)} or \code{NULL})\cr Output directory. Required
+\item{output_dir}{(\code{character(1)} or \code{NULL})\cr Output directory. Required
 unless \code{out_format} is \code{"db"}.}
 
 \item{out_format}{(\code{character(1)})\cr Output format. One of \code{"parquet"},
@@ -35,8 +35,8 @@ unless \code{out_format} is \code{"db"}.}
 
 \item{output_id}{(\code{character(1)} or \code{NULL})\cr Output run identifier.}
 
-\item{pfix_include}{(\code{logical(1)})\cr
-If \code{TRUE}, prepend an \code{input_pfix} column to each tidy table.}
+\item{prefix_include}{(\code{logical(1)})\cr
+If \code{TRUE}, prepend an \code{input_prefix} column to each tidy table.}
 
 \item{dbdrv}{(\code{DBIDriver} or \code{NULL})\cr DBI driver object (e.g.
 \code{RPostgres::Postgres()}). Required when \code{out_format} is \code{"db"}.}
@@ -55,13 +55,13 @@ If \code{TRUE}, prepend an \code{input_pfix} column to each tidy table.}
 }
 \description{
 Discovers and tidies files under \code{in_dir} for the given workflow, writing
-results to \code{out_dir} in the requested format.
+results to \code{output_dir} in the requested format.
 }
 \examples{
 path <- system.file("extdata/tool1", package = "nemo")
 out <- tempfile()
 res <- cli_nemo_tidy(
-  workflow = "workflow1", in_dir = path, out_dir = out,
+  workflow = "workflow1", in_dir = path, output_dir = out,
   out_format = "parquet", input_id = "run1"
 )
 }

@@ -16,11 +16,11 @@ test_that("Function Workflow() @ L61", {
   (tbls <- wf$get_tbls())
   (rs <- wf$get_raw_schemas_all())
   dir1 <- fs::file_temp(); dir2 <- fs::file_temp()
-  wf$write(out_dir = dir1, format = "parquet", input_id = "run1")
+  wf$write(output_dir = dir1, format = "parquet", input_id = "run1")
   (lf1 <- list.files(dir1, pattern = "tool1.*parquet", full.names = TRUE))
   (meta <- wf$get_metadata(input_id = "run1", output_id = "out1", output_dir = dir1))
   wf2 <- Workflow$new(name = "wf2", path = path, tools = tools)
-  wf2$wrangle(out_dir = dir2, format = "parquet", input_id = "run2")
+  wf2$wrangle(output_dir = dir2, format = "parquet", input_id = "run2")
   (lf2 <- list.files(dir2, pattern = "tool1.*parquet", full.names = TRUE))
   # list_files
   nms1 <- c(

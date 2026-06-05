@@ -6,27 +6,27 @@ test_that("Function cli_tidy_parse_args() @ L92", {
   
   path <- system.file("extdata/tool1", package = "nemo")
   args <- list(
-    format = "tsv", in_dir = path, out_dir = tempfile(),
+    format = "tsv", in_dir = path, output_dir = tempfile(),
     input_id = "run1", output_id = NULL, ulid = FALSE,
     prefix_include = FALSE, workflow = NULL, dbname = NULL, dbuser = NULL,
     include = NULL, exclude = NULL, quiet = FALSE
   )
   cli_tidy_parse_args(args, wf = "workflow1")
   expect_no_error(cli_tidy_parse_args(args, wf = "workflow1"))
-  args_no_dir <- modifyList(args, list(out_dir = NULL))
+  args_no_dir <- modifyList(args, list(output_dir = NULL))
   expect_error(cli_tidy_parse_args(args_no_dir, wf = "workflow1"))
-  args_include <- modifyList(args, list(include = "tool1_table1, tool1_table2", out_dir = tempfile()))
+  args_include <- modifyList(args, list(include = "tool1_table1, tool1_table2", output_dir = tempfile()))
   expect_no_error(cli_tidy_parse_args(args_include, wf = "workflow1"))
-  args_outid1 <- modifyList(args, list(output_id = "out1", out_dir = tempfile()))
-  args_outid2 <- modifyList(args, list(ulid = TRUE, out_dir = tempfile()))
-  args_outid3 <- modifyList(args, list(ulid = TRUE, out_dir = tempfile(), output_id = "out2"))
+  args_outid1 <- modifyList(args, list(output_id = "out1", output_dir = tempfile()))
+  args_outid2 <- modifyList(args, list(ulid = TRUE, output_dir = tempfile()))
+  args_outid3 <- modifyList(args, list(ulid = TRUE, output_dir = tempfile(), output_id = "out2"))
   expect_no_error(cli_tidy_parse_args(args_outid1, wf = "workflow1"))
   expect_no_error(cli_tidy_parse_args(args_outid2, wf = "workflow1"))
   expect_no_error(cli_tidy_parse_args(args_outid3, wf = "workflow1"))
-  args_pfix <- modifyList(args, list(prefix_include = TRUE, out_dir = tempfile()))
+  args_pfix <- modifyList(args, list(prefix_include = TRUE, output_dir = tempfile()))
   expect_no_error(cli_tidy_parse_args(args_pfix, wf = "workflow1"))
   # this quietens the entire session
-  args_quiet <- modifyList(args, list(quiet = TRUE, out_dir = tempfile()))
+  args_quiet <- modifyList(args, list(quiet = TRUE, output_dir = tempfile()))
   expect_no_error(cli_tidy_parse_args(args_quiet, wf = "workflow1"))
 })
 
@@ -36,17 +36,17 @@ test_that("Function cli_nemo_tidy() @ L176", {
   path <- system.file("extdata/tool1", package = "nemo")
   out <- tempfile()
   res <- cli_nemo_tidy(
-    workflow = "workflow1", in_dir = path, out_dir = out,
+    workflow = "workflow1", in_dir = path, output_dir = out,
     out_format = "parquet", input_id = "run1"
   )
   expect_true(inherits(res, "Workflow"))
   expect_true(length(res$written_files) > 0)
   expect_error(cli_nemo_tidy(
-    workflow = "workflow1", in_dir = path, out_dir = tempfile(),
+    workflow = "workflow1", in_dir = path, output_dir = tempfile(),
     out_format = "badformat", input_id = "run1"
   ))
   expect_error(cli_nemo_tidy(
-    workflow = "notaworkflow", in_dir = path, out_dir = tempfile(),
+    workflow = "notaworkflow", in_dir = path, output_dir = tempfile(),
     out_format = "parquet", input_id = "run1"
   ))
 })

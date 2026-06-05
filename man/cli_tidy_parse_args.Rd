@@ -8,7 +8,7 @@ cli_tidy_parse_args(args, wf = NULL, dbdrv = NULL)
 }
 \arguments{
 \item{args}{Named list of parsed CLI arguments, as returned by argparse.
-Expected fields: \code{format}, \code{in_dir}, \code{out_dir}, \code{input_id} (optional),
+Expected fields: \code{format}, \code{in_dir}, \code{output_dir}, \code{input_id} (optional),
 \code{output_id} (optional), \code{ulid}, \code{prefix_include}, \code{dbname}, \code{dbuser},
 \code{include}, \code{exclude}, \code{workflow} (may be \code{NULL} when \code{wf} is provided),
 \code{quiet}.
@@ -33,7 +33,7 @@ e.g. \code{tidywigits.R}).
 \examples{
 path <- system.file("extdata/tool1", package = "nemo")
 args <- list(
-  format = "tsv", in_dir = path, out_dir = tempfile(),
+  format = "tsv", in_dir = path, output_dir = tempfile(),
   input_id = "run1", output_id = NULL, ulid = FALSE,
   prefix_include = FALSE, workflow = NULL, dbname = NULL, dbuser = NULL,
   include = NULL, exclude = NULL, quiet = FALSE

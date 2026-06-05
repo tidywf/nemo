@@ -22,7 +22,7 @@ cli_tidy_add_args <- function(subp, wf = NULL) {
     tidy$add_argument("-w", "--workflow", help = "Workflow name.", required = TRUE)
   }
   tidy$add_argument("-d", "--in_dir", help = "Input directory.", required = TRUE)
-  tidy$add_argument("-o", "--out_dir", help = "Output directory.")
+  tidy$add_argument("-o", "--output_dir", help = "Output directory.")
   # fmt: skip
   tidy$add_argument("-f", "--format", help = paste0("Format of output [def: %(default)s] (", fmts, ")"), default = "parquet")
   tidy$add_argument("--input_id", help = "Input ID for this run.")
@@ -49,7 +49,7 @@ cli_tidy_add_args <- function(subp, wf = NULL) {
 #' e.g. `tidywigits.R`).
 #'
 #' @param args Named list of parsed CLI arguments, as returned by argparse.
-#' Expected fields: `format`, `in_dir`, `out_dir`, `input_id` (optional),
+#' Expected fields: `format`, `in_dir`, `output_dir`, `input_id` (optional),
 #' `output_id` (optional), `ulid`, `prefix_include`, `dbname`, `dbuser`,
 #' `include`, `exclude`, `workflow` (may be `NULL` when `wf` is provided),
 #' `quiet`.
@@ -65,7 +65,7 @@ cli_tidy_add_args <- function(subp, wf = NULL) {
 #' @examples
 #' path <- system.file("extdata/tool1", package = "nemo")
 #' args <- list(
-#'   format = "tsv", in_dir = path, out_dir = tempfile(),
+#'   format = "tsv", in_dir = path, output_dir = tempfile(),
 #'   input_id = "run1", output_id = NULL, ulid = FALSE,
 #'   prefix_include = FALSE, workflow = NULL, dbname = NULL, dbuser = NULL,
 #'   include = NULL, exclude = NULL, quiet = FALSE
@@ -73,30 +73,30 @@ cli_tidy_add_args <- function(subp, wf = NULL) {
 #' cli_tidy_parse_args(args, wf = "workflow1")
 #' @testexamples
 #' expect_no_error(cli_tidy_parse_args(args, wf = "workflow1"))
-#' args_no_dir <- modifyList(args, list(out_dir = NULL))
+#' args_no_dir <- modifyList(args, list(output_dir = NULL))
 #' expect_error(cli_tidy_parse_args(args_no_dir, wf = "workflow1"))
-#' args_include <- modifyList(args, list(include = "tool1_table1, tool1_table2", out_dir = tempfile()))
+#' args_include <- modifyList(args, list(include = "tool1_table1, tool1_table2", output_dir = tempfile()))
 #' expect_no_error(cli_tidy_parse_args(args_include, wf = "workflow1"))
-#' args_outid1 <- modifyList(args, list(output_id = "out1", out_dir = tempfile()))
-#' args_outid2 <- modifyList(args, list(ulid = TRUE, out_dir = tempfile()))
-#' args_outid3 <- modifyList(args, list(ulid = TRUE, out_dir = tempfile(), output_id = "out2"))
+#' args_outid1 <- modifyList(args, list(output_id = "out1", output_dir = tempfile()))
+#' args_outid2 <- modifyList(args, list(ulid = TRUE, output_dir = tempfile()))
+#' args_outid3 <- modifyList(args, list(ulid = TRUE, output_dir = tempfile(), output_id = "out2"))
 #' expect_no_error(cli_tidy_parse_args(args_outid1, wf = "workflow1"))
 #' expect_no_error(cli_tidy_parse_args(args_outid2, wf = "workflow1"))
 #' expect_no_error(cli_tidy_parse_args(args_outid3, wf = "workflow1"))
-#' args_pfix <- modifyList(args, list(prefix_include = TRUE, out_dir = tempfile()))
+#' args_pfix <- modifyList(args, list(prefix_include = TRUE, output_dir = tempfile()))
 #' expect_no_error(cli_tidy_parse_args(args_pfix, wf = "workflow1"))
 #' # this quietens the entire session
-#' args_quiet <- modifyList(args, list(quiet = TRUE, out_dir = tempfile()))
+#' args_quiet <- modifyList(args, list(quiet = TRUE, output_dir = tempfile()))
 #' expect_no_error(cli_tidy_parse_args(args_quiet, wf = "workflow1"))
 #' @export
 cli_tidy_parse_args <- function(args, wf = NULL, dbdrv = NULL) {
-  out_dir <- args$out_dir
+  output_dir <- args$output_dir
   if (args$format != "db") {
-    if (is.null(out_dir)) {
+    if (is.null(output_dir)) {
       stop("Output directory must be specified when format is not 'db'.")
     }
-    fs::dir_create(out_dir)
-    out_dir <- normalizePath(out_dir)
+    fs::dir_create(output_dir)
+    output_dir <- normalizePath(output_dir)
   }
   include <- args$include
   exclude <- args$exclude
@@ -111,7 +111,7 @@ cli_tidy_parse_args <- function(args, wf = NULL, dbdrv = NULL) {
   tidy_args <- list(
     workflow = wf %||% args$workflow,
     in_dir = args$in_dir,
-    out_dir = out_dir,
+    output_dir = output_dir,
     out_format = args$format,
     input_id = args$input_id,
     output_id = output_id,
@@ -131,12 +131,12 @@ cli_tidy_parse_args <- function(args, wf = NULL, dbdrv = NULL) {
 #' Tidy workflow output files
 #'
 #' Discovers and tidies files under `in_dir` for the given workflow, writing
-#' results to `out_dir` in the requested format.
+#' results to `output_dir` in the requested format.
 #'
 #' @param workflow (`character(1)`)\cr Workflow name passed to
 #' [nemoverse_wf_dispatch()].
 #' @param in_dir (`character(1)`)\cr Input directory to search.
-#' @param out_dir (`character(1)` or `NULL`)\cr Output directory. Required
+#' @param output_dir (`character(1)` or `NULL`)\cr Output directory. Required
 #' unless `out_format` is `"db"`.
 #' @param out_format (`character(1)`)\cr Output format. One of `"parquet"`,
 #' `"tsv"`, `"csv"`, `"rds"`, or `"db"`.
@@ -158,25 +158,25 @@ cli_tidy_parse_args <- function(args, wf = NULL, dbdrv = NULL) {
 #' path <- system.file("extdata/tool1", package = "nemo")
 #' out <- tempfile()
 #' res <- cli_nemo_tidy(
-#'   workflow = "workflow1", in_dir = path, out_dir = out,
+#'   workflow = "workflow1", in_dir = path, output_dir = out,
 #'   out_format = "parquet", input_id = "run1"
 #' )
 #' @testexamples
 #' expect_true(inherits(res, "Workflow"))
 #' expect_true(length(res$written_files) > 0)
 #' expect_error(cli_nemo_tidy(
-#'   workflow = "workflow1", in_dir = path, out_dir = tempfile(),
+#'   workflow = "workflow1", in_dir = path, output_dir = tempfile(),
 #'   out_format = "badformat", input_id = "run1"
 #' ))
 #' expect_error(cli_nemo_tidy(
-#'   workflow = "notaworkflow", in_dir = path, out_dir = tempfile(),
+#'   workflow = "notaworkflow", in_dir = path, output_dir = tempfile(),
 #'   out_format = "parquet", input_id = "run1"
 #' ))
 #' @export
 cli_nemo_tidy <- function(
   workflow,
   in_dir,
-  out_dir,
+  output_dir,
   out_format,
   input_id = NULL,
   output_id = NULL,
@@ -201,7 +201,7 @@ cli_nemo_tidy <- function(
   nemo_log("INFO", paste("Tidying dir:", in_dir))
   obj <- fun$new(in_dir)
   res <- obj$wrangle(
-    out_dir = out_dir,
+    output_dir = output_dir,
     format = out_format,
     input_id = input_id,
     output_id = output_id,
@@ -213,7 +213,7 @@ cli_nemo_tidy <- function(
   if (out_format == "db") {
     nemo_log("INFO", paste("Tidy results written to db:", dbname))
   } else {
-    nemo_log("INFO", paste("Tidy results written to dir:", out_dir))
+    nemo_log("INFO", paste("Tidy results written to dir:", output_dir))
   }
   invisible(res)
 }

@@ -127,7 +127,7 @@ writeLines(readLines(file.path(path, "sampleA.tool1.table3.tsv")))
 outdir <- file.path(tempdir(), "quickstart")
 
 Workflow1$new(path = path)$wrangle(
-  out_dir      = outdir,
+  output_dir      = outdir,
   format       = "parquet",
   input_id     = "run1",
   output_id    = "out1",

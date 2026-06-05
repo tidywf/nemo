@@ -65,5 +65,5 @@ devtools::check()
 
 path <- system.file("extdata/tool1", package = "nemo")
 wf <- Workflow$new(name = "test_wf", path = path, tools = list(tool1 = Tool1))
-wf$wrangle(out_dir = tempdir(), format = "parquet", input_id = "run1")
+wf$wrangle(output_dir = tempdir(), format = "parquet", input_id = "run1")
 ```
