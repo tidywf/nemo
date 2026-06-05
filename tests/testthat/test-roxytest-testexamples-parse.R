@@ -6,7 +6,7 @@ test_that("Function parse_file() @ L43", {
   
   path <- system.file("extdata/tool1", package = "nemo")
   x <- Tool$new("tool1", pkg = "nemo", path)
-  schemas_all <- x$schemas_raw
+  schemas_all <- x$config$schemas_raw
   f <- function(ver, tbl) file.path(path, ver, paste0("sampleA.tool1.", tbl, ".tsv"))
   # table1: three versions with different column sets
   (d1_v123 <- parse_file(f("v1.2.3", "table1"), "table1", schemas_all))
@@ -35,7 +35,7 @@ test_that("Function parse_file_nohead() @ L100", {
   
   path <- system.file("extdata/tool1", package = "nemo")
   x <- Tool$new("tool1", pkg = "nemo", path)
-  schemas_all <- x$schemas_raw
+  schemas_all <- x$config$schemas_raw
   pname <- "table4"
   fpath_latest <- file.path(path, "latest", "sampleA.tool1.table4.tsv")
   fpath_v1 <- file.path(path, "v1.0.0", "sampleA.tool1.table4.tsv")
@@ -90,7 +90,7 @@ test_that("Function parse_file_keyvalue() @ L248", {
   
   path <- system.file("extdata/tool1", package = "nemo")
   x <- Tool1$new(path)
-  schemas_all <- x$schemas_raw
+  schemas_all <- x$config$schemas_raw
   pname <- "table3"
   f <- function(ver) file.path(path, ver, "sampleA.tool1.table3.tsv")
   # v1.0.0: 3 key-value pairs (SampleID, QCStatus, TotalReads)

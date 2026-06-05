@@ -148,19 +148,19 @@ Workflow <- R6::R6Class(
         dplyr::bind_rows()
     },
     #' @description Tidy Workflow files.
-    #' @param tidy (`logical(1)`)\cr
+    #' @param do_tidy (`logical(1)`)\cr
     #' Should the raw parsed tibbles get tidied?
     #' @param keep_raw (`logical(1)`)\cr
     #' Should the raw parsed tibbles be kept in the final output?
     #' @return (`R6::R6Class()`)\cr
     #' R6 object invisibly.
-    tidy = function(tidy = TRUE, keep_raw = FALSE) {
+    tidy = function(do_tidy = TRUE, keep_raw = FALSE) {
       # if no tidying needed, early return
       if (private$is_tidied) {
         return(invisible(self))
       }
       self$tools <- self$tools |>
-        purrr::map(\(x) x$tidy(tidy = tidy, keep_raw = keep_raw))
+        purrr::map(\(x) x$tidy(do_tidy = do_tidy, keep_raw = keep_raw))
       private$is_tidied <- TRUE
       return(invisible(self))
     },
@@ -260,7 +260,7 @@ Workflow <- R6::R6Class(
     get_schemas_raw = function() {
       self$tools |>
         purrr::map(\(x) {
-          x$schemas_raw |>
+          x$config$schemas_raw |>
             dplyr::mutate(tool = x$name) |>
             dplyr::relocate("tool", .before = 1)
         }) |>
@@ -268,11 +268,11 @@ Workflow <- R6::R6Class(
     },
     #' @description Get tidy schemas for all Tools.
     #' @return (`tibble()`)\cr
-    #' Bound `schemas_tidy` tibbles from all Tools, with a leading `tool` column.
+    #' Bound tidy schema tibbles from all Tools, with a leading `tool` column.
     get_schemas_tidy = function() {
       self$tools |>
         purrr::map(\(x) {
-          x$schemas_tidy |>
+          x$config$get_schemas_tidy() |>
             dplyr::mutate(tool = x$name) |>
             dplyr::relocate("tool", .before = 1)
         }) |>

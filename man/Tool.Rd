@@ -5,8 +5,8 @@
 \title{Tool Object}
 \description{
 Base R6 class for all nemo tools. Subclasses implement parsers for specific
-bioinformatic tool outputs by optionally overriding \verb{parse_\{tname\}()} and
-\verb{tidy_\{tname\}()} methods for custom parse or tidy logic per table.
+bioinformatic tool outputs by optionally overriding \verb{parse_\{table_name\}()} and
+\verb{tidy_\{table_name\}()} methods for custom parse or tidy logic per table.
 
 A Tool object:
 \itemize{
@@ -73,24 +73,6 @@ Tibble of files matching available Tool patterns.}
 
 \item{\code{tbls}}{(\code{tibble()})\cr
 Tibble of tidy tibbles.}
-
-\item{\code{schemas_raw}}{(\code{tibble()})\cr
-All raw schemas for tool.}
-
-\item{\code{schemas_tidy}}{(\code{tibble()})\cr
-All tidy schemas for tool.}
-
-\item{\code{get_schema_tidy}}{(\verb{function()})\cr
-Get specific tidy schema.}
-
-\item{\code{get_schema_raw}}{(\verb{function()})\cr
-Get specific raw schema.}
-
-\item{\code{get_col_map}}{(\verb{function()})\cr
-Get column mapping (raw -> tidy) for a table.}
-
-\item{\code{files_tbl}}{(\code{tibble(n)})\cr
-Tibble of files from \code{\link[=list_files_dir]{list_files_dir()}}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -101,6 +83,9 @@ Tibble of files from \code{\link[=list_files_dir]{list_files_dir()}}.}
 \item \href{#method-Tool-print}{\code{Tool$print()}}
 \item \href{#method-Tool-filter_files}{\code{Tool$filter_files()}}
 \item \href{#method-Tool-list_files}{\code{Tool$list_files()}}
+\item \href{#method-Tool-get_schema_tidy}{\code{Tool$get_schema_tidy()}}
+\item \href{#method-Tool-get_schema_raw}{\code{Tool$get_schema_raw()}}
+\item \href{#method-Tool-get_col_map}{\code{Tool$get_col_map()}}
 \item \href{#method-Tool-.dispatch_parse}{\code{Tool$.dispatch_parse()}}
 \item \href{#method-Tool-.dispatch_tidy}{\code{Tool$.dispatch_tidy()}}
 \item \href{#method-Tool-.parse_by_ftype}{\code{Tool$.parse_by_ftype()}}
@@ -230,13 +215,88 @@ as a differentiator.
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Tool-get_schema_tidy"></a>}}
+\if{latex}{\out{\hypertarget{method-Tool-get_schema_tidy}{}}}
+\subsection{Method \code{get_schema_tidy()}}{
+Get specific tidy schema.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Tool$get_schema_tidy(table_name = NULL, version = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{table_name}}{(\code{character(1)})\cr
+Table name.}
+
+\item{\code{version}}{(\code{character(1)})\cr
+Version string.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+(\code{tibble()})\cr
+Tidy schema tibble.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Tool-get_schema_raw"></a>}}
+\if{latex}{\out{\hypertarget{method-Tool-get_schema_raw}{}}}
+\subsection{Method \code{get_schema_raw()}}{
+Get specific raw schema.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Tool$get_schema_raw(table_name = NULL, version = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{table_name}}{(\code{character(1)})\cr
+Table name.}
+
+\item{\code{version}}{(\code{character(1)})\cr
+Version string.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+(\code{tibble()})\cr
+Raw schema tibble.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Tool-get_col_map"></a>}}
+\if{latex}{\out{\hypertarget{method-Tool-get_col_map}{}}}
+\subsection{Method \code{get_col_map()}}{
+Get column mapping (raw -> tidy) for a table.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Tool$get_col_map(table_name = NULL, version = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{table_name}}{(\code{character(1)})\cr
+Table name.}
+
+\item{\code{version}}{(\code{character(1)})\cr
+Version string.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+(\code{tibble()})\cr
+Column map tibble with \code{raw}, \code{tidy}, and \code{type} columns.
+}
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Tool-.dispatch_parse"></a>}}
 \if{latex}{\out{\hypertarget{method-Tool-.dispatch_parse}{}}}
 \subsection{Method \code{.dispatch_parse()}}{
-Dispatch parse for a table: calls custom \verb{parse_\{name\}()} if
+Dispatch parse for a table: calls custom \verb{parse_\{table_name\}()} if
 defined in the subclass, otherwise falls back to \code{.parse_by_ftype()}.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Tool$.dispatch_parse(x, tname)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Tool$.dispatch_parse(x, table_name)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -245,7 +305,7 @@ defined in the subclass, otherwise falls back to \code{.parse_by_ftype()}.
 \item{\code{x}}{(\code{character(1)})\cr
 File path.}
 
-\item{\code{tname}}{(\code{character(1)})\cr
+\item{\code{table_name}}{(\code{character(1)})\cr
 Table name.}
 }
 \if{html}{\out{</div>}}
@@ -259,10 +319,10 @@ Parsed data in tibble.
 \if{html}{\out{<a id="method-Tool-.dispatch_tidy"></a>}}
 \if{latex}{\out{\hypertarget{method-Tool-.dispatch_tidy}{}}}
 \subsection{Method \code{.dispatch_tidy()}}{
-Dispatch tidy for a table: calls custom \verb{tidy_\{tname\}()} if
+Dispatch tidy for a table: calls custom \verb{tidy_\{table_name\}()} if
 defined in the subclass, otherwise falls back to \code{.tidy_file()}.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Tool$.dispatch_tidy(x, tname)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Tool$.dispatch_tidy(x, table_name)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -271,7 +331,7 @@ defined in the subclass, otherwise falls back to \code{.tidy_file()}.
 \item{\code{x}}{(\code{character(1)} or \code{tibble()})\cr
 File path or already parsed raw tibble.}
 
-\item{\code{tname}}{(\code{character(1)})\cr
+\item{\code{table_name}}{(\code{character(1)})\cr
 Table name.}
 }
 \if{html}{\out{</div>}}
@@ -287,9 +347,9 @@ Tidy data in enframed tibble.
 \subsection{Method \code{.parse_by_ftype()}}{
 Parse a file by looking up its ftype from the config and
 calling the appropriate internal parser. Errors for ftypes that require
-a custom \verb{parse_\{tname\}()} method (e.g. \code{csv-nohead-long}).
+a custom \verb{parse_\{table_name\}()} method (e.g. \code{csv-nohead-long}).
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Tool$.parse_by_ftype(x, tname)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Tool$.parse_by_ftype(x, table_name)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -298,7 +358,8 @@ a custom \verb{parse_\{tname\}()} method (e.g. \code{csv-nohead-long}).
 \item{\code{x}}{(\code{character(1)})\cr
 File path.}
 
-\item{\code{tname}}{(\code{character(1)})\cr}
+\item{\code{table_name}}{(\code{character(1)})\cr
+Table name.}
 }
 \if{html}{\out{</div>}}
 }
@@ -313,7 +374,7 @@ Parsed data in tibble.
 \subsection{Method \code{.parse_file()}}{
 Parse file.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Tool$.parse_file(x, name, delim = "\\t", ...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Tool$.parse_file(x, table_name, delim = "\\t", ...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -322,8 +383,8 @@ Parse file.
 \item{\code{x}}{(\code{character(1)})\cr
 File path.}
 
-\item{\code{name}}{(\code{character(1)})\cr
-Parser name (e.g. "breakends" - see docs).}
+\item{\code{table_name}}{(\code{character(1)})\cr
+Table name (e.g. "breakends" - see docs).}
 
 \item{\code{delim}}{(\code{character(1)})\cr
 File delimiter.}
@@ -343,7 +404,7 @@ Parsed data in tibble.
 \subsection{Method \code{.tidy_file()}}{
 Tidy file.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Tool$.tidy_file(x, name, convert_types = FALSE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Tool$.tidy_file(x, table_name, convert_types = FALSE)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -352,8 +413,8 @@ Tidy file.
 \item{\code{x}}{(\code{character(1)} or \code{tibble()})\cr
 File path or already parsed raw tibble.}
 
-\item{\code{name}}{(\code{character(1)})\cr
-Parser name (e.g. "breakends" - see docs).}
+\item{\code{table_name}}{(\code{character(1)})\cr
+Table name (e.g. "breakends" - see docs).}
 
 \item{\code{convert_types}}{(\code{logical(1)})\cr
 Convert field types based on schema.}
@@ -372,7 +433,7 @@ Tidy data in enframed tibble.
 Parse files with no header and two columns representing
 key-value pairs.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Tool$.parse_file_keyvalue(x, name, delim = "\\t", ...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Tool$.parse_file_keyvalue(x, table_name, delim = "\\t", ...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -381,8 +442,8 @@ key-value pairs.
 \item{\code{x}}{(\code{character(1)})\cr
 File path.}
 
-\item{\code{name}}{(\code{character(1)})\cr
-Parser name (e.g. "qc" - see docs).}
+\item{\code{table_name}}{(\code{character(1)})\cr
+Table name (e.g. "qc" - see docs).}
 
 \item{\code{delim}}{(\code{character(1)})\cr
 File delimiter.}
@@ -402,7 +463,7 @@ Parsed data in tibble.
 \subsection{Method \code{.parse_file_nohead()}}{
 Parse headless file.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Tool$.parse_file_nohead(x, pname, delim = "\\t", ...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Tool$.parse_file_nohead(x, table_name, delim = "\\t", ...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -411,8 +472,8 @@ Parse headless file.
 \item{\code{x}}{(\code{character(1)})\cr
 File path.}
 
-\item{\code{pname}}{(\code{character(1)})\cr
-Parser name (e.g. "breakends" - see docs).}
+\item{\code{table_name}}{(\code{character(1)})\cr
+Table name (e.g. "breakends" - see docs).}
 
 \item{\code{delim}}{(\code{character(1)})\cr
 File delimiter.}
@@ -432,13 +493,13 @@ Parsed data in tibble.
 \subsection{Method \code{tidy()}}{
 Tidy a list of files. The result is reflected in the \code{tbls} field.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Tool$tidy(tidy = TRUE, keep_raw = FALSE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Tool$tidy(do_tidy = TRUE, keep_raw = FALSE)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{tidy}}{(\code{logical(1)})\cr
+\item{\code{do_tidy}}{(\code{logical(1)})\cr
 Should the raw parsed tibbles get tidied?}
 
 \item{\code{keep_raw}}{(\code{logical(1)})\cr

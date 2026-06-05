@@ -187,13 +187,13 @@ Bound \code{list_files()} tibbles from all Tools.
 \subsection{Method \code{tidy()}}{
 Tidy Workflow files.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Workflow$tidy(tidy = TRUE, keep_raw = FALSE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Workflow$tidy(do_tidy = TRUE, keep_raw = FALSE)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{tidy}}{(\code{logical(1)})\cr
+\item{\code{do_tidy}}{(\code{logical(1)})\cr
 Should the raw parsed tibbles get tidied?}
 
 \item{\code{keep_raw}}{(\code{logical(1)})\cr
@@ -327,7 +327,7 @@ Get tidy schemas for all Tools.
 
 \subsection{Returns}{
 (\code{tibble()})\cr
-Bound \code{schemas_tidy} tibbles from all Tools, with a leading \code{tool} column.
+Bound tidy schema tibbles from all Tools, with a leading \code{tool} column.
 }
 }
 \if{html}{\out{<hr>}}
