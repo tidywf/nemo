@@ -252,17 +252,33 @@ Tool <- R6::R6Class(
       patterns <- self$config$get_patterns() |>
         dplyr::rename(pat_name = "name", pat_value = "pattern")
       files <- files_tbl %||% list_files_dir(self$path, type = type)
-      res <- files |>
-        tidyr::crossing(patterns) |>
-        dplyr::filter(stringr::str_detect(.data$bname, .data$pat_value)) |>
-        dplyr::select(
-          parser = "pat_name",
-          "bname",
-          "size",
-          "lastmodified",
-          "path",
-          pattern = "pat_value"
+      res <- purrr::map(seq_len(nrow(patterns)), \(i) {
+        pat_value <- patterns$pat_value[[i]]
+        idx <- grepl(pat_value, files$bname, perl = TRUE)
+        if (!any(idx)) {
+          return(NULL)
+        }
+        files[idx, ] |>
+          dplyr::mutate(parser = patterns$pat_name[[i]], pattern = pat_value)
+      }) |>
+        dplyr::bind_rows()
+      if (nrow(res) == 0) {
+        return(
+          dplyr::tibble(
+            tool_parser = character(),
+            parser = character(),
+            bname = character(),
+            size = fs::fs_bytes(),
+            lastmodified = as.POSIXct(character()),
+            path = character(),
+            pattern = character(),
+            prefix = character(),
+            group = character()
+          )
         )
+      }
+      res <- res |>
+        dplyr::select("parser", "bname", "size", "lastmodified", "path", "pattern")
       res |>
         dplyr::mutate(
           prefix = stringr::str_remove(.data$bname, .data$pattern),
@@ -272,12 +288,12 @@ Tool <- R6::R6Class(
             "version",
             .data$prefix
           ),
-          tool_parser = glue("{self$name}_{.data$parser}")
+          tool_parser = paste0(self$name, "_", .data$parser)
         ) |>
         dplyr::mutate(group = dplyr::row_number(), .by = "bname") |>
         dplyr::mutate(
-          group = dplyr::if_else(.data$group == 1, glue(""), glue("_{.data$group}")),
-          prefix = glue("{.data$prefix}{.data$group}")
+          group = dplyr::if_else(.data$group == 1, "", paste0("_", .data$group)),
+          prefix = paste0(.data$prefix, .data$group)
         ) |>
         # two files with different basenames can reduce to the same prefix when
         # matched by different patterns for the same table (e.g. *.flagstat and
@@ -288,7 +304,7 @@ Tool <- R6::R6Class(
           prefix = dplyr::if_else(
             .data$grp2 == 1,
             .data$prefix,
-            glue("{.data$prefix}_{.data$grp2}")
+            paste0(.data$prefix, "_", .data$grp2)
           )
         ) |>
         dplyr::select(-"grp2") |>
