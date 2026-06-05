@@ -92,6 +92,10 @@ Workflow <- R6::R6Class(
     #' @return (`R6::R6Class()`)\cr
     #' R6 object.
     initialize = function(name = NULL, path = NULL, tools = NULL, metapkg = "nemo") {
+      assertthat::assert_that(
+        rlang::is_scalar_character(name),
+        msg = "`name` must be a single character string."
+      )
       self$name <- name
       self$metapkg <- metapkg
       private$validate_tools(tools)
@@ -130,8 +134,36 @@ Workflow <- R6::R6Class(
     #' @return (`R6::R6Class()`)\cr
     #' R6 object invisibly.
     filter_files = function(include = NULL, exclude = NULL) {
+      assertthat::assert_that(
+        is.null(include) || is.null(exclude),
+        msg = "You cannot define both include and exclude!"
+      )
+      all_parsers <- purrr::map(self$tools, \(x) unique(x$files$tool_parser)) |> unlist()
+      if (!is.null(include)) {
+        unknown <- include[!include %in% all_parsers]
+        assertthat::assert_that(
+          length(unknown) == 0,
+          msg = glue(
+            "filter_files: unknown tool_parser(s) in include: {glue::glue_collapse(unknown, sep = ', ')}."
+          )
+        )
+      }
+      if (!is.null(exclude)) {
+        unknown <- exclude[!exclude %in% all_parsers]
+        assertthat::assert_that(
+          length(unknown) == 0,
+          msg = glue(
+            "filter_files: unknown tool_parser(s) in exclude: {glue::glue_collapse(unknown, sep = ', ')}."
+          )
+        )
+      }
       self$tools <- self$tools |>
-        purrr::map(\(x) x$filter_files(include = include, exclude = exclude))
+        purrr::map(\(x) {
+          known <- unique(x$files$tool_parser)
+          tool_include <- if (!is.null(include)) include[include %in% known] else NULL
+          tool_exclude <- if (!is.null(exclude)) exclude[exclude %in% known] else NULL
+          x$filter_files(include = tool_include, exclude = tool_exclude)
+        })
       invisible(self)
     },
     #' @description List only files of interest in given workflow directory, i.e.
@@ -187,6 +219,7 @@ Workflow <- R6::R6Class(
       prefix_include = FALSE,
       dbconn = NULL
     ) {
+      stopifnot("Did you forget to tidy?" = private$is_tidied)
       res <- self$tools |>
         purrr::map(\(x) {
           x$write(
@@ -330,11 +363,20 @@ Workflow <- R6::R6Class(
   ), # public end
   private = list(
     validate_tools = function(x) {
-      stopifnot(rlang::is_bare_list(x))
-      stopifnot(all(purrr::map_lgl(x, R6::is.R6Class)))
-      tool_nms <- purrr::map_chr(x, "classname") |> tolower()
-      stopifnot(!is.null(tool_nms))
-      stopifnot(all(purrr::map(x, "inherit") == as.symbol("Tool")))
+      assertthat::assert_that(rlang::is_bare_list(x), msg = "`tools` must be a list.")
+      assertthat::assert_that(length(x) > 0, msg = "`tools` must not be empty.")
+      assertthat::assert_that(
+        !is.null(names(x)) && !any(names(x) == ""),
+        msg = "`tools` must be a named list."
+      )
+      assertthat::assert_that(
+        all(purrr::map_lgl(x, R6::is.R6Class)),
+        msg = "All elements of `tools` must be R6 classes."
+      )
+      assertthat::assert_that(
+        all(purrr::map(x, "inherit") == as.symbol("Tool")),
+        msg = "All elements of `tools` must inherit from Tool."
+      )
     },
     # Do files need to be tidied? Used when no files are detected, so we can
     # use downstream as a bypass.
