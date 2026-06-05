@@ -2,7 +2,7 @@
 
 # File R/Tool.R: @testexamples
 
-test_that("Function Tool() @ L95", {
+test_that("Function Tool() @ L109", {
   
   fs::path(tempdir(), letters[1:5]) |>
     fs::file_temp_push() |>
@@ -45,6 +45,20 @@ test_that("Function Tool() @ L95", {
     toolB$filter_files(include = "tool1_table1", exclude = "tool1_table3"),
     "You cannot define both include and exclude"
   )
+  # initialize: non-scalar name/pkg
+  expect_error(Tool$new(name = c("a", "b"), pkg = pkg, path = path))
+  expect_error(Tool$new(name = name, pkg = c("nemo", "nemo"), path = path))
+  # filter_files: unknown parsers
+  expect_error(
+    Tool$new(name = name, pkg = pkg, path = path)$filter_files(include = "tool1_nonexistent"),
+    "unknown tool_parser"
+  )
+  expect_error(
+    Tool$new(name = name, pkg = pkg, path = path)$filter_files(exclude = "tool1_nonexistent"),
+    "unknown tool_parser"
+  )
+  # write: invalid format
+  expect_error(toolC$write(output_dir = tempdir(), format = "invalid"), "Invalid format")
   # tidy: structure and column names
   expect_false(is.null(toolC$tbls))
   expect_named(

@@ -286,7 +286,7 @@ Version string.}
 }
 \subsection{Returns}{
 (\code{tibble()})\cr
-Column map tibble with \code{raw}, \code{tidy}, and \code{type} columns.
+Column map tibble with \code{raw}, \code{tidy}, \code{type}, and \code{description} columns.
 }
 }
 \if{html}{\out{<hr>}}

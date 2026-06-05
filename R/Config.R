@@ -31,6 +31,7 @@
 #' @testexamples
 #' # initialize
 #' expect_error(Config$new("foo", pkg))
+#' expect_error(Config$new("tool1", "nonexistent_pkg"), "Config directory not found")
 #' # get_patterns
 #' expect_equal(nrow(patterns), 6)
 #' # get_ftypes
@@ -104,7 +105,10 @@ Config <- R6::R6Class(
     #' Parsed YAML as a list of table schemas.
     read = function() {
       pkg_config_path <- system.file("config/tools", package = self$pkg)
-      stopifnot(dir.exists(pkg_config_path))
+      assertthat::assert_that(
+        dir.exists(pkg_config_path),
+        msg = glue("Config directory not found for package '{self$pkg}': {pkg_config_path}")
+      )
       tools <- list.files(pkg_config_path, full.names = FALSE)
       assertthat::assert_that(
         self$tool %in% tools,
@@ -237,6 +241,10 @@ Config <- R6::R6Class(
       assertthat::assert_that(
         x %in% names(self$tables),
         msg = glue("{x} not found in tables for {self$tool}.")
+      )
+      assertthat::assert_that(
+        !is.null(self$tables[[x]][["columns"]]),
+        msg = glue("No columns defined for table '{x}' in {self$tool} config.")
       )
       cols_df <- self$tables[[x]][["columns"]] |>
         purrr::map(\(col) {

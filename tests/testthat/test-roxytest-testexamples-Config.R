@@ -2,7 +2,7 @@
 
 # File R/Config.R: @testexamples
 
-test_that("Function Config() @ L57", {
+test_that("Function Config() @ L58", {
   
   tool <- "tool1"
   pkg <- "nemo"
@@ -21,6 +21,7 @@ test_that("Function Config() @ L57", {
   
   # initialize
   expect_error(Config$new("foo", pkg))
+  expect_error(Config$new("tool1", "nonexistent_pkg"), "Config directory not found")
   # get_patterns
   expect_equal(nrow(patterns), 6)
   # get_ftypes
@@ -45,7 +46,7 @@ test_that("Function Config() @ L57", {
 })
 
 
-test_that("Function config_prep_raw_schema() @ L346", {
+test_that("Function config_prep_raw_schema() @ L354", {
   
   path <- system.file("extdata", "tool1/latest/sampleA.tool1.table1.tsv", package = "nemo")
   (x <- config_prep_raw_schema(path = path, delim = "\t"))
@@ -53,7 +54,7 @@ test_that("Function config_prep_raw_schema() @ L346", {
 })
 
 
-test_that("Function config_prep_raw() @ L391", {
+test_that("Function config_prep_raw() @ L399", {
   
   path <- system.file("extdata", "tool1/latest/sampleA.tool1.table1.tsv", package = "nemo")
   name <- "table1"

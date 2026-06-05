@@ -59,6 +59,20 @@
 #'   toolB$filter_files(include = "tool1_table1", exclude = "tool1_table3"),
 #'   "You cannot define both include and exclude"
 #' )
+#' # initialize: non-scalar name/pkg
+#' expect_error(Tool$new(name = c("a", "b"), pkg = pkg, path = path))
+#' expect_error(Tool$new(name = name, pkg = c("nemo", "nemo"), path = path))
+#' # filter_files: unknown parsers
+#' expect_error(
+#'   Tool$new(name = name, pkg = pkg, path = path)$filter_files(include = "tool1_nonexistent"),
+#'   "unknown tool_parser"
+#' )
+#' expect_error(
+#'   Tool$new(name = name, pkg = pkg, path = path)$filter_files(exclude = "tool1_nonexistent"),
+#'   "unknown tool_parser"
+#' )
+#' # write: invalid format
+#' expect_error(toolC$write(output_dir = tempdir(), format = "invalid"), "Invalid format")
 #' # tidy: structure and column names
 #' expect_false(is.null(toolC$tbls))
 #' expect_named(
@@ -133,10 +147,14 @@ Tool <- R6::R6Class(
     #' @return (`R6::R6Class()`)\cr
     #' R6 object.
     initialize = function(name = NULL, pkg = NULL, path = NULL, files_tbl = NULL) {
-      stopifnot(
-        !is.null(path) || !is.null(files_tbl),
-        !is.null(name),
-        !is.null(pkg)
+      stopifnot(!is.null(path) || !is.null(files_tbl))
+      assertthat::assert_that(
+        rlang::is_scalar_character(name),
+        msg = "`name` must be a single character string."
+      )
+      assertthat::assert_that(
+        rlang::is_scalar_character(pkg),
+        msg = "`pkg` must be a single character string."
       )
       if (!is.null(files_tbl)) {
         stopifnot(is_files_tbl(files_tbl))
@@ -188,11 +206,25 @@ Tool <- R6::R6Class(
       }
       if (!is.null(include)) {
         stopifnot(rlang::is_character(include))
+        unknown <- include[!include %in% self$files$tool_parser]
+        assertthat::assert_that(
+          length(unknown) == 0,
+          msg = glue(
+            "filter_files: unknown tool_parser(s) in include: {glue::glue_collapse(unknown, sep = ', ')}."
+          )
+        )
         self$files <- self$files |>
           dplyr::filter(.data$tool_parser %in% include)
       }
       if (!is.null(exclude)) {
         stopifnot(rlang::is_character(exclude))
+        unknown <- exclude[!exclude %in% self$files$tool_parser]
+        assertthat::assert_that(
+          length(unknown) == 0,
+          msg = glue(
+            "filter_files: unknown tool_parser(s) in exclude: {glue::glue_collapse(unknown, sep = ', ')}."
+          )
+        )
         self$files <- self$files |>
           dplyr::filter(!(.data$tool_parser %in% exclude))
       }
@@ -520,6 +552,12 @@ Tool <- R6::R6Class(
       prefix_include = FALSE,
       dbconn = NULL
     ) {
+      assertthat::assert_that(
+        format %in% nemo_out_formats(),
+        msg = glue(
+          "Invalid format '{format}'. Must be one of: {glue::glue_collapse(nemo_out_formats(), sep = ', ')}."
+        )
+      )
       if (format != "db") {
         if (is.null(output_dir)) {
           stop("Output directory must be specified when format is not 'db'.")
