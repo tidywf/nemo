@@ -226,26 +226,17 @@ Config <- R6::R6Class(
     #' @param version (`character(1)`)\cr
     #' Version. If NULL, uses the latest version.
     get_col_map = function(x = NULL, version = NULL) {
-      assertthat::assert_that(
-        rlang::is_scalar_character(x),
-        msg = "`x` must be a single character string."
-      )
+      stopifnot("x not single char string" = rlang::is_scalar_character(x))
       assertthat::assert_that(
         x %in% names(self$tables),
         msg = glue("{x} not found in tables for {self$tool}.")
       )
+      tbl_rows <- private$schemas_cache |> dplyr::filter(.data$name == x)
       assertthat::assert_that(
-        !is.null(self$tables[[x]][["columns"]]),
+        nrow(tbl_rows) > 0,
         msg = glue("No columns defined for table '{x}' in {self$tool} config.")
       )
-      cols_df <- self$tables[[x]][["columns"]] |>
-        purrr::map(\(col) {
-          col[["versions"]] <- list(col[["versions"]])
-          tibble::as_tibble_row(col)
-        }) |>
-        dplyr::bind_rows()
-      # sorted so versions[length(versions)] picks "latest" if present, else highest semver
-      versions <- config_sort_versions(unique(unlist(cols_df[["versions"]])))
+      versions <- tbl_rows[["version"]]
       if (is.null(version)) {
         version <- versions[length(versions)]
       }
@@ -253,9 +244,9 @@ Config <- R6::R6Class(
         version %in% versions,
         msg = glue("{version} not found in versions for {x} in {self$tool}.")
       )
-      cols_df |>
-        dplyr::filter(purrr::map_lgl(.data$versions, \(vs) version %in% vs)) |>
-        dplyr::mutate(type = schema_type_remap(.data$type)) |>
+      tbl_rows |>
+        dplyr::filter(.data$version == .env$version) |>
+        tidyr::unnest("schema") |>
         dplyr::select("raw", "tidy", "type", "description")
     }
   ), # end public
@@ -269,7 +260,7 @@ Config <- R6::R6Class(
       tools <- list.files(pkg_config_path, full.names = FALSE)
       assertthat::assert_that(
         self$tool %in% tools,
-        msg = glue("No config for {self$tool} under {pkg_config_path}/.")
+        msg = glue("No config for {self$tool} under {pkg_config_path}.")
       )
       schema_path <- file.path(pkg_config_path, self$tool, "schema.yaml")
       assertthat::assert_that(
@@ -310,7 +301,7 @@ Config <- R6::R6Class(
           cols_v <- cols_df |>
             dplyr::filter(purrr::map_lgl(.data$versions, \(vs) v %in% vs)) |>
             dplyr::mutate(type = schema_type_remap(.data$type)) |>
-            dplyr::select("raw", "tidy", "type")
+            dplyr::select("raw", "tidy", "type", "description")
           tibble::tibble(version = v, schema = list(cols_v))
         }) |>
           dplyr::bind_rows()
