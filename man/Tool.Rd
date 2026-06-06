@@ -73,6 +73,9 @@ Tibble of files matching available Tool patterns.}
 
 \item{\code{tbls}}{(\code{tibble()})\cr
 Tibble of tidy tibbles.}
+
+\item{\code{written_files}}{(\code{tibble()})\cr
+Tibble of files written from \code{self$write()}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -552,9 +555,9 @@ Database connection object (see \code{DBI::dbConnect}).}
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-(\code{tibble()} or \code{NULL})\cr
-A tibble with columns \code{raw_path}, \code{tool_parser}, \code{prefix}, \code{tidy_data},
-\code{tbl_name} and \code{outpath}, invisibly. \code{NULL} if no files were found.
+(\code{R6::R6Class()})\cr
+R6 object invisibly. Results stored in \code{self$written_files}
+(\code{NULL} if no files were found).
 }
 }
 \if{html}{\out{<hr>}}
@@ -605,9 +608,8 @@ tool_parser names to exclude (e.g. \code{"tool1_table3"}).}
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-(\code{tibble()} or \code{NULL})\cr
-A tibble with columns \code{tool_parser}, \code{prefix}, \code{tidy_data}, \code{tbl_name},
-\code{outpath}, invisibly. \code{NULL} if no files were found.
+(\code{R6::R6Class()})\cr
+R6 object invisibly. Results stored in \code{self$written_files}.
 }
 }
 \if{html}{\out{<hr>}}

@@ -89,7 +89,7 @@
 #' expect_setequal(t4_ncols, c(3L, 5L))
 #' # write: two table4 output files (one per version)
 #' expect_equal(sum(grepl("table4", lfC)), 2)
-#' expect_named(toolD, c("raw_path", "tool_parser", "prefix", "tidy_data", "tbl_name", "outpath"))
+#' expect_named(toolD$written_files, c("raw_path", "tool_parser", "prefix", "tidy_data", "tbl_name", "outpath"))
 #' # input_id / output_id / prefix_include column tests
 #' toolE <- Tool$new(name = name, pkg = pkg, path = path)$
 #'   filter_files(include = "tool1_table1")$tidy()
@@ -134,6 +134,9 @@ Tool <- R6::R6Class(
     #' @field tbls (`tibble()`)\cr
     #' Tibble of tidy tibbles.
     tbls = NULL,
+    #' @field written_files (`tibble()`)\cr
+    #' Tibble of files written from `self$write()`.
+    written_files = NULL,
     #' @description Create a new Tool object.
     #' @param name (`character(1)`)\cr
     #' Name of tool.
@@ -554,9 +557,9 @@ Tool <- R6::R6Class(
     #' If `TRUE`, prepend an `input_prefix` column to each tidy table.
     #' @param dbconn (`DBIConnection`)\cr
     #' Database connection object (see `DBI::dbConnect`).
-    #' @return (`tibble()` or `NULL`)\cr
-    #' A tibble with columns `raw_path`, `tool_parser`, `prefix`, `tidy_data`,
-    #' `tbl_name` and `outpath`, invisibly. `NULL` if no files were found.
+    #' @return (`R6::R6Class()`)\cr
+    #' R6 object invisibly. Results stored in `self$written_files`
+    #' (`NULL` if no files were found).
     write = function(
       output_dir = ".",
       format = "tsv",
@@ -580,9 +583,8 @@ Tool <- R6::R6Class(
       }
       stopifnot("Did you forget to tidy?" = private$is_tidied)
       if (is.null(self$tbls)) {
-        # even though tidying is not needed, there must be no files detected
-        # for tidying (and therefore writing). So return NULL.
-        return(NULL)
+        self$written_files <- NULL
+        return(invisible(self))
       }
       d_write <- self$tbls |>
         dplyr::rename(raw_path = "path") |>
@@ -643,7 +645,8 @@ Tool <- R6::R6Class(
           "outpath"
         )
       private$is_written <- TRUE
-      return(invisible(d_write))
+      self$written_files <- d_write
+      return(invisible(self))
     },
     #' @description Parse, filter, tidy and write files.
     #' @param output_dir (`character(1)`)\cr
@@ -662,9 +665,8 @@ Tool <- R6::R6Class(
     #' tool_parser names to include (e.g. `"tool1_table1"`).
     #' @param exclude (`character(n)`)\cr
     #' tool_parser names to exclude (e.g. `"tool1_table3"`).
-    #' @return (`tibble()` or `NULL`)\cr
-    #' A tibble with columns `tool_parser`, `prefix`, `tidy_data`, `tbl_name`,
-    #' `outpath`, invisibly. `NULL` if no files were found.
+    #' @return (`R6::R6Class()`)\cr
+    #' R6 object invisibly. Results stored in `self$written_files`.
     wrangle = function(
       output_dir = ".",
       format = "tsv",

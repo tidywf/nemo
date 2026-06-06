@@ -75,7 +75,7 @@ test_that("Function Tool() @ L109", {
   expect_setequal(t4_ncols, c(3L, 5L))
   # write: two table4 output files (one per version)
   expect_equal(sum(grepl("table4", lfC)), 2)
-  expect_named(toolD, c("raw_path", "tool_parser", "prefix", "tidy_data", "tbl_name", "outpath"))
+  expect_named(toolD$written_files, c("raw_path", "tool_parser", "prefix", "tidy_data", "tbl_name", "outpath"))
   # input_id / output_id / prefix_include column tests
   toolE <- Tool$new(name = name, pkg = pkg, path = path)$
     filter_files(include = "tool1_table1")$tidy()

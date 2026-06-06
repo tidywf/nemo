@@ -152,7 +152,8 @@ Workflow <- R6::R6Class(
         is.null(include) || is.null(exclude),
         msg = "You cannot define both include and exclude!"
       )
-      all_parsers <- purrr::map(self$tools, \(x) unique(x$files$tool_parser)) |> unlist()
+      known_per_tool <- purrr::map(self$tools, \(x) unique(x$files$tool_parser))
+      all_parsers <- unlist(known_per_tool)
       if (!is.null(include)) {
         unknown <- include[!include %in% all_parsers]
         assertthat::assert_that(
@@ -171,13 +172,11 @@ Workflow <- R6::R6Class(
           )
         )
       }
-      self$tools <- self$tools |>
-        purrr::map(\(x) {
-          known <- unique(x$files$tool_parser)
-          tool_include <- if (!is.null(include)) include[include %in% known] else NULL
-          tool_exclude <- if (!is.null(exclude)) exclude[exclude %in% known] else NULL
-          x$filter_files(include = tool_include, exclude = tool_exclude)
-        })
+      self$tools <- purrr::map2(self$tools, known_per_tool, \(x, known) {
+        tool_include <- if (!is.null(include)) include[include %in% known] else NULL
+        tool_exclude <- if (!is.null(exclude)) exclude[exclude %in% known] else NULL
+        x$filter_files(include = tool_include, exclude = tool_exclude)
+      })
       invisible(self)
     },
     #' @description List only files of interest in given workflow directory, i.e.
@@ -188,7 +187,7 @@ Workflow <- R6::R6Class(
     list_files = function() {
       self$tools |>
         purrr::map(\(x) {
-          x$list_files() |>
+          x$files |>
             dplyr::mutate(tool = x$name, .before = 1)
         }) |>
         dplyr::bind_rows()
@@ -250,6 +249,7 @@ Workflow <- R6::R6Class(
             prefix_include = prefix_include,
             dbconn = dbconn
           )
+          x$written_files
         }) |>
         dplyr::bind_rows()
       private$is_written <- TRUE

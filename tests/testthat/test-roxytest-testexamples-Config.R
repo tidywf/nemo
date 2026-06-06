@@ -52,7 +52,7 @@ test_that("Function Config() @ L65", {
 })
 
 
-test_that("Function config_prep_raw_schema() @ L386", {
+test_that("Function config_prep_raw_schema() @ L377", {
   
   path <- system.file("extdata", "tool1/latest/sampleA.tool1.table1.tsv", package = "nemo")
   (x <- config_prep_raw_schema(path = path, delim = "\t"))
@@ -60,7 +60,7 @@ test_that("Function config_prep_raw_schema() @ L386", {
 })
 
 
-test_that("Function config_prep_raw() @ L431", {
+test_that("Function config_prep_raw() @ L422", {
   
   path <- system.file("extdata", "tool1/latest/sampleA.tool1.table1.tsv", package = "nemo")
   name <- "table1"
