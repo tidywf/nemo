@@ -3,22 +3,25 @@
 #' @description
 #' Reads and parses a tool's `schema.yaml` from `inst/config/tools/<tool>/` in
 #' the package. The schema defines each output table: its file pattern, file
-#' type, description, and versioned columns (raw name, tidy name, type, `versions`
-#' version). Exposes raw and tidy schemas and column mappings used by `Tool` for
+#' type, description, and versioned columns (raw name, tidy name, type, versions).
+#' Exposes raw and tidy schemas and column mappings used by `Tool` for
 #' file discovery and column renaming.
 #'
 #' A Config object:
-#' - belongs to a package (`pkg`);
-#' - has a tool name (`tool`);
-#' - has a parsed tables list (`tables`);
-#' - caches all raw schemas as a flat tibble (`schemas_raw`);
+#' - belongs to a package (`pkg`)
+#' - has a tool name (`tool`)
+#' - has a parsed tables list (`tables`)
+#' - caches all raw schemas as a flat tibble (`schemas_raw`)
+#' - caches all tidy schemas as a flat tibble (`schemas_tidy`)
 #' @examples
 #' tool <- "tool1"
 #' pkg <- "nemo"
 #' conf <- Config$new(tool, pkg)
 #' (patterns <- conf$get_patterns())
 #' (ftypes <- conf$get_ftypes())
+#' (pat1 <- conf$get_pattern("table1"))
 #' (ftype1 <- conf$get_ftype("table1"))
+#' (descr1 <- conf$get_description("table1"))
 #' (descr <- conf$get_descriptions())
 #' (rs <- conf$get_schemas_raw())
 #' (ts <- conf$get_schemas_tidy())
@@ -36,8 +39,12 @@
 #' expect_equal(nrow(patterns), 6)
 #' # get_ftypes
 #' expect_equal(dplyr::distinct(ftypes, .data$ftype) |> nrow(), 5)
+#' # get_pattern
+#' expect_equal(pat1, "\\.tool1\\.table1\\.tsv$")
 #' # get_ftype
 #' expect_equal(ftype1, "txt")
+#' # get_description
+#' expect_true(is.character(descr1))
 #' # get_descriptions
 #' expect_equal(nrow(descr), 6)
 #' # get_schemas_raw / get_schemas_tidy
@@ -70,6 +77,9 @@ Config <- R6::R6Class(
     #' @field schemas_raw (`tibble()`)\cr
     #' All raw schemas for tool (versioned, for schema_guess).
     schemas_raw = NULL,
+    #' @field schemas_tidy (`tibble()`)\cr
+    #' All tidy schemas for tool (versioned, computed once at init).
+    schemas_tidy = NULL,
 
     #' @description Create a new Config object.
     #' @param tool (`character(1)`)\cr
@@ -79,121 +89,87 @@ Config <- R6::R6Class(
     #' @return (`R6::R6Class()`)\cr
     #' R6 object.
     initialize = function(tool, pkg) {
-      assertthat::assert_that(
-        rlang::is_scalar_character(tool),
-        msg = "`tool` must be a single character string."
-      )
-      assertthat::assert_that(
-        rlang::is_scalar_character(pkg),
-        msg = "`pkg` must be a single character string."
-      )
+      stopifnot("tool not single char string" = rlang::is_scalar_character(tool))
+      stopifnot("pkg not single char string" = rlang::is_scalar_character(pkg))
       tool <- tolower(tool)
       self$tool <- tool
       self$pkg <- pkg
-      self$tables <- self$read()[["tables"]]
-      self$schemas_raw <- self$get_schemas_raw()
+      self$tables <- private$read()[["tables"]]
+      private$schemas_cache <- private$compute_schemas()
+      self$schemas_raw <- private$derive_schema(private$schemas_cache, "raw")
+      self$schemas_tidy <- private$derive_schema(private$schemas_cache, "tidy")
     },
+
     #' @description Print details about the Config.
     #' @param ... (ignored).
     #' @return (`R6::R6Class()`)\cr
     #' R6 object invisibly.
     print = function(...) {
       res <- tibble::tribble(
-        ~var   , ~value                               ,
-        "tool" , self$tool                            ,
-        "pkg"  , self$pkg                             ,
-        "nraw" , as.character(nrow(self$schemas_raw))
+        ~var    , ~value                            ,
+        "tool"  , self$tool                         ,
+        "pkg"   , self$pkg                          ,
+        "ntbls" , as.character(length(self$tables))
       )
       cat(glue("#--- Config {self$pkg}::{self$tool} ---#\n"))
       print(knitr::kable(res))
       invisible(self)
     },
-    #' @description Read schema.yaml config.
-    #' @return (`list()`)\cr
-    #' Parsed YAML as a list of table schemas.
-    read = function() {
-      pkg_config_path <- system.file("config/tools", package = self$pkg)
-      assertthat::assert_that(
-        dir.exists(pkg_config_path),
-        msg = glue("Config directory not found for package '{self$pkg}': {pkg_config_path}")
-      )
-      tools <- list.files(pkg_config_path, full.names = FALSE)
-      assertthat::assert_that(
-        self$tool %in% tools,
-        msg = glue("No config for {self$tool} under {pkg_config_path}/.")
-      )
-      schema_path <- file.path(pkg_config_path, self$tool, "schema.yaml")
-      assertthat::assert_that(
-        file.exists(schema_path),
-        msg = glue("schema.yaml not found for {self$tool} at {schema_path}")
-      )
-      cfg <- yaml::read_yaml(schema_path)
-      assertthat::assert_that(
-        "tables" %in% names(cfg),
-        msg = glue("schema.yaml for {self$tool} is missing the top-level 'tables' key.")
-      )
-      cfg
-    },
+
     #' @description Return all output file patterns.
     #' @return (`tibble()`)\cr
     #' Table `name` and its `pattern`.
-    get_patterns = function() {
-      self$tables |>
-        purrr::map("pattern") |>
-        tibble::enframe(value = "pattern") |>
-        tidyr::unnest("pattern")
-    },
+    get_patterns = function() private$get_field_for_all_tables("pattern"),
+
     #' @description Return all output file types.
     #' @return (`tibble()`)\cr
     #' Table `name` and its `ftype`.
-    get_ftypes = function() {
-      self$tables |>
-        purrr::map("ftype") |>
-        tibble::enframe(value = "ftype") |>
-        tidyr::unnest("ftype")
-    },
+    get_ftypes = function() private$get_field_for_all_tables("ftype"),
+
+    #' @description Return all table descriptions.
+    #' @return (`tibble()`)\cr
+    #' Table `name` and its `description`.
+    get_descriptions = function() private$get_field_for_all_tables("description"),
+
+    #' @description Return pattern for a specific table.
+    #' @param x (`character(1)`)\cr
+    #' Table name.
+    #' @return (`character()`)\cr
+    #' File pattern(s).
+    get_pattern = function(x) private$get_field_for_table(x, "pattern"),
+
     #' @description Return ftype for a specific table.
     #' @param x (`character(1)`)\cr
     #' Table name.
     #' @return (`character(1)`)\cr
     #' File type.
-    get_ftype = function(x) {
-      assertthat::assert_that(
-        x %in% names(self$tables),
-        msg = glue("{x} not found in tables for {self$tool}.")
-      )
-      self$tables[[x]][["ftype"]]
-    },
-    #' @description Return all table descriptions.
-    #' @return (`tibble()`)\cr
-    #' Table `name` and its `description`.
-    get_descriptions = function() {
-      self$tables |>
-        purrr::map("description") |>
-        tibble::enframe(value = "description") |>
-        tidyr::unnest("description")
-    },
+    get_ftype = function(x) private$get_field_for_table(x, "ftype"),
+
+    #' @description Return description for a specific table.
+    #' @param x (`character(1)`)\cr
+    #' Table name.
+    #' @return (`character(1)`)\cr
+    #' Table description.
+    get_description = function(x) private$get_field_for_table(x, "description"),
+
     #' @description Return raw schemas for all tables.
     #' @return (`tibble()`)\cr
     #' Table `name`, `tbl_description`, `version`, and `schema`
     #' (list-col of tibble(field, type)).
-    get_schemas_raw = function() {
-      private$get_schemas("raw")
-    },
+    get_schemas_raw = function() self$schemas_raw,
+
     #' @description Return tidy schemas for all tables.
     #' @return (`tibble()`)\cr
     #' Table `name`, `tbl_description`, `version`, and `schema`
     #' (list-col of tibble(field, type)).
-    get_schemas_tidy = function() {
-      private$get_schemas("tidy")
-    },
+    get_schemas_tidy = function() self$schemas_tidy,
+
     #' @description Return both raw and tidy schemas for all tables.
     #' @return (`tibble()`)\cr
     #' Table `name`, `tbl_description`, `version`, and `schema`
     #' (list-col of tibble(raw, tidy, type)).
-    get_schemas_both = function() {
-      private$get_schemas("both")
-    },
+    get_schemas_both = function() private$schemas_cache,
+
     #' @description Get raw schema for a specific table and optional version.
     #' @param x (`character(1)`)\cr
     #' Table name.
@@ -212,11 +188,13 @@ Config <- R6::R6Class(
     #' @return (`tibble()`)\cr
     #' Table `version`, `field` and `type`.
     get_schema_tidy = function(x = NULL, version = NULL) {
-      private$get_schema(x, version, self$get_schemas_tidy())
+      private$get_schema(x, version, self$schemas_tidy)
     },
     #' @description Validate schemas.
+    #' Intentionally soft: returns `FALSE` + warning (not `stop()`) so callers
+    #' can report schema problems without halting execution.
     #' @return (`logical(1)`)\cr
-    #' TRUE or FALSE.
+    #' `TRUE` if all field types are valid, `FALSE` otherwise.
     validate_schemas = function() {
       valid_types <- c(char = "c", int = "i", float = "d")
       valid_types_print <- glue::glue_collapse(valid_types, sep = ", ", last = " or ")
@@ -282,7 +260,44 @@ Config <- R6::R6Class(
     }
   ), # end public
   private = list(
-    get_schemas = function(raw_or_tidy) {
+    read = function() {
+      pkg_config_path <- system.file("config/tools", package = self$pkg)
+      assertthat::assert_that(
+        dir.exists(pkg_config_path),
+        msg = glue("Config directory not found for package '{self$pkg}': {pkg_config_path}")
+      )
+      tools <- list.files(pkg_config_path, full.names = FALSE)
+      assertthat::assert_that(
+        self$tool %in% tools,
+        msg = glue("No config for {self$tool} under {pkg_config_path}/.")
+      )
+      schema_path <- file.path(pkg_config_path, self$tool, "schema.yaml")
+      assertthat::assert_that(
+        file.exists(schema_path),
+        msg = glue("schema.yaml not found for {self$tool} at {schema_path}")
+      )
+      cfg <- yaml::read_yaml(schema_path)
+      assertthat::assert_that(
+        "tables" %in% names(cfg),
+        msg = glue("schema.yaml for {self$tool} is missing the top-level 'tables' key.")
+      )
+      cfg
+    },
+    get_field_for_table = function(x, key) {
+      assertthat::assert_that(
+        x %in% names(self$tables),
+        msg = glue("{x} not found in tables for {self$tool}.")
+      )
+      self$tables[[x]][[key]]
+    },
+    get_field_for_all_tables = function(key) {
+      self$tables |>
+        purrr::map(key) |>
+        tibble::enframe(value = key) |>
+        tidyr::unnest(dplyr::all_of(key))
+    },
+    schemas_cache = NULL,
+    compute_schemas = function() {
       .get_one <- function(tab, tab_name) {
         cols_df <- tab[["columns"]] |>
           purrr::map(\(col) {
@@ -290,33 +305,33 @@ Config <- R6::R6Class(
             tibble::as_tibble_row(col)
           }) |>
           dplyr::bind_rows()
-        description <- tibble::tibble(tbl_description = tab[["description"]])
         versions <- config_sort_versions(unique(unlist(cols_df[["versions"]])))
-        .get_version <- function(v) {
-          cols_filtered <- cols_df |>
+        schema_rows <- purrr::map(versions, \(v) {
+          cols_v <- cols_df |>
             dplyr::filter(purrr::map_lgl(.data$versions, \(vs) v %in% vs)) |>
-            dplyr::mutate(type = schema_type_remap(.data$type))
-          cols_v <- if (raw_or_tidy == "both") {
-            cols_filtered |> dplyr::select("raw", "tidy", "type")
-          } else {
-            cols_filtered |> dplyr::select(field = dplyr::all_of(raw_or_tidy), "type")
-          }
+            dplyr::mutate(type = schema_type_remap(.data$type)) |>
+            dplyr::select("raw", "tidy", "type")
           tibble::tibble(version = v, schema = list(cols_v))
-        }
-        schema_rows <- purrr::map(versions, .get_version) |>
+        }) |>
           dplyr::bind_rows()
-        dplyr::bind_cols(description, schema_rows) |>
-          dplyr::mutate(name = tab_name, .before = 1)
+        tibble::tibble(name = tab_name, tbl_description = tab[["description"]]) |>
+          dplyr::bind_cols(schema_rows)
       }
       self$tables |>
         purrr::imap(.get_one) |>
         dplyr::bind_rows()
     },
+    derive_schema = function(cache, which) {
+      cache |>
+        dplyr::mutate(
+          schema = purrr::map(
+            .data$schema,
+            \(s) dplyr::select(s, field = dplyr::all_of(which), "type")
+          )
+        )
+    },
     get_schema = function(x, version, schemas) {
-      assertthat::assert_that(
-        rlang::is_scalar_character(x),
-        msg = "`x` must be a single character string."
-      )
+      stopifnot("x must be a single character string" = rlang::is_scalar_character(x))
       assertthat::assert_that(
         x %in% schemas[["name"]],
         msg = glue("{x} not found in schemas for {self$tool}.")

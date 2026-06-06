@@ -2,14 +2,16 @@
 
 # File R/Config.R: @testexamples
 
-test_that("Function Config() @ L58", {
+test_that("Function Config() @ L65", {
   
   tool <- "tool1"
   pkg <- "nemo"
   conf <- Config$new(tool, pkg)
   (patterns <- conf$get_patterns())
   (ftypes <- conf$get_ftypes())
+  (pat1 <- conf$get_pattern("table1"))
   (ftype1 <- conf$get_ftype("table1"))
+  (descr1 <- conf$get_description("table1"))
   (descr <- conf$get_descriptions())
   (rs <- conf$get_schemas_raw())
   (ts <- conf$get_schemas_tidy())
@@ -26,8 +28,12 @@ test_that("Function Config() @ L58", {
   expect_equal(nrow(patterns), 6)
   # get_ftypes
   expect_equal(dplyr::distinct(ftypes, .data$ftype) |> nrow(), 5)
+  # get_pattern
+  expect_equal(pat1, "\\.tool1\\.table1\\.tsv$")
   # get_ftype
   expect_equal(ftype1, "txt")
+  # get_description
+  expect_true(is.character(descr1))
   # get_descriptions
   expect_equal(nrow(descr), 6)
   # get_schemas_raw / get_schemas_tidy
@@ -46,7 +52,7 @@ test_that("Function Config() @ L58", {
 })
 
 
-test_that("Function config_prep_raw_schema() @ L371", {
+test_that("Function config_prep_raw_schema() @ L386", {
   
   path <- system.file("extdata", "tool1/latest/sampleA.tool1.table1.tsv", package = "nemo")
   (x <- config_prep_raw_schema(path = path, delim = "\t"))
@@ -54,7 +60,7 @@ test_that("Function config_prep_raw_schema() @ L371", {
 })
 
 
-test_that("Function config_prep_raw() @ L416", {
+test_that("Function config_prep_raw() @ L431", {
   
   path <- system.file("extdata", "tool1/latest/sampleA.tool1.table1.tsv", package = "nemo")
   name <- "table1"
