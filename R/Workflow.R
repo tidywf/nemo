@@ -73,8 +73,8 @@ Workflow <- R6::R6Class(
     #' @field files_tbl (`tibble(n)`)\cr
     #' Tibble of files from [list_files_dir()].
     files_tbl = NULL,
-    #' @field metapkg (`character(1)`)\cr
-    #' Package name used for metadata version reporting.
+    #' @field metapkg (`character(n)`)\cr
+    #' Package name(s) used for metadata version reporting.
     metapkg = NULL,
     #' @field written_files (`tibble(n)`)\cr
     #' Tibble of files written from `self$write()`.
@@ -92,18 +92,9 @@ Workflow <- R6::R6Class(
     #' @return (`R6::R6Class()`)\cr
     #' R6 object.
     initialize = function(name = NULL, path = NULL, tools = NULL, metapkg = "nemo") {
-      assertthat::assert_that(
-        rlang::is_scalar_character(name),
-        msg = "`name` must be a single character string."
-      )
-      assertthat::assert_that(
-        rlang::is_scalar_character(metapkg),
-        msg = "`metapkg` must be a single character string."
-      )
-      assertthat::assert_that(
-        !is.null(path) && is.character(path),
-        msg = "`path` must be a character vector."
-      )
+      stopifnot("name not single char string" = rlang::is_scalar_character(name))
+      stopifnot("metapkg not char string" = rlang::is_character(name))
+      stopifnot("path not char string" = rlang::is_character(path))
       assertthat::assert_that(
         all(dir.exists(path)),
         msg = glue(
