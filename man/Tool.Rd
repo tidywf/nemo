@@ -98,6 +98,7 @@ Tibble of files written from \code{self$write()}.}
 \item \href{#method-Tool-.parse_file_nohead}{\code{Tool$.parse_file_nohead()}}
 \item \href{#method-Tool-tidy}{\code{Tool$tidy()}}
 \item \href{#method-Tool-write}{\code{Tool$write()}}
+\item \href{#method-Tool-get_metadata}{\code{Tool$get_metadata()}}
 \item \href{#method-Tool-wrangle}{\code{Tool$wrangle()}}
 \item \href{#method-Tool-clone}{\code{Tool$clone()}}
 }
@@ -558,6 +559,38 @@ Database connection object (see \code{DBI::dbConnect}).}
 (\code{R6::R6Class()})\cr
 R6 object invisibly. Results stored in \code{self$written_files}
 (\code{NULL} if no files were found).
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Tool-get_metadata"></a>}}
+\if{latex}{\out{\hypertarget{method-Tool-get_metadata}{}}}
+\subsection{Method \code{get_metadata()}}{
+Get metadata for the tool run.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Tool$get_metadata(input_id, output_id, output_dir, pkgs = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{input_id}}{(\code{character(1)})\cr
+Input ID to use for the dataset (e.g. \code{run123}).}
+
+\item{\code{output_id}}{(\code{character(1)})\cr
+Output ID to use for the dataset (e.g. \code{run123}).}
+
+\item{\code{output_dir}}{(\code{character(1)})\cr
+Output directory.}
+
+\item{\code{pkgs}}{(\code{character(n)})\cr
+Which R packages to extract versions for.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+(\code{tibble()})\cr
+Single-row tibble with columns \code{input_id}, \code{output_id}, \code{input_dirs},
+\code{output_dir}, \code{pkg_versions}, and \code{files}.
 }
 }
 \if{html}{\out{<hr>}}

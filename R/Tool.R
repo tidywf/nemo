@@ -89,11 +89,18 @@
 #' expect_setequal(t4_ncols, c(3L, 5L))
 #' # write: two table4 output files (one per version)
 #' expect_equal(sum(grepl("table4", lfC)), 2)
+#' # write: metadata_tool1.parquet written for standalone Tool
+#' meta_c <- arrow::read_parquet(file.path(dir1, "metadata_tool1.parquet"))
+#' expect_named(meta_c, c("input_id", "output_id", "input_dirs", "output_dir", "pkg_versions", "files"))
+#' expect_equal(meta_c$input_id, "run1")
 #' expect_named(toolD$written_files, c("raw_path", "tool_parser", "prefix", "tidy_data", "tbl_name", "outpath"))
 #' # input_id / output_id / prefix_include column tests
 #' toolE <- Tool$new(name = name, pkg = pkg, path = path)$
 #'   filter_files(include = "tool1_table1")$tidy()
-#' read_pq <- function(d) arrow::read_parquet(list.files(d, pattern = "[.]parquet$", full.names = TRUE)[1])
+#' read_pq <- function(d) {
+#'   fs <- list.files(d, pattern = "[.]parquet$", full.names = TRUE)
+#'   arrow::read_parquet(fs[!grepl("^metadata_", basename(fs))][1])
+#' }
 #' dE0 <- fs::file_temp(); toolE$write(output_dir = dE0, format = "parquet")
 #' dEi <- fs::file_temp(); toolE$write(output_dir = dEi, format = "parquet", input_id = "run1")
 #' dEo <- fs::file_temp(); toolE$write(output_dir = dEo, format = "parquet", output_id = "out1")
@@ -646,7 +653,53 @@ Tool <- R6::R6Class(
         )
       private$is_written <- TRUE
       self$written_files <- d_write
+      if (format != "db" && !is.null(self$path)) {
+        meta <- self$get_metadata(
+          input_id = input_id,
+          output_id = output_id,
+          output_dir = output_dir
+        )
+        arrow::write_parquet(
+          meta,
+          file.path(output_dir, paste0("metadata_", self$name, ".parquet"))
+        )
+      }
       return(invisible(self))
+    },
+    #' @description Get metadata for the tool run.
+    #' @param input_id (`character(1)`)\cr
+    #' Input ID to use for the dataset (e.g. `run123`).
+    #' @param output_id (`character(1)`)\cr
+    #' Output ID to use for the dataset (e.g. `run123`).
+    #' @param output_dir (`character(1)`)\cr
+    #' Output directory.
+    #' @param pkgs (`character(n)`)\cr
+    #' Which R packages to extract versions for.
+    #' @return (`tibble()`)\cr
+    #' Single-row tibble with columns `input_id`, `output_id`, `input_dirs`,
+    #' `output_dir`, `pkg_versions`, and `files`.
+    get_metadata = function(input_id, output_id, output_dir, pkgs = NULL) {
+      if (is.null(pkgs)) {
+        pkgs <- self$pkg
+      }
+      if (private$is_written) {
+        files <- self$written_files |>
+          dplyr::mutate(outpath = basename(.data$outpath)) |>
+          dplyr::select(tbl = "tbl_name", "prefix", fout = "outpath", fin = "raw_path") |>
+          dplyr::mutate(dplyr::across(dplyr::where(is.character), as.character))
+      } else {
+        files <- self$files |>
+          dplyr::select(fin = "path", "size") |>
+          dplyr::mutate(size = as.numeric(.data$size))
+      }
+      nemo_metadata(
+        files = files,
+        pkgs = pkgs,
+        input_id = input_id,
+        output_id = output_id,
+        input_dirs = self$path,
+        output_dir = output_dir
+      )
     },
     #' @description Parse, filter, tidy and write files.
     #' @param output_dir (`character(1)`)\cr

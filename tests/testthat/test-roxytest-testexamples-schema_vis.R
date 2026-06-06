@@ -2,9 +2,8 @@
 
 # File R/schema_vis.R: @testexamples
 
-test_that("Function nemo_schemavis_data() @ L196", {
+test_that("Function nemo_schemavis_data() @ L193", {
   
-  nemo_schemavis_data("tool1", pkg = "nemo")
   expect_s3_class(nemo_schemavis_data("tool1", pkg = "nemo"), "tbl_df")
   expect_true(all(c("n", "tool", "tbl", "schema_version", "description") %in%
     names(nemo_schemavis_data("tool1", pkg = "nemo"))))

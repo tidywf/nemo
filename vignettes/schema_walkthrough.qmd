@@ -148,7 +148,7 @@ conf$get_descriptions()
 - specific tables
 
 ```{r}
-#| label: get_pats
+#| label: get_pats_one
 conf$get_pattern("table1")
 conf$get_ftype("table1")
 conf$get_description("table1")
@@ -180,6 +180,7 @@ conf$get_schema_raw("table1", version = "v1.2.3")
 tidy_schemas <- conf$get_schemas_tidy() |>
   select("name", "version", "schema")
 tidy_schemas[["schema"]][[1]]
+# or alternatively
 conf$get_schema_tidy("table1", version = "v1.2.3")
 ```
 

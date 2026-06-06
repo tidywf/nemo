@@ -2,7 +2,7 @@
 
 # File R/Tool.R: @testexamples
 
-test_that("Function Tool() @ L109", {
+test_that("Function Tool() @ L116", {
   
   fs::path(tempdir(), letters[1:5]) |>
     fs::file_temp_push() |>
@@ -75,11 +75,18 @@ test_that("Function Tool() @ L109", {
   expect_setequal(t4_ncols, c(3L, 5L))
   # write: two table4 output files (one per version)
   expect_equal(sum(grepl("table4", lfC)), 2)
+  # write: metadata_tool1.parquet written for standalone Tool
+  meta_c <- arrow::read_parquet(file.path(dir1, "metadata_tool1.parquet"))
+  expect_named(meta_c, c("input_id", "output_id", "input_dirs", "output_dir", "pkg_versions", "files"))
+  expect_equal(meta_c$input_id, "run1")
   expect_named(toolD$written_files, c("raw_path", "tool_parser", "prefix", "tidy_data", "tbl_name", "outpath"))
   # input_id / output_id / prefix_include column tests
   toolE <- Tool$new(name = name, pkg = pkg, path = path)$
     filter_files(include = "tool1_table1")$tidy()
-  read_pq <- function(d) arrow::read_parquet(list.files(d, pattern = "[.]parquet$", full.names = TRUE)[1])
+  read_pq <- function(d) {
+    fs <- list.files(d, pattern = "[.]parquet$", full.names = TRUE)
+    arrow::read_parquet(fs[!grepl("^metadata_", basename(fs))][1])
+  }
   dE0 <- fs::file_temp(); toolE$write(output_dir = dE0, format = "parquet")
   dEi <- fs::file_temp(); toolE$write(output_dir = dEi, format = "parquet", input_id = "run1")
   dEo <- fs::file_temp(); toolE$write(output_dir = dEo, format = "parquet", output_id = "out1")

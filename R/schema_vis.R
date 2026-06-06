@@ -175,24 +175,21 @@ reactable_schema <- function(dat, ...) {
   )
 }
 
-#' Build schema data for use with reactable_schema
+#' Build schema data for reactable_schema
 #'
 #' @description
-#' Builds the nested data frame expected by [reactable_schema()] for one or
-#' more tools from a given package. Useful when you need to inspect or
-#' manipulate the data before rendering.
+#' Internal helper: builds the nested data frame expected by [reactable_schema()]
+#' for one or more tools from a given package.
 #'
 #' @param tools character vector of tool names.
 #' @param pkg package name that owns the tool configs. Defaults to `"nemo"`.
 #' @return A tibble with columns `n`, `tool`, `tbl`, `schema_version`,
 #'   `description`, `row_id`.
-#' @examples
-#' nemo_schemavis_data("tool1", pkg = "nemo")
+#' @keywords internal
 #' @testexamples
 #' expect_s3_class(nemo_schemavis_data("tool1", pkg = "nemo"), "tbl_df")
 #' expect_true(all(c("n", "tool", "tbl", "schema_version", "description") %in%
 #'   names(nemo_schemavis_data("tool1", pkg = "nemo"))))
-#' @export
 nemo_schemavis_data <- function(tools, pkg = "nemo") {
   get_one <- function(tool) {
     conf <- Config$new(tool, pkg = pkg)
