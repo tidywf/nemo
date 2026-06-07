@@ -368,8 +368,9 @@ Used for tables with custom parse logic (e.g. csv-nohead-long).
 Table name.}
 
 \item{\code{version}}{(\code{character(1)})\cr
-Version. If NULL, uses the latest version. Unlike \code{get_schema_raw()}/\code{get_schema_tidy()},
-which return all versions when NULL, this always resolves to a single version.}
+Version. If NULL, resolves to the highest semver version present, or \code{"latest"} if defined.
+Unlike \code{get_schema_raw()}/\code{get_schema_tidy()}, which return all versions when NULL,
+this always resolves to a single version.}
 }
 \if{html}{\out{</div>}}
 }

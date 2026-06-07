@@ -42,10 +42,9 @@ nemo_assert_not_null <- function(x, arg = deparse(substitute(x))) {
 }
 
 assert_include_exclude <- function(include, exclude) {
-  assertthat::assert_that(
-    is.null(include) || is.null(exclude),
-    msg = "You cannot define both include and exclude."
-  )
+  if (!is.null(include) && !is.null(exclude)) {
+    stop("You cannot define both include and exclude.", call. = FALSE)
+  }
 }
 
 check_unknown_parsers <- function(parsers, known, label) {

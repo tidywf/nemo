@@ -2,7 +2,7 @@
 
 # File R/Tool.R: @testexamples
 
-test_that("Function Tool() @ L116", {
+test_that("Function Tool() @ L115", {
   
   fs::path(tempdir(), letters[1:5]) |>
     fs::file_temp_push() |>
@@ -12,7 +12,6 @@ test_that("Function Tool() @ L116", {
   toolA <- Tool$new(name = name, pkg = pkg, path = path)
   toolA$files
   toolA$filter_files(exclude = "tool1_table3"); toolA$files # note the exclusion this time
-  toolA$list_files()
   
   toolB <- Tool$new(name = name, pkg = pkg, path = path)$
     filter_files(include = "tool1_table1")

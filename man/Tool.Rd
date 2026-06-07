@@ -30,7 +30,6 @@ path <- system.file("extdata/tool1", package = "nemo")
 toolA <- Tool$new(name = name, pkg = pkg, path = path)
 toolA$files
 toolA$filter_files(exclude = "tool1_table3"); toolA$files # note the exclusion this time
-toolA$list_files()
 
 toolB <- Tool$new(name = name, pkg = pkg, path = path)$
   filter_files(include = "tool1_table1")
@@ -85,7 +84,6 @@ Tibble of files written from \code{self$write()}.}
 \item \href{#method-Tool-new}{\code{Tool$new()}}
 \item \href{#method-Tool-print}{\code{Tool$print()}}
 \item \href{#method-Tool-filter_files}{\code{Tool$filter_files()}}
-\item \href{#method-Tool-list_files}{\code{Tool$list_files()}}
 \item \href{#method-Tool-get_schema_tidy}{\code{Tool$get_schema_tidy()}}
 \item \href{#method-Tool-get_schema_raw}{\code{Tool$get_schema_raw()}}
 \item \href{#method-Tool-get_col_map}{\code{Tool$get_col_map()}}
@@ -180,33 +178,6 @@ tool_parser names to exclude (e.g. \code{"tool1_table3"}).}
 \subsection{Returns}{
 (\code{R6::R6Class()})\cr
 R6 object invisibly.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Tool-list_files"></a>}}
-\if{latex}{\out{\hypertarget{method-Tool-list_files}{}}}
-\subsection{Method \code{list_files()}}{
-Return the current file set. Reflects any prior
-\code{filter_files()} calls — equivalent to reading \verb{$files} directly.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Tool$list_files()}\if{html}{\out{</div>}}
-}
-
-\subsection{Returns}{
-(\code{tibble()})\cr
-A tibble with:
-\itemize{
-\item \code{tool_parser}: tool name followed by parser name;
-\item \code{parser}: parser name;
-\item \code{bname}: file basename;
-\item \code{size}: file size;
-\item \code{lastmodified}: last modified timestamp of file;
-\item \code{path}: file path;
-\item \code{pattern}: file pattern;
-\item \code{prefix}: file prefix;
-\item \code{group}: if multiple files have the same basename then this is used
-as a differentiator.
-}
 }
 }
 \if{html}{\out{<hr>}}

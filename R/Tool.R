@@ -25,7 +25,6 @@
 #' toolA <- Tool$new(name = name, pkg = pkg, path = path)
 #' toolA$files
 #' toolA$filter_files(exclude = "tool1_table3"); toolA$files # note the exclusion this time
-#' toolA$list_files()
 #'
 #' toolB <- Tool$new(name = name, pkg = pkg, path = path)$
 #'   filter_files(include = "tool1_table1")
@@ -119,6 +118,8 @@ Tool <- R6::R6Class(
     is_tidied = FALSE,
     is_written = FALSE,
     files_tbl = NULL,
+    # Typed empty tibble for compute_files; kept as a method so the column spec
+    # is in one place and easy to update if the schema changes.
     empty_files_tbl = function() {
       tibble::tibble(
         tool_parser = character(),
@@ -303,36 +304,20 @@ Tool <- R6::R6Class(
         return(invisible(self))
       }
       if (!is.null(include)) {
-        nemo_assert_chr(include)
         check_unknown_parsers(include, self$files$tool_parser, "include")
         self$files <- self$files |>
           dplyr::filter(.data$tool_parser %in% include)
       }
       if (!is.null(exclude)) {
-        nemo_assert_chr(exclude)
         check_unknown_parsers(exclude, self$files$tool_parser, "exclude")
         self$files <- self$files |>
           dplyr::filter(!(.data$tool_parser %in% exclude))
       }
       return(invisible(self))
     },
-    #' @description Return the current file set. Reflects any prior
-    #' `filter_files()` calls — equivalent to reading `$files` directly.
-    #' @return (`tibble()`)\cr
-    #' A tibble with:
-    #' - `tool_parser`: tool name followed by parser name;
-    #' - `parser`: parser name;
-    #' - `bname`: file basename;
-    #' - `size`: file size;
-    #' - `lastmodified`: last modified timestamp of file;
-    #' - `path`: file path;
-    #' - `pattern`: file pattern;
-    #' - `prefix`: file prefix;
-    #' - `group`: if multiple files have the same basename then this is used
-    #' as a differentiator.
-    list_files = function() {
-      self$files
-    },
+    # get_schema_tidy / get_schema_raw / get_col_map are intentional thin
+    # wrappers over Config so callers don't need to reach into $config directly.
+    # They also serve as the stable surface that subclass tidy methods call.
     #' @description Get specific tidy schema.
     #' @param table_name (`character(1)`)\cr
     #' Table name.
@@ -531,14 +516,17 @@ Tool <- R6::R6Class(
         private$is_tidied <- TRUE
         return(invisible(self))
       }
-      d <- self$files |>
-        dplyr::mutate(
-          raw = purrr::map2(.data$path, .data$parser, \(p, t) self$.dispatch_parse(p, t)),
-          tidy = purrr::map2(.data$raw, .data$parser, \(r, t) self$.dispatch_tidy(r, t))
-        )
-      if (!keep_raw) {
-        d <- d |>
-          dplyr::select(-"raw")
+      if (keep_raw) {
+        d <- self$files |>
+          dplyr::mutate(
+            raw = purrr::map2(.data$path, .data$parser, \(p, t) self$.dispatch_parse(p, t)),
+            tidy = purrr::map2(.data$raw, .data$parser, \(r, t) self$.dispatch_tidy(r, t))
+          )
+      } else {
+        d <- self$files |>
+          dplyr::mutate(
+            tidy = purrr::map2(.data$path, .data$parser, \(p, t) self$.dispatch_tidy(p, t))
+          )
       }
       self$tbls <- d
       private$is_tidied <- TRUE
@@ -580,11 +568,13 @@ Tool <- R6::R6Class(
           stop("Output directory must be specified when format is not 'db'.")
         }
         output_dir <- normalizePath(output_dir, mustWork = FALSE)
-        fs::dir_create(output_dir)
       }
       if (is.null(self$tbls)) {
         self$written_files <- NULL
         return(invisible(self))
+      }
+      if (format != "db") {
+        fs::dir_create(output_dir)
       }
       d_write <- self$tbls |>
         dplyr::rename(raw_path = "path") |>
@@ -594,7 +584,7 @@ Tool <- R6::R6Class(
           tbl_name = dplyr::if_else(
             .data$parser == .data$tidy_name,
             .data$tool_parser,
-            paste0(.data$tool_parser, .data$tidy_name)
+            paste(.data$tool_parser, .data$tidy_name, sep = "_")
           ),
           fpfix = paste(file.path(output_dir, .data$prefix), .data$tbl_name, sep = "_"),
           tidy_data = purrr::pmap(
@@ -649,14 +639,15 @@ Tool <- R6::R6Class(
     #' @return (`tibble()`)\cr
     #' Single-row tibble with columns `input_id`, `output_id`, `input_dirs`,
     #' `output_dir`, `pkg_versions`, and `files`.
+    # NOTE: files-assembly logic here mirrors Workflow$get_metadata. The only
+    # difference is the fallback source (self$files vs private$files_tbl).
     get_metadata = function(input_id, output_id, output_dir, pkgs = NULL) {
-      if (is.null(pkgs)) {
-        pkgs <- self$pkg
-      }
+      pkgs <- pkgs %||% self$pkg
       if (!is.null(self$written_files)) {
         files <- self$written_files |>
           dplyr::mutate(outpath = basename(.data$outpath)) |>
           dplyr::select(tbl = "tbl_name", "prefix", fout = "outpath", fin = "raw_path") |>
+          # Arrow treats glue/fs_byte as an extension type and refuses to write_parquet
           dplyr::mutate(dplyr::across(dplyr::where(is.character), as.character))
       } else {
         files <- self$files |>

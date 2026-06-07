@@ -133,12 +133,14 @@ Workflow <- R6::R6Class(
     #' @return (`R6::R6Class()`)\cr
     #' R6 object invisibly.
     filter_files = function(include = NULL, exclude = NULL) {
+      assert_include_exclude(include, exclude)
       assertthat::assert_that(
         !private$is_tidied,
         msg = "Cannot filter files after tidy() has been called."
       )
-      assert_include_exclude(include, exclude)
-      all_parsers <- unlist(purrr::map(self$tools, \(x) unique(x$files$tool_parser)))
+      all_parsers <- purrr::map(self$tools, \(x) x$files$tool_parser) |>
+        unlist() |>
+        unique()
       if (!is.null(include)) {
         check_unknown_parsers(include, all_parsers, "include")
       }
@@ -201,9 +203,11 @@ Workflow <- R6::R6Class(
       dbconn = NULL,
       write_metadata = TRUE
     ) {
-      valid_out_fmt(format)
+      valid_out_fmt(format) # early failsafe; Tool$write() repeats this per-tool
       assertthat::assert_that(private$is_tidied, msg = "Did you forget to tidy?")
       if (format != "db") {
+        # normalise once here so all tools receive a canonical path; Tool$write()
+        # repeats the normalisation but that is idempotent.
         output_dir <- normalizePath(output_dir, mustWork = FALSE)
       }
       res <- self$tools |>
@@ -302,10 +306,10 @@ Workflow <- R6::R6Class(
     #' @return (`tibble()`)\cr
     #' Single-row tibble with columns `input_id`, `output_id`, `input_dirs`,
     #' `output_dir`, `pkg_versions`, and `files`.
+    # NOTE: files-assembly logic here mirrors Tool$get_metadata. The only
+    # difference is the fallback source (private$files_tbl vs self$files).
     get_metadata = function(input_id, output_id, output_dir, pkgs = NULL) {
-      if (is.null(pkgs)) {
-        pkgs <- self$metapkg
-      }
+      pkgs <- pkgs %||% self$metapkg
       if (!is.null(self$written_files)) {
         # just keep bname and provide output_dir, no need for full outpath since
         # it's a flat output structure.
@@ -315,7 +319,6 @@ Workflow <- R6::R6Class(
           # Arrow treats glue/fs_byte as an extension type and refuses to write_parquet
           dplyr::mutate(dplyr::across(dplyr::where(is.character), as.character))
       } else {
-        # just select raw path and size
         files <- private$files_tbl |>
           dplyr::select(fin = "path", "size") |>
           dplyr::mutate(size = as.numeric(.data$size))
@@ -332,9 +335,16 @@ Workflow <- R6::R6Class(
   ), # public end
   private = list(
     is_tool_subclass = function(cls) {
+      # cls$inherit stores a symbol (the parent class name), not the class object
+      # itself — get() is required to resolve it. We start from parent.env(.GlobalEnv)
+      # so a user variable named "Tool" in .GlobalEnv cannot shadow the real class.
+      # Do not attempt to traverse $inherit directly without resolving via get().
       parent <- cls$inherit
       while (!is.null(parent)) {
-        parent_cls <- tryCatch(get(as.character(parent)), error = function(e) NULL)
+        parent_cls <- tryCatch(
+          get(as.character(parent), envir = parent.env(.GlobalEnv), inherits = TRUE),
+          error = function(e) NULL
+        )
         if (is.null(parent_cls)) {
           return(FALSE)
         }

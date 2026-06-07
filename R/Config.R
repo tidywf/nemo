@@ -205,8 +205,9 @@ Config <- R6::R6Class(
     #' @param x (`character(1)`)\cr
     #' Table name.
     #' @param version (`character(1)`)\cr
-    #' Version. If NULL, uses the latest version. Unlike `get_schema_raw()`/`get_schema_tidy()`,
-    #' which return all versions when NULL, this always resolves to a single version.
+    #' Version. If NULL, resolves to the highest semver version present, or `"latest"` if defined.
+    #' Unlike `get_schema_raw()`/`get_schema_tidy()`, which return all versions when NULL,
+    #' this always resolves to a single version.
     #' @return (`tibble()`)\cr
     #' Tibble with columns `raw`, `tidy`, `type`, `description`.
     get_col_map = function(x, version = NULL) {
@@ -218,12 +219,7 @@ Config <- R6::R6Class(
         nemo_assert_scalar_chr(version)
       }
       tbl_rows <- private$schemas_both |> dplyr::filter(.data$name == x)
-      versions <- tbl_rows[["version"]]
-      if (is.null(version)) {
-        version <- tail(versions, 1)
-      } else {
-        private$assert_version(x, version, versions)
-      }
+      version <- private$resolve_version(x, version, tbl_rows[["version"]])
       tbl_rows |>
         dplyr::filter(.data$version == .env$version) |>
         tidyr::unnest("schema") |>
@@ -268,6 +264,15 @@ Config <- R6::R6Class(
       if (!version %in% versions) {
         stop(glue("{version} not found in versions for {x} in {self$tool}."), call. = FALSE)
       }
+    },
+    # Resolve a version arg: NULL defaults to the last sorted version (highest
+    # semver, or "latest" when present); otherwise validates and returns as-is.
+    resolve_version = function(x, version, versions) {
+      if (is.null(version)) {
+        return(tail(versions, 1))
+      }
+      private$assert_version(x, version, versions)
+      version
     },
     read = function() {
       pkg_config_path <- system.file("config/tools", package = self$pkg)
