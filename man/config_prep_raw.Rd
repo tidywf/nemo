@@ -11,27 +11,28 @@ config_prep_raw(path, name, descr, pat, type = "txt", v = "latest", ...)
 File path.}
 
 \item{name}{(\code{character(1)})\cr
-File nickname.}
+Table name (key in \verb{tables:}).}
 
 \item{descr}{(\code{character(1)})\cr
-File description.}
+Table description.}
 
 \item{pat}{(\code{character(1)})\cr
-File pattern.}
+File pattern (regex).}
 
 \item{type}{(\code{character(1)})\cr
-File type.}
+File type (\code{ftype}).}
 
 \item{v}{(\code{character(1)})\cr
-File version.}
+Version string to assign to all columns (default \code{"latest"}).}
 
 \item{...}{Passed on to \code{readr::read_delim}.}
 }
 \value{
-A named list with the config info.
+A named list matching the \verb{tables:} entry format for \code{schema.yaml}.
 }
 \description{
-Prepares config from raw file.
+Scaffolds a single-table config entry from a raw file. Part of the
+\verb{config_prep_*} family for bootstrapping a new \code{schema.yaml}.
 }
 \examples{
 path <- system.file("extdata", "tool1/latest/sampleA.tool1.table1.tsv", package = "nemo")

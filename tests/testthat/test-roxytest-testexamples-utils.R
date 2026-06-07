@@ -41,17 +41,17 @@ test_that("Function empty_tbl() @ L100", {
 })
 
 
-test_that("Function nemoverse_wf_dispatch() @ L154", {
+test_that("Function nemoverse_wf_dispatch() @ L150", {
   
   wf <- "basemean"
   (fun <- nemoverse_wf_dispatch(wf))
   expect_equal(fun, base::mean)
   expect_error(nemoverse_wf_dispatch("foo"))
-  expect_error(nemoverse_wf_dispatch("dummy1"))
+  expect_error(nemoverse_wf_dispatch("dummy_pkg_test"))
 })
 
 
-test_that("Function pkg_found() @ L194", {
+test_that("Function pkg_found() @ L188", {
   
   pkg_found("base")
   pkg_found("somefakepackagename")

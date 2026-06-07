@@ -2,7 +2,7 @@
 % Please edit documentation in R/schema_vis.R
 \name{nemo_schemavis_data}
 \alias{nemo_schemavis_data}
-\title{Build schema data for use with reactable_schema}
+\title{Build schema data for reactable_schema}
 \usage{
 nemo_schemavis_data(tools, pkg = "nemo")
 }
@@ -16,10 +16,7 @@ A tibble with columns \code{n}, \code{tool}, \code{tbl}, \code{schema_version},
 \code{description}, \code{row_id}.
 }
 \description{
-Builds the nested data frame expected by \code{\link[=reactable_schema]{reactable_schema()}} for one or
-more tools from a given package. Useful when you need to inspect or
-manipulate the data before rendering.
+Internal helper: builds the nested data frame expected by \code{\link[=reactable_schema]{reactable_schema()}}
+for one or more tools from a given package.
 }
-\examples{
-nemo_schemavis_data("tool1", pkg = "nemo")
-}
+\keyword{internal}

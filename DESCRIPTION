@@ -37,7 +37,6 @@ Imports:
 Suggests:
     here,
     htmltools,
-    quarto,
     R6toPlant,
     reactable,
     testthat (>= 3.0.0)
@@ -50,4 +49,3 @@ ByteCompile: true
 Config/testthat/edition: 3
 Encoding: UTF-8
 RoxygenNote: 7.3.3
-VignetteBuilder: quarto

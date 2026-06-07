@@ -50,11 +50,11 @@ form, and writes to Apache Parquet, TSV, CSV, RDS, or PostgreSQL. Each
 run also produces a `metadata.parquet` file alongside the tidy tables,
 capturing IDs, paths, and package versions.
 
-Tool-specific schemas and parsers live in child packages —
+Tool-specific schemas and parsers live in child packages -
 {[tidywigits](https://github.com/tidywf/tidywigits "tidywigits")} for
 the WiGiTS suite and
 {[tidydragen](https://github.com/tidywf/tidydragen "tidydragen")} (WIP)
-for Illumina DRAGEN — under `inst/config/tools/` in each respective
+for Illumina DRAGEN - under `inst/config/tools/` in each respective
 package.
 
 Three optional columns can be prepended to every written table to
@@ -62,11 +62,11 @@ support downstream tracing and joining. All are opt-in and off by
 default, but highly recommended for any multi-sample or multi-run
 pipeline:
 
-| Column | R argument | CLI flag | Purpose |
-|----|----|----|----|
-| `input_id` | `input_id = "run1"` | `--input_id run1` | identifies the sample or input run |
-| `output_id` | `output_id = "abc"` | `--output_id abc` / `--ulid` | identifies the processing run |
-| `input_pfix` | `pfix_include = TRUE` | `--prefix_include` | filename prefix (e.g. sample name) |
+| Column         | Purpose                            |
+|----------------|------------------------------------|
+| `input_id`     | identifies the sample or input run |
+| `output_id`    | identifies the processing run      |
+| `input_prefix` | filename prefix (e.g. sample name) |
 
 ## ⚡ Quickstart
 
@@ -85,17 +85,17 @@ MappedReads 9500
 UnmappedReads   500
 ```
 
-`nemofy()` parses, tidies, and writes all tables in one call:
+`wrangle()` parses, tidies, and writes all tables in one call:
 
 ``` r
 outdir <- file.path(tempdir(), "quickstart")
 
-Workflow1$new(path = path)$nemofy(
-  diro         = outdir,
+Workflow1$new(path = path)$wrangle(
+  output_dir      = outdir,
   format       = "parquet",
   input_id     = "run1",
   output_id    = "out1",
-  pfix_include = TRUE
+  prefix_include = TRUE
 )
 
 list.files(outdir, pattern = "\\.parquet$")
@@ -109,9 +109,9 @@ Read back the tidied table:
 ``` r
 arrow::read_parquet(file.path(outdir, "sampleA_tool1_table3.parquet"))
 # A tibble: 1 × 8
-  input_id input_pfix output_id sample_id qcstatus reads_total reads_map reads_unmap
-* <chr>    <chr>      <chr>     <chr>     <chr>          <dbl>     <dbl>       <dbl>
-1 run1     sampleA    out1      sampleA   Pass           10000      9500         500
+  input_id input_prefix output_id sample_id qcstatus reads_total reads_map reads_unmap
+* <chr>    <chr>        <chr>     <chr>     <chr>          <dbl>     <dbl>       <dbl>
+1 run1     sampleA      out1      sampleA   Pass           10000      9500         500
 ```
 
 ## 🍕 Installation
@@ -165,19 +165,21 @@ export PATH="${nemo_cli}:${PATH}"
     '
     #-----------------------------------#
     $ nemo.R tidy --help
-    usage: nemo.R tidy [-h] -w WORKFLOW -d IN_DIR [-o OUT_DIR] [-f FORMAT]
+    usage: nemo.R tidy [-h] -w WORKFLOW -d IN_DIR [-o OUTPUT_DIR] [-f FORMAT]
                        [--input_id INPUT_ID] [--output_id OUTPUT_ID | --ulid]
                        [--dbname DBNAME] [--dbuser DBUSER] [--include INCLUDE]
                        [--exclude EXCLUDE] [--prefix_include] [-q]
 
     options:
       -h, --help            show this help message and exit
-      -w, --workflow WORKFLOW
+      -w WORKFLOW, --workflow WORKFLOW
                             Workflow name.
-      -d, --in_dir IN_DIR   Input directory.
-      -o, --out_dir OUT_DIR
+      -d IN_DIR, --in_dir IN_DIR
+                            Input directory.
+      -o OUTPUT_DIR, --output_dir OUTPUT_DIR
                             Output directory.
-      -f, --format FORMAT   Format of output [def: parquet] (parquet, db, tsv,
+      -f FORMAT, --format FORMAT
+                            Format of output [def: parquet] (parquet, db, tsv,
                             csv, rds)
       --input_id INPUT_ID   Input ID for this run.
       --output_id OUTPUT_ID
@@ -196,9 +198,11 @@ export PATH="${nemo_cli}:${PATH}"
 
     options:
       -h, --help            show this help message and exit
-      -w, --workflow WORKFLOW
+      -w WORKFLOW, --workflow WORKFLOW
                             Workflow name.
-      -d, --in_dir IN_DIR   Input directory.
-      -f, --format FORMAT   Format of list output [def: pretty] (tsv, pretty)
-      -m, --max MAX         Max rows to show.
+      -d IN_DIR, --in_dir IN_DIR
+                            Input directory.
+      -f FORMAT, --format FORMAT
+                            Format of list output [def: pretty] (tsv, pretty)
+      -m MAX, --max MAX     Max rows to show.
       -q, --quiet           Shush all the logs.

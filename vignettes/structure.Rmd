@@ -1,10 +1,6 @@
 ---
 title: "Structure"
 output: rmarkdown::html_document
-vignette: >
-  %\VignetteIndexEntry{Structure}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
 knitr:
   opts_chunk:
     collapse: true
@@ -92,7 +88,7 @@ See `?Config`.
 ```{r tool1_config1}
 tool <- params$tool
 workflow <- params$workflow
-conf <- Config$new(tool, pkg = "nemo")
+conf <- nemo::Config$new(tool, pkg = "nemo")
 conf
 ```
 
@@ -120,7 +116,7 @@ The `versions` array on each column lists every tool version that column appears
 in, giving a full picture of additions and removals across versions.
 
 ```{r tool1_config_versions}
-conf$get_schemas_all() |>
+conf$get_schemas_raw() |>
   dplyr::select("name", "version") |>
   dplyr::distinct() |>
   knitr::kable(caption = glue("{tool} schema versions."))
@@ -128,17 +124,17 @@ conf$get_schemas_all() |>
 
 ### schemas
 
-`get_schemas_all()` derives a versioned view from the unified column list.
-Pass `"raw"` (default) or `"tidy"` to get column names in either form:
+`get_schemas_raw()` and `get_schemas_tidy()` return versioned views with column
+names in raw and tidy form respectively:
 
 ```{r tool1_config_schemas}
-(s_raw <- conf$get_schemas_all("raw"))
+(s_raw <- conf$get_schemas_raw())
 s_raw |>
   dplyr::filter(.data$name == "table1", .data$version == "v1.2.3") |>
   dplyr::select("schema") |>
   tidyr::unnest("schema")
 
-(s_tidy <- conf$get_schemas_all("tidy"))
+(s_tidy <- conf$get_schemas_tidy())
 s_tidy |>
   dplyr::filter(.data$name == "table1", .data$version == "v1.2.3") |>
   dplyr::select("schema") |>
@@ -186,10 +182,10 @@ is used internally to find files of interest and infer their schemas:
 ```{r tool1_conf}
 t1$config
 t1$config$get_patterns()
-t1$get_raw_schema("table1", v = "v1.2.3")
-# t1$get_raw_schema("table1", v = "latest") # default
-t1$get_tidy_schema("table1", v = "v1.2.3")
-# t1$get_tidy_schema("table1", v = "latest") # default
+t1$get_schema_raw("table1", version = "v1.2.3")
+# t1$get_schema_raw("table1", version = "latest") # default
+t1$get_schema_tidy("table1", version = "v1.2.3")
+# t1$get_schema_tidy("table1", version = "latest") # default
 ```
 
 ### list
@@ -209,7 +205,7 @@ that this function is called on the object and not assigned anywhere:
 ```{r tool1_tidy}
 # this will create a new field tbls containing the tidy data (and optionally
 # the 'raw' parsed data)
-t1$tidy(tidy = TRUE, keep_raw = TRUE)
+t1$tidy(do_tidy = TRUE, keep_raw = TRUE)
 t1$tbls
 t1$tbls$raw[[1]] |> dplyr::glimpse()
 # the tidy tibbles are nested to allow for more than one tidy tibble per file
@@ -238,7 +234,7 @@ Below we can see that the (optional) `input_id` specified is added to the writte
 files in an additional `input_id` column. This can be used e.g. to distinguish results
 from different samples in a data pipeline. An optional `output_id` column can also
 be added (e.g. to distinguish between runs for the same input sample). An
-`input_pfix` column can be included via `pfix_include = TRUE`, which would
+`input_prefix` column can be included via `prefix_include = TRUE`, which would
 use the prefix of the file basename.
 
 ```{r tool1_write}
@@ -246,17 +242,17 @@ t2$tidy() # first need to tidy
 outdir1 <- tempdir()
 fmt <- "csv"
 t2$write(
-  out_dir = outdir1,
+  output_dir = outdir1,
   format = fmt,
   input_id = "run123",
   output_id = "out123",
-  pfix_include = TRUE
+  prefix_include = TRUE
 )
 wfiles <- fs::dir_info(outdir1) |> dplyr::select(1:5)
 wfiles |>
   dplyr::mutate(bname = basename(.data$path)) |>
   dplyr::select("bname", "size", "type")
-# readr::read_csv(wfiles$path[1], show_col_types = F) # see tidywf/tidywigits#137
+# readr::read_csv(wfiles$path[1], show_col_types = FALSE) # see tidywf/tidywigits#137
 ```
 
 ### wrangle
@@ -269,7 +265,7 @@ t3 <- nemo::Tool1$new(path = tool1_path)
 outdir2 <- file.path(tempdir(), "t3") |> fs::dir_create()
 t3$files
 t3$wrangle(
-  out_dir = outdir2,
+  output_dir = outdir2,
   format = "tsv",
   input_id = "run_t3"
 )
@@ -277,8 +273,9 @@ wfiles2 <- fs::dir_info(outdir2) |>
   dplyr::mutate(bname = basename(.data$path))
 wfiles2 |>
   dplyr::select("bname", "size", "type")
-# no output_id or input_pfix specified
-readr::read_tsv(wfiles2$path[2], show_col_types = F)
+# no output_id or input_prefix specified
+tbl1_path <- wfiles2$path[grep("tool1_table1", wfiles2$bname)[1]]
+readr::read_tsv(tbl1_path, show_col_types = FALSE)
 ```
 
 ## `Workflow`
@@ -298,11 +295,11 @@ w <- system.file("extdata/tool1", package = "nemo") |>
 outdir3 <- file.path(tempdir(), "oa") |> fs::dir_create()
 w$list_files()
 x <- w$wrangle(
-  out_dir = outdir3,
+  output_dir = outdir3,
   format = "tsv",
   input_id = "workflow1_run1",
   output_id = "out1",
-  pfix_include = TRUE
+  prefix_include = TRUE
 )
 wfiles3 <- fs::dir_info(outdir3) |>
   dplyr::select(1:5) |>

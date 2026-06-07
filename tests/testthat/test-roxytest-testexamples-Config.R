@@ -2,31 +2,38 @@
 
 # File R/Config.R: @testexamples
 
-test_that("Function Config() @ L57", {
+test_that("Function Config() @ L65", {
   
   tool <- "tool1"
   pkg <- "nemo"
   conf <- Config$new(tool, pkg)
   (patterns <- conf$get_patterns())
   (ftypes <- conf$get_ftypes())
+  (pat1 <- conf$get_pattern("table1"))
   (ftype1 <- conf$get_ftype("table1"))
+  (descr1 <- conf$get_description("table1"))
   (descr <- conf$get_descriptions())
   (rs <- conf$get_schemas_raw())
   (ts <- conf$get_schemas_tidy())
   (s1 <- conf$get_schema_raw("table1"))
-  conf$get_schema_raw("table1", v = "v1.2.3")
+  conf$get_schema_raw("table1", version = "v1.2.3")
   conf$get_schema_tidy("table1")
   conf$validate_schemas()
   (cm <- conf$get_col_map("table5"))
   
   # initialize
   expect_error(Config$new("foo", pkg))
+  expect_error(Config$new("tool1", "nonexistent_pkg"), "Config directory not found")
   # get_patterns
   expect_equal(nrow(patterns), 6)
   # get_ftypes
   expect_equal(dplyr::distinct(ftypes, .data$ftype) |> nrow(), 5)
+  # get_pattern
+  expect_equal(pat1, "\\.tool1\\.table1\\.tsv$")
   # get_ftype
   expect_equal(ftype1, "txt")
+  # get_description
+  expect_true(is.character(descr1))
   # get_descriptions
   expect_equal(nrow(descr), 6)
   # get_schemas_raw / get_schemas_tidy
@@ -34,10 +41,10 @@ test_that("Function Config() @ L57", {
   expect_equal(dplyr::filter(ts, .data$name == "table1") |> nrow(), 3)
   # get_schema_raw
   expect_named(s1, c("version", "field", "type"))
-  expect_equal(nrow(conf$get_schema_raw("table1", v = "v1.2.3")), 5)
-  expect_equal(nrow(conf$get_schema_raw("table1", v = "v4.5.6")), 4)
+  expect_equal(nrow(conf$get_schema_raw("table1", version = "v1.2.3")), 5)
+  expect_equal(nrow(conf$get_schema_raw("table1", version = "v4.5.6")), 4)
   expect_error(conf$get_schema_raw("foo"))
-  expect_error(conf$get_schema_raw("table1", v = "foo"))
+  expect_error(conf$get_schema_raw("table1", version = "foo"))
   # validate_schemas
   expect_true(conf$validate_schemas())
   # get_col_map
@@ -45,21 +52,80 @@ test_that("Function Config() @ L57", {
 })
 
 
-test_that("Function config_prep_raw_schema() @ L346", {
+test_that("Function config_prep_raw_schema() @ L413", {
   
   path <- system.file("extdata", "tool1/latest/sampleA.tool1.table1.tsv", package = "nemo")
   (x <- config_prep_raw_schema(path = path, delim = "\t"))
-  expect_equal(x[1, "field", drop = T], "'SampleID'")
+  expect_named(x, c("raw", "tidy", "type", "description", "versions"))
+  expect_equal(nrow(x), 6L)
+  expect_equal(x[1, "raw",  drop = TRUE], "SampleID")
+  expect_equal(x[1, "tidy", drop = TRUE], "sample_id")
+  expect_equal(x[1, "type", drop = TRUE], "char")
+  expect_equal(unlist(x[[1, "versions"]]), "latest")
 })
 
 
-test_that("Function config_prep_raw() @ L391", {
+test_that("Function config_prep_raw() @ L479", {
   
   path <- system.file("extdata", "tool1/latest/sampleA.tool1.table1.tsv", package = "nemo")
   name <- "table1"
   descr <- "Table1 from Tool1."
   pat <- "\\.tool1\\.table1\\.tsv$"
   l <- config_prep_raw(path, name, descr, pat)
-  expect_equal(names(l[[1]]), c("description", "pattern", "ftype", "schema"))
+  expect_equal(names(l[[1]]), c("description", "pattern", "ftype", "columns"))
+  expect_equal(length(l[[1]][["columns"]]), 6L)
+  col1 <- l[[1]][["columns"]][[1]]
+  expect_named(col1, c("raw", "tidy", "type", "description", "versions"))
+  expect_equal(col1[["raw"]], "SampleID")
+  expect_equal(col1[["tidy"]], "sample_id")
+})
+
+
+test_that("Function config_prep_multi() @ L513", {
+  
+  dir1 <-  "extdata/tool1/latest"
+  path1 <- system.file(dir1, "sampleA.tool1.table1.tsv", package = "nemo")
+  path2 <- system.file(dir1, "sampleA.tool1.table2.tsv", package = "nemo")
+  x <- tibble::tibble(
+    name = c("table1", "table2"),
+    descr = c("Table1 from Tool1.", "Table2 from Tool1."),
+    pat = c("\\.tool1\\.table1\\.tsv$", "\\.tool1\\.table2\\.tsv$"),
+    type = c("txt", "txt"),
+    path = c(path1, path2)
+  )
+  config <- config_prep_multi(x)
+  expect_equal(names(config), "tables")
+  expect_equal(names(config[["tables"]]), c("table1", "table2"))
+  tbl1 <- config[["tables"]][["table1"]]
+  expect_equal(names(tbl1), c("description", "pattern", "ftype", "columns"))
+  expect_equal(length(tbl1[["columns"]]), 6L)
+  expect_named(tbl1[["columns"]][[1]], c("raw", "tidy", "type", "description", "versions"))
+})
+
+
+test_that("Function config_prep_write() @ L563", {
+  
+  dir1 <- "extdata/tool1/latest"
+  path1 <- system.file(dir1, "sampleA.tool1.table1.tsv", package = "nemo")
+  path2 <- system.file(dir1, "sampleA.tool1.table2.tsv", package = "nemo")
+  x <- tibble::tibble(
+    name = c("table1", "table2"),
+    descr = c("Table1 from Tool1.", "Table2 from Tool1."),
+    pat = c("\\.tool1\\.table1\\.tsv$", "\\.tool1\\.table2\\.tsv$"),
+    type = c("txt", "txt"),
+    path = c(path1, path2)
+  )
+  config <- config_prep_multi(x)
+  out <- tempfile(fileext = ".yaml")
+  config_prep_write(config, out)
+  parsed <- yaml::read_yaml(out)
+  expect_equal(names(parsed), "tables")
+  expect_equal(names(parsed[["tables"]]), c("table1", "table2"))
+  tbl1 <- parsed[["tables"]][["table1"]]
+  expect_equal(names(tbl1), c("description", "pattern", "ftype", "columns"))
+  col1 <- tbl1[["columns"]][[1]]
+  expect_named(col1, c("raw", "tidy", "type", "description", "versions"))
+  expect_equal(col1[["raw"]], "SampleID")
+  expect_equal(col1[["versions"]][[1]], "latest")
 })
 

@@ -6,7 +6,7 @@ test_that("Function parse_file() @ L43", {
   
   path <- system.file("extdata/tool1", package = "nemo")
   x <- Tool$new("tool1", pkg = "nemo", path)
-  schemas_all <- x$schemas_raw
+  schemas_all <- x$config$get_schemas_raw()
   f <- function(ver, tbl) file.path(path, ver, paste0("sampleA.tool1.", tbl, ".tsv"))
   # table1: three versions with different column sets
   (d1_v123 <- parse_file(f("v1.2.3", "table1"), "table1", schemas_all))
@@ -31,11 +31,11 @@ test_that("Function parse_file() @ L43", {
 })
 
 
-test_that("Function parse_file_nohead() @ L100", {
+test_that("Function parse_file_nohead() @ L98", {
   
   path <- system.file("extdata/tool1", package = "nemo")
   x <- Tool$new("tool1", pkg = "nemo", path)
-  schemas_all <- x$schemas_raw
+  schemas_all <- x$config$get_schemas_raw()
   pname <- "table4"
   fpath_latest <- file.path(path, "latest", "sampleA.tool1.table4.tsv")
   fpath_v1 <- file.path(path, "v1.0.0", "sampleA.tool1.table4.tsv")
@@ -57,7 +57,7 @@ test_that("Function parse_file_nohead() @ L100", {
 })
 
 
-test_that("Function file_hdr() @ L145", {
+test_that("Function file_hdr() @ L139", {
   
   dir1 <- system.file("extdata/tool1", package = "nemo")
   fpath <- file.path(dir1, "latest", "sampleA.tool1.table1.tsv")
@@ -67,7 +67,7 @@ test_that("Function file_hdr() @ L145", {
 })
 
 
-test_that("Function schema_guess() @ L186", {
+test_that("Function schema_guess() @ L180", {
   
   dir1 <- system.file("extdata/tool1", package = "nemo")
   fpath1 <- file.path(dir1, "latest", "sampleA.tool1.table1.tsv")
@@ -86,11 +86,11 @@ test_that("Function schema_guess() @ L186", {
 })
 
 
-test_that("Function parse_file_keyvalue() @ L248", {
+test_that("Function parse_file_keyvalue() @ L242", {
   
   path <- system.file("extdata/tool1", package = "nemo")
   x <- Tool1$new(path)
-  schemas_all <- x$schemas_raw
+  schemas_all <- x$config$get_schemas_raw()
   pname <- "table3"
   f <- function(ver) file.path(path, ver, "sampleA.tool1.table3.tsv")
   # v1.0.0: 3 key-value pairs (SampleID, QCStatus, TotalReads)

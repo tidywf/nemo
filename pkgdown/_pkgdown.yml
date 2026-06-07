@@ -66,6 +66,25 @@ reference:
     contents:
       - Tool1
       - Workflow1
+  - title: "CLI"
+    contents:
+      - cli_tidy_add_args
+      - cli_tidy_parse_args
+      - cli_nemo_tidy
+      - cli_list_add_args
+      - cli_list_parse_args
+      - cli_nemo_list
+  - title: "Schema Visualisation"
+    contents:
+      - nemo_schemavis_data
+      - nemo_schema_reactable
+      - reactable_schema
+      - nemo_uml
+  - title: "Assertions"
+    contents:
+      - nemo_assert_chr
+      - nemo_assert_not_null
+      - nemo_assert_scalar_chr
   - title: "Other"
     contents:
       - empty_tbl
@@ -85,18 +104,3 @@ reference:
       - nemo_log_date
       - nemoverse_wf_dispatch
       - pkg_found
-  - title: "CLI"
-    contents:
-      - cli_tidy_add_args
-      - cli_tidy_parse_args
-      - cli_nemo_tidy
-      - cli_list_add_args
-      - cli_list_parse_args
-      - cli_nemo_list
-  - title: "Schema Visualisation"
-    contents:
-      - nemo_schemavis_data
-      - nemo_schema_check
-      - nemo_schema_reactable
-      - reactable_schema
-      - nemo_uml

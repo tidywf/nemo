@@ -13,6 +13,8 @@
 #' Database connection object (see `DBI::dbConnect`). Used only when format is db.
 #' @param dbtab (`character(1)`)\cr
 #' Database table name (see `DBI::dbWriteTable`). Used only when format is db.
+#' @return (`character(1)`)\cr
+#' The output file path (invisibly). `NA_character_` when format is `"db"`.
 #'
 #' @examples
 #' d <- tibble::tibble(name = "foo", data = 123)
@@ -34,10 +36,9 @@
 #' @export
 nemo_write <- function(d, fpfix = NULL, format = "tsv", dbconn = NULL, dbtab = NULL) {
   stopifnot(is.data.frame(d))
-  valid_out_fmt(format)
   if (format == "db") {
-    stopifnot("Valid db conn needed" = !is.null(dbconn))
-    stopifnot("Valid db tab name needed" = !is.null(dbtab))
+    nemo_assert_not_null(dbconn)
+    nemo_assert_not_null(dbtab)
     DBI::dbWriteTable(
       conn = dbconn,
       name = dbtab,
@@ -46,7 +47,7 @@ nemo_write <- function(d, fpfix = NULL, format = "tsv", dbconn = NULL, dbtab = N
       overwrite = FALSE
     )
   } else {
-    stopifnot(!is.null(fpfix))
+    nemo_assert_not_null(fpfix)
     fpfix <- as.character(fpfix)
     osfx <- nemo_osfx(fpfix, format)
     fs::dir_create(dirname(fpfix))
@@ -60,8 +61,7 @@ nemo_write <- function(d, fpfix = NULL, format = "tsv", dbconn = NULL, dbtab = N
     fun <- getExportedValue(x[["pkg"]], x[["fun"]])
     fun(d, osfx)
   }
-  attr(d, "outpath") <- if (format == "db") NA_character_ else osfx
-  invisible(d)
+  invisible(if (format == "db") NA_character_ else osfx)
 }
 
 #' Output Format is Valid

@@ -1,9 +1,5 @@
 ---
 title: "UML"
-vignette: >
-  %\VignetteIndexEntry{UML}
-  %\VignetteEngine{quarto::html}
-  %\VignetteEncoding{UTF-8}
 knitr:
   opts_chunk:
     collapse: true

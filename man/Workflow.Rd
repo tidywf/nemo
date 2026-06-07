@@ -51,11 +51,8 @@ Path(s) to workflow results.}
 \item{\code{tools}}{(\code{list(n)})\cr
 List of Tools that compose a Workflow.}
 
-\item{\code{files_tbl}}{(\code{tibble(n)})\cr
-Tibble of files from \code{\link[=list_files_dir]{list_files_dir()}}.}
-
-\item{\code{metapkg}}{(\code{character(1)})\cr
-Package name used for metadata version reporting.}
+\item{\code{metapkg}}{(\code{character(n)})\cr
+Package name(s) used for metadata version reporting.}
 
 \item{\code{written_files}}{(\code{tibble(n)})\cr
 Tibble of files written from \code{self$write()}.}
@@ -85,7 +82,7 @@ Tibble of files written from \code{self$write()}.}
 \subsection{Method \code{new()}}{
 Create a new Workflow object.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Workflow$new(name = NULL, path = NULL, tools = NULL, metapkg = "nemo")}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Workflow$new(name, path, tools, metapkg = "nemo")}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -100,8 +97,8 @@ Path(s) to workflow results.}
 \item{\code{tools}}{(\code{list(n)})\cr
 List of Tools that compose a Workflow.}
 
-\item{\code{metapkg}}{(\code{character(1)})\cr
-Package name used for metadata version reporting.}
+\item{\code{metapkg}}{(\code{character(n)})\cr
+Package name(s) used for metadata version reporting.}
 }
 \if{html}{\out{</div>}}
 }
@@ -164,21 +161,12 @@ List only files of interest in given workflow directory, i.e.
 only those files that match the patterns listed in the individual tool
 config.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Workflow$list_files(type = c("file", "symlink"))}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Workflow$list_files()}\if{html}{\out{</div>}}
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{type}}{(\code{character(1)})\cr
-File types(s) to return (e.g. any, file, directory, symlink).
-See \code{fs::dir_info}.}
-}
-\if{html}{\out{</div>}}
-}
 \subsection{Returns}{
 (\code{tibble()})\cr
-Bound \code{list_files()} tibbles from all Tools.
+Bound \code{list_files()} tibbles from all Tools, with a leading \code{tool} column.
 }
 }
 \if{html}{\out{<hr>}}
@@ -187,15 +175,12 @@ Bound \code{list_files()} tibbles from all Tools.
 \subsection{Method \code{tidy()}}{
 Tidy Workflow files.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Workflow$tidy(tidy = TRUE, keep_raw = FALSE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Workflow$tidy(keep_raw = FALSE)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{tidy}}{(\code{logical(1)})\cr
-Should the raw parsed tibbles get tidied?}
-
 \item{\code{keep_raw}}{(\code{logical(1)})\cr
 Should the raw parsed tibbles be kept in the final output?}
 }
@@ -218,7 +203,8 @@ Write tidy tibbles.
   input_id = NULL,
   output_id = NULL,
   prefix_include = FALSE,
-  dbconn = NULL
+  dbconn = NULL,
+  write_metadata = TRUE
 )}\if{html}{\out{</div>}}
 }
 
@@ -235,13 +221,17 @@ Format of output.}
 Input ID to use for the dataset (e.g. \code{run123}).}
 
 \item{\code{output_id}}{(\code{character(1)})\cr
-Output ID to use for the dataset (e.g. \code{run123}).}
+Output ID to use for the dataset (e.g. \code{out1}).}
 
 \item{\code{prefix_include}}{(\code{logical(1)})\cr
 If \code{TRUE}, prepend an \code{input_prefix} column to each tidy table.}
 
 \item{\code{dbconn}}{(\code{DBIConnection})\cr
 Database connection object (see \code{DBI::dbConnect}).}
+
+\item{\code{write_metadata}}{(\code{logical(1)})\cr
+If \code{TRUE} (default), write a \code{metadata.parquet} file alongside the tidy
+outputs. Set to \code{FALSE} to suppress.}
 }
 \if{html}{\out{</div>}}
 }
@@ -263,6 +253,7 @@ Parse, filter, tidy and write files.
   output_id = NULL,
   prefix_include = FALSE,
   dbconn = NULL,
+  write_metadata = TRUE,
   include = NULL,
   exclude = NULL
 )}\if{html}{\out{</div>}}
@@ -281,13 +272,16 @@ Format of output.}
 Input ID to use for the dataset (e.g. \code{run123}).}
 
 \item{\code{output_id}}{(\code{character(1)})\cr
-Output ID to use for the dataset (e.g. \code{run123}).}
+Output ID to use for the dataset (e.g. \code{out1}).}
 
 \item{\code{prefix_include}}{(\code{logical(1)})\cr
 If \code{TRUE}, prepend an \code{input_prefix} column to each tidy table.}
 
 \item{\code{dbconn}}{(\code{DBIConnection})\cr
 Database connection object (see \code{DBI::dbConnect}).}
+
+\item{\code{write_metadata}}{(\code{logical(1)})\cr
+If \code{TRUE} (default), write a \code{metadata.parquet} file. Set to \code{FALSE} to suppress.}
 
 \item{\code{include}}{(\code{character(n)})\cr
 tool_parser names to include (e.g. \code{"tool1_table1"}).}
@@ -327,7 +321,7 @@ Get tidy schemas for all Tools.
 
 \subsection{Returns}{
 (\code{tibble()})\cr
-Bound \code{schemas_tidy} tibbles from all Tools, with a leading \code{tool} column.
+Bound tidy schema tibbles from all Tools, with a leading \code{tool} column.
 }
 }
 \if{html}{\out{<hr>}}
@@ -341,7 +335,7 @@ Get tidy tibbles for all Tools.
 
 \subsection{Returns}{
 (\code{tibble()})\cr
-Bound \code{tbls} tibbles from all Tools.
+Bound \code{tbls} tibbles from all Tools, with a leading \code{tool} column.
 }
 }
 \if{html}{\out{<hr>}}
@@ -360,7 +354,7 @@ Get metadata for the workflow run.
 Input ID to use for the dataset (e.g. \code{run123}).}
 
 \item{\code{output_id}}{(\code{character(1)})\cr
-Output ID to use for the dataset (e.g. \code{run123}).}
+Output ID to use for the dataset (e.g. \code{out1}).}
 
 \item{\code{output_dir}}{(\code{character(1)})\cr
 Output directory.}

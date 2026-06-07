@@ -51,7 +51,7 @@ nemo_gha_mermaid <- function(actions_url, deploy_yaml) {
   wf_url <- function(x) paste0(actions_url, "/", x)
   bump_steps <- .gha_read_steps(wf_url("bump.yaml"))
   deploy_steps <- purrr::map(job_wf_files, \(f) .gha_read_steps(wf_url(f))) |>
-    purrr::set_names(job_names)
+    rlang::set_names(job_names)
   i1 <- "    "
   i2 <- "        "
   bump_m <- .gha_render_steps(bump_steps, "B", i1)

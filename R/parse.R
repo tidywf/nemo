@@ -16,7 +16,7 @@
 #' @examples
 #' path <- system.file("extdata/tool1", package = "nemo")
 #' x <- Tool$new("tool1", pkg = "nemo", path)
-#' schemas_all <- x$schemas_raw
+#' schemas_all <- x$config$get_schemas_raw()
 #' f <- function(ver, tbl) file.path(path, ver, paste0("sampleA.tool1.", tbl, ".tsv"))
 #' # table1: three versions with different column sets
 #' (d1_v123 <- parse_file(f("v1.2.3", "table1"), "table1", schemas_all))
@@ -42,21 +42,19 @@
 #' @export
 parse_file <- function(fpath, pname, schemas_all, delim = "\t", ...) {
   cnames <- file_hdr(fpath, delim = delim, ...)
-  schema <- schema_guess(
+  schema_tbl <- schema_guess(
     pname = pname,
     cnames = cnames,
     schemas_all = schemas_all
   )
-  schema[["schema"]] <- schema[["schema"]] |>
-    tibble::deframe()
-  ctypes <- rlang::exec(readr::cols, !!!schema[["schema"]])
+  ctypes <- rlang::exec(readr::cols, !!!tibble::deframe(schema_tbl[["schema"]]))
   d <- readr::read_delim(
     file = fpath,
     delim = delim,
     col_types = ctypes,
     ...
   )
-  attr(d, "file_version") <- schema[["version"]]
+  attr(d, "file_version") <- schema_tbl[["version"]]
   d[]
 }
 
@@ -76,7 +74,7 @@ parse_file <- function(fpath, pname, schemas_all, delim = "\t", ...) {
 #' @examples
 #' path <- system.file("extdata/tool1", package = "nemo")
 #' x <- Tool$new("tool1", pkg = "nemo", path)
-#' schemas_all <- x$schemas_raw
+#' schemas_all <- x$config$get_schemas_raw()
 #' pname <- "table4"
 #' fpath_latest <- file.path(path, "latest", "sampleA.tool1.table4.tsv")
 #' fpath_v1 <- file.path(path, "v1.0.0", "sampleA.tool1.table4.tsv")
@@ -98,16 +96,12 @@ parse_file <- function(fpath, pname, schemas_all, delim = "\t", ...) {
 #' expect_equal(attr(d_v1, "file_version"), "v1.0.0")
 #' @export
 parse_file_nohead <- function(fpath, schema, delim = "\t", ...) {
-  assertthat::assert_that(
-    nrow(schema) == 1,
-    identical(sapply(schema, class), c(version = "character", schema = "list"))
-  )
+  assertthat::assert_that(nrow(schema) == 1, msg = "'schema' must have exactly one row.")
+  nemo_assert_scalar_chr(schema$version)
+  assertthat::assert_that(is.list(schema$schema), msg = "'schema$schema' must be a list.")
   version <- schema[["version"]]
   schema <- schema[["schema"]][[1]] |>
     tibble::deframe()
-  # check if number of cols is as expected
-  ncols <- file_hdr(fpath, delim = delim, ...) |> length()
-  assertthat::assert_that(length(schema) == ncols)
   ctypes <- paste0(schema, collapse = "")
   d <- readr::read_delim(
     file = fpath,
@@ -231,7 +225,7 @@ schema_guess <- function(pname, cnames, schemas_all) {
 #' @examples
 #' path <- system.file("extdata/tool1", package = "nemo")
 #' x <- Tool1$new(path)
-#' schemas_all <- x$schemas_raw
+#' schemas_all <- x$config$get_schemas_raw()
 #' pname <- "table3"
 #' f <- function(ver) file.path(path, ver, "sampleA.tool1.table3.tsv")
 #' # v1.0.0: 3 key-value pairs (SampleID, QCStatus, TotalReads)

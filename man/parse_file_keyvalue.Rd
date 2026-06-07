@@ -27,7 +27,7 @@ Parses files with no header and two columns representing key-value pairs.
 \examples{
 path <- system.file("extdata/tool1", package = "nemo")
 x <- Tool1$new(path)
-schemas_all <- x$schemas_raw
+schemas_all <- x$config$get_schemas_raw()
 pname <- "table3"
 f <- function(ver) file.path(path, ver, "sampleA.tool1.table3.tsv")
 # v1.0.0: 3 key-value pairs (SampleID, QCStatus, TotalReads)

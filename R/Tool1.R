@@ -108,9 +108,8 @@ Tool1 <- R6::R6Class(
         x <- self$parse_table5(x)
       }
       version <- get_tbl_version_attr(x)
-      col_map <- self$get_col_map("table5", v = version)
+      col_map <- self$get_col_map("table5", version = version)
       raw_to_tidy <- col_map |> dplyr::select("raw", "tidy") |> tibble::deframe()
-      # reserved for post-pivot type coercion once table5 has non-float schema columns
       raw_to_type <- col_map |> dplyr::select("tidy", "type") |> tibble::deframe()
       d_count <- x |>
         dplyr::filter(.data$variable %in% names(raw_to_tidy)) |>
@@ -124,7 +123,7 @@ Tool1 <- R6::R6Class(
         tidyr::pivot_wider(names_from = "tidy_var", values_from = "value")
       d_tidy <- dplyr::left_join(d_count, d_pct, by = c("section", "rg"))
       list(d_tidy) |>
-        setNames("table5") |>
+        rlang::set_names("table5") |>
         enframe_data()
     }
   )
