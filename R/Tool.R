@@ -431,7 +431,7 @@ Tool <- R6::R6Class(
         )
       }
       list(x) |>
-        setNames(table_name) |>
+        rlang::set_names(table_name) |>
         enframe_data()
     },
     #' @description Parse files with no header and two columns representing

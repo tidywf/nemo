@@ -477,7 +477,7 @@ config_prep_raw <- function(path, name, descr, pat, type = "txt", v = "latest", 
   schema <- config_prep_raw_schema(path = path, v = v, ...)
   columns <- purrr::pmap(schema, list)
   entry <- list(description = descr, pattern = pat, ftype = type, columns = columns)
-  setNames(list(entry), name)
+  rlang::set_names(list(entry), name)
 }
 
 #' Prepare config for multiple raw files

@@ -124,7 +124,7 @@ Tool1 <- R6::R6Class(
         tidyr::pivot_wider(names_from = "tidy_var", values_from = "value")
       d_tidy <- dplyr::left_join(d_count, d_pct, by = c("section", "rg"))
       list(d_tidy) |>
-        setNames("table5") |>
+        rlang::set_names("table5") |>
         enframe_data()
     }
   )
