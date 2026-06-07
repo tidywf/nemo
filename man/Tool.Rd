@@ -528,7 +528,8 @@ Write tidy tibbles.
   input_id = NULL,
   output_id = NULL,
   prefix_include = FALSE,
-  dbconn = NULL
+  dbconn = NULL,
+  write_metadata = TRUE
 )}\if{html}{\out{</div>}}
 }
 
@@ -552,6 +553,11 @@ If \code{TRUE}, prepend an \code{input_prefix} column to each tidy table.}
 
 \item{\code{dbconn}}{(\code{DBIConnection})\cr
 Database connection object (see \code{DBI::dbConnect}).}
+
+\item{\code{write_metadata}}{(\code{logical(1)})\cr
+If \code{TRUE} (default), write a \verb{metadata_<tool>.parquet} file alongside
+the tidy outputs. Set to \code{FALSE} when a \code{Workflow} is orchestrating the
+write and will emit its own workflow-level metadata instead.}
 }
 \if{html}{\out{</div>}}
 }

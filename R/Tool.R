@@ -533,6 +533,10 @@ Tool <- R6::R6Class(
     #' If `TRUE`, prepend an `input_prefix` column to each tidy table.
     #' @param dbconn (`DBIConnection`)\cr
     #' Database connection object (see `DBI::dbConnect`).
+    #' @param write_metadata (`logical(1)`)\cr
+    #' If `TRUE` (default), write a `metadata_<tool>.parquet` file alongside
+    #' the tidy outputs. Set to `FALSE` when a `Workflow` is orchestrating the
+    #' write and will emit its own workflow-level metadata instead.
     #' @return (`R6::R6Class()`)\cr
     #' R6 object invisibly. Results stored in `self$written_files`
     #' (`NULL` if no files were found).
@@ -542,7 +546,8 @@ Tool <- R6::R6Class(
       input_id = NULL,
       output_id = NULL,
       prefix_include = FALSE,
-      dbconn = NULL
+      dbconn = NULL,
+      write_metadata = TRUE
     ) {
       valid_out_fmt(format)
       if (format != "db") {
@@ -633,7 +638,7 @@ Tool <- R6::R6Class(
         )
       private$is_written <- TRUE
       self$written_files <- d_write
-      if (format != "db" && !is.null(self$path)) {
+      if (write_metadata && format != "db" && !is.null(self$path)) {
         meta <- self$get_metadata(
           input_id = input_id,
           output_id = output_id,

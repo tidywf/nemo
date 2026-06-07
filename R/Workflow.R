@@ -213,7 +213,8 @@ Workflow <- R6::R6Class(
             input_id = input_id,
             output_id = output_id,
             prefix_include = prefix_include,
-            dbconn = dbconn
+            dbconn = dbconn,
+            write_metadata = FALSE
           )
           x$written_files
         }) |>
