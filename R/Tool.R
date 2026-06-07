@@ -117,6 +117,8 @@ Tool <- R6::R6Class(
   private = list(
     is_tidied = FALSE,
     is_written = FALSE,
+    files = NULL,
+    tbls = NULL,
     files_tbl = NULL,
     # Typed empty tibble for compute_files; kept as a method so the column spec
     # is in one place and easy to update if the schema changes.
@@ -304,12 +306,6 @@ Tool <- R6::R6Class(
     #' @field config (`Config()`)\cr
     #' Config of tool.
     config = NULL,
-    #' @field files (`tibble()`)\cr
-    #' Tibble of files matching available Tool patterns.
-    files = NULL,
-    #' @field tbls (`tibble()`)\cr
-    #' Tibble of tidy tibbles.
-    tbls = NULL,
     #' @field written_files (`tibble()`)\cr
     #' Tibble of files written from `self$write()`.
     written_files = NULL,
@@ -325,10 +321,9 @@ Tool <- R6::R6Class(
     #' @return (`R6::R6Class()`)\cr
     #' R6 object.
     initialize = function(name, pkg, path = NULL, files_tbl = NULL) {
-      assertthat::assert_that(
-        !is.null(path) || !is.null(files_tbl),
-        msg = "Supply either 'path' or 'files_tbl'."
-      )
+      if (is.null(path) && is.null(files_tbl)) {
+        stop("Supply either 'path' or 'files_tbl'.", call. = FALSE)
+      }
       if (!is.null(path) && !is.null(files_tbl)) {
         stop("Supply 'path' or 'files_tbl', not both.", call. = FALSE)
       }
@@ -336,19 +331,17 @@ Tool <- R6::R6Class(
       nemo_assert_scalar_chr(pkg)
       if (!is.null(files_tbl)) {
         assert_files_tbl(files_tbl)
-        path <- NULL
       } else {
-        assertthat::assert_that(
-          dir.exists(path),
-          msg = glue("Path does not exist: {path}")
-        )
+        if (!dir.exists(path)) {
+          stop(glue("Path does not exist: {path}"), call. = FALSE)
+        }
       }
       self$name <- name
       self$pkg <- pkg
       self$path <- if (!is.null(path)) normalizePath(path) else NULL
       self$config <- Config$new(self$name, pkg = self$pkg)
       private$files_tbl <- files_tbl
-      self$files <- private$compute_files(type = "file")
+      private$files <- private$compute_files(type = "file")
     },
     #' @description Print details about the Tool.
     #' @param ... (ignored).
@@ -359,7 +352,7 @@ Tool <- R6::R6Class(
         ~var      , ~value                                    ,
         "name"    , self$name                                 ,
         "path"    , self$path %||% "<ignored>"                ,
-        "files"   , as.character(nrow(self$files))            ,
+        "files"   , as.character(nrow(private$files))         ,
         "tidied"  , tolower(as.character(private$is_tidied))  ,
         "written" , tolower(as.character(private$is_written))
       )
@@ -370,11 +363,11 @@ Tool <- R6::R6Class(
     #' @description List files matching this tool's patterns.
     #' @return (`tibble()`)\cr
     #' The `files` tibble of matched files.
-    list_files = function() self$files,
+    list_files = function() private$files,
     #' @description Get tidy tibbles after parsing and tidying.
     #' @return (`tibble()` or `NULL`)\cr
     #' The `tbls` tibble, or `NULL` if `tidy()` has not been called.
-    get_tbls = function() self$tbls,
+    get_tbls = function() private$tbls,
     #' @description Filter files in given tool directory based on inclusion or
     #' exclusion tool_parser names. The result is reflected in the `files` field.
     #' @param include (`character(n)`)\cr
@@ -385,11 +378,10 @@ Tool <- R6::R6Class(
     #' R6 object invisibly.
     filter_files = function(include = NULL, exclude = NULL) {
       assert_include_exclude(include, exclude)
-      assertthat::assert_that(
-        !private$is_tidied,
-        msg = "Cannot filter files after tidy() has been called."
-      )
-      if (nrow(self$files) == 0) {
+      if (private$is_tidied) {
+        stop("Cannot filter files after tidy() has been called.", call. = FALSE)
+      }
+      if (nrow(private$files) == 0) {
         known <- paste0(self$name, "_", self$config$get_patterns()$name)
         if (!is.null(include)) {
           check_unknown_parsers(include, known, "include")
@@ -400,13 +392,13 @@ Tool <- R6::R6Class(
         return(invisible(self))
       }
       if (!is.null(include)) {
-        check_unknown_parsers(include, self$files$tool_parser, "include")
-        self$files <- self$files |>
+        check_unknown_parsers(include, private$files$tool_parser, "include")
+        private$files <- private$files |>
           dplyr::filter(.data$tool_parser %in% include)
       }
       if (!is.null(exclude)) {
-        check_unknown_parsers(exclude, self$files$tool_parser, "exclude")
-        self$files <- self$files |>
+        check_unknown_parsers(exclude, private$files$tool_parser, "exclude")
+        private$files <- private$files |>
           dplyr::filter(!(.data$tool_parser %in% exclude))
       }
       return(invisible(self))
@@ -420,24 +412,24 @@ Tool <- R6::R6Class(
       if (private$is_tidied) {
         return(invisible(self))
       }
-      if (nrow(self$files) == 0) {
-        self$tbls <- NULL
+      if (nrow(private$files) == 0) {
+        private$tbls <- NULL
         private$is_tidied <- TRUE
         return(invisible(self))
       }
       if (keep_raw) {
-        d <- self$files |>
+        d <- private$files |>
           dplyr::mutate(
             raw = purrr::map2(.data$path, .data$parser, \(p, t) private$dispatch_parse(p, t)),
             tidy = purrr::map2(.data$raw, .data$parser, \(r, t) private$dispatch_tidy(r, t))
           )
       } else {
-        d <- self$files |>
+        d <- private$files |>
           dplyr::mutate(
             tidy = purrr::map2(.data$path, .data$parser, \(p, t) private$dispatch_tidy(p, t))
           )
       }
-      self$tbls <- d
+      private$tbls <- d
       private$is_tidied <- TRUE
       return(invisible(self))
     },
@@ -471,21 +463,24 @@ Tool <- R6::R6Class(
       write_metadata = TRUE
     ) {
       valid_out_fmt(format)
-      assertthat::assert_that(private$is_tidied, msg = "Did you forget to tidy?")
+      if (!private$is_tidied) {
+        stop("Did you forget to tidy?", call. = FALSE)
+      }
       if (format != "db") {
         if (is.null(output_dir)) {
           stop("Output directory must be specified when format is not 'db'.")
         }
         output_dir <- normalizePath(output_dir, mustWork = FALSE)
       }
-      if (is.null(self$tbls)) {
+      if (is.null(private$tbls)) {
         self$written_files <- NULL
         return(invisible(self))
       }
       if (format != "db") {
         fs::dir_create(output_dir)
       }
-      d_write <- self$tbls |>
+      # Pure data preparation: unnest, compute names/paths, prepend ID cols
+      d_write <- private$tbls |>
         dplyr::rename(raw_path = "path") |>
         dplyr::select("raw_path", "tool_parser", "parser", "prefix", "tidy") |>
         tidyr::unnest("tidy", names_sep = "_") |>
@@ -499,20 +494,23 @@ Tool <- R6::R6Class(
           tidy_data = purrr::pmap(
             list(.data$tidy_data, .data$tidy_name, .data$prefix),
             \(d, nm, pfx) private$prepend_id_cols(d, nm, pfx, input_id, output_id, prefix_include)
-          ),
-          outpath = purrr::pmap_chr(
-            list(.data$tidy_data, .data$fpfix, .data$tbl_name),
-            \(d, fp, tn) {
-              nemo_write(
-                d = d,
-                fpfix = fp,
-                format = format,
-                dbconn = dbconn,
-                dbtab = if (format == "db") tn else NULL
-              )
-            }
           )
-        ) |>
+        )
+      # Write files (side effects kept separate from pure prep above)
+      outpaths <- purrr::pmap_chr(
+        list(d_write$tidy_data, d_write$fpfix, d_write$tbl_name),
+        \(d, fp, tn) {
+          nemo_write(
+            d = d,
+            fpfix = fp,
+            format = format,
+            dbconn = dbconn,
+            dbtab = if (format == "db") tn else NULL
+          )
+        }
+      )
+      d_write <- d_write |>
+        dplyr::mutate(outpath = outpaths) |>
         dplyr::select("raw_path", "tool_parser", "prefix", "tbl_name", "outpath")
       self$written_files <- d_write
       private$is_written <- TRUE
@@ -553,7 +551,7 @@ Tool <- R6::R6Class(
       if (!is.null(self$written_files)) {
         files <- meta_files_from_written(self$written_files)
       } else {
-        files <- self$files |>
+        files <- private$files |>
           dplyr::select(fin = "path", "size") |>
           dplyr::mutate(size = as.numeric(.data$size))
       }

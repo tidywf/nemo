@@ -85,7 +85,10 @@ Config <- R6::R6Class(
       self$tool <- tool
       self$pkg <- pkg
       private$tables <- private$read()
-      private$check_schemas()
+      invalid <- private$collect_invalid_schema_types()
+      if (nrow(invalid) > 0) {
+        stop(private$format_invalid_types_msg(invalid), call. = FALSE)
+      }
       private$schemas_both <- private$compute_schemas()
       private$schemas_raw <- private$derive_schema(private$schemas_both, "raw")
       private$schemas_tidy <- private$derive_schema(private$schemas_both, "tidy")
@@ -202,12 +205,16 @@ Config <- R6::R6Class(
     },
     #' @description Get column mapping (raw -> tidy) for a table.
     #' Used for tables with custom parse logic (e.g. csv-nohead-long).
+    #'
+    #' **Version semantics differ from `get_schema_raw()`/`get_schema_tidy()`:**
+    #' when `version = NULL`, this method always resolves to a *single* version
+    #' (the highest semver present, or `"latest"` if defined). By contrast,
+    #' `get_schema_raw()`/`get_schema_tidy()` return *all* versions when `version = NULL`.
     #' @param x (`character(1)`)\cr
     #' Table name.
     #' @param version (`character(1)`)\cr
-    #' Version. If NULL, resolves to the highest semver version present, or `"latest"` if defined.
-    #' Unlike `get_schema_raw()`/`get_schema_tidy()`, which return all versions when NULL,
-    #' this always resolves to a single version.
+    #' Version string. If `NULL`, resolves to the highest semver version present,
+    #' or `"latest"` if defined.
     #' @return (`tibble()`)\cr
     #' Tibble with columns `raw`, `tidy`, `type`, `description`.
     get_col_map = function(x, version = NULL) {
@@ -240,10 +247,10 @@ Config <- R6::R6Class(
         }) |>
         purrr::list_flatten() |>
         dplyr::bind_rows() |>
-        dplyr::filter(!.data$type %in% names(.schema_type_map))
+        dplyr::filter(!.data$type %in% names(schema_type_map))
     },
     format_invalid_types_msg = function(invalid) {
-      valid_types_print <- glue::glue_collapse(names(.schema_type_map), sep = ", ", last = " or ")
+      valid_types_print <- glue::glue_collapse(names(schema_type_map), sep = ", ", last = " or ")
       entries <- invalid |>
         dplyr::mutate(entry = glue("{.data$name} -> {.data$field} -> {.data$type}")) |>
         dplyr::pull("entry") |>
@@ -252,13 +259,6 @@ Config <- R6::R6Class(
         "Field types need to be one of: {valid_types_print}\n",
         "Check the following in the {self$tool} config:\n{entries}"
       )
-    },
-    check_schemas = function() {
-      invalid <- private$collect_invalid_schema_types()
-      if (nrow(invalid) == 0) {
-        return(invisible(NULL))
-      }
-      stop(private$format_invalid_types_msg(invalid), call. = FALSE)
     },
     assert_version = function(x, version, versions) {
       if (!version %in% versions) {
@@ -368,18 +368,30 @@ Config <- R6::R6Class(
   ) # end private
 )
 
-.schema_type_map <- c(char = "c", float = "d", int = "i")
+schema_type_map <- c(char = "c", float = "d", int = "i")
 
 schema_type_remap <- function(x) {
-  unname(.schema_type_map[x])
+  unname(schema_type_map[x])
 }
 
 #' Sort version strings with "latest" always last
 #'
+#' Semver strings (with optional `v`/`V` prefix) are sorted numerically;
+#' `"latest"` is always placed at the end regardless of position in the input.
+#'
 #' @param versions (`character(n)`)\cr
-#' Vector of unique version strings (e.g. `c("v1.2.3", "latest")`) — typically from `unlist()`ing the `versions` list-col.
+#' Vector of unique version strings (e.g. `c("v1.2.3", "latest")`) — typically
+#' from `unlist()`ing the `versions` list-col.
 #' @returns Sorted character vector with `"latest"` last.
-#' @keywords internal
+#' @examples
+#' config_sort_versions(c("v2.0.0", "v1.0.0", "latest"))
+#' config_sort_versions(c("latest", "v1.2.3"))
+#' config_sort_versions(c("v1.0.0", "v10.0.0", "v2.0.0"))
+#' @testexamples
+#' expect_equal(config_sort_versions(c("v2.0.0", "v1.0.0", "latest")), c("v1.0.0", "v2.0.0", "latest"))
+#' expect_equal(config_sort_versions(c("latest", "v1.2.3")), c("v1.2.3", "latest"))
+#' expect_equal(config_sort_versions(c("v1.0.0", "v10.0.0", "v2.0.0")), c("v1.0.0", "v2.0.0", "v10.0.0"))
+#' @export
 config_sort_versions <- function(versions) {
   non_latest <- versions[versions != "latest"]
   non_latest <- non_latest[order(numeric_version(gsub("^[vV]", "", non_latest)))]
@@ -511,11 +523,15 @@ config_prep_raw <- function(path, name, descr, pat, type = "txt", v = "latest", 
 #' expect_named(tbl1[["columns"]][[1]], c("raw", "tidy", "type", "description", "versions"))
 #' @export
 config_prep_multi <- function(x) {
-  assertthat::assert_that(tibble::is_tibble(x), msg = "'x' must be a tibble.")
-  assertthat::assert_that(
-    all(c("name", "descr", "pat", "type", "path") %in% colnames(x)),
-    msg = "'x' must have columns: name, descr, pat, type, path."
-  )
+  if (!tibble::is_tibble(x)) {
+    stop("'x' must be a tibble.", call. = FALSE)
+  }
+  if (!all(c("name", "descr", "pat", "type", "path") %in% colnames(x))) {
+    stop("'x' must have columns: name, descr, pat, type, path.", call. = FALSE)
+  }
+  if (nrow(x) == 0) {
+    stop("'x' must have at least one row.", call. = FALSE)
+  }
   tables <- purrr::pmap(
     dplyr::select(x, "name", "descr", "pat", "type", "path"),
     \(name, descr, pat, type, path) {

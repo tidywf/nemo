@@ -78,10 +78,10 @@ nemo_write <- function(d, fpfix = NULL, format = "tsv", dbconn = NULL, dbtab = N
 #' @export
 valid_out_fmt <- function(x, choices = nemo_out_formats()) {
   y <- glue::glue_collapse(choices, sep = ", ", last = " or ")
-  assertthat::assert_that(
-    rlang::is_scalar_character(x) && x %in% choices,
-    msg = glue("Output format should be _one_ of {y}.")
-  )
+  if (!rlang::is_scalar_character(x) || !x %in% choices) {
+    stop(glue("Output format should be _one_ of {y}."), call. = FALSE)
+  }
+  invisible(TRUE)
 }
 
 #' Output Formats Supported

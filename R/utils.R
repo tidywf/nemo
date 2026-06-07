@@ -43,18 +43,17 @@ list_files_dir <- function(d, max_files = NULL, type = "file") {
 #' path <- system.file("extdata/tool1", package = "nemo")
 #' path2 <- file.path(path, "v1.2.3", "sampleA.tool1.table1.tsv")
 #' x <- Tool1$new(path)$tidy(keep_raw = TRUE)
-#' ind <- which(x$tbls$path == path2)
+#' ind <- which(x$get_tbls()$path == path2)
 #' stopifnot(length(ind) == 1)
-#' (v <- get_tbl_version_attr(x$tbls$raw[[ind]]))
+#' (v <- get_tbl_version_attr(x$get_tbls()$raw[[ind]]))
 #'
 #' @testexamples
 #' expect_equal(v, "v1.2.3")
 #' @export
 get_tbl_version_attr <- function(tbl, x = "file_version") {
-  assertthat::assert_that(
-    assertthat::has_attr(tbl, x),
-    msg = paste("The table does not have the required attribute:", x)
-  )
+  if (is.null(attr(tbl, x))) {
+    stop(paste("The table does not have the required attribute:", x), call. = FALSE)
+  }
   attr(tbl, x)
 }
 
@@ -103,14 +102,12 @@ empty_tbl <- function(cnames, ctypes = readr::cols(.default = "c")) {
 }
 
 assert_files_tbl <- function(x) {
-  assertthat::assert_that(
-    tibble::is_tibble(x),
-    msg = "'files_tbl' must be a tibble."
-  )
-  assertthat::assert_that(
-    identical(colnames(x), c("bname", "size", "lastmodified", "path")),
-    msg = "'files_tbl' must have columns: bname, size, lastmodified, path."
-  )
+  if (!tibble::is_tibble(x)) {
+    stop("'files_tbl' must be a tibble.", call. = FALSE)
+  }
+  if (!identical(colnames(x), c("bname", "size", "lastmodified", "path"))) {
+    stop("'files_tbl' must have columns: bname, size, lastmodified, path.", call. = FALSE)
+  }
 }
 
 #' Enframe Data

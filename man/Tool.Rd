@@ -67,12 +67,6 @@ Output directory of tool.}
 \item{\code{config}}{(\code{Config()})\cr
 Config of tool.}
 
-\item{\code{files}}{(\code{tibble()})\cr
-Tibble of files matching available Tool patterns.}
-
-\item{\code{tbls}}{(\code{tibble()})\cr
-Tibble of tidy tibbles.}
-
 \item{\code{written_files}}{(\code{tibble()})\cr
 Tibble of files written from \code{self$write()}.}
 }

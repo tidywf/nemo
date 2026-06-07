@@ -92,12 +92,14 @@ Workflow <- R6::R6Class(
       nemo_assert_scalar_chr(name)
       nemo_assert_chr(metapkg)
       nemo_assert_chr(path)
-      assertthat::assert_that(
-        all(dir.exists(path)),
-        msg = glue(
-          "Path(s) do not exist: {glue::glue_collapse(path[!dir.exists(path)], sep = ', ')}."
+      if (!all(dir.exists(path))) {
+        stop(
+          glue(
+            "Path(s) do not exist: {glue::glue_collapse(path[!dir.exists(path)], sep = ', ')}."
+          ),
+          call. = FALSE
         )
-      )
+      }
       self$name <- name
       self$metapkg <- metapkg
       private$validate_tools(tools)
@@ -134,11 +136,10 @@ Workflow <- R6::R6Class(
     #' R6 object invisibly.
     filter_files = function(include = NULL, exclude = NULL) {
       assert_include_exclude(include, exclude)
-      assertthat::assert_that(
-        !private$is_tidied,
-        msg = "Cannot filter files after tidy() has been called."
-      )
-      all_parsers <- purrr::map(self$tools, \(x) x$files$tool_parser) |>
+      if (private$is_tidied) {
+        stop("Cannot filter files after tidy() has been called.", call. = FALSE)
+      }
+      all_parsers <- purrr::map(self$tools, \(x) x$list_files()$tool_parser) |>
         unlist() |>
         unique()
       if (length(all_parsers) == 0) {
@@ -160,7 +161,7 @@ Workflow <- R6::R6Class(
         check_unknown_parsers(exclude, all_parsers, "exclude")
       }
       purrr::walk(self$tools, \(x) {
-        known <- unique(x$files$tool_parser)
+        known <- unique(x$list_files()$tool_parser)
         tool_include <- if (!is.null(include)) include[include %in% known] else NULL
         tool_exclude <- if (!is.null(exclude)) exclude[exclude %in% known] else NULL
         if (!is.null(tool_include) || !is.null(tool_exclude)) {
@@ -174,7 +175,18 @@ Workflow <- R6::R6Class(
     #' config.
     #' @return (`tibble()`)\cr
     #' Bound `files` tibbles from all Tools, with a leading `tool` column.
-    list_files = function() private$gather_tool_field("files"),
+    list_files = function() {
+      self$tools |>
+        purrr::map(\(x) {
+          f <- x$list_files()
+          if (nrow(f) == 0) {
+            return(NULL)
+          }
+          dplyr::mutate(f, tool = x$name, .before = 1)
+        }) |>
+        purrr::compact() |>
+        dplyr::bind_rows()
+    },
     #' @description Tidy Workflow files.
     #' @param keep_raw (`logical(1)`)\cr
     #' Should the raw parsed tibbles be kept in the final output?
@@ -216,7 +228,9 @@ Workflow <- R6::R6Class(
       write_metadata = TRUE
     ) {
       valid_out_fmt(format) # early failsafe; Tool$write() repeats this per-tool
-      assertthat::assert_that(private$is_tidied, msg = "Did you forget to tidy?")
+      if (!private$is_tidied) {
+        stop("Did you forget to tidy?", call. = FALSE)
+      }
       if (format != "db") {
         # normalise once here so all tools receive a canonical path; Tool$write()
         # repeats the normalisation but that is idempotent.
@@ -297,15 +311,34 @@ Workflow <- R6::R6Class(
     #' @description Get raw schemas for all Tools.
     #' @return (`tibble()`)\cr
     #' Bound `schemas_raw` tibbles from all Tools, with a leading `tool` column.
-    get_schemas_raw = function() private$gather_tool_schemas("get_schemas_raw"),
+    get_schemas_raw = function() {
+      self$tools |>
+        purrr::map(\(x) dplyr::mutate(x$config$get_schemas_raw(), tool = x$name, .before = 1)) |>
+        dplyr::bind_rows()
+    },
     #' @description Get tidy schemas for all Tools.
     #' @return (`tibble()`)\cr
     #' Bound tidy schema tibbles from all Tools, with a leading `tool` column.
-    get_schemas_tidy = function() private$gather_tool_schemas("get_schemas_tidy"),
+    get_schemas_tidy = function() {
+      self$tools |>
+        purrr::map(\(x) dplyr::mutate(x$config$get_schemas_tidy(), tool = x$name, .before = 1)) |>
+        dplyr::bind_rows()
+    },
     #' @description Get tidy tibbles for all Tools.
     #' @return (`tibble()`)\cr
     #' Bound `tbls` tibbles from all Tools, with a leading `tool` column.
-    get_tbls = function() private$gather_tool_field("tbls"),
+    get_tbls = function() {
+      self$tools |>
+        purrr::map(\(x) {
+          t <- x$get_tbls()
+          if (is.null(t)) {
+            return(NULL)
+          }
+          dplyr::mutate(t, tool = x$name, .before = 1)
+        }) |>
+        purrr::compact() |>
+        dplyr::bind_rows()
+    },
     #' @description Get metadata for the workflow run.
     #' @param input_id (`character(1)`)\cr
     #' Input ID to use for the dataset (e.g. `run123`).
@@ -338,65 +371,48 @@ Workflow <- R6::R6Class(
     }
   ), # public end
   private = list(
-    is_tool_subclass = function(cls) {
-      # cls$inherit stores a symbol (the parent class name), not the class object
-      # itself — get() is required to resolve it. We start from parent.env(.GlobalEnv)
-      # so a user variable named "Tool" in .GlobalEnv cannot shadow the real class.
-      # Do not attempt to traverse $inherit directly without resolving via get().
-      parent <- cls$inherit
-      while (!is.null(parent)) {
-        parent_cls <- tryCatch(
-          get(as.character(parent), envir = parent.env(.GlobalEnv), inherits = TRUE),
-          error = function(e) NULL
-        )
-        if (is.null(parent_cls)) {
-          return(FALSE)
-        }
-        if (identical(parent_cls$classname, "Tool")) {
-          return(TRUE)
-        }
-        parent <- parent_cls$inherit
-      }
-      FALSE
-    },
     validate_tools = function(x) {
-      assertthat::assert_that(rlang::is_bare_list(x), msg = "`tools` must be a list.")
-      assertthat::assert_that(length(x) > 0, msg = "`tools` must not be empty.")
-      assertthat::assert_that(
-        !is.null(names(x)) && !any(names(x) == ""),
-        msg = "`tools` must be a named list."
-      )
-      assertthat::assert_that(
-        all(purrr::map_lgl(x, R6::is.R6Class)),
-        msg = "All elements of `tools` must be R6 classes."
-      )
-      assertthat::assert_that(
-        all(purrr::map_lgl(x, private$is_tool_subclass)),
-        msg = "All elements of `tools` must inherit from Tool."
-      )
-    },
-    gather_tool_field = function(field) {
-      self$tools |>
-        purrr::map(\(x) {
-          val <- x[[field]]
-          if (is.null(val)) {
-            return(NULL)
-          }
-          val |> dplyr::mutate(tool = x$name, .before = 1)
-        }) |>
-        purrr::compact() |>
-        dplyr::bind_rows()
-    },
-    gather_tool_schemas = function(method_name) {
-      self$tools |>
-        purrr::map(\(x) {
-          x$config[[method_name]]() |>
-            dplyr::mutate(tool = x$name, .before = 1)
-        }) |>
-        dplyr::bind_rows()
+      if (!rlang::is_bare_list(x)) {
+        stop("`tools` must be a list.", call. = FALSE)
+      }
+      if (length(x) == 0) {
+        stop("`tools` must not be empty.", call. = FALSE)
+      }
+      if (is.null(names(x)) || any(names(x) == "")) {
+        stop("`tools` must be a named list.", call. = FALSE)
+      }
+      if (!all(purrr::map_lgl(x, R6::is.R6Class))) {
+        stop("All elements of `tools` must be R6 classes.", call. = FALSE)
+      }
+      if (!all(purrr::map_lgl(x, is_tool_subclass))) {
+        stop("All elements of `tools` must inherit from Tool.", call. = FALSE)
+      }
     },
     is_tidied = FALSE,
     is_written = FALSE,
     files_tbl = NULL
   ) # private end
 )
+
+# Check whether an R6 class inherits from Tool anywhere in its ancestry.
+# cls$inherit stores a symbol (the parent class name), not the class object
+# itself — get() is required to resolve it. We start from parent.env(.GlobalEnv)
+# so a user variable named "Tool" in .GlobalEnv cannot shadow the real class.
+# Do not attempt to traverse $inherit directly without resolving via get().
+is_tool_subclass <- function(cls) {
+  parent <- cls$inherit
+  while (!is.null(parent)) {
+    parent_cls <- tryCatch(
+      get(as.character(parent), envir = parent.env(.GlobalEnv), inherits = TRUE),
+      error = function(e) NULL
+    )
+    if (is.null(parent_cls)) {
+      return(FALSE)
+    }
+    if (identical(parent_cls$classname, "Tool")) {
+      return(TRUE)
+    }
+    parent <- parent_cls$inherit
+  }
+  FALSE
+}

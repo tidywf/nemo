@@ -8,12 +8,18 @@ config_sort_versions(versions)
 }
 \arguments{
 \item{versions}{(\code{character(n)})\cr
-Vector of unique version strings (e.g. \code{c("v1.2.3", "latest")}) — typically from \code{unlist()}ing the \code{versions} list-col.}
+Vector of unique version strings (e.g. \code{c("v1.2.3", "latest")}) — typically
+from \code{unlist()}ing the \code{versions} list-col.}
 }
 \value{
 Sorted character vector with \code{"latest"} last.
 }
 \description{
-Sort version strings with "latest" always last
+Semver strings (with optional \code{v}/\code{V} prefix) are sorted numerically;
+\code{"latest"} is always placed at the end regardless of position in the input.
 }
-\keyword{internal}
+\examples{
+config_sort_versions(c("v2.0.0", "v1.0.0", "latest"))
+config_sort_versions(c("latest", "v1.2.3"))
+config_sort_versions(c("v1.0.0", "v10.0.0", "v2.0.0"))
+}

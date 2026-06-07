@@ -33,10 +33,9 @@
 #' }
 #' @export
 nemo_uml <- function(classes, output_dir = NULL, pkg = "nemo") {
-  assertthat::assert_that(
-    pkg_found("R6toPlant"),
-    msg = "Install R6toPlant from gitlab::b-rowlingson/R6toPlant"
-  )
+  if (!pkg_found("R6toPlant")) {
+    stop("Install R6toPlant from gitlab::b-rowlingson/R6toPlant", call. = FALSE)
+  }
   if (!nzchar(Sys.which("plantuml"))) {
     stop("plantuml binary not found. Install it via conda: 'conda install conda-forge::plantuml'.")
   }

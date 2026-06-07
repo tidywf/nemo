@@ -284,10 +284,10 @@ t2$write(
   output_id = "out123",
   prefix_include = TRUE
 )
-wfiles <- fs::dir_info(outdir1) |> dplyr::select(1:5)
-wfiles |>
+wfiles <- fs::dir_info(outdir1) |>
   dplyr::mutate(bname = basename(.data$path)) |>
   dplyr::select("bname", "size", "type")
+wfiles
 # readr::read_csv(wfiles$path[1], show_col_types = FALSE) # see tidywf/tidywigits#137
 ```
 
@@ -308,10 +308,13 @@ t3$run(
   prefix_include = TRUE
 )
 wfiles2 <- fs::dir_info(outdir2) |>
-  dplyr::mutate(bname = basename(.data$path))
-wfiles2 |>
-  dplyr::select("bname", "size", "type")
-tbl1_path <- wfiles2$path[grep("tool1_table1", wfiles2$bname)[1]]
+  dplyr::mutate(bname = basename(.data$path)) |>
+  dplyr::select("path", "bname", "size", "type")
+wfiles2 |> dplyr::select(-"path")
+tbl1_path <- wfiles2 |>
+  dplyr::filter(stringr::str_detect(.data$bname, "tool1_table1")) |>
+  dplyr::pull("path") |>
+  head(1)
 readr::read_tsv(tbl1_path, show_col_types = FALSE)
 ```
 

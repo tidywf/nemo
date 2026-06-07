@@ -186,18 +186,28 @@ file_hdr <- function(fpath, delim = "\t", n_max = 0, ...) {
 #' expect_equal(s2[["version"]], "v1.2.3")
 #' @export
 schema_guess <- function(pname, cnames, schemas_all) {
-  assertthat::assert_that(
-    rlang::is_bare_character(cnames),
-    tibble::is_tibble(schemas_all),
-    all(c("name", "version", "schema") %in% colnames(schemas_all)),
-    pname %in% schemas_all[["name"]]
-  )
+  if (!rlang::is_bare_character(cnames)) {
+    stop("'cnames' must be a bare character vector.", call. = FALSE)
+  }
+  if (!tibble::is_tibble(schemas_all)) {
+    stop("'schemas_all' must be a tibble.", call. = FALSE)
+  }
+  if (!all(c("name", "version", "schema") %in% colnames(schemas_all))) {
+    stop("'schemas_all' must have columns: name, version, schema.", call. = FALSE)
+  }
+  if (!pname %in% schemas_all[["name"]]) {
+    stop(glue("'{pname}' not found in schemas_all$name."), call. = FALSE)
+  }
   s <- schemas_all |>
     dplyr::filter(.data$name == pname) |>
     dplyr::select("version", "schema") |>
     dplyr::filter(purrr::map_lgl(.data$schema, \(sch) identical(cnames, sch[["field"]])))
-  msg <- glue("There were {nrow(s)} matching schemas for {pname}. Check the configs!")
-  assertthat::assert_that(nrow(s) == 1, msg = msg)
+  if (nrow(s) != 1) {
+    stop(
+      glue("There were {nrow(s)} matching schemas for {pname}. Check the configs!"),
+      call. = FALSE
+    )
+  }
   version <- s$version
   schema <- s |>
     dplyr::select("schema") |>
@@ -239,8 +249,9 @@ schema_guess <- function(pname, cnames, schemas_all) {
 #' @export
 parse_file_keyvalue <- function(fpath, pname, schemas_all, delim = "\t", ...) {
   ncols <- file_hdr(fpath, delim = delim, ...) |> length()
-  msg <- glue("Expected 2 columns, but found {ncols} in {fpath}")
-  assertthat::assert_that(ncols == 2, msg = msg)
+  if (ncols != 2) {
+    stop(glue("Expected 2 columns, but found {ncols} in {fpath}"), call. = FALSE)
+  }
   d <- readr::read_delim(
     file = fpath,
     col_names = c("key", "value"),
