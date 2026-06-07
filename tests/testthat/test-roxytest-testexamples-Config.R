@@ -56,17 +56,18 @@ test_that("Function config_prep_raw_schema() @ L377", {
   
   path <- system.file("extdata", "tool1/latest/sampleA.tool1.table1.tsv", package = "nemo")
   (x <- config_prep_raw_schema(path = path, delim = "\t"))
-  expect_equal(x[1, "field", drop = T], "'SampleID'")
+  expect_equal(x[1, "raw", drop = TRUE], "SampleID")
+  expect_named(x, c("raw", "tidy", "type", "description", "versions"))
 })
 
 
-test_that("Function config_prep_raw() @ L422", {
+test_that("Function config_prep_raw() @ L433", {
   
   path <- system.file("extdata", "tool1/latest/sampleA.tool1.table1.tsv", package = "nemo")
   name <- "table1"
   descr <- "Table1 from Tool1."
   pat <- "\\.tool1\\.table1\\.tsv$"
   l <- config_prep_raw(path, name, descr, pat)
-  expect_equal(names(l[[1]]), c("description", "pattern", "ftype", "schema"))
+  expect_equal(names(l[[1]]), c("description", "pattern", "ftype", "columns"))
 })
 

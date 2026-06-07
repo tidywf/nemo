@@ -27,7 +27,7 @@ Parses files.
 \examples{
 path <- system.file("extdata/tool1", package = "nemo")
 x <- Tool$new("tool1", pkg = "nemo", path)
-schemas_all <- x$config$schemas_raw
+schemas_all <- x$config$get_schemas_raw()
 f <- function(ver, tbl) file.path(path, ver, paste0("sampleA.tool1.", tbl, ".tsv"))
 # table1: three versions with different column sets
 (d1_v123 <- parse_file(f("v1.2.3", "table1"), "table1", schemas_all))

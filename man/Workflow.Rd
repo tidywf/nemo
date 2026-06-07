@@ -54,8 +54,8 @@ List of Tools that compose a Workflow.}
 \item{\code{files_tbl}}{(\code{tibble(n)})\cr
 Tibble of files from \code{\link[=list_files_dir]{list_files_dir()}}.}
 
-\item{\code{metapkg}}{(\code{character(1)})\cr
-Package name used for metadata version reporting.}
+\item{\code{metapkg}}{(\code{character(n)})\cr
+Package name(s) used for metadata version reporting.}
 
 \item{\code{written_files}}{(\code{tibble(n)})\cr
 Tibble of files written from \code{self$write()}.}

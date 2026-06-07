@@ -152,7 +152,7 @@ get_python <- function() {
 #' expect_error(nemoverse_wf_dispatch("dummy1"))
 #' @export
 nemoverse_wf_dispatch <- function(wf = NULL) {
-  stopifnot(!is.null(wf))
+  nemo_assert_not_null(wf)
   wfs <- list(
     wigits = list(pkg = "tidywigits", wf = "Wigits", repo = "https://github.com/tidywf/tidywigits"),
     workflow1 = list(pkg = "nemo", wf = "Workflow1", repo = "https://github.com/tidywf/nemo"),

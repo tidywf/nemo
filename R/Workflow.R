@@ -92,9 +92,9 @@ Workflow <- R6::R6Class(
     #' @return (`R6::R6Class()`)\cr
     #' R6 object.
     initialize = function(name = NULL, path = NULL, tools = NULL, metapkg = "nemo") {
-      stopifnot("name not single char string" = rlang::is_scalar_character(name))
-      stopifnot("metapkg not char string" = rlang::is_character(name))
-      stopifnot("path not char string" = rlang::is_character(path))
+      nemo_assert_scalar_chr(name)
+      nemo_assert_scalar_chr(metapkg)
+      nemo_assert_chr(path)
       assertthat::assert_that(
         all(dir.exists(path)),
         msg = glue(
@@ -304,7 +304,7 @@ Workflow <- R6::R6Class(
     get_schemas_raw = function() {
       self$tools |>
         purrr::map(\(x) {
-          x$config$schemas_raw |>
+          x$config$get_schemas_raw() |>
             dplyr::mutate(tool = x$name) |>
             dplyr::relocate("tool", .before = 1)
         }) |>

@@ -19,7 +19,7 @@
 #' fpfix <- file.path(tempdir(), "data_test1")
 #' format <- "csv"
 #' nemo_write(d = d, fpfix = fpfix, format = format)
-#' (res <- readr::read_csv(glue::glue("{fpfix}.csv.gz"), show_col_types = FALSE))
+#' (res <- readr::read_csv(glue("{fpfix}.csv.gz"), show_col_types = FALSE))
 #' \dontrun{
 #' # for database writing — supply a DBI driver from e.g. RPostgres or duckdb
 #' con <- DBI::dbConnect(RPostgres::Postgres(), dbname = "mydb", user = "me")
@@ -36,8 +36,8 @@ nemo_write <- function(d, fpfix = NULL, format = "tsv", dbconn = NULL, dbtab = N
   stopifnot(is.data.frame(d))
   valid_out_fmt(format)
   if (format == "db") {
-    stopifnot("Valid db conn needed" = !is.null(dbconn))
-    stopifnot("Valid db tab name needed" = !is.null(dbtab))
+    nemo_assert_not_null(dbconn)
+    nemo_assert_not_null(dbtab)
     DBI::dbWriteTable(
       conn = dbconn,
       name = dbtab,
@@ -46,7 +46,7 @@ nemo_write <- function(d, fpfix = NULL, format = "tsv", dbconn = NULL, dbtab = N
       overwrite = FALSE
     )
   } else {
-    stopifnot(!is.null(fpfix))
+    nemo_assert_not_null(fpfix)
     fpfix <- as.character(fpfix)
     osfx <- nemo_osfx(fpfix, format)
     fs::dir_create(dirname(fpfix))

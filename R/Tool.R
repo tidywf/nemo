@@ -158,14 +158,8 @@ Tool <- R6::R6Class(
     #' R6 object.
     initialize = function(name = NULL, pkg = NULL, path = NULL, files_tbl = NULL) {
       stopifnot(!is.null(path) || !is.null(files_tbl))
-      assertthat::assert_that(
-        rlang::is_scalar_character(name),
-        msg = "`name` must be a single character string."
-      )
-      assertthat::assert_that(
-        rlang::is_scalar_character(pkg),
-        msg = "`pkg` must be a single character string."
-      )
+      nemo_assert_scalar_chr(name)
+      nemo_assert_scalar_chr(pkg)
       if (!is.null(files_tbl)) {
         stopifnot(is_files_tbl(files_tbl))
         path <- NULL
@@ -215,7 +209,7 @@ Tool <- R6::R6Class(
         return(invisible(self))
       }
       if (!is.null(include)) {
-        stopifnot(rlang::is_character(include))
+        nemo_assert_chr(include)
         unknown <- include[!include %in% self$files$tool_parser]
         assertthat::assert_that(
           length(unknown) == 0,
@@ -227,7 +221,7 @@ Tool <- R6::R6Class(
           dplyr::filter(.data$tool_parser %in% include)
       }
       if (!is.null(exclude)) {
-        stopifnot(rlang::is_character(exclude))
+        nemo_assert_chr(exclude)
         unknown <- exclude[!exclude %in% self$files$tool_parser]
         assertthat::assert_that(
           length(unknown) == 0,
@@ -419,7 +413,7 @@ Tool <- R6::R6Class(
       parse_file(
         fpath = x,
         pname = table_name,
-        schemas_all = self$config$schemas_raw,
+        schemas_all = self$config$get_schemas_raw(),
         delim = delim,
         ...
       )
@@ -469,7 +463,7 @@ Tool <- R6::R6Class(
       parse_file_keyvalue(
         fpath = x,
         pname = table_name,
-        schemas_all = self$config$schemas_raw,
+        schemas_all = self$config$get_schemas_raw(),
         delim = delim,
         ...
       )
@@ -486,7 +480,7 @@ Tool <- R6::R6Class(
     #' Parsed data in tibble.
     .parse_file_nohead = function(x, table_name, delim = "\t", ...) {
       ncols <- file_hdr(x, delim = delim, ...) |> length()
-      schema <- self$config$schemas_raw |>
+      schema <- self$config$get_schemas_raw() |>
         dplyr::filter(.data$name == table_name) |>
         dplyr::select("version", "schema") |>
         dplyr::rowwise() |>

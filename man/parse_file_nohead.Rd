@@ -24,7 +24,7 @@ Parses files with no column names.
 \examples{
 path <- system.file("extdata/tool1", package = "nemo")
 x <- Tool$new("tool1", pkg = "nemo", path)
-schemas_all <- x$config$schemas_raw
+schemas_all <- x$config$get_schemas_raw()
 pname <- "table4"
 fpath_latest <- file.path(path, "latest", "sampleA.tool1.table4.tsv")
 fpath_v1 <- file.path(path, "v1.0.0", "sampleA.tool1.table4.tsv")

@@ -77,9 +77,9 @@ reactable_schema <- function(dat, ...) {
               seq_along(versions),
               function(i) {
                 v <- versions[[i]]
-                button_id <- glue::glue("btn_{row_id}_{i - 1}")
+                button_id <- glue("btn_{row_id}_{i - 1}")
                 paste0(
-                  glue::glue('<button id="{button_id}" onclick="toggleSchema({row_id}, {i - 1})" '),
+                  glue('<button id="{button_id}" onclick="toggleSchema({row_id}, {i - 1})" '),
                   'style="',
                   'background-color: #e3f2fd; ',
                   'border: 1px solid #90caf9; ',
@@ -102,7 +102,7 @@ reactable_schema <- function(dat, ...) {
 
             schema_divs <- purrr::map_chr(seq_along(versions), function(i) {
               schema_data <- value$schema[[i]]
-              schema_id <- glue::glue("schema_{row_id}_{i - 1}")
+              schema_id <- glue("schema_{row_id}_{i - 1}")
 
               if (is.data.frame(schema_data)) {
                 schema_html <- paste0(
@@ -156,7 +156,7 @@ reactable_schema <- function(dat, ...) {
                   '</div>'
                 )
               }
-              glue::glue('<div id="{schema_id}" style="display: none;">{schema_html}</div>')
+              glue('<div id="{schema_id}" style="display: none;">{schema_html}</div>')
             })
 
             htmltools::HTML(
