@@ -173,7 +173,8 @@ Config <- R6::R6Class(
     #' @param x (`character(1)`)\cr
     #' Table name.
     #' @param version (`character(1)`)\cr
-    #' Version. If NULL, returns all versions.
+    #' Version string. If `NULL`, **all** versions are returned (one row per version).
+    #' This differs from `get_col_map(version = NULL)`, which resolves to a single version.
     #' @return (`tibble()`)\cr
     #' Table `version`, `field` and `type`.
     get_schema_raw = function(x, version = NULL) {
@@ -183,7 +184,8 @@ Config <- R6::R6Class(
     #' @param x (`character(1)`)\cr
     #' Table name.
     #' @param version (`character(1)`)\cr
-    #' Version. If NULL, returns all versions.
+    #' Version string. If `NULL`, **all** versions are returned (one row per version).
+    #' This differs from `get_col_map(version = NULL)`, which resolves to a single version.
     #' @return (`tibble()`)\cr
     #' Table `version`, `field` and `type`.
     get_schema_tidy = function(x, version = NULL) {
@@ -206,10 +208,10 @@ Config <- R6::R6Class(
     #' @description Get column mapping (raw -> tidy) for a table.
     #' Used for tables with custom parse logic (e.g. csv-nohead-long).
     #'
-    #' **Version semantics differ from `get_schema_raw()`/`get_schema_tidy()`:**
-    #' when `version = NULL`, this method always resolves to a *single* version
-    #' (the highest semver present, or `"latest"` if defined). By contrast,
-    #' `get_schema_raw()`/`get_schema_tidy()` return *all* versions when `version = NULL`.
+    #' **`version = NULL` resolves to a single version here**, unlike
+    #' `get_schema_raw()`/`get_schema_tidy()` which return *all* versions when
+    #' `version = NULL`. Use an explicit version string if you need a specific version
+    #' from either family of methods.
     #' @param x (`character(1)`)\cr
     #' Table name.
     #' @param version (`character(1)`)\cr
@@ -340,6 +342,9 @@ Config <- R6::R6Class(
         dplyr::bind_rows()
     },
     derive_schema = function(cache, side) {
+      # schema list-cols carry only field + type (no description) because they are
+      # consumed directly by tibble::deframe() → readr col-type specs, which require
+      # exactly a two-column tibble. Descriptions are available via get_col_map().
       cache |>
         dplyr::mutate(
           schema = purrr::map(

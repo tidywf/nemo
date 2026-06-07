@@ -109,6 +109,8 @@ nemo_out_formats <- function() {
 #'
 #' @export
 nemo_osfx <- function(fpfix, format) {
+  # already validated upstream by Tool$write() / Workflow$write(); kept so nemo_osfx()
+  # is safe to call standalone without a prior validation step.
   valid_out_fmt(format)
   fpfix <- as.character(fpfix)
   sfx <- c(tsv = "tsv.gz", csv = "csv.gz", parquet = "parquet", rds = "rds")

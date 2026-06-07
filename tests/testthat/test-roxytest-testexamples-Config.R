@@ -52,7 +52,7 @@ test_that("Function Config() @ L65", {
 })
 
 
-test_that("Function config_sort_versions() @ L395", {
+test_that("Function config_sort_versions() @ L400", {
   
   config_sort_versions(c("v2.0.0", "v1.0.0", "latest"))
   config_sort_versions(c("latest", "v1.2.3"))
@@ -63,7 +63,7 @@ test_that("Function config_sort_versions() @ L395", {
 })
 
 
-test_that("Function config_prep_raw_schema() @ L425", {
+test_that("Function config_prep_raw_schema() @ L430", {
   
   path <- system.file("extdata", "tool1/latest/sampleA.tool1.table1.tsv", package = "nemo")
   (x <- config_prep_raw_schema(path = path, delim = "\t"))
@@ -76,7 +76,7 @@ test_that("Function config_prep_raw_schema() @ L425", {
 })
 
 
-test_that("Function config_prep_raw() @ L491", {
+test_that("Function config_prep_raw() @ L496", {
   
   path <- system.file("extdata", "tool1/latest/sampleA.tool1.table1.tsv", package = "nemo")
   name <- "table1"
@@ -92,7 +92,7 @@ test_that("Function config_prep_raw() @ L491", {
 })
 
 
-test_that("Function config_prep_multi() @ L525", {
+test_that("Function config_prep_multi() @ L530", {
   
   dir1 <-  "extdata/tool1/latest"
   path1 <- system.file(dir1, "sampleA.tool1.table1.tsv", package = "nemo")
@@ -114,7 +114,7 @@ test_that("Function config_prep_multi() @ L525", {
 })
 
 
-test_that("Function config_prep_write() @ L579", {
+test_that("Function config_prep_write() @ L584", {
   
   dir1 <- "extdata/tool1/latest"
   path1 <- system.file(dir1, "sampleA.tool1.table1.tsv", package = "nemo")

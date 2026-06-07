@@ -93,7 +93,18 @@ parse_file <- function(fpath, pname, schemas_all, delim = "\t", ...) {
 #' expect_equal(attr(d_v1, "file_version"), "v1.0.0")
 #' @export
 parse_file_nohead <- function(fpath, pname, schemas_all, delim = "\t", ...) {
-  ncols <- file_hdr(fpath, delim = delim, ...) |> length()
+  # Use col_names = FALSE so the first data row is read as data (not treated as a
+  # header), then count columns. file_hdr() would also work but treats the first
+  # row as a header, which is semantically wrong for headless files.
+  ncols <- readr::read_delim(
+    file = fpath,
+    delim = delim,
+    col_names = FALSE,
+    col_types = readr::cols(.default = "c"),
+    n_max = 1L,
+    ...
+  ) |>
+    ncol()
   schema <- schemas_all |>
     dplyr::filter(.data$name == pname) |>
     dplyr::select("version", "schema") |>

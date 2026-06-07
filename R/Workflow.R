@@ -37,7 +37,7 @@
 #' # list_files
 #' nms1 <- c(
 #'   "tool", "tool_parser", "parser", "bname", "size", "lastmodified", "path",
-#'   "pattern", "prefix", "group"
+#'   "pattern", "prefix", "prefix_suffix"
 #' )
 #' expect_true(all(c("tool1_table1", "tool1_table2", "tool1_table4") %in% lf_all$tool_parser))
 #' expect_named(lf_all, nms1)
@@ -162,10 +162,20 @@ Workflow <- R6::R6Class(
       }
       purrr::walk(self$tools, \(x) {
         known <- unique(x$list_files()$tool_parser)
-        tool_include <- if (!is.null(include)) include[include %in% known] else NULL
-        tool_exclude <- if (!is.null(exclude)) exclude[exclude %in% known] else NULL
-        if (!is.null(tool_include) || !is.null(tool_exclude)) {
-          x$filter_files(include = tool_include, exclude = tool_exclude)
+        # Use if/else rather than character(0) args: an empty intersection means
+        # "no include parsers match this tool" so we explicitly exclude all it has.
+        if (!is.null(include)) {
+          matched <- include[include %in% known]
+          if (length(matched) > 0) {
+            x$filter_files(include = matched)
+          } else if (length(known) > 0) {
+            x$filter_files(exclude = known)
+          }
+        } else if (!is.null(exclude)) {
+          matched <- exclude[exclude %in% known]
+          if (length(matched) > 0) {
+            x$filter_files(exclude = matched)
+          }
         }
       })
       invisible(self)
@@ -179,6 +189,7 @@ Workflow <- R6::R6Class(
       self$tools |>
         purrr::map(\(x) {
           f <- x$list_files()
+          # Tool$list_files() always returns a tibble (never NULL); check nrow, not is.null.
           if (nrow(f) == 0) {
             return(NULL)
           }
@@ -227,7 +238,12 @@ Workflow <- R6::R6Class(
       dbconn = NULL,
       write_metadata = TRUE
     ) {
-      valid_out_fmt(format) # early failsafe; Tool$write() repeats this per-tool
+      # valid_out_fmt is also checked in Tool$write() and nemo_osfx(); each layer
+      # keeps its own check so callers don't need to worry about ordering.
+      valid_out_fmt(format)
+      if (private$is_written) {
+        return(invisible(self))
+      }
       if (!private$is_tidied) {
         stop("Did you forget to tidy?", call. = FALSE)
       }
@@ -312,6 +328,8 @@ Workflow <- R6::R6Class(
     #' @return (`tibble()`)\cr
     #' Bound `schemas_raw` tibbles from all Tools, with a leading `tool` column.
     get_schemas_raw = function() {
+      # get_schemas_raw and get_schemas_tidy are symmetric (same pattern, different Config method).
+      # The repetition is intentional — extraction was tried and reversed; they're simple enough to read in full.
       self$tools |>
         purrr::map(\(x) dplyr::mutate(x$config$get_schemas_raw(), tool = x$name, .before = 1)) |>
         dplyr::bind_rows()
@@ -331,6 +349,7 @@ Workflow <- R6::R6Class(
       self$tools |>
         purrr::map(\(x) {
           t <- x$get_tbls()
+          # Tool$get_tbls() returns NULL when tidy() produced no tables; check is.null, not nrow.
           if (is.null(t)) {
             return(NULL)
           }

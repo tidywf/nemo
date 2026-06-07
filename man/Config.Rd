@@ -300,7 +300,8 @@ Get raw schema for a specific table and optional version.
 Table name.}
 
 \item{\code{version}}{(\code{character(1)})\cr
-Version. If NULL, returns all versions.}
+Version string. If \code{NULL}, \strong{all} versions are returned (one row per version).
+This differs from \code{get_col_map(version = NULL)}, which resolves to a single version.}
 }
 \if{html}{\out{</div>}}
 }
@@ -325,7 +326,8 @@ Get tidy schema for a specific table and optional version.
 Table name.}
 
 \item{\code{version}}{(\code{character(1)})\cr
-Version. If NULL, returns all versions.}
+Version string. If \code{NULL}, \strong{all} versions are returned (one row per version).
+This differs from \code{get_col_map(version = NULL)}, which resolves to a single version.}
 }
 \if{html}{\out{</div>}}
 }
@@ -358,10 +360,10 @@ Checks raw YAML types from \code{tables} directly, before remapping.
 Get column mapping (raw -> tidy) for a table.
 Used for tables with custom parse logic (e.g. csv-nohead-long).
 
-\strong{Version semantics differ from \code{get_schema_raw()}/\code{get_schema_tidy()}:}
-when \code{version = NULL}, this method always resolves to a \emph{single} version
-(the highest semver present, or \code{"latest"} if defined). By contrast,
-\code{get_schema_raw()}/\code{get_schema_tidy()} return \emph{all} versions when \code{version = NULL}.
+\strong{\code{version = NULL} resolves to a single version here}, unlike
+\code{get_schema_raw()}/\code{get_schema_tidy()} which return \emph{all} versions when
+\code{version = NULL}. Use an explicit version string if you need a specific version
+from either family of methods.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Config$get_col_map(x, version = NULL)}\if{html}{\out{</div>}}
 }

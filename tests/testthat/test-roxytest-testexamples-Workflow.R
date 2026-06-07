@@ -25,7 +25,7 @@ test_that("Function Workflow() @ L61", {
   # list_files
   nms1 <- c(
     "tool", "tool_parser", "parser", "bname", "size", "lastmodified", "path",
-    "pattern", "prefix", "group"
+    "pattern", "prefix", "prefix_suffix"
   )
   expect_true(all(c("tool1_table1", "tool1_table2", "tool1_table4") %in% lf_all$tool_parser))
   expect_named(lf_all, nms1)

@@ -2,7 +2,7 @@
 
 # File R/Tool.R: @testexamples
 
-test_that("Function Tool() @ L115", {
+test_that("Function Tool() @ L117", {
   
   fs::path(tempdir(), letters[1:5]) |>
     fs::file_temp_push() |>
@@ -64,7 +64,7 @@ test_that("Function Tool() @ L115", {
     toolC$get_tbls(),
     c(
       "tool_parser", "parser", "bname", "size", "lastmodified", "path",
-      "pattern", "prefix", "group", "tidy"
+      "pattern", "prefix", "prefix_suffix", "tidy"
     )
   )
   # table4: two versions parsed with correct column counts
@@ -80,17 +80,19 @@ test_that("Function Tool() @ L115", {
   expect_equal(meta_c$input_id, "run1")
   expect_named(toolD$written_files, c("raw_path", "tool_parser", "prefix", "tbl_name", "outpath"))
   # input_id / output_id / prefix_include column tests
-  toolE <- Tool$new(name = name, pkg = pkg, path = path)$
-    filter_files(include = "tool1_table1")$tidy()
+  make_toolE <- function() {
+    Tool$new(name = name, pkg = pkg, path = path)$
+      filter_files(include = "tool1_table1")$tidy()
+  }
   read_pq <- function(d) {
     fs <- list.files(d, pattern = "[.]parquet$", full.names = TRUE)
     arrow::read_parquet(fs[!grepl("^metadata_", basename(fs))][1])
   }
-  dE0 <- fs::file_temp(); toolE$write(output_dir = dE0, format = "parquet")
-  dEi <- fs::file_temp(); toolE$write(output_dir = dEi, format = "parquet", input_id = "run1")
-  dEo <- fs::file_temp(); toolE$write(output_dir = dEo, format = "parquet", output_id = "out1")
-  dEp <- fs::file_temp(); toolE$write(output_dir = dEp, format = "parquet", prefix_include = TRUE)
-  dEa <- fs::file_temp(); toolE$write(output_dir = dEa, format = "parquet", input_id = "run1", output_id = "out1", prefix_include = TRUE)
+  dE0 <- fs::file_temp(); make_toolE()$write(output_dir = dE0, format = "parquet")
+  dEi <- fs::file_temp(); make_toolE()$write(output_dir = dEi, format = "parquet", input_id = "run1")
+  dEo <- fs::file_temp(); make_toolE()$write(output_dir = dEo, format = "parquet", output_id = "out1")
+  dEp <- fs::file_temp(); make_toolE()$write(output_dir = dEp, format = "parquet", prefix_include = TRUE)
+  dEa <- fs::file_temp(); make_toolE()$write(output_dir = dEa, format = "parquet", input_id = "run1", output_id = "out1", prefix_include = TRUE)
   expect_false(any(c("input_id", "output_id", "input_prefix") %in% names(read_pq(dE0))))
   expect_equal(read_pq(dEi)$input_id[1], "run1")
   expect_equal(read_pq(dEo)$output_id[1], "out1")

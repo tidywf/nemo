@@ -78,7 +78,7 @@
 #'   toolC$get_tbls(),
 #'   c(
 #'     "tool_parser", "parser", "bname", "size", "lastmodified", "path",
-#'     "pattern", "prefix", "group", "tidy"
+#'     "pattern", "prefix", "prefix_suffix", "tidy"
 #'   )
 #' )
 #' # table4: two versions parsed with correct column counts
@@ -94,17 +94,19 @@
 #' expect_equal(meta_c$input_id, "run1")
 #' expect_named(toolD$written_files, c("raw_path", "tool_parser", "prefix", "tbl_name", "outpath"))
 #' # input_id / output_id / prefix_include column tests
-#' toolE <- Tool$new(name = name, pkg = pkg, path = path)$
-#'   filter_files(include = "tool1_table1")$tidy()
+#' make_toolE <- function() {
+#'   Tool$new(name = name, pkg = pkg, path = path)$
+#'     filter_files(include = "tool1_table1")$tidy()
+#' }
 #' read_pq <- function(d) {
 #'   fs <- list.files(d, pattern = "[.]parquet$", full.names = TRUE)
 #'   arrow::read_parquet(fs[!grepl("^metadata_", basename(fs))][1])
 #' }
-#' dE0 <- fs::file_temp(); toolE$write(output_dir = dE0, format = "parquet")
-#' dEi <- fs::file_temp(); toolE$write(output_dir = dEi, format = "parquet", input_id = "run1")
-#' dEo <- fs::file_temp(); toolE$write(output_dir = dEo, format = "parquet", output_id = "out1")
-#' dEp <- fs::file_temp(); toolE$write(output_dir = dEp, format = "parquet", prefix_include = TRUE)
-#' dEa <- fs::file_temp(); toolE$write(output_dir = dEa, format = "parquet", input_id = "run1", output_id = "out1", prefix_include = TRUE)
+#' dE0 <- fs::file_temp(); make_toolE()$write(output_dir = dE0, format = "parquet")
+#' dEi <- fs::file_temp(); make_toolE()$write(output_dir = dEi, format = "parquet", input_id = "run1")
+#' dEo <- fs::file_temp(); make_toolE()$write(output_dir = dEo, format = "parquet", output_id = "out1")
+#' dEp <- fs::file_temp(); make_toolE()$write(output_dir = dEp, format = "parquet", prefix_include = TRUE)
+#' dEa <- fs::file_temp(); make_toolE()$write(output_dir = dEa, format = "parquet", input_id = "run1", output_id = "out1", prefix_include = TRUE)
 #' expect_false(any(c("input_id", "output_id", "input_prefix") %in% names(read_pq(dE0))))
 #' expect_equal(read_pq(dEi)$input_id[1], "run1")
 #' expect_equal(read_pq(dEo)$output_id[1], "out1")
@@ -132,7 +134,7 @@ Tool <- R6::R6Class(
         path = character(),
         pattern = character(),
         prefix = character(),
-        group = character()
+        prefix_suffix = character()
       )
     },
     compute_files = function(type = "file") {
@@ -161,10 +163,14 @@ Tool <- R6::R6Class(
           prefix = dplyr::if_else(.data$prefix == "", .data$parser, .data$prefix),
           tool_parser = paste0(self$name, "_", .data$parser)
         ) |>
-        dplyr::mutate(group = dplyr::row_number(), .by = "bname") |>
+        dplyr::mutate(prefix_suffix = dplyr::row_number(), .by = "bname") |>
         dplyr::mutate(
-          group = dplyr::if_else(.data$group == 1, "", paste0("_", .data$group)),
-          prefix = paste0(.data$prefix, .data$group)
+          prefix_suffix = dplyr::if_else(
+            .data$prefix_suffix == 1,
+            "",
+            paste0("_", .data$prefix_suffix)
+          ),
+          prefix = paste0(.data$prefix, .data$prefix_suffix)
         ) |>
         # two files with different basenames can reduce to the same prefix when
         # matched by different patterns for the same table (e.g. *.flagstat and
@@ -462,7 +468,12 @@ Tool <- R6::R6Class(
       dbconn = NULL,
       write_metadata = TRUE
     ) {
+      # valid_out_fmt is also called in Workflow$write() and nemo_osfx(); each layer
+      # keeps its own check so callers don't need to worry about ordering.
       valid_out_fmt(format)
+      if (private$is_written) {
+        return(invisible(self))
+      }
       if (!private$is_tidied) {
         stop("Did you forget to tidy?", call. = FALSE)
       }
@@ -471,13 +482,11 @@ Tool <- R6::R6Class(
           stop("Output directory must be specified when format is not 'db'.")
         }
         output_dir <- normalizePath(output_dir, mustWork = FALSE)
+        fs::dir_create(output_dir)
       }
       if (is.null(private$tbls)) {
         self$written_files <- NULL
         return(invisible(self))
-      }
-      if (format != "db") {
-        fs::dir_create(output_dir)
       }
       # Pure data preparation: unnest, compute names/paths, prepend ID cols
       d_write <- private$tbls |>

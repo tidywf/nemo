@@ -46,7 +46,7 @@
 #'   obj2$get_tbls(),
 #'   c(
 #'     "tool_parser", "parser", "bname", "size", "lastmodified", "path",
-#'     "pattern", "prefix", "group", "tidy"
+#'     "pattern", "prefix", "prefix_suffix", "tidy"
 #'   )
 #' )
 #' t3_ncols <- purrr::map_int(
