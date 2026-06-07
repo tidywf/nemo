@@ -278,7 +278,7 @@ Table \code{name}, \code{tbl_description}, \code{version}, and \code{schema}
 \subsection{Method \code{get_schema_raw()}}{
 Get raw schema for a specific table and optional version.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Config$get_schema_raw(x = NULL, version = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Config$get_schema_raw(x, version = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -303,7 +303,7 @@ Table \code{version}, \code{field} and \code{type}.
 \subsection{Method \code{get_schema_tidy()}}{
 Get tidy schema for a specific table and optional version.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Config$get_schema_tidy(x = NULL, version = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Config$get_schema_tidy(x, version = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -329,6 +329,7 @@ Table \code{version}, \code{field} and \code{type}.
 Validate schemas.
 Intentionally soft: returns \code{FALSE} + warning (not \code{stop()}) so callers
 can report schema problems without halting execution.
+Checks raw YAML types from \code{self$tables} directly, before remapping.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Config$validate_schemas()}\if{html}{\out{</div>}}
 }
@@ -345,7 +346,7 @@ can report schema problems without halting execution.
 Get column mapping (raw -> tidy) for a table.
 Used for tables with custom parse logic (e.g. csv-nohead-long).
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Config$get_col_map(x = NULL, version = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Config$get_col_map(x, version = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -358,6 +359,10 @@ Table name.}
 Version. If NULL, uses the latest version.}
 }
 \if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+(\code{tibble()})\cr
+Tibble with columns \code{raw}, \code{tidy}, \code{type}, \code{description}.
 }
 }
 \if{html}{\out{<hr>}}

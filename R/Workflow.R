@@ -91,7 +91,7 @@ Workflow <- R6::R6Class(
     #' Package name used for metadata version reporting.
     #' @return (`R6::R6Class()`)\cr
     #' R6 object.
-    initialize = function(name = NULL, path = NULL, tools = NULL, metapkg = "nemo") {
+    initialize = function(name, path, tools, metapkg = "nemo") {
       nemo_assert_scalar_chr(name)
       nemo_assert_scalar_chr(metapkg)
       nemo_assert_chr(path)

@@ -46,7 +46,7 @@ wf$wrangle(output_dir = dir1, format = "parquet", input_id = "run1")
 \subsection{Method \code{new()}}{
 Create a new Workflow1 object.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Workflow1$new(path = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Workflow1$new(path)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{

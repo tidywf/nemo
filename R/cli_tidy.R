@@ -191,7 +191,9 @@ cli_nemo_tidy <- function(
   fun <- nemoverse_wf_dispatch(workflow)
   dbconn <- NULL
   if (out_format == "db") {
-    stopifnot(!is.null(dbdrv), !is.null(dbname), !is.null(dbuser))
+    nemo_assert_not_null(dbdrv)
+    nemo_assert_not_null(dbname)
+    nemo_assert_not_null(dbuser)
     dbconn <- DBI::dbConnect(
       drv = dbdrv,
       dbname = dbname,

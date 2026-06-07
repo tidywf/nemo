@@ -28,7 +28,7 @@ Workflow1 <- R6::R6Class(
     #' Path(s) to Workflow1 results.
     #' @return (`R6::R6Class()`)\cr
     #' R6 object.
-    initialize = function(path = NULL) {
+    initialize = function(path) {
       tools <- list(
         tool1 = Tool1
       )

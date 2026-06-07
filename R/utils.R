@@ -109,10 +109,11 @@ is_files_tbl <- function(x) {
   )
 }
 
+.schema_type_map <- c(char = "c", float = "d", int = "i")
+
 schema_type_remap <- function(x) {
-  type_map <- c(char = "c", float = "d", int = "i")
-  stopifnot(x %in% names(type_map))
-  unname(type_map[x])
+  stopifnot(x %in% names(.schema_type_map))
+  unname(.schema_type_map[x])
 }
 
 
@@ -151,7 +152,7 @@ get_python <- function() {
 #' expect_error(nemoverse_wf_dispatch("foo"))
 #' expect_error(nemoverse_wf_dispatch("dummy1"))
 #' @export
-nemoverse_wf_dispatch <- function(wf = NULL) {
+nemoverse_wf_dispatch <- function(wf) {
   nemo_assert_not_null(wf)
   wfs <- list(
     wigits = list(pkg = "tidywigits", wf = "Wigits", repo = "https://github.com/tidywf/tidywigits"),
@@ -192,6 +193,6 @@ nemoverse_wf_dispatch <- function(wf = NULL) {
 #' expect_false(pkg_found("somefakepackagename"))
 #' @export
 pkg_found <- function(p) {
-  stopifnot(is.character(p), length(p) == 1)
+  nemo_assert_scalar_chr(p)
   length(find.package(p, quiet = TRUE)) == 1
 }

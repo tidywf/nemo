@@ -156,7 +156,7 @@ Tool <- R6::R6Class(
     #' Tibble of files from [list_files_dir()].
     #' @return (`R6::R6Class()`)\cr
     #' R6 object.
-    initialize = function(name = NULL, pkg = NULL, path = NULL, files_tbl = NULL) {
+    initialize = function(name, pkg, path = NULL, files_tbl = NULL) {
       stopifnot(!is.null(path) || !is.null(files_tbl))
       nemo_assert_scalar_chr(name)
       nemo_assert_scalar_chr(pkg)
@@ -432,7 +432,7 @@ Tool <- R6::R6Class(
         x <- self$.dispatch_parse(x, table_name)
       }
       version <- get_tbl_version_attr(x)
-      stopifnot(!is.null(version))
+      nemo_assert_not_null(version)
       schema <- self$get_schema_tidy(table_name, version = version)
       colnames(x) <- schema[["field"]]
       if (convert_types) {

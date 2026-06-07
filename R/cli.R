@@ -10,9 +10,9 @@
 #' @param wf (`character(1)`)\cr
 #' Workflow name.
 #' @export
-nemo_cli <- function(pkg = NULL, descr = NULL, wf = NULL) {
+nemo_cli <- function(pkg, descr, wf = NULL) {
   stopifnot(pkg_found(pkg))
-  stopifnot(!is.null(descr))
+  nemo_assert_not_null(descr)
   prog_nm <- paste0(pkg, ".R")
   version <- as.character(utils::packageVersion(pkg))
   p <- argparse::ArgumentParser(

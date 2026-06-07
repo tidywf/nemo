@@ -85,7 +85,7 @@ Tibble of files written from \code{self$write()}.}
 \subsection{Method \code{new()}}{
 Create a new Workflow object.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Workflow$new(name = NULL, path = NULL, tools = NULL, metapkg = "nemo")}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Workflow$new(name, path, tools, metapkg = "nemo")}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{

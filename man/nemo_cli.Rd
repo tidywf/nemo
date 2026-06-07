@@ -4,7 +4,7 @@
 \alias{nemo_cli}
 \title{Command line interface for nemo}
 \usage{
-nemo_cli(pkg = NULL, descr = NULL, wf = NULL)
+nemo_cli(pkg, descr, wf = NULL)
 }
 \arguments{
 \item{pkg}{(\code{character(1)})\cr

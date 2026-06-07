@@ -88,6 +88,9 @@ Config <- R6::R6Class(
       self$tool <- tool
       self$pkg <- pkg
       self$tables <- private$read()[["tables"]]
+      if (!self$validate_schemas()) {
+        stop(glue("Aborting: invalid field types in schema.yaml for '{self$tool}'."), call. = FALSE)
+      }
       private$schemas_cache <- private$compute_schemas()
       private$schemas_raw <- private$derive_schema(private$schemas_cache, "raw")
       private$schemas_tidy <- private$derive_schema(private$schemas_cache, "tidy")
@@ -170,7 +173,7 @@ Config <- R6::R6Class(
     #' Version. If NULL, returns all versions.
     #' @return (`tibble()`)\cr
     #' Table `version`, `field` and `type`.
-    get_schema_raw = function(x = NULL, version = NULL) {
+    get_schema_raw = function(x, version = NULL) {
       private$get_schema(x, version, private$schemas_raw)
     },
     #' @description Get tidy schema for a specific table and optional version.
@@ -180,26 +183,28 @@ Config <- R6::R6Class(
     #' Version. If NULL, returns all versions.
     #' @return (`tibble()`)\cr
     #' Table `version`, `field` and `type`.
-    get_schema_tidy = function(x = NULL, version = NULL) {
+    get_schema_tidy = function(x, version = NULL) {
       private$get_schema(x, version, private$schemas_tidy)
     },
     #' @description Validate schemas.
     #' Intentionally soft: returns `FALSE` + warning (not `stop()`) so callers
     #' can report schema problems without halting execution.
+    #' Checks raw YAML types from `self$tables` directly, before remapping.
     #' @return (`logical(1)`)\cr
     #' `TRUE` if all field types are valid, `FALSE` otherwise.
     validate_schemas = function() {
-      valid_types <- c(char = "c", int = "i", float = "d")
+      valid_types <- names(.schema_type_map)
       valid_types_print <- glue::glue_collapse(valid_types, sep = ", ", last = " or ")
-      invalid <- private$schemas_raw |>
-        tidyr::unnest("schema") |>
-        dplyr::mutate(invalid_type = !.data$type %in% valid_types) |>
-        dplyr::filter(.data$invalid_type) |>
-        dplyr::mutate(
-          warn = glue(
-            "{.data$name} -> {.data$version} -> {.data$field} -> {.data$type}"
-          )
-        )
+      invalid <- self$tables |>
+        purrr::imap(\(tab, tab_name) {
+          purrr::map(tab[["columns"]], \(col) {
+            tibble::tibble(name = tab_name, field = col[["raw"]], type = col[["type"]])
+          }) |>
+            dplyr::bind_rows()
+        }) |>
+        dplyr::bind_rows() |>
+        dplyr::filter(!.data$type %in% valid_types) |>
+        dplyr::mutate(warn = glue("{.data$name} -> {.data$field} -> {.data$type}"))
       if (nrow(invalid) > 0) {
         msg1 <- invalid |>
           dplyr::pull("warn") |>
@@ -210,7 +215,7 @@ Config <- R6::R6Class(
         ))
         return(FALSE)
       }
-      return(TRUE)
+      TRUE
     },
     #' @description Get column mapping (raw -> tidy) for a table.
     #' Used for tables with custom parse logic (e.g. csv-nohead-long).
@@ -218,17 +223,17 @@ Config <- R6::R6Class(
     #' Table name.
     #' @param version (`character(1)`)\cr
     #' Version. If NULL, uses the latest version.
-    get_col_map = function(x = NULL, version = NULL) {
+    #' @return (`tibble()`)\cr
+    #' Tibble with columns `raw`, `tidy`, `type`, `description`.
+    get_col_map = function(x, version = NULL) {
       nemo_assert_scalar_chr(x)
-      assertthat::assert_that(
-        x %in% names(self$tables),
-        msg = glue("{x} not found in tables for {self$tool}.")
-      )
+      if (!x %in% names(self$tables)) {
+        stop(glue("{x} not found in tables for {self$tool}."), call. = FALSE)
+      }
+      if (!is.null(version)) {
+        nemo_assert_scalar_chr(version)
+      }
       tbl_rows <- private$schemas_cache |> dplyr::filter(.data$name == x)
-      assertthat::assert_that(
-        nrow(tbl_rows) > 0,
-        msg = glue("No columns defined for table '{x}' in {self$tool} config.")
-      )
       versions <- tbl_rows[["version"]]
       if (is.null(version)) {
         version <- versions[length(versions)]
@@ -244,40 +249,42 @@ Config <- R6::R6Class(
   private = list(
     schemas_raw = NULL,
     schemas_tidy = NULL,
+    schemas_cache = NULL,
     assert_version = function(x, version, versions) {
-      assertthat::assert_that(
-        version %in% versions,
-        msg = glue("{version} not found in versions for {x} in {self$tool}.")
-      )
+      if (!version %in% versions) {
+        stop(glue("{version} not found in versions for {x} in {self$tool}."), call. = FALSE)
+      }
     },
     read = function() {
       pkg_config_path <- system.file("config/tools", package = self$pkg)
-      assertthat::assert_that(
-        dir.exists(pkg_config_path),
-        msg = glue("Config directory not found for package '{self$pkg}': {pkg_config_path}")
-      )
-      tools <- list.files(pkg_config_path, full.names = FALSE)
-      assertthat::assert_that(
-        self$tool %in% tools,
-        msg = glue("No config for {self$tool} under {pkg_config_path}.")
-      )
-      schema_path <- file.path(pkg_config_path, self$tool, "schema.yaml")
-      assertthat::assert_that(
-        file.exists(schema_path),
-        msg = glue("schema.yaml not found for {self$tool} at {schema_path}")
-      )
+      if (!dir.exists(pkg_config_path)) {
+        stop(
+          glue("Config directory not found for package '{self$pkg}': {pkg_config_path}"),
+          call. = FALSE
+        )
+      }
+      tool_path <- file.path(pkg_config_path, self$tool)
+      if (!dir.exists(tool_path)) {
+        stop(glue("No config for {self$tool} under {pkg_config_path}."), call. = FALSE)
+      }
+      schema_path <- file.path(tool_path, "schema.yaml")
+      if (!file.exists(schema_path)) {
+        stop(glue("schema.yaml not found for {self$tool} at {schema_path}"), call. = FALSE)
+      }
       cfg <- yaml::read_yaml(schema_path)
-      assertthat::assert_that(
-        "tables" %in% names(cfg),
-        msg = glue("schema.yaml for {self$tool} is missing the top-level 'tables' key.")
-      )
+      if (!"tables" %in% names(cfg)) {
+        stop(
+          glue("schema.yaml for {self$tool} is missing the top-level 'tables' key."),
+          call. = FALSE
+        )
+      }
       cfg
     },
     get_field_for_table = function(x, key) {
-      assertthat::assert_that(
-        x %in% names(self$tables),
-        msg = glue("{x} not found in tables for {self$tool}.")
-      )
+      nemo_assert_scalar_chr(x)
+      if (!x %in% names(self$tables)) {
+        stop(glue("{x} not found in tables for {self$tool}."), call. = FALSE)
+      }
       self$tables[[x]][[key]]
     },
     get_field_for_all_tables = function(key) {
@@ -286,7 +293,6 @@ Config <- R6::R6Class(
         tibble::enframe(value = key) |>
         tidyr::unnest(dplyr::all_of(key))
     },
-    schemas_cache = NULL,
     compute_schemas = function() {
       .get_one <- function(tab, tab_name) {
         cols_df <- tab[["columns"]] |>
@@ -311,24 +317,24 @@ Config <- R6::R6Class(
         purrr::imap(.get_one) |>
         dplyr::bind_rows()
     },
-    derive_schema = function(cache, which) {
+    derive_schema = function(cache, side) {
       cache |>
         dplyr::mutate(
           schema = purrr::map(
             .data$schema,
-            \(s) dplyr::select(s, field = dplyr::all_of(which), "type")
+            \(s) dplyr::select(s, field = dplyr::all_of(side), "type")
           )
         )
     },
     get_schema = function(x, version, schemas) {
       nemo_assert_scalar_chr(x)
-      assertthat::assert_that(
-        x %in% schemas[["name"]],
-        msg = glue("{x} not found in schemas for {self$tool}.")
-      )
+      if (!x %in% schemas[["name"]]) {
+        stop(glue("{x} not found in schemas for {self$tool}."), call. = FALSE)
+      }
       res <- schemas |>
         dplyr::filter(.data$name == x)
       if (!is.null(version)) {
+        nemo_assert_scalar_chr(version)
         private$assert_version(x, version, res[["version"]])
         res <- res |>
           dplyr::filter(.data$version == .env$version)
@@ -392,9 +398,14 @@ config_prep_raw_schema <- function(path, v = "latest", ...) {
       gsub("[^a-z0-9]+", "_", tolower(gsub("([[:lower:]])([[:upper:]])", "\\1_\\2", s)))
     )
   }
-  path |>
+  raw_types <- path |>
     readr::read_delim(n_max = 100, show_col_types = FALSE, ...) |>
-    purrr::map_chr(class) |>
+    purrr::map_chr(class)
+  unknown <- setdiff(unique(raw_types), names(type_map))
+  if (length(unknown) > 0) {
+    warning(glue("Column types not in type_map will produce NA: {paste(unknown, collapse = ', ')}"))
+  }
+  raw_types |>
     tibble::enframe(name = "raw", value = "type") |>
     dplyr::mutate(
       tidy = .to_snake(.data$raw),
@@ -442,15 +453,8 @@ config_prep_raw_schema <- function(path, v = "latest", ...) {
 config_prep_raw <- function(path, name, descr, pat, type = "txt", v = "latest", ...) {
   schema <- config_prep_raw_schema(path = path, v = v, ...)
   columns <- purrr::pmap(schema, list)
-  list(
-    list(
-      description = descr,
-      pattern = pat,
-      ftype = type,
-      columns = columns
-    )
-  ) |>
-    purrr::set_names(name)
+  entry <- list(description = descr, pattern = pat, ftype = type, columns = columns)
+  setNames(list(entry), name)
 }
 
 #' Prepare config for multiple raw files
@@ -488,7 +492,7 @@ config_prep_multi <- function(x) {
   tables <- purrr::pmap(x, function(name, descr, pat, type, path) {
     config_prep_raw(path = path, name = name, descr = descr, pat = pat, type = type)
   }) |>
-    purrr::flatten()
+    purrr::list_flatten()
   list(tables = tables)
 }
 
