@@ -157,14 +157,7 @@ Workflow <- R6::R6Class(
     #' config.
     #' @return (`tibble()`)\cr
     #' Bound `list_files()` tibbles from all Tools, with a leading `tool` column.
-    list_files = function() {
-      self$tools |>
-        purrr::map(\(x) {
-          x$files |>
-            dplyr::mutate(tool = x$name, .before = 1)
-        }) |>
-        dplyr::bind_rows()
-    },
+    list_files = function() private$gather_tool_field("files"),
     #' @description Tidy Workflow files.
     #' @param do_tidy (`logical(1)`)\cr
     #' Should the raw parsed tibbles get tidied?
@@ -284,16 +277,7 @@ Workflow <- R6::R6Class(
     #' @description Get tidy tibbles for all Tools.
     #' @return (`tibble()`)\cr
     #' Bound `tbls` tibbles from all Tools, with a leading `tool` column.
-    get_tbls = function() {
-      self$tools |>
-        purrr::map(\(x) {
-          if (is.null(x$tbls)) {
-            return(NULL)
-          }
-          x$tbls |> dplyr::mutate(tool = x$name, .before = 1)
-        }) |>
-        dplyr::bind_rows()
-    },
+    get_tbls = function() private$gather_tool_field("tbls"),
     #' @description Get metadata for the workflow run.
     #' @param input_id (`character(1)`)\cr
     #' Input ID to use for the dataset (e.g. `run123`).
@@ -335,6 +319,20 @@ Workflow <- R6::R6Class(
     }
   ), # public end
   private = list(
+    is_tool_subclass = function(cls) {
+      parent <- cls$inherit
+      while (!is.null(parent)) {
+        parent_cls <- tryCatch(get(as.character(parent)), error = function(e) NULL)
+        if (is.null(parent_cls)) {
+          return(FALSE)
+        }
+        if (identical(parent_cls$classname, "Tool")) {
+          return(TRUE)
+        }
+        parent <- parent_cls$inherit
+      }
+      FALSE
+    },
     validate_tools = function(x) {
       assertthat::assert_that(rlang::is_bare_list(x), msg = "`tools` must be a list.")
       assertthat::assert_that(length(x) > 0, msg = "`tools` must not be empty.")
@@ -346,24 +344,21 @@ Workflow <- R6::R6Class(
         all(purrr::map_lgl(x, R6::is.R6Class)),
         msg = "All elements of `tools` must be R6 classes."
       )
-      is_tool_subclass <- function(cls) {
-        parent <- cls$inherit
-        while (!is.null(parent)) {
-          parent_cls <- tryCatch(get(as.character(parent)), error = function(e) NULL)
-          if (is.null(parent_cls)) {
-            return(FALSE)
-          }
-          if (identical(parent_cls$classname, "Tool")) {
-            return(TRUE)
-          }
-          parent <- parent_cls$inherit
-        }
-        FALSE
-      }
       assertthat::assert_that(
-        all(purrr::map_lgl(x, is_tool_subclass)),
+        all(purrr::map_lgl(x, private$is_tool_subclass)),
         msg = "All elements of `tools` must inherit from Tool."
       )
+    },
+    gather_tool_field = function(field) {
+      self$tools |>
+        purrr::map(\(x) {
+          val <- x[[field]]
+          if (is.null(val)) {
+            return(NULL)
+          }
+          val |> dplyr::mutate(tool = x$name, .before = 1)
+        }) |>
+        dplyr::bind_rows()
     },
     gather_tool_schemas = function(method_name) {
       self$tools |>

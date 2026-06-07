@@ -96,8 +96,9 @@ parse_file <- function(fpath, pname, schemas_all, delim = "\t", ...) {
 #' expect_equal(attr(d_v1, "file_version"), "v1.0.0")
 #' @export
 parse_file_nohead <- function(fpath, schema, delim = "\t", ...) {
-  stopifnot(nrow(schema) == 1)
-  stopifnot(is.character(schema$version), is.list(schema$schema))
+  assertthat::assert_that(nrow(schema) == 1, msg = "'schema' must have exactly one row.")
+  nemo_assert_scalar_chr(schema$version)
+  assertthat::assert_that(is.list(schema$schema), msg = "'schema$schema' must be a list.")
   version <- schema[["version"]]
   schema <- schema[["schema"]][[1]] |>
     tibble::deframe()

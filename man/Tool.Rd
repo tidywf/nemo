@@ -612,6 +612,7 @@ Parse, filter, tidy and write files.
   output_id = NULL,
   prefix_include = FALSE,
   dbconn = NULL,
+  write_metadata = TRUE,
   include = NULL,
   exclude = NULL
 )}\if{html}{\out{</div>}}
@@ -637,6 +638,10 @@ If \code{TRUE}, prepend an \code{input_prefix} column to each tidy table.}
 
 \item{\code{dbconn}}{(\code{DBIConnection})\cr
 Database connection object (see \code{DBI::dbConnect}).}
+
+\item{\code{write_metadata}}{(\code{logical(1)})\cr
+If \code{TRUE} (default), write a \verb{metadata_<tool>.parquet} file alongside
+the tidy outputs. Set to \code{FALSE} to suppress.}
 
 \item{\code{include}}{(\code{character(n)})\cr
 tool_parser names to include (e.g. \code{"tool1_table1"}).}

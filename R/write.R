@@ -34,7 +34,6 @@
 #' @export
 nemo_write <- function(d, fpfix = NULL, format = "tsv", dbconn = NULL, dbtab = NULL) {
   stopifnot(is.data.frame(d))
-  valid_out_fmt(format)
   if (format == "db") {
     nemo_assert_not_null(dbconn)
     nemo_assert_not_null(dbtab)

@@ -97,8 +97,8 @@ Path(s) to workflow results.}
 \item{\code{tools}}{(\code{list(n)})\cr
 List of Tools that compose a Workflow.}
 
-\item{\code{metapkg}}{(\code{character(1)})\cr
-Package name used for metadata version reporting.}
+\item{\code{metapkg}}{(\code{character(n)})\cr
+Package name(s) used for metadata version reporting.}
 }
 \if{html}{\out{</div>}}
 }

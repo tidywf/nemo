@@ -84,7 +84,7 @@ Config <- R6::R6Class(
       tool <- tolower(tool)
       self$tool <- tool
       self$pkg <- pkg
-      private$tables <- private$read()[["tables"]]
+      private$tables <- private$read()
       private$check_schemas()
       private$schemas_both <- private$compute_schemas()
       private$schemas_raw <- private$derive_schema(private$schemas_both, "raw")
@@ -292,7 +292,7 @@ Config <- R6::R6Class(
           call. = FALSE
         )
       }
-      cfg
+      cfg[["tables"]]
     },
     get_field_for_table = function(x, key) {
       nemo_assert_scalar_chr(x)
@@ -302,10 +302,8 @@ Config <- R6::R6Class(
       private$tables[[x]][[key]]
     },
     get_field_for_all_tables = function(key) {
-      private$tables |>
-        purrr::map(key) |>
-        tibble::enframe(value = key) |>
-        tidyr::unnest(dplyr::all_of(key))
+      purrr::map_chr(private$tables, key) |>
+        tibble::enframe(name = "name", value = key)
     },
     compute_schema_one = function(tab, tab_name) {
       cols_df <- tab[["columns"]] |>
@@ -508,9 +506,10 @@ config_prep_raw <- function(path, name, descr, pat, type = "txt", v = "latest", 
 #' expect_named(tbl1[["columns"]][[1]], c("raw", "tidy", "type", "description", "versions"))
 #' @export
 config_prep_multi <- function(x) {
-  stopifnot(
-    tibble::is_tibble(x),
-    all(c("name", "descr", "pat", "type", "path") %in% colnames(x))
+  assertthat::assert_that(tibble::is_tibble(x), msg = "'x' must be a tibble.")
+  assertthat::assert_that(
+    all(c("name", "descr", "pat", "type", "path") %in% colnames(x)),
+    msg = "'x' must have columns: name, descr, pat, type, path."
   )
   tables <- purrr::pmap(
     dplyr::select(x, "name", "descr", "pat", "type", "path"),

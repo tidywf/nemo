@@ -133,6 +133,37 @@ Tool <- R6::R6Class(
         prefix = character(),
         group = character()
       )
+    },
+    prepend_id_cols = function(d, tidy_name, prefix, input_id, output_id, prefix_include) {
+      requested <- c(
+        if (!is.null(input_id)) "input_id",
+        if (prefix_include) "input_prefix",
+        if (!is.null(output_id)) "output_id"
+      )
+      conflicts <- intersect(requested, names(d))
+      if (length(conflicts) > 0) {
+        stop(
+          glue(
+            "Tidy table '{tidy_name}' already contains reserved column(s): ",
+            "{glue::glue_collapse(conflicts, sep = ', ')}."
+          ),
+          call. = FALSE
+        )
+      }
+      if (!is.null(input_id)) {
+        d <- tibble::add_column(d, input_id = as.character(input_id))
+      }
+      if (prefix_include) {
+        d <- tibble::add_column(d, input_prefix = as.character(prefix))
+      }
+      if (!is.null(output_id)) {
+        d <- tibble::add_column(d, output_id = as.character(output_id))
+      }
+      new_cols <- intersect(c("input_id", "input_prefix", "output_id"), names(d))
+      if (length(new_cols) > 0) {
+        d <- dplyr::relocate(d, dplyr::all_of(new_cols), .before = 1)
+      }
+      d
     }
   ),
   public = list(
@@ -179,6 +210,11 @@ Tool <- R6::R6Class(
       if (!is.null(files_tbl)) {
         is_files_tbl(files_tbl)
         path <- NULL
+      } else {
+        assertthat::assert_that(
+          dir.exists(path),
+          msg = glue("Path does not exist: {path}")
+        )
       }
       self$name <- name
       self$pkg <- pkg
@@ -196,12 +232,12 @@ Tool <- R6::R6Class(
     #' R6 object invisibly.
     print = function(...) {
       res <- tibble::tribble(
-        ~var      , ~value                           ,
-        "name"    , self$name                        ,
-        "path"    , self$path %||% "<ignored>"       ,
-        "files"   , as.character(nrow(self$files))   ,
-        "tidied"  , as.character(private$is_tidied)  ,
-        "written" , as.character(private$is_written)
+        ~var      , ~value                                    ,
+        "name"    , self$name                                 ,
+        "path"    , self$path %||% "<ignored>"                ,
+        "files"   , as.character(nrow(self$files))            ,
+        "tidied"  , tolower(as.character(private$is_tidied))  ,
+        "written" , tolower(as.character(private$is_written))
       )
       cat(glue("#--- Tool {self$pkg}::{self$name} ---#\n"))
       print(knitr::kable(res))
@@ -573,56 +609,33 @@ Tool <- R6::R6Class(
         ) |>
         tidyr::unnest("tidy", names_sep = "_") |>
         dplyr::rename(tidy_df = "tidy_data") |>
-        dplyr::rowwise() |>
         dplyr::mutate(
-          tidy_data = list({
-            d <- tidy_df
-            requested <- c(
-              if (!is.null(input_id)) "input_id",
-              if (prefix_include) "input_prefix",
-              if (!is.null(output_id)) "output_id"
-            )
-            conflicts <- intersect(requested, names(d))
-            if (length(conflicts) > 0) {
-              stop(
-                glue(
-                  "Tidy table '{tidy_name}' already contains reserved column(s): ",
-                  "{glue::glue_collapse(conflicts, sep = ', ')}."
-                ),
-                call. = FALSE
-              )
-            }
-            if (!is.null(input_id)) {
-              d <- tibble::add_column(d, input_id = as.character(input_id))
-            }
-            if (prefix_include) {
-              d <- tibble::add_column(d, input_prefix = as.character(prefix))
-            }
-            if (!is.null(output_id)) {
-              d <- tibble::add_column(d, output_id = as.character(output_id))
-            }
-            new_cols <- intersect(c("input_id", "input_prefix", "output_id"), names(d))
-            if (length(new_cols) > 0) {
-              d <- dplyr::relocate(d, dplyr::all_of(new_cols), .before = 1)
-            }
-            d
-          }),
-          # handle sub-tbls
           tbl_name = dplyr::if_else(
             .data$parser == .data$tidy_name,
             .data$tool_parser,
             paste0(.data$tool_parser, .data$tidy_name)
           ),
-          # used to write when non-db format
-          fpfix = paste(file.path(output_dir, .data$prefix), .data$tbl_name, sep = "_"),
-          dbtab = list(if (format == "db") .data$tbl_name else NULL),
+          fpfix = paste(file.path(output_dir, .data$prefix), .data$tbl_name, sep = "_")
+        ) |>
+        dplyr::rowwise() |>
+        dplyr::mutate(
+          tidy_data = list(
+            private$prepend_id_cols(
+              tidy_df,
+              .data$tidy_name,
+              .data$prefix,
+              input_id,
+              output_id,
+              prefix_include
+            )
+          ),
           out = list(
             nemo_write(
               d = .data$tidy_data,
               fpfix = .data$fpfix,
               format = format,
               dbconn = dbconn,
-              dbtab = .data$dbtab
+              dbtab = if (format == "db") .data$tbl_name else NULL
             )
           ),
           outpath = attr(out, "outpath")
@@ -706,6 +719,9 @@ Tool <- R6::R6Class(
     #' If `TRUE`, prepend an `input_prefix` column to each tidy table.
     #' @param dbconn (`DBIConnection`)\cr
     #' Database connection object (see `DBI::dbConnect`).
+    #' @param write_metadata (`logical(1)`)\cr
+    #' If `TRUE` (default), write a `metadata_<tool>.parquet` file alongside
+    #' the tidy outputs. Set to `FALSE` to suppress.
     #' @param include (`character(n)`)\cr
     #' tool_parser names to include (e.g. `"tool1_table1"`).
     #' @param exclude (`character(n)`)\cr
@@ -719,6 +735,7 @@ Tool <- R6::R6Class(
       output_id = NULL,
       prefix_include = FALSE,
       dbconn = NULL,
+      write_metadata = TRUE,
       include = NULL,
       exclude = NULL
     ) {
@@ -732,7 +749,8 @@ Tool <- R6::R6Class(
           input_id = input_id,
           output_id = output_id,
           prefix_include = prefix_include,
-          dbconn = dbconn
+          dbconn = dbconn,
+          write_metadata = write_metadata
       )
     }
   ) # public end
