@@ -543,7 +543,7 @@ Format of output.}
 Input ID to use for the dataset (e.g. \code{run123}).}
 
 \item{\code{output_id}}{(\code{character(1)})\cr
-Output ID to use for the dataset (e.g. \code{run123}).}
+Output ID to use for the dataset (e.g. \code{out1}).}
 
 \item{\code{prefix_include}}{(\code{logical(1)})\cr
 If \code{TRUE}, prepend an \code{input_prefix} column to each tidy table.}
@@ -580,7 +580,7 @@ Get metadata for the tool run.
 Input ID to use for the dataset (e.g. \code{run123}).}
 
 \item{\code{output_id}}{(\code{character(1)})\cr
-Output ID to use for the dataset (e.g. \code{run123}).}
+Output ID to use for the dataset (e.g. \code{out1}).}
 
 \item{\code{output_dir}}{(\code{character(1)})\cr
 Output directory.}
@@ -628,7 +628,7 @@ Format of output.}
 Input ID to use for the dataset (e.g. \code{run123}).}
 
 \item{\code{output_id}}{(\code{character(1)})\cr
-Output ID to use for the dataset (e.g. \code{run123}).}
+Output ID to use for the dataset (e.g. \code{out1}).}
 
 \item{\code{prefix_include}}{(\code{logical(1)})\cr
 If \code{TRUE}, prepend an \code{input_prefix} column to each tidy table.}

@@ -112,13 +112,13 @@ Workflow <- R6::R6Class(
     #' R6 object invisibly.
     print = function(...) {
       res <- tibble::tribble(
-        ~var         , ~value                                                            ,
-        "name"       , self$name                                                         ,
-        "path"       , glue::glue_collapse(self$path, sep = ", ")                        ,
-        "ntools"     , as.character(length(self$tools))                                  ,
-        "nfiles_tot" , as.character(nrow(private$files_tbl))                             ,
-        "nfiles_pat" , as.character(sum(purrr::map_int(self$tools, \(x) nrow(x$files)))) ,
-        "tidied"     , tolower(as.character(private$is_tidied))                          ,
+        ~var         , ~value                                     ,
+        "name"       , self$name                                  ,
+        "path"       , glue::glue_collapse(self$path, sep = ", ") ,
+        "ntools"     , as.character(length(self$tools))           ,
+        "nfiles_tot" , as.character(nrow(private$files_tbl))      ,
+        "nfiles_pat" , as.character(nrow(self$list_files()))      ,
+        "tidied"     , tolower(as.character(private$is_tidied))   ,
         "written"    , tolower(as.character(private$is_written))
       )
       cat(glue("#--- Workflow {self$name} ---#\n"))
@@ -149,7 +149,9 @@ Workflow <- R6::R6Class(
         known <- unique(x$files$tool_parser)
         tool_include <- if (!is.null(include)) include[include %in% known] else NULL
         tool_exclude <- if (!is.null(exclude)) exclude[exclude %in% known] else NULL
-        x$filter_files(include = tool_include, exclude = tool_exclude)
+        if (!is.null(tool_include) || !is.null(tool_exclude)) {
+          x$filter_files(include = tool_include, exclude = tool_exclude)
+        }
       })
       invisible(self)
     },
@@ -180,7 +182,7 @@ Workflow <- R6::R6Class(
     #' @param input_id (`character(1)`)\cr
     #' Input ID to use for the dataset (e.g. `run123`).
     #' @param output_id (`character(1)`)\cr
-    #' Output ID to use for the dataset (e.g. `run123`).
+    #' Output ID to use for the dataset (e.g. `out1`).
     #' @param prefix_include (`logical(1)`)\cr
     #' If `TRUE`, prepend an `input_prefix` column to each tidy table.
     #' @param dbconn (`DBIConnection`)\cr
@@ -202,8 +204,7 @@ Workflow <- R6::R6Class(
       valid_out_fmt(format)
       assertthat::assert_that(private$is_tidied, msg = "Did you forget to tidy?")
       if (format != "db") {
-        fs::dir_create(output_dir)
-        output_dir <- normalizePath(output_dir)
+        output_dir <- normalizePath(output_dir, mustWork = FALSE)
       }
       res <- self$tools |>
         purrr::map(\(x) {
@@ -219,9 +220,10 @@ Workflow <- R6::R6Class(
           x$written_files
         }) |>
         dplyr::bind_rows()
-      self$written_files <- if (nrow(res) > 0) res else NULL
-      private$is_written <- nrow(res) > 0
-      if (write_metadata && format != "db" && nrow(res) > 0) {
+      has_output <- nrow(res) > 0
+      self$written_files <- if (has_output) res else NULL
+      private$is_written <- has_output
+      if (write_metadata && format != "db" && has_output) {
         meta <- self$get_metadata(
           input_id = input_id,
           output_id = output_id,
@@ -239,17 +241,17 @@ Workflow <- R6::R6Class(
     #' @param input_id (`character(1)`)\cr
     #' Input ID to use for the dataset (e.g. `run123`).
     #' @param output_id (`character(1)`)\cr
-    #' Output ID to use for the dataset (e.g. `run123`).
+    #' Output ID to use for the dataset (e.g. `out1`).
     #' @param prefix_include (`logical(1)`)\cr
     #' If `TRUE`, prepend an `input_prefix` column to each tidy table.
     #' @param dbconn (`DBIConnection`)\cr
     #' Database connection object (see `DBI::dbConnect`).
+    #' @param write_metadata (`logical(1)`)\cr
+    #' If `TRUE` (default), write a `metadata.parquet` file. Set to `FALSE` to suppress.
     #' @param include (`character(n)`)\cr
     #' tool_parser names to include (e.g. `"tool1_table1"`).
     #' @param exclude (`character(n)`)\cr
     #' tool_parser names to exclude (e.g. `"tool1_table5"`).
-    #' @param write_metadata (`logical(1)`)\cr
-    #' If `TRUE` (default), write a `metadata.parquet` file. Set to `FALSE` to suppress.
     #' @return (`R6::R6Class()`)\cr
     #' R6 object invisibly.
     wrangle = function(
@@ -259,9 +261,9 @@ Workflow <- R6::R6Class(
       output_id = NULL,
       prefix_include = FALSE,
       dbconn = NULL,
+      write_metadata = TRUE,
       include = NULL,
-      exclude = NULL,
-      write_metadata = TRUE
+      exclude = NULL
     ) {
       # fmt: skip
       self$filter_files(include = include, exclude = exclude)$
@@ -292,7 +294,7 @@ Workflow <- R6::R6Class(
     #' @param input_id (`character(1)`)\cr
     #' Input ID to use for the dataset (e.g. `run123`).
     #' @param output_id (`character(1)`)\cr
-    #' Output ID to use for the dataset (e.g. `run123`).
+    #' Output ID to use for the dataset (e.g. `out1`).
     #' @param output_dir (`character(1)`)\cr
     #' Output directory.
     #' @param pkgs (`character(n)`)\cr
@@ -371,15 +373,6 @@ Workflow <- R6::R6Class(
         dplyr::bind_rows()
     },
     gather_tool_schemas = function(method_name) {
-      valid_methods <- c("get_schemas_raw", "get_schemas_tidy")
-      if (!method_name %in% valid_methods) {
-        stop(
-          glue(
-            "Invalid method_name '{method_name}'. Must be one of: {glue::glue_collapse(valid_methods, sep = ', ')}."
-          ),
-          call. = FALSE
-        )
-      }
       self$tools |>
         purrr::map(\(x) {
           x$config[[method_name]]() |>

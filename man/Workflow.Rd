@@ -221,7 +221,7 @@ Format of output.}
 Input ID to use for the dataset (e.g. \code{run123}).}
 
 \item{\code{output_id}}{(\code{character(1)})\cr
-Output ID to use for the dataset (e.g. \code{run123}).}
+Output ID to use for the dataset (e.g. \code{out1}).}
 
 \item{\code{prefix_include}}{(\code{logical(1)})\cr
 If \code{TRUE}, prepend an \code{input_prefix} column to each tidy table.}
@@ -253,9 +253,9 @@ Parse, filter, tidy and write files.
   output_id = NULL,
   prefix_include = FALSE,
   dbconn = NULL,
+  write_metadata = TRUE,
   include = NULL,
-  exclude = NULL,
-  write_metadata = TRUE
+  exclude = NULL
 )}\if{html}{\out{</div>}}
 }
 
@@ -272,7 +272,7 @@ Format of output.}
 Input ID to use for the dataset (e.g. \code{run123}).}
 
 \item{\code{output_id}}{(\code{character(1)})\cr
-Output ID to use for the dataset (e.g. \code{run123}).}
+Output ID to use for the dataset (e.g. \code{out1}).}
 
 \item{\code{prefix_include}}{(\code{logical(1)})\cr
 If \code{TRUE}, prepend an \code{input_prefix} column to each tidy table.}
@@ -280,14 +280,14 @@ If \code{TRUE}, prepend an \code{input_prefix} column to each tidy table.}
 \item{\code{dbconn}}{(\code{DBIConnection})\cr
 Database connection object (see \code{DBI::dbConnect}).}
 
+\item{\code{write_metadata}}{(\code{logical(1)})\cr
+If \code{TRUE} (default), write a \code{metadata.parquet} file. Set to \code{FALSE} to suppress.}
+
 \item{\code{include}}{(\code{character(n)})\cr
 tool_parser names to include (e.g. \code{"tool1_table1"}).}
 
 \item{\code{exclude}}{(\code{character(n)})\cr
 tool_parser names to exclude (e.g. \code{"tool1_table5"}).}
-
-\item{\code{write_metadata}}{(\code{logical(1)})\cr
-If \code{TRUE} (default), write a \code{metadata.parquet} file. Set to \code{FALSE} to suppress.}
 }
 \if{html}{\out{</div>}}
 }
@@ -354,7 +354,7 @@ Get metadata for the workflow run.
 Input ID to use for the dataset (e.g. \code{run123}).}
 
 \item{\code{output_id}}{(\code{character(1)})\cr
-Output ID to use for the dataset (e.g. \code{run123}).}
+Output ID to use for the dataset (e.g. \code{out1}).}
 
 \item{\code{output_dir}}{(\code{character(1)})\cr
 Output directory.}

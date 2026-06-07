@@ -110,7 +110,6 @@ Tool1 <- R6::R6Class(
       version <- get_tbl_version_attr(x)
       col_map <- self$get_col_map("table5", version = version)
       raw_to_tidy <- col_map |> dplyr::select("raw", "tidy") |> tibble::deframe()
-      # reserved for post-pivot type coercion once table5 has non-float schema columns
       raw_to_type <- col_map |> dplyr::select("tidy", "type") |> tibble::deframe()
       d_count <- x |>
         dplyr::filter(.data$variable %in% names(raw_to_tidy)) |>

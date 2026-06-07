@@ -133,12 +133,15 @@ Tool <- R6::R6Class(
       )
     },
     prepend_id_cols = function(d, tidy_name, prefix, input_id, output_id, prefix_include) {
-      requested <- c(
-        if (!is.null(input_id)) "input_id",
-        if (prefix_include) "input_prefix",
-        if (!is.null(output_id)) "output_id"
+      new_cols <- c(
+        if (!is.null(input_id)) list(input_id = as.character(input_id)),
+        if (prefix_include) list(input_prefix = as.character(prefix)),
+        if (!is.null(output_id)) list(output_id = as.character(output_id))
       )
-      conflicts <- intersect(requested, names(d))
+      if (length(new_cols) == 0) {
+        return(d)
+      }
+      conflicts <- intersect(names(new_cols), names(d))
       if (length(conflicts) > 0) {
         stop(
           glue(
@@ -148,19 +151,11 @@ Tool <- R6::R6Class(
           call. = FALSE
         )
       }
-      if (!is.null(input_id)) {
-        d <- tibble::add_column(d, input_id = as.character(input_id))
-      }
-      if (prefix_include) {
-        d <- tibble::add_column(d, input_prefix = as.character(prefix))
-      }
-      if (!is.null(output_id)) {
-        d <- tibble::add_column(d, output_id = as.character(output_id))
-      }
-      if (length(requested) > 0) {
-        d <- dplyr::relocate(d, dplyr::all_of(requested), .before = 1)
-      }
-      d
+      dplyr::relocate(
+        dplyr::mutate(d, !!!new_cols),
+        dplyr::all_of(names(new_cols)),
+        .before = 1
+      )
     }
   ),
   public = list(
@@ -252,6 +247,13 @@ Tool <- R6::R6Class(
         msg = "Cannot filter files after tidy() has been called."
       )
       if (nrow(self$files) == 0) {
+        known <- paste0(self$name, "_", self$config$get_patterns()$name)
+        if (!is.null(include)) {
+          check_unknown_parsers(include, known, "include")
+        }
+        if (!is.null(exclude)) {
+          check_unknown_parsers(exclude, known, "exclude")
+        }
         return(invisible(self))
       }
       if (!is.null(include)) {
@@ -552,7 +554,7 @@ Tool <- R6::R6Class(
     #' @param input_id (`character(1)`)\cr
     #' Input ID to use for the dataset (e.g. `run123`).
     #' @param output_id (`character(1)`)\cr
-    #' Output ID to use for the dataset (e.g. `run123`).
+    #' Output ID to use for the dataset (e.g. `out1`).
     #' @param prefix_include (`logical(1)`)\cr
     #' If `TRUE`, prepend an `input_prefix` column to each tidy table.
     #' @param dbconn (`DBIConnection`)\cr
@@ -596,7 +598,6 @@ Tool <- R6::R6Class(
           "tidy"
         ) |>
         tidyr::unnest("tidy", names_sep = "_") |>
-        dplyr::rename(tidy_unnested = "tidy_data") |>
         dplyr::mutate(
           tbl_name = dplyr::if_else(
             .data$parser == .data$tidy_name,
@@ -609,7 +610,7 @@ Tool <- R6::R6Class(
         dplyr::mutate(
           tidy_data = list(
             private$prepend_id_cols(
-              tidy_unnested,
+              tidy_data,
               .data$tidy_name,
               .data$prefix,
               input_id,
@@ -663,7 +664,7 @@ Tool <- R6::R6Class(
     #' @param input_id (`character(1)`)\cr
     #' Input ID to use for the dataset (e.g. `run123`).
     #' @param output_id (`character(1)`)\cr
-    #' Output ID to use for the dataset (e.g. `run123`).
+    #' Output ID to use for the dataset (e.g. `out1`).
     #' @param output_dir (`character(1)`)\cr
     #' Output directory.
     #' @param pkgs (`character(n)`)\cr
@@ -702,7 +703,7 @@ Tool <- R6::R6Class(
     #' @param input_id (`character(1)`)\cr
     #' Input ID to use for the dataset (e.g. `run123`).
     #' @param output_id (`character(1)`)\cr
-    #' Output ID to use for the dataset (e.g. `run123`).
+    #' Output ID to use for the dataset (e.g. `out1`).
     #' @param prefix_include (`logical(1)`)\cr
     #' If `TRUE`, prepend an `input_prefix` column to each tidy table.
     #' @param dbconn (`DBIConnection`)\cr
