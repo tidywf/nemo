@@ -47,3 +47,15 @@ assert_include_exclude <- function(include, exclude) {
     msg = "You cannot define both include and exclude."
   )
 }
+
+check_unknown_parsers <- function(parsers, known, label) {
+  unknown <- parsers[!parsers %in% known]
+  if (length(unknown) > 0) {
+    stop(
+      glue(
+        "filter_files: unknown tool_parser(s) in {label}: {glue::glue_collapse(unknown, sep = ', ')}."
+      ),
+      call. = FALSE
+    )
+  }
+}

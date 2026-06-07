@@ -193,29 +193,12 @@ Config <- R6::R6Class(
     #' @return (`logical(1)`)\cr
     #' `TRUE` if all field types are valid, `FALSE` otherwise.
     validate_schemas = function() {
-      valid_types <- names(.schema_type_map)
-      valid_types_print <- glue::glue_collapse(valid_types, sep = ", ", last = " or ")
-      invalid <- private$tables |>
-        purrr::imap(\(tab, tab_name) {
-          purrr::map(tab[["columns"]], \(col) {
-            tibble::tibble(name = tab_name, field = col[["raw"]], type = col[["type"]])
-          })
-        }) |>
-        purrr::list_flatten() |>
-        dplyr::bind_rows() |>
-        dplyr::filter(!.data$type %in% valid_types) |>
-        dplyr::mutate(warn = glue("{.data$name} -> {.data$field} -> {.data$type}"))
-      if (nrow(invalid) > 0) {
-        msg1 <- invalid |>
-          dplyr::pull("warn") |>
-          glue::glue_collapse(sep = "; ")
-        warning(glue(
-          "Field types need to be one of: {valid_types_print}\n",
-          "Check the following in the {self$tool} config:\n{msg1}"
-        ))
-        return(FALSE)
+      invalid <- private$collect_invalid_schema_types()
+      if (nrow(invalid) == 0) {
+        return(TRUE)
       }
-      TRUE
+      warning(private$format_invalid_types_msg(invalid))
+      FALSE
     },
     #' @description Get column mapping (raw -> tidy) for a table.
     #' Used for tables with custom parse logic (e.g. csv-nohead-long).
@@ -252,10 +235,8 @@ Config <- R6::R6Class(
     schemas_raw = NULL,
     schemas_tidy = NULL,
     schemas_both = NULL,
-    check_schemas = function() {
-      valid_types <- names(.schema_type_map)
-      valid_types_print <- glue::glue_collapse(valid_types, sep = ", ", last = " or ")
-      invalid <- private$tables |>
+    collect_invalid_schema_types = function() {
+      private$tables |>
         purrr::imap(\(tab, tab_name) {
           purrr::map(tab[["columns"]], \(col) {
             tibble::tibble(name = tab_name, field = col[["raw"]], type = col[["type"]])
@@ -263,21 +244,25 @@ Config <- R6::R6Class(
         }) |>
         purrr::list_flatten() |>
         dplyr::bind_rows() |>
-        dplyr::filter(!.data$type %in% valid_types) |>
-        dplyr::mutate(msg = glue("{.data$name} -> {.data$field} -> {.data$type}"))
-      if (nrow(invalid) > 0) {
-        msg1 <- invalid |>
-          dplyr::pull("msg") |>
-          glue::glue_collapse(sep = "; ")
-        stop(
-          glue(
-            "Field types need to be one of: {valid_types_print}\n",
-            "Check the following in the {self$tool} config:\n{msg1}"
-          ),
-          call. = FALSE
-        )
+        dplyr::filter(!.data$type %in% names(.schema_type_map))
+    },
+    format_invalid_types_msg = function(invalid) {
+      valid_types_print <- glue::glue_collapse(names(.schema_type_map), sep = ", ", last = " or ")
+      entries <- invalid |>
+        dplyr::mutate(entry = glue("{.data$name} -> {.data$field} -> {.data$type}")) |>
+        dplyr::pull("entry") |>
+        glue::glue_collapse(sep = "; ")
+      glue(
+        "Field types need to be one of: {valid_types_print}\n",
+        "Check the following in the {self$tool} config:\n{entries}"
+      )
+    },
+    check_schemas = function() {
+      invalid <- private$collect_invalid_schema_types()
+      if (nrow(invalid) == 0) {
+        return(invisible(NULL))
       }
-      invisible(NULL)
+      stop(private$format_invalid_types_msg(invalid), call. = FALSE)
     },
     assert_version = function(x, version, versions) {
       if (!version %in% versions) {

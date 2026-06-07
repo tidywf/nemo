@@ -70,9 +70,6 @@ Workflow <- R6::R6Class(
     #' @field tools (`list(n)`)\cr
     #' List of Tools that compose a Workflow.
     tools = NULL,
-    #' @field files_tbl (`tibble(n)`)\cr
-    #' Tibble of files from [list_files_dir()].
-    files_tbl = NULL,
     #' @field metapkg (`character(n)`)\cr
     #' Package name(s) used for metadata version reporting.
     metapkg = NULL,
@@ -107,10 +104,10 @@ Workflow <- R6::R6Class(
       private$is_tidied <- FALSE
       private$is_written <- FALSE
       self$path <- normalizePath(path)
-      self$files_tbl <- list_files_dir(self$path)
+      private$files_tbl <- list_files_dir(self$path)
       # handle everything in a list of Tools
       self$tools <- tools |>
-        purrr::map(\(x) x$new(files_tbl = self$files_tbl))
+        purrr::map(\(x) x$new(files_tbl = private$files_tbl))
     },
     #' @description Print details about the Workflow.
     #' @param ... (ignored).
@@ -118,13 +115,13 @@ Workflow <- R6::R6Class(
     #' R6 object invisibly.
     print = function(...) {
       res <- tibble::tribble(
-        ~var         , ~value                                     ,
-        "name"       , self$name                                  ,
-        "path"       , glue::glue_collapse(self$path, sep = ", ") ,
-        "ntools"     , as.character(length(self$tools))           ,
-        "nfiles_tot" , as.character(nrow(self$files_tbl))         ,
-        "nfiles_pat" , as.character(nrow(self$list_files()))      ,
-        "tidied"     , tolower(as.character(private$is_tidied))   ,
+        ~var         , ~value                                                            ,
+        "name"       , self$name                                                         ,
+        "path"       , glue::glue_collapse(self$path, sep = ", ")                        ,
+        "ntools"     , as.character(length(self$tools))                                  ,
+        "nfiles_tot" , as.character(nrow(private$files_tbl))                             ,
+        "nfiles_pat" , as.character(sum(purrr::map_int(self$tools, \(x) nrow(x$files)))) ,
+        "tidied"     , tolower(as.character(private$is_tidied))                          ,
         "written"    , tolower(as.character(private$is_written))
       )
       cat(glue("#--- Workflow {self$name} ---#\n"))
@@ -143,22 +140,10 @@ Workflow <- R6::R6Class(
       known_per_tool <- purrr::map(self$tools, \(x) unique(x$files$tool_parser))
       all_parsers <- unlist(known_per_tool)
       if (!is.null(include)) {
-        unknown <- include[!include %in% all_parsers]
-        assertthat::assert_that(
-          length(unknown) == 0,
-          msg = glue(
-            "filter_files: unknown tool_parser(s) in include: {glue::glue_collapse(unknown, sep = ', ')}."
-          )
-        )
+        check_unknown_parsers(include, all_parsers, "include")
       }
       if (!is.null(exclude)) {
-        unknown <- exclude[!exclude %in% all_parsers]
-        assertthat::assert_that(
-          length(unknown) == 0,
-          msg = glue(
-            "filter_files: unknown tool_parser(s) in exclude: {glue::glue_collapse(unknown, sep = ', ')}."
-          )
-        )
+        check_unknown_parsers(exclude, all_parsers, "exclude")
       }
       purrr::walk2(self$tools, known_per_tool, \(x, known) {
         tool_include <- if (!is.null(include)) include[include %in% known] else NULL
@@ -219,8 +204,7 @@ Workflow <- R6::R6Class(
       prefix_include = FALSE,
       dbconn = NULL
     ) {
-      valid_out_fmt(format)
-      stopifnot("Did you forget to tidy?" = private$is_tidied)
+      assertthat::assert_that(private$is_tidied, msg = "Did you forget to tidy?")
       res <- self$tools |>
         purrr::map(\(x) {
           x$write(
@@ -335,7 +319,7 @@ Workflow <- R6::R6Class(
           dplyr::mutate(dplyr::across(dplyr::where(is.character), as.character))
       } else {
         # just select raw path and size
-        files <- self$files_tbl |>
+        files <- private$files_tbl |>
           dplyr::select(fin = "path", "size") |>
           dplyr::mutate(size = as.numeric(.data$size))
       }
@@ -364,12 +348,12 @@ Workflow <- R6::R6Class(
       is_tool_subclass <- function(cls) {
         parent <- cls$inherit
         while (!is.null(parent)) {
-          if (as.character(parent) == "Tool") {
-            return(TRUE)
-          }
           parent_cls <- tryCatch(get(as.character(parent)), error = function(e) NULL)
           if (is.null(parent_cls)) {
             return(FALSE)
+          }
+          if (identical(parent_cls$classname, "Tool")) {
+            return(TRUE)
           }
           parent <- parent_cls$inherit
         }
@@ -392,6 +376,7 @@ Workflow <- R6::R6Class(
     # Do files need to be tidied? Used when no files are detected, so we can
     # use downstream as a bypass.
     is_tidied = NULL,
-    is_written = NULL
+    is_written = NULL,
+    files_tbl = NULL
   ) # private end
 )

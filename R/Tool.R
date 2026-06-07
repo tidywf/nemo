@@ -120,7 +120,20 @@ Tool <- R6::R6Class(
     # use downstream as a bypass.
     is_tidied = NULL,
     is_written = NULL,
-    files_tbl = NULL
+    files_tbl = NULL,
+    empty_files_tbl = function() {
+      tibble::tibble(
+        tool_parser = character(),
+        parser = character(),
+        bname = character(),
+        size = fs::fs_bytes(),
+        lastmodified = as.POSIXct(character()),
+        path = character(),
+        pattern = character(),
+        prefix = character(),
+        group = character()
+      )
+    }
   ),
   public = list(
     #' @field name (`character(1)`)\cr
@@ -213,25 +226,13 @@ Tool <- R6::R6Class(
       }
       if (!is.null(include)) {
         nemo_assert_chr(include)
-        unknown <- include[!include %in% self$files$tool_parser]
-        assertthat::assert_that(
-          length(unknown) == 0,
-          msg = glue(
-            "filter_files: unknown tool_parser(s) in include: {glue::glue_collapse(unknown, sep = ', ')}."
-          )
-        )
+        check_unknown_parsers(include, self$files$tool_parser, "include")
         self$files <- self$files |>
           dplyr::filter(.data$tool_parser %in% include)
       }
       if (!is.null(exclude)) {
         nemo_assert_chr(exclude)
-        unknown <- exclude[!exclude %in% self$files$tool_parser]
-        assertthat::assert_that(
-          length(unknown) == 0,
-          msg = glue(
-            "filter_files: unknown tool_parser(s) in exclude: {glue::glue_collapse(unknown, sep = ', ')}."
-          )
-        )
+        check_unknown_parsers(exclude, self$files$tool_parser, "exclude")
         self$files <- self$files |>
           dplyr::filter(!(.data$tool_parser %in% exclude))
       }
@@ -270,19 +271,7 @@ Tool <- R6::R6Class(
       }) |>
         dplyr::bind_rows()
       if (nrow(res) == 0) {
-        return(
-          tibble::tibble(
-            tool_parser = character(),
-            parser = character(),
-            bname = character(),
-            size = fs::fs_bytes(),
-            lastmodified = as.POSIXct(character()),
-            path = character(),
-            pattern = character(),
-            prefix = character(),
-            group = character()
-          )
-        )
+        return(private$empty_files_tbl())
       }
       res <- res |>
         dplyr::select("parser", "bname", "size", "lastmodified", "path", "pattern")
@@ -563,7 +552,7 @@ Tool <- R6::R6Class(
         fs::dir_create(output_dir)
         output_dir <- normalizePath(output_dir)
       }
-      stopifnot("Did you forget to tidy?" = private$is_tidied)
+      assertthat::assert_that(private$is_tidied, msg = "Did you forget to tidy?")
       if (is.null(self$tbls)) {
         self$written_files <- NULL
         return(invisible(self))
@@ -583,14 +572,33 @@ Tool <- R6::R6Class(
         dplyr::mutate(
           tidy_data = list({
             d <- tidy_df
-            if (!is.null(output_id)) {
-              d <- tibble::add_column(d, output_id = as.character(output_id), .before = 1)
-            }
-            if (prefix_include) {
-              d <- tibble::add_column(d, input_prefix = as.character(prefix), .before = 1)
+            requested <- c(
+              if (!is.null(input_id)) "input_id",
+              if (prefix_include) "input_prefix",
+              if (!is.null(output_id)) "output_id"
+            )
+            conflicts <- intersect(requested, names(d))
+            if (length(conflicts) > 0) {
+              stop(
+                glue(
+                  "Tidy table '{tidy_name}' already contains reserved column(s): ",
+                  "{glue::glue_collapse(conflicts, sep = ', ')}."
+                ),
+                call. = FALSE
+              )
             }
             if (!is.null(input_id)) {
-              d <- tibble::add_column(d, input_id = as.character(input_id), .before = 1)
+              d <- tibble::add_column(d, input_id = as.character(input_id))
+            }
+            if (prefix_include) {
+              d <- tibble::add_column(d, input_prefix = as.character(prefix))
+            }
+            if (!is.null(output_id)) {
+              d <- tibble::add_column(d, output_id = as.character(output_id))
+            }
+            new_cols <- intersect(c("input_id", "input_prefix", "output_id"), names(d))
+            if (length(new_cols) > 0) {
+              d <- dplyr::relocate(d, dplyr::all_of(new_cols), .before = 1)
             }
             d
           }),
