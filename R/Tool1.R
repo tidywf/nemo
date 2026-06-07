@@ -16,7 +16,7 @@
 #' (raw5 <- obj1$parse_table5(p5))
 #' (tidy5 <- obj1$tidy_table5(p5))
 #'
-#' obj1$wrangle(output_dir = dir1, format = "parquet", input_id = "run1")
+#' obj1$run(output_dir = dir1, format = "parquet", input_id = "run1")
 #' (lf <- list.files(dir1, pattern = "tool1.*parquet", full.names = FALSE))
 #'
 #' obj2 <- Tool1$new(indir)$tidy()
@@ -66,8 +66,7 @@ Tool1 <- R6::R6Class(
   public = list(
     #' @description Create a new Tool1 object.
     #' @param path (`character(1)`)\cr
-    #' Output directory of tool. If `files_tbl` is supplied, this basically gets
-    #' ignored.
+    #' Output directory of tool. If `files_tbl` is supplied, this is ignored.
     #' @param files_tbl (`tibble(n)`)\cr
     #' Tibble of files from [list_files_dir()].
     #' @return (`R6::R6Class()`)\cr
@@ -81,7 +80,7 @@ Tool1 <- R6::R6Class(
     #' @return (`tibble()`)\cr
     #' Tidy data in enframed tibble.
     tidy_table3 = function(x) {
-      self$.tidy_file(x, "table3", convert_types = TRUE)
+      private$tidy_file(x, "table3", convert_types = TRUE)
     },
     #' @description Read `table5.csv` file (csv, no header, long format).
     #' @param x (`character(1)`)\cr
@@ -108,7 +107,7 @@ Tool1 <- R6::R6Class(
         x <- self$parse_table5(x)
       }
       version <- get_tbl_version_attr(x)
-      col_map <- self$get_col_map("table5", version = version)
+      col_map <- self$config$get_col_map("table5", version = version)
       raw_to_tidy <- col_map |> dplyr::select("raw", "tidy") |> tibble::deframe()
       raw_to_type <- col_map |> dplyr::select("tidy", "type") |> tibble::deframe()
       d_count <- x |>

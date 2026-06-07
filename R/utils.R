@@ -102,7 +102,7 @@ empty_tbl <- function(cnames, ctypes = readr::cols(.default = "c")) {
   d[]
 }
 
-is_files_tbl <- function(x) {
+assert_files_tbl <- function(x) {
   assertthat::assert_that(
     tibble::is_tibble(x),
     msg = "'files_tbl' must be a tibble."

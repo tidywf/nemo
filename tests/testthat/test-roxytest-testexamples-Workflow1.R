@@ -8,7 +8,7 @@ test_that("Function Workflow1() @ L22", {
   wf <- Workflow1$new(path)
   (lf_all <- wf$list_files())
   dir1 <- tempdir()
-  wf$wrangle(output_dir = dir1, format = "parquet", input_id = "run1")
+  wf$run(output_dir = dir1, format = "parquet", input_id = "run1")
   (lf <- list.files(dir1, pattern = "tool1.*parquet", full.names = TRUE))
   # initialize
   expect_equal(length(wf$tools), 1)

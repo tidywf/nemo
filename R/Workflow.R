@@ -12,7 +12,7 @@
 #' - has a tibble of written output files, populated after `write()` (`written_files`);
 #'
 #' The typical workflow is: optionally filter with `filter_files()`, tidy with
-#' `tidy()`, then write with `write()`. `wrangle()` chains all three steps.
+#' `tidy()`, then write with `write()`. `run()` chains all three steps.
 #'
 #' @examples
 #' fs::path(tempdir(), letters[1:5]) |>
@@ -31,7 +31,7 @@
 #' (lf1 <- list.files(dir1, pattern = "tool1.*parquet", full.names = TRUE))
 #' (meta <- wf$get_metadata(input_id = "run1", output_id = "out1", output_dir = dir1))
 #' wf2 <- Workflow$new(name = "wf2", path = path, tools = tools)
-#' wf2$wrangle(output_dir = dir2, format = "parquet", input_id = "run2")
+#' wf2$run(output_dir = dir2, format = "parquet", input_id = "run2")
 #' (lf2 <- list.files(dir2, pattern = "tool1.*parquet", full.names = TRUE))
 #' @testexamples
 #' # list_files
@@ -112,14 +112,14 @@ Workflow <- R6::R6Class(
     #' R6 object invisibly.
     print = function(...) {
       res <- tibble::tribble(
-        ~var         , ~value                                     ,
-        "name"       , self$name                                  ,
-        "path"       , glue::glue_collapse(self$path, sep = ", ") ,
-        "ntools"     , as.character(length(self$tools))           ,
-        "nfiles_tot" , as.character(nrow(private$files_tbl))      ,
-        "nfiles_pat" , as.character(nrow(self$list_files()))      ,
-        "tidied"     , tolower(as.character(private$is_tidied))   ,
-        "written"    , tolower(as.character(private$is_written))
+        ~var            , ~value                                     ,
+        "name"          , self$name                                  ,
+        "path"          , glue::glue_collapse(self$path, sep = ", ") ,
+        "ntools"        , as.character(length(self$tools))           ,
+        "files_total"   , as.character(nrow(private$files_tbl))      ,
+        "files_matched" , as.character(nrow(self$list_files()))      ,
+        "tidied"        , tolower(as.character(private$is_tidied))   ,
+        "written"       , tolower(as.character(private$is_written))
       )
       cat(glue("#--- Workflow {self$name} ---#\n"))
       print(knitr::kable(res))
@@ -141,6 +141,18 @@ Workflow <- R6::R6Class(
       all_parsers <- purrr::map(self$tools, \(x) x$files$tool_parser) |>
         unlist() |>
         unique()
+      if (length(all_parsers) == 0) {
+        known <- purrr::map(self$tools, \(x) paste0(x$name, "_", x$config$get_patterns()$name)) |>
+          unlist() |>
+          unique()
+        if (!is.null(include)) {
+          check_unknown_parsers(include, known, "include")
+        }
+        if (!is.null(exclude)) {
+          check_unknown_parsers(exclude, known, "exclude")
+        }
+        return(invisible(self))
+      }
       if (!is.null(include)) {
         check_unknown_parsers(include, all_parsers, "include")
       }
@@ -161,7 +173,7 @@ Workflow <- R6::R6Class(
     #' only those files that match the patterns listed in the individual tool
     #' config.
     #' @return (`tibble()`)\cr
-    #' Bound `list_files()` tibbles from all Tools, with a leading `tool` column.
+    #' Bound `files` tibbles from all Tools, with a leading `tool` column.
     list_files = function() private$gather_tool_field("files"),
     #' @description Tidy Workflow files.
     #' @param keep_raw (`logical(1)`)\cr
@@ -237,7 +249,7 @@ Workflow <- R6::R6Class(
       }
       return(invisible(self))
     },
-    #' @description Parse, filter, tidy and write files.
+    #' @description Filter, tidy, and write files in one step.
     #' @param output_dir (`character(1)`)\cr
     #' Directory path to output tidy files.
     #' @param format (`character(1)`)\cr
@@ -258,7 +270,7 @@ Workflow <- R6::R6Class(
     #' tool_parser names to exclude (e.g. `"tool1_table5"`).
     #' @return (`R6::R6Class()`)\cr
     #' R6 object invisibly.
-    wrangle = function(
+    run = function(
       output_dir = ".",
       format = "tsv",
       input_id = NULL,
@@ -306,18 +318,10 @@ Workflow <- R6::R6Class(
     #' @return (`tibble()`)\cr
     #' Single-row tibble with columns `input_id`, `output_id`, `input_dirs`,
     #' `output_dir`, `pkg_versions`, and `files`.
-    # NOTE: files-assembly logic here mirrors Tool$get_metadata. The only
-    # difference is the fallback source (private$files_tbl vs self$files).
     get_metadata = function(input_id, output_id, output_dir, pkgs = NULL) {
       pkgs <- pkgs %||% self$metapkg
       if (!is.null(self$written_files)) {
-        # just keep bname and provide output_dir, no need for full outpath since
-        # it's a flat output structure.
-        files <- self$written_files |>
-          dplyr::mutate(outpath = basename(.data$outpath)) |>
-          dplyr::select(tbl = "tbl_name", "prefix", fout = "outpath", fin = "raw_path") |>
-          # Arrow treats glue/fs_byte as an extension type and refuses to write_parquet
-          dplyr::mutate(dplyr::across(dplyr::where(is.character), as.character))
+        files <- meta_files_from_written(self$written_files)
       } else {
         files <- private$files_tbl |>
           dplyr::select(fin = "path", "size") |>
@@ -380,6 +384,7 @@ Workflow <- R6::R6Class(
           }
           val |> dplyr::mutate(tool = x$name, .before = 1)
         }) |>
+        purrr::compact() |>
         dplyr::bind_rows()
     },
     gather_tool_schemas = function(method_name) {

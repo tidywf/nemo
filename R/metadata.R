@@ -1,3 +1,10 @@
+meta_files_from_written <- function(written_files) {
+  written_files |>
+    dplyr::mutate(outpath = basename(.data$outpath)) |>
+    dplyr::select(tbl = "tbl_name", "prefix", fout = "outpath", fin = "raw_path") |>
+    dplyr::mutate(dplyr::across(dplyr::where(is.character), as.character))
+}
+
 #' Assemble run metadata
 #'
 #' @param files (`tibble()`)\cr

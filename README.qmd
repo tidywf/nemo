@@ -53,7 +53,6 @@ glue(
   "📚 Docs: ",
   "[Installation]({base}/articles/installation) | ",
   "[Files/tables supported]({base}/articles/schema_table) | ",
-  "[Schema walkthrough]({base}/articles/schema_walkthrough) | ",
   "[Changelog]({base}/articles/NEWS) | ",
   "[R6 structure]({base}/articles/structure) | ",
   "[UML]({base}/articles/uml) | ",
@@ -119,14 +118,14 @@ path <- system.file("extdata/tool1/latest", package = "nemo")
 writeLines(readLines(file.path(path, "sampleA.tool1.table3.tsv")))
 ```
 
-`wrangle()` parses, tidies, and writes all tables in one call:
+`run()` filters, tidies, and writes all tables in one call:
 
 ```{r}
 #| label: quickstart
 #| message: false
 outdir <- file.path(tempdir(), "quickstart")
 
-Workflow1$new(path = path)$wrangle(
+Workflow1$new(path = path)$run(
   output_dir      = outdir,
   format       = "parquet",
   input_id     = "run1",

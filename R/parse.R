@@ -61,12 +61,15 @@ parse_file <- function(fpath, pname, schemas_all, delim = "\t", ...) {
 #' Parse headless file
 #'
 #' @description
-#' Parses files with no column names.
+#' Parses files with no column names. Selects the schema version whose column
+#' count matches the file.
 #'
 #' @param fpath (`character(1)`)\cr
 #' File path.
-#' @param schema (`tibble()`)\cr
-#' Schema tibble with version and schema list-col.
+#' @param pname (`character(1)`)\cr
+#' Parser name (e.g. "table4" - see docs).
+#' @param schemas_all (`tibble()`)\cr
+#' Tibble with name, version and schema list-col.
 #' @param delim (`character(1)`)\cr
 #' File delimiter.
 #' @param ... Passed on to `readr::read_delim`.
@@ -78,14 +81,8 @@ parse_file <- function(fpath, pname, schemas_all, delim = "\t", ...) {
 #' pname <- "table4"
 #' fpath_latest <- file.path(path, "latest", "sampleA.tool1.table4.tsv")
 #' fpath_v1 <- file.path(path, "v1.0.0", "sampleA.tool1.table4.tsv")
-#' schema_latest <- schemas_all |>
-#'   dplyr::filter(.data$name == pname, .data$version == "latest") |>
-#'   dplyr::select("version", "schema")
-#' schema_v1 <- schemas_all |>
-#'   dplyr::filter(.data$name == pname, .data$version == "v1.0.0") |>
-#'   dplyr::select("version", "schema")
-#' (d_latest <- parse_file_nohead(fpath_latest, schema_latest))
-#' (d_v1 <- parse_file_nohead(fpath_v1, schema_v1))
+#' (d_latest <- parse_file_nohead(fpath_latest, pname, schemas_all))
+#' (d_v1 <- parse_file_nohead(fpath_v1, pname, schemas_all))
 #'
 #' @testexamples
 #' expect_equal(ncol(d_latest), 5)
@@ -95,14 +92,25 @@ parse_file <- function(fpath, pname, schemas_all, delim = "\t", ...) {
 #' expect_equal(attr(d_latest, "file_version"), "latest")
 #' expect_equal(attr(d_v1, "file_version"), "v1.0.0")
 #' @export
-parse_file_nohead <- function(fpath, schema, delim = "\t", ...) {
-  assertthat::assert_that(nrow(schema) == 1, msg = "'schema' must have exactly one row.")
-  nemo_assert_scalar_chr(schema$version)
-  assertthat::assert_that(is.list(schema$schema), msg = "'schema$schema' must be a list.")
+parse_file_nohead <- function(fpath, pname, schemas_all, delim = "\t", ...) {
+  ncols <- file_hdr(fpath, delim = delim, ...) |> length()
+  schema <- schemas_all |>
+    dplyr::filter(.data$name == pname) |>
+    dplyr::select("version", "schema") |>
+    dplyr::filter(purrr::map_int(.data$schema, nrow) == ncols)
+  if (nrow(schema) != 1) {
+    stop(
+      glue(
+        "Expected exactly one schema version matching {ncols} columns ",
+        "for '{pname}', found {nrow(schema)}."
+      ),
+      call. = FALSE
+    )
+  }
   version <- schema[["version"]]
-  schema <- schema[["schema"]][[1]] |>
+  schema_deframed <- schema[["schema"]][[1]] |>
     tibble::deframe()
-  ctypes <- paste0(schema, collapse = "")
+  ctypes <- paste0(schema_deframed, collapse = "")
   d <- readr::read_delim(
     file = fpath,
     col_names = FALSE,
@@ -110,7 +118,7 @@ parse_file_nohead <- function(fpath, schema, delim = "\t", ...) {
     delim = delim,
     ...
   )
-  colnames(d) <- names(schema)
+  colnames(d) <- names(schema_deframed)
   attr(d, "file_version") <- version
   d[]
 }
@@ -187,17 +195,7 @@ schema_guess <- function(pname, cnames, schemas_all) {
   s <- schemas_all |>
     dplyr::filter(.data$name == pname) |>
     dplyr::select("version", "schema") |>
-    dplyr::rowwise() |>
-    dplyr::mutate(
-      length_match = length(cnames) == nrow(.data$schema),
-      all_match = if (.data$length_match) {
-        identical(cnames, .data$schema[["field"]])
-      } else {
-        FALSE
-      }
-    ) |>
-    dplyr::filter(.data$all_match) |>
-    dplyr::ungroup()
+    dplyr::filter(purrr::map_lgl(.data$schema, \(sch) identical(cnames, sch[["field"]])))
   msg <- glue("There were {nrow(s)} matching schemas for {pname}. Check the configs!")
   assertthat::assert_that(nrow(s) == 1, msg = msg)
   version <- s$version

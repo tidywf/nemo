@@ -19,7 +19,7 @@ p5 <- system.file("extdata/tool1/latest/sampleA.tool1.table5.csv", package = "ne
 (raw5 <- obj1$parse_table5(p5))
 (tidy5 <- obj1$tidy_table5(p5))
 
-obj1$wrangle(output_dir = dir1, format = "parquet", input_id = "run1")
+obj1$run(output_dir = dir1, format = "parquet", input_id = "run1")
 (lf <- list.files(dir1, pattern = "tool1.*parquet", full.names = FALSE))
 
 obj2 <- Tool1$new(indir)$tidy()
@@ -40,21 +40,13 @@ obj2 <- Tool1$new(indir)$tidy()
 \if{html}{\out{
 <details><summary>Inherited methods</summary>
 <ul>
-<li><span class="pkg-link" data-pkg="nemo" data-topic="Tool" data-id=".dispatch_parse"><a href='../../nemo/html/Tool.html#method-Tool-.dispatch_parse'><code>nemo::Tool$.dispatch_parse()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="nemo" data-topic="Tool" data-id=".dispatch_tidy"><a href='../../nemo/html/Tool.html#method-Tool-.dispatch_tidy'><code>nemo::Tool$.dispatch_tidy()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="nemo" data-topic="Tool" data-id=".parse_by_ftype"><a href='../../nemo/html/Tool.html#method-Tool-.parse_by_ftype'><code>nemo::Tool$.parse_by_ftype()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="nemo" data-topic="Tool" data-id=".parse_file"><a href='../../nemo/html/Tool.html#method-Tool-.parse_file'><code>nemo::Tool$.parse_file()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="nemo" data-topic="Tool" data-id=".parse_file_keyvalue"><a href='../../nemo/html/Tool.html#method-Tool-.parse_file_keyvalue'><code>nemo::Tool$.parse_file_keyvalue()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="nemo" data-topic="Tool" data-id=".parse_file_nohead"><a href='../../nemo/html/Tool.html#method-Tool-.parse_file_nohead'><code>nemo::Tool$.parse_file_nohead()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="nemo" data-topic="Tool" data-id=".tidy_file"><a href='../../nemo/html/Tool.html#method-Tool-.tidy_file'><code>nemo::Tool$.tidy_file()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="nemo" data-topic="Tool" data-id="filter_files"><a href='../../nemo/html/Tool.html#method-Tool-filter_files'><code>nemo::Tool$filter_files()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="nemo" data-topic="Tool" data-id="get_col_map"><a href='../../nemo/html/Tool.html#method-Tool-get_col_map'><code>nemo::Tool$get_col_map()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="nemo" data-topic="Tool" data-id="get_metadata"><a href='../../nemo/html/Tool.html#method-Tool-get_metadata'><code>nemo::Tool$get_metadata()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="nemo" data-topic="Tool" data-id="get_schema_raw"><a href='../../nemo/html/Tool.html#method-Tool-get_schema_raw'><code>nemo::Tool$get_schema_raw()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="nemo" data-topic="Tool" data-id="get_schema_tidy"><a href='../../nemo/html/Tool.html#method-Tool-get_schema_tidy'><code>nemo::Tool$get_schema_tidy()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="nemo" data-topic="Tool" data-id="get_tbls"><a href='../../nemo/html/Tool.html#method-Tool-get_tbls'><code>nemo::Tool$get_tbls()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="nemo" data-topic="Tool" data-id="list_files"><a href='../../nemo/html/Tool.html#method-Tool-list_files'><code>nemo::Tool$list_files()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="nemo" data-topic="Tool" data-id="print"><a href='../../nemo/html/Tool.html#method-Tool-print'><code>nemo::Tool$print()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="nemo" data-topic="Tool" data-id="run"><a href='../../nemo/html/Tool.html#method-Tool-run'><code>nemo::Tool$run()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="nemo" data-topic="Tool" data-id="tidy"><a href='../../nemo/html/Tool.html#method-Tool-tidy'><code>nemo::Tool$tidy()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="nemo" data-topic="Tool" data-id="wrangle"><a href='../../nemo/html/Tool.html#method-Tool-wrangle'><code>nemo::Tool$wrangle()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="nemo" data-topic="Tool" data-id="write"><a href='../../nemo/html/Tool.html#method-Tool-write'><code>nemo::Tool$write()</code></a></span></li>
 </ul>
 </details>
@@ -72,8 +64,7 @@ Create a new Tool1 object.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{path}}{(\code{character(1)})\cr
-Output directory of tool. If \code{files_tbl} is supplied, this basically gets
-ignored.}
+Output directory of tool. If \code{files_tbl} is supplied, this is ignored.}
 
 \item{\code{files_tbl}}{(\code{tibble(n)})\cr
 Tibble of files from \code{\link[=list_files_dir]{list_files_dir()}}.}

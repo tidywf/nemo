@@ -11,7 +11,7 @@ path <- system.file("extdata/tool1", package = "nemo")
 wf <- Workflow1$new(path)
 (lf_all <- wf$list_files())
 dir1 <- tempdir()
-wf$wrangle(output_dir = dir1, format = "parquet", input_id = "run1")
+wf$run(output_dir = dir1, format = "parquet", input_id = "run1")
 (lf <- list.files(dir1, pattern = "tool1.*parquet", full.names = TRUE))
 }
 \section{Super class}{
@@ -34,8 +34,8 @@ wf$wrangle(output_dir = dir1, format = "parquet", input_id = "run1")
 <li><span class="pkg-link" data-pkg="nemo" data-topic="Workflow" data-id="get_tbls"><a href='../../nemo/html/Workflow.html#method-Workflow-get_tbls'><code>nemo::Workflow$get_tbls()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="nemo" data-topic="Workflow" data-id="list_files"><a href='../../nemo/html/Workflow.html#method-Workflow-list_files'><code>nemo::Workflow$list_files()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="nemo" data-topic="Workflow" data-id="print"><a href='../../nemo/html/Workflow.html#method-Workflow-print'><code>nemo::Workflow$print()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="nemo" data-topic="Workflow" data-id="run"><a href='../../nemo/html/Workflow.html#method-Workflow-run'><code>nemo::Workflow$run()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="nemo" data-topic="Workflow" data-id="tidy"><a href='../../nemo/html/Workflow.html#method-Workflow-tidy'><code>nemo::Workflow$tidy()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="nemo" data-topic="Workflow" data-id="wrangle"><a href='../../nemo/html/Workflow.html#method-Workflow-wrangle'><code>nemo::Workflow$wrangle()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="nemo" data-topic="Workflow" data-id="write"><a href='../../nemo/html/Workflow.html#method-Workflow-write'><code>nemo::Workflow$write()</code></a></span></li>
 </ul>
 </details>

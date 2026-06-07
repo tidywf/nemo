@@ -17,7 +17,7 @@ A Workflow object:
 }
 
 The typical workflow is: optionally filter with \code{filter_files()}, tidy with
-\code{tidy()}, then write with \code{write()}. \code{wrangle()} chains all three steps.
+\code{tidy()}, then write with \code{write()}. \code{run()} chains all three steps.
 }
 \examples{
 fs::path(tempdir(), letters[1:5]) |>
@@ -36,7 +36,7 @@ wf$write(output_dir = dir1, format = "parquet", input_id = "run1")
 (lf1 <- list.files(dir1, pattern = "tool1.*parquet", full.names = TRUE))
 (meta <- wf$get_metadata(input_id = "run1", output_id = "out1", output_dir = dir1))
 wf2 <- Workflow$new(name = "wf2", path = path, tools = tools)
-wf2$wrangle(output_dir = dir2, format = "parquet", input_id = "run2")
+wf2$run(output_dir = dir2, format = "parquet", input_id = "run2")
 (lf2 <- list.files(dir2, pattern = "tool1.*parquet", full.names = TRUE))
 }
 \section{Public fields}{
@@ -68,7 +68,7 @@ Tibble of files written from \code{self$write()}.}
 \item \href{#method-Workflow-list_files}{\code{Workflow$list_files()}}
 \item \href{#method-Workflow-tidy}{\code{Workflow$tidy()}}
 \item \href{#method-Workflow-write}{\code{Workflow$write()}}
-\item \href{#method-Workflow-wrangle}{\code{Workflow$wrangle()}}
+\item \href{#method-Workflow-run}{\code{Workflow$run()}}
 \item \href{#method-Workflow-get_schemas_raw}{\code{Workflow$get_schemas_raw()}}
 \item \href{#method-Workflow-get_schemas_tidy}{\code{Workflow$get_schemas_tidy()}}
 \item \href{#method-Workflow-get_tbls}{\code{Workflow$get_tbls()}}
@@ -166,7 +166,7 @@ config.
 
 \subsection{Returns}{
 (\code{tibble()})\cr
-Bound \code{list_files()} tibbles from all Tools, with a leading \code{tool} column.
+Bound \code{files} tibbles from all Tools, with a leading \code{tool} column.
 }
 }
 \if{html}{\out{<hr>}}
@@ -241,12 +241,12 @@ R6 object invisibly.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Workflow-wrangle"></a>}}
-\if{latex}{\out{\hypertarget{method-Workflow-wrangle}{}}}
-\subsection{Method \code{wrangle()}}{
-Parse, filter, tidy and write files.
+\if{html}{\out{<a id="method-Workflow-run"></a>}}
+\if{latex}{\out{\hypertarget{method-Workflow-run}{}}}
+\subsection{Method \code{run()}}{
+Filter, tidy, and write files in one step.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Workflow$wrangle(
+\if{html}{\out{<div class="r">}}\preformatted{Workflow$run(
   output_dir = ".",
   format = "tsv",
   input_id = NULL,

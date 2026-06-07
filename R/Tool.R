@@ -13,7 +13,7 @@
 #' - has a tibble with the parsed and tidied files (`tbls`);
 #'
 #' The typical workflow is: optionally filter files with `filter_files()`, parse
-#' and tidy with `tidy()`, then write outputs with `write()`. `wrangle()` chains
+#' and tidy with `tidy()`, then write outputs with `write()`. `run()` chains
 #' all three steps.
 #'
 #' @examples
@@ -23,37 +23,37 @@
 #' name <- "tool1"; pkg <- "nemo";
 #' path <- system.file("extdata/tool1", package = "nemo")
 #' toolA <- Tool$new(name = name, pkg = pkg, path = path)
-#' toolA$files
-#' toolA$filter_files(exclude = "tool1_table3"); toolA$files # note the exclusion this time
+#' toolA$list_files()
+#' toolA$filter_files(exclude = "tool1_table3"); toolA$list_files() # note the exclusion this time
 #'
 #' toolB <- Tool$new(name = name, pkg = pkg, path = path)$
 #'   filter_files(include = "tool1_table1")
-#' toolB$files
+#' toolB$list_files()
 #' # tidy + write
 #' toolC <- Tool$new(name = name, pkg = pkg, path = path)$
 #'   filter_files(exclude = "tool1_table5")$
 #'   tidy()
-#' toolC$files
-#' toolC$tbls # note the tidy column
+#' toolC$list_files()
+#' toolC$get_tbls() # note the tidy column
 #' dir1 <- fs::file_temp(); dir2 <- fs::file_temp()
 #' toolC$write(output_dir = dir1, format = "parquet", input_id = "run1")
 #' (lfC <- list.files(dir1, full.names = TRUE))
 #'
-#' # wrangle
+#' # run
 #' toolD <- Tool$new(name = name, pkg = pkg, path = path)$
 #'   filter_files(exclude = "tool1_table5")$
-#'   wrangle(output_dir = dir2, format = "parquet", input_id = "run2")
+#'   run(output_dir = dir2, format = "parquet", input_id = "run2")
 #' (lfD <- list.files(dir2, full.names = TRUE))
 #'
 #'
 #' @testexamples
 #' # filter_files: table3 excluded, other parsers present
-#' expect_false("tool1_table3" %in% toolA$files$tool_parser)
-#' expect_true(all(c("tool1_table1", "tool1_table2", "tool1_table4") %in% toolA$files$tool_parser))
-#' expect_equal(unique(toolB$files$tool_parser), "tool1_table1")
+#' expect_false("tool1_table3" %in% toolA$list_files()$tool_parser)
+#' expect_true(all(c("tool1_table1", "tool1_table2", "tool1_table4") %in% toolA$list_files()$tool_parser))
+#' expect_equal(unique(toolB$list_files()$tool_parser), "tool1_table1")
 #' # toolC: table5 excluded, table3 retained
-#' expect_false("tool1_table5" %in% toolC$files$tool_parser)
-#' expect_true("tool1_table3" %in% toolC$files$tool_parser)
+#' expect_false("tool1_table5" %in% toolC$list_files()$tool_parser)
+#' expect_true("tool1_table3" %in% toolC$list_files()$tool_parser)
 #' expect_error(
 #'   toolB$filter_files(include = "tool1_table1", exclude = "tool1_table3"),
 #'   "You cannot define both include and exclude"
@@ -73,16 +73,16 @@
 #' # write: invalid format
 #' expect_error(toolC$write(output_dir = tempdir(), format = "invalid"), "Output format")
 #' # tidy: structure and column names
-#' expect_false(is.null(toolC$tbls))
+#' expect_false(is.null(toolC$get_tbls()))
 #' expect_named(
-#'   toolC$tbls,
+#'   toolC$get_tbls(),
 #'   c(
 #'     "tool_parser", "parser", "bname", "size", "lastmodified", "path",
 #'     "pattern", "prefix", "group", "tidy"
 #'   )
 #' )
 #' # table4: two versions parsed with correct column counts
-#' t4 <- toolC$tbls |> dplyr::filter(tool_parser == "tool1_table4")
+#' t4 <- toolC$get_tbls() |> dplyr::filter(tool_parser == "tool1_table4")
 #' expect_equal(nrow(t4), 2)
 #' t4_ncols <- purrr::map_int(t4$tidy, \(x) ncol(x$data[[1]]))
 #' expect_setequal(t4_ncols, c(3L, 5L))
@@ -203,6 +203,92 @@ Tool <- R6::R6Class(
         dplyr::all_of(names(new_cols)),
         .before = 1
       )
+    },
+    # Dispatch parse for a table: calls custom parse_{table_name}() if defined
+    # in the subclass, otherwise falls back to parse_by_ftype().
+    dispatch_parse = function(x, table_name) {
+      fun <- glue("parse_{table_name}")
+      if (is.function(self[[fun]])) {
+        self[[fun]](x)
+      } else {
+        private$parse_by_ftype(x, table_name)
+      }
+    },
+    # Dispatch tidy for a table: calls custom tidy_{table_name}() if defined
+    # in the subclass, otherwise falls back to tidy_file().
+    dispatch_tidy = function(x, table_name) {
+      fun <- glue("tidy_{table_name}")
+      if (is.function(self[[fun]])) {
+        self[[fun]](x)
+      } else {
+        private$tidy_file(x, table_name)
+      }
+    },
+    # Parse a file by looking up its ftype from the config.
+    parse_by_ftype = function(x, table_name) {
+      ftype <- self$config$get_ftype(table_name)
+      switch(
+        ftype,
+        "txt" = private$parse_file(x, table_name),
+        "csv" = private$parse_file(x, table_name, delim = ","),
+        "txt-nohead" = private$parse_file_nohead(x, table_name),
+        "txt-keyvalue" = private$parse_file_keyvalue(x, table_name),
+        stop(glue(
+          "No default parser for ftype '{ftype}' (table '{table_name}'). ",
+          "Define parse_{table_name}() in the subclass."
+        ))
+      )
+    },
+    # Parse a delimited file using the raw schema for column types.
+    parse_file = function(x, table_name, delim = "\t", ...) {
+      parse_file(
+        fpath = x,
+        pname = table_name,
+        schemas_all = self$config$get_schemas_raw(),
+        delim = delim,
+        ...
+      )
+    },
+    # Tidy a file or already-parsed tibble: renames columns via the tidy schema.
+    tidy_file = function(x, table_name, convert_types = FALSE) {
+      if (!tibble::is_tibble(x)) {
+        x <- private$dispatch_parse(x, table_name)
+      }
+      version <- get_tbl_version_attr(x)
+      schema <- self$config$get_schema_tidy(table_name, version = version)
+      colnames(x) <- schema[["field"]]
+      if (convert_types) {
+        ctypes <- schema |>
+          dplyr::select("field", "type") |>
+          tibble::deframe()
+        x <- readr::type_convert(
+          x,
+          col_types = rlang::exec(readr::cols, !!!ctypes)
+        )
+      }
+      list(x) |>
+        rlang::set_names(table_name) |>
+        enframe_data()
+    },
+    # Parse a key-value file (no header, 2 cols) and pivot wide.
+    parse_file_keyvalue = function(x, table_name, delim = "\t", ...) {
+      parse_file_keyvalue(
+        fpath = x,
+        pname = table_name,
+        schemas_all = self$config$get_schemas_raw(),
+        delim = delim,
+        ...
+      )
+    },
+    # Parse a headless file; version is selected by column count.
+    parse_file_nohead = function(x, table_name, delim = "\t", ...) {
+      parse_file_nohead(
+        fpath = x,
+        pname = table_name,
+        schemas_all = self$config$get_schemas_raw(),
+        delim = delim,
+        ...
+      )
     }
   ),
   public = list(
@@ -233,8 +319,7 @@ Tool <- R6::R6Class(
     #' @param pkg (`character(1)`)\cr
     #' Package name tool belongs to (for config lookup).
     #' @param path (`character(1)`)\cr
-    #' Output directory of tool. If `files_tbl` is supplied, this basically gets
-    #' ignored.
+    #' Output directory of tool. If `files_tbl` is supplied, this is ignored.
     #' @param files_tbl (`tibble(n)`)\cr
     #' Tibble of files from [list_files_dir()].
     #' @return (`R6::R6Class()`)\cr
@@ -244,10 +329,13 @@ Tool <- R6::R6Class(
         !is.null(path) || !is.null(files_tbl),
         msg = "Supply either 'path' or 'files_tbl'."
       )
+      if (!is.null(path) && !is.null(files_tbl)) {
+        stop("Supply 'path' or 'files_tbl', not both.", call. = FALSE)
+      }
       nemo_assert_scalar_chr(name)
       nemo_assert_scalar_chr(pkg)
       if (!is.null(files_tbl)) {
-        is_files_tbl(files_tbl)
+        assert_files_tbl(files_tbl)
         path <- NULL
       } else {
         assertthat::assert_that(
@@ -257,7 +345,7 @@ Tool <- R6::R6Class(
       }
       self$name <- name
       self$pkg <- pkg
-      self$path <- path
+      self$path <- if (!is.null(path)) normalizePath(path) else NULL
       self$config <- Config$new(self$name, pkg = self$pkg)
       private$files_tbl <- files_tbl
       self$files <- private$compute_files(type = "file")
@@ -279,6 +367,14 @@ Tool <- R6::R6Class(
       print(knitr::kable(res))
       invisible(self)
     },
+    #' @description List files matching this tool's patterns.
+    #' @return (`tibble()`)\cr
+    #' The `files` tibble of matched files.
+    list_files = function() self$files,
+    #' @description Get tidy tibbles after parsing and tidying.
+    #' @return (`tibble()` or `NULL`)\cr
+    #' The `tbls` tibble, or `NULL` if `tidy()` has not been called.
+    get_tbls = function() self$tbls,
     #' @description Filter files in given tool directory based on inclusion or
     #' exclusion tool_parser names. The result is reflected in the `files` field.
     #' @param include (`character(n)`)\cr
@@ -315,193 +411,6 @@ Tool <- R6::R6Class(
       }
       return(invisible(self))
     },
-    # get_schema_tidy / get_schema_raw / get_col_map are intentional thin
-    # wrappers over Config so callers don't need to reach into $config directly.
-    # They also serve as the stable surface that subclass tidy methods call.
-    #' @description Get specific tidy schema.
-    #' @param table_name (`character(1)`)\cr
-    #' Table name.
-    #' @param version (`character(1)`)\cr
-    #' Version string.
-    #' @return (`tibble()`)\cr
-    #' Tidy schema tibble.
-    get_schema_tidy = function(table_name = NULL, version = NULL) {
-      self$config$get_schema_tidy(table_name, version = version)
-    },
-    #' @description Get specific raw schema.
-    #' @param table_name (`character(1)`)\cr
-    #' Table name.
-    #' @param version (`character(1)`)\cr
-    #' Version string.
-    #' @return (`tibble()`)\cr
-    #' Raw schema tibble.
-    get_schema_raw = function(table_name = NULL, version = NULL) {
-      self$config$get_schema_raw(table_name, version = version)
-    },
-    #' @description Get column mapping (raw -> tidy) for a table.
-    #' @param table_name (`character(1)`)\cr
-    #' Table name.
-    #' @param version (`character(1)`)\cr
-    #' Version string.
-    #' @return (`tibble()`)\cr
-    #' Column map tibble with `raw`, `tidy`, `type`, and `description` columns.
-    get_col_map = function(table_name = NULL, version = NULL) {
-      self$config$get_col_map(table_name, version = version)
-    },
-    #' @description Dispatch parse for a table: calls custom `parse_{table_name}()` if
-    #' defined in the subclass, otherwise falls back to `.parse_by_ftype()`.
-    #' @param x (`character(1)`)\cr
-    #' File path.
-    #' @param table_name (`character(1)`)\cr
-    #' Table name.
-    #' @return (`tibble()`)\cr
-    #' Parsed data in tibble.
-    .dispatch_parse = function(x, table_name) {
-      fun <- glue("parse_{table_name}")
-      if (is.function(self[[fun]])) {
-        self[[fun]](x)
-      } else {
-        self$.parse_by_ftype(x, table_name)
-      }
-    },
-    #' @description Dispatch tidy for a table: calls custom `tidy_{table_name}()` if
-    #' defined in the subclass, otherwise falls back to `.tidy_file()`.
-    #' @param x (`character(1)` or `tibble()`)\cr
-    #' File path or already parsed raw tibble.
-    #' @param table_name (`character(1)`)\cr
-    #' Table name.
-    #' @return (`tibble()`)\cr
-    #' Tidy data in enframed tibble.
-    .dispatch_tidy = function(x, table_name) {
-      fun <- glue("tidy_{table_name}")
-      if (is.function(self[[fun]])) {
-        self[[fun]](x)
-      } else {
-        self$.tidy_file(x, table_name)
-      }
-    },
-    #' @description Parse a file by looking up its ftype from the config and
-    #' calling the appropriate internal parser. Errors for ftypes that require
-    #' a custom `parse_{table_name}()` method (e.g. `csv-nohead-long`).
-    #' @param x (`character(1)`)\cr
-    #' File path.
-    #' @param table_name (`character(1)`)\cr
-    #' Table name.
-    #' @return (`tibble()`)\cr
-    #' Parsed data in tibble.
-    .parse_by_ftype = function(x, table_name) {
-      ftype <- self$config$get_ftype(table_name)
-      switch(
-        ftype,
-        "txt" = self$.parse_file(x, table_name),
-        "csv" = self$.parse_file(x, table_name, delim = ","),
-        "txt-nohead" = self$.parse_file_nohead(x, table_name),
-        "txt-keyvalue" = self$.parse_file_keyvalue(x, table_name),
-        stop(glue(
-          "No default parser for ftype '{ftype}' (table '{table_name}'). ",
-          "Define parse_{table_name}() in the subclass."
-        ))
-      )
-    },
-    #' @description Parse file.
-    #' @param x (`character(1)`)\cr
-    #' File path.
-    #' @param table_name (`character(1)`)\cr
-    #' Table name (e.g. "breakends" - see docs).
-    #' @param delim (`character(1)`)\cr
-    #' File delimiter.
-    #' @param ... Passed on to `readr::read_delim`.
-    #' @return (`tibble()`)\cr
-    #' Parsed data in tibble.
-    .parse_file = function(x, table_name, delim = "\t", ...) {
-      parse_file(
-        fpath = x,
-        pname = table_name,
-        schemas_all = self$config$get_schemas_raw(),
-        delim = delim,
-        ...
-      )
-    },
-    #' @description Tidy file.
-    #' @param x (`character(1)` or `tibble()`)\cr
-    #' File path or already parsed raw tibble.
-    #' @param table_name (`character(1)`)\cr
-    #' Table name (e.g. "breakends" - see docs).
-    #' @param convert_types (`logical(1)`)\cr
-    #' Convert field types based on schema.
-    #' @return (`tibble()`)\cr
-    #' Tidy data in enframed tibble.
-    .tidy_file = function(x, table_name, convert_types = FALSE) {
-      if (!tibble::is_tibble(x)) {
-        x <- self$.dispatch_parse(x, table_name)
-      }
-      version <- get_tbl_version_attr(x)
-      schema <- self$get_schema_tidy(table_name, version = version)
-      colnames(x) <- schema[["field"]]
-      if (convert_types) {
-        ctypes <- schema |>
-          dplyr::select("field", "type") |>
-          tibble::deframe()
-        x <- readr::type_convert(
-          x,
-          col_types = rlang::exec(readr::cols, !!!ctypes)
-        )
-      }
-      list(x) |>
-        rlang::set_names(table_name) |>
-        enframe_data()
-    },
-    #' @description Parse files with no header and two columns representing
-    #' key-value pairs.
-    #' @param x (`character(1)`)\cr
-    #' File path.
-    #' @param table_name (`character(1)`)\cr
-    #' Table name (e.g. "qc" - see docs).
-    #' @param delim (`character(1)`)\cr
-    #' File delimiter.
-    #' @param ... Passed on to `readr::read_delim`.
-    #' @return (`tibble()`)\cr
-    #' Parsed data in tibble.
-    .parse_file_keyvalue = function(x, table_name, delim = "\t", ...) {
-      parse_file_keyvalue(
-        fpath = x,
-        pname = table_name,
-        schemas_all = self$config$get_schemas_raw(),
-        delim = delim,
-        ...
-      )
-    },
-    #' @description Parse headless file.
-    #' @param x (`character(1)`)\cr
-    #' File path.
-    #' @param table_name (`character(1)`)\cr
-    #' Table name (e.g. "breakends" - see docs).
-    #' @param delim (`character(1)`)\cr
-    #' File delimiter.
-    #' @param ... Passed on to `readr::read_delim`.
-    #' @return (`tibble()`)\cr
-    #' Parsed data in tibble.
-    .parse_file_nohead = function(x, table_name, delim = "\t", ...) {
-      ncols <- file_hdr(x, delim = delim, ...) |> length()
-      schema <- self$config$get_schemas_raw() |>
-        dplyr::filter(.data$name == table_name) |>
-        dplyr::select("version", "schema") |>
-        dplyr::rowwise() |>
-        dplyr::filter(nrow(.data$schema) == ncols) |>
-        dplyr::ungroup()
-      if (nrow(schema) != 1) {
-        stop(glue(
-          "Expected exactly one schema version matching {ncols} columns ",
-          "for '{table_name}', found {nrow(schema)}."
-        ))
-      }
-      parse_file_nohead(
-        fpath = x,
-        schema = schema,
-        delim = delim,
-        ...
-      )
-    },
     #' @description Tidy a list of files. The result is reflected in the `tbls` field.
     #' @param keep_raw (`logical(1)`)\cr
     #' Should the raw parsed tibbles be kept in the final output?
@@ -519,13 +428,13 @@ Tool <- R6::R6Class(
       if (keep_raw) {
         d <- self$files |>
           dplyr::mutate(
-            raw = purrr::map2(.data$path, .data$parser, \(p, t) self$.dispatch_parse(p, t)),
-            tidy = purrr::map2(.data$raw, .data$parser, \(r, t) self$.dispatch_tidy(r, t))
+            raw = purrr::map2(.data$path, .data$parser, \(p, t) private$dispatch_parse(p, t)),
+            tidy = purrr::map2(.data$raw, .data$parser, \(r, t) private$dispatch_tidy(r, t))
           )
       } else {
         d <- self$files |>
           dplyr::mutate(
-            tidy = purrr::map2(.data$path, .data$parser, \(p, t) self$.dispatch_tidy(p, t))
+            tidy = purrr::map2(.data$path, .data$parser, \(p, t) private$dispatch_tidy(p, t))
           )
       }
       self$tbls <- d
@@ -639,16 +548,10 @@ Tool <- R6::R6Class(
     #' @return (`tibble()`)\cr
     #' Single-row tibble with columns `input_id`, `output_id`, `input_dirs`,
     #' `output_dir`, `pkg_versions`, and `files`.
-    # NOTE: files-assembly logic here mirrors Workflow$get_metadata. The only
-    # difference is the fallback source (self$files vs private$files_tbl).
     get_metadata = function(input_id, output_id, output_dir, pkgs = NULL) {
       pkgs <- pkgs %||% self$pkg
       if (!is.null(self$written_files)) {
-        files <- self$written_files |>
-          dplyr::mutate(outpath = basename(.data$outpath)) |>
-          dplyr::select(tbl = "tbl_name", "prefix", fout = "outpath", fin = "raw_path") |>
-          # Arrow treats glue/fs_byte as an extension type and refuses to write_parquet
-          dplyr::mutate(dplyr::across(dplyr::where(is.character), as.character))
+        files <- meta_files_from_written(self$written_files)
       } else {
         files <- self$files |>
           dplyr::select(fin = "path", "size") |>
@@ -663,7 +566,7 @@ Tool <- R6::R6Class(
         output_dir = output_dir
       )
     },
-    #' @description Parse, filter, tidy and write files.
+    #' @description Filter, tidy, and write files in one step.
     #' @param output_dir (`character(1)`)\cr
     #' Directory path to output tidy files.
     #' @param format (`character(1)`)\cr
@@ -682,10 +585,10 @@ Tool <- R6::R6Class(
     #' @param include (`character(n)`)\cr
     #' tool_parser names to include (e.g. `"tool1_table1"`).
     #' @param exclude (`character(n)`)\cr
-    #' tool_parser names to exclude (e.g. `"tool1_table3"`).
+    #' tool_parser names to exclude (e.g. `"tool1_table5"`).
     #' @return (`R6::R6Class()`)\cr
     #' R6 object invisibly. Results stored in `self$written_files`.
-    wrangle = function(
+    run = function(
       output_dir = ".",
       format = "tsv",
       input_id = NULL,

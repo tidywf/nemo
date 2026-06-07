@@ -49,7 +49,6 @@ params <- list(
 }
 ```
 
-
 ```{r}
 #| label: opts
 #| echo: false
@@ -83,62 +82,98 @@ tool version the column appears in.
 `Config` derives versioned raw and tidy views from this unified source on demand.
 See `?Config`.
 
+### format
+
+Each tool has a `schema.yaml` under `inst/config/tools/<tool>/`. It is a flat
+`tables` map with one entry per output file:
+
+```yaml
+tables:
+  <table_name>:
+    description: '<human-readable description>'
+    pattern: "<regex matching the file basename>"
+    ftype: '<file type — see below>'
+    columns:
+      - raw: '<raw column name or positional label>'
+        tidy: '<tidy snake_case name>'
+        type: 'char | int | float'
+        description: '<human-readable description>'
+        versions: ['<version1>', '<version2>']
+```
+
+The `ftype` field signals how the file is parsed:
+
+| `ftype`           | Description                                        | `raw:` names                            | Parser                   |
+|-------------------|----------------------------------------------------|-----------------------------------------|--------------------------|
+| `txt`             | Header present; tab-delimited                      | actual column names                     | `parse_file`             |
+| `csv`             | Header present; comma-delimited                    | actual column names                     | `parse_file` (delim=`,`) |
+| `txt-nohead`      | No header; positional columns                      | `X1, X2, …, XN`                        | `parse_file_nohead`      |
+| `txt-keyvalue`    | No header; 2 cols (key, value); pivoted wide       | actual key values                       | `parse_file_keyvalue`    |
+| `csv-nohead-long` | No header; long format; custom pivot               | metric names (values in the key column) | custom `tidy_*` method   |
+
+The `versions` array on each column lists every tool version that column appears
+in, giving a full picture of additions and removals:
+
+```yaml
+# table1 columns
+SampleID:   versions: ['v1.2.3', 'v4.5.6', 'latest']  # present in all versions
+metricX:    versions: ['v1.2.3']                        # dropped in v4.5.6
+metricY:    versions: ['latest']                        # added in latest
+```
+
+The effective schema for version `V` is all columns whose `versions` array contains
+`V`. `schema_guess` uses this to automatically match a file's columns against the
+correct versioned snapshot.
+
 ### intro
 
-```{r tool1_config1}
+```{r config_intro}
 tool <- params$tool
 workflow <- params$workflow
 conf <- nemo::Config$new(tool, pkg = "nemo")
 conf
 ```
 
-### patterns
+### tables
 
-Patterns are used to fish out the relevant files from a directory listing.
+Table-level metadata — patterns, file types, and descriptions for all tables:
 
-```{r tool1_config_patterns}
-conf$get_patterns() |>
-  knitr::kable(caption = glue("{tool} file patterns."))
+```{r config_tables_all}
+conf$get_patterns()     |> knitr::kable(caption = glue("{tool} patterns."))
+conf$get_ftypes()       |> knitr::kable(caption = glue("{tool} file types."))
+conf$get_descriptions() |> knitr::kable(caption = glue("{tool} descriptions."))
 ```
 
-### descriptions
+Per-table lookups:
 
-Descriptions are usually derived from the individual tool documentation.
-
-```{r tool1_config_descriptions}
-conf$get_descriptions() |>
-  knitr::kable(caption = glue("{tool} file descriptions."))
-```
-
-### versions
-
-The `versions` array on each column lists every tool version that column appears
-in, giving a full picture of additions and removals across versions.
-
-```{r tool1_config_versions}
-conf$get_schemas_raw() |>
-  dplyr::select("name", "version") |>
-  dplyr::distinct() |>
-  knitr::kable(caption = glue("{tool} schema versions."))
+```{r config_tables_one}
+conf$get_pattern("table1")
+conf$get_ftype("table1")
+conf$get_description("table1")
 ```
 
 ### schemas
 
-`get_schemas_raw()` and `get_schemas_tidy()` return versioned views with column
-names in raw and tidy form respectively:
+All versioned raw and tidy schemas:
 
-```{r tool1_config_schemas}
-(s_raw <- conf$get_schemas_raw())
-s_raw |>
-  dplyr::filter(.data$name == "table1", .data$version == "v1.2.3") |>
-  dplyr::select("schema") |>
-  tidyr::unnest("schema")
+```{r config_schemas_all}
+conf$get_schemas_raw()  |> dplyr::select("name", "version", "schema")
+conf$get_schemas_tidy() |> dplyr::select("name", "version", "schema")
+conf$get_schemas_both()
+```
 
-(s_tidy <- conf$get_schemas_tidy())
-s_tidy |>
-  dplyr::filter(.data$name == "table1", .data$version == "v1.2.3") |>
-  dplyr::select("schema") |>
-  tidyr::unnest("schema")
+Per-table, per-version:
+
+```{r config_schemas_one}
+conf$get_schema_raw("table1", version = "v1.2.3")
+conf$get_schema_tidy("table1", version = "v1.2.3")
+```
+
+For `csv-nohead-long` tables, `get_col_map()` returns the raw-to-tidy metric-name
+mapping used inside the tool's `tidy_*` method:
+
+```{r config_col_map}
+conf$get_col_map("table5")
 ```
 
 ## `Tool` {.tabset .tabset-pills}
@@ -182,10 +217,10 @@ is used internally to find files of interest and infer their schemas:
 ```{r tool1_conf}
 t1$config
 t1$config$get_patterns()
-t1$get_schema_raw("table1", version = "v1.2.3")
-# t1$get_schema_raw("table1", version = "latest") # default
-t1$get_schema_tidy("table1", version = "v1.2.3")
-# t1$get_schema_tidy("table1", version = "latest") # default
+t1$config$get_schema_raw("table1", version = "v1.2.3")
+# t1$config$get_schema_raw("table1", version = "latest") # default
+t1$config$get_schema_tidy("table1", version = "v1.2.3")
+# t1$config$get_schema_tidy("table1", version = "latest") # default
 ```
 
 ### list
@@ -193,7 +228,7 @@ t1$get_schema_tidy("table1", version = "v1.2.3")
 We can list files that can be parsed with `list_files()`:
 
 ```{r tool1_list}
-(lf <- t1$list_files())
+lf <- t1$list_files()
 lf |> dplyr::slice(1) |> str()
 ```
 
@@ -205,11 +240,12 @@ that this function is called on the object and not assigned anywhere:
 ```{r tool1_tidy}
 # this will create a new field tbls containing the tidy data (and optionally
 # the 'raw' parsed data)
-t1$tidy(do_tidy = TRUE, keep_raw = TRUE)
-t1$tbls
-t1$tbls$raw[[1]] |> dplyr::glimpse()
+t1$tidy(keep_raw = TRUE)
+tbls <- t1$get_tbls()
+tbls
+tbls$raw[[1]] |> dplyr::glimpse()
 # the tidy tibbles are nested to allow for more than one tidy tibble per file
-t1$tbls$tidy[[1]][["data"]][[1]] |> dplyr::glimpse()
+tbls$tidy[[1]][["data"]][[1]] |> dplyr::glimpse()
 ```
 
 ### filter
@@ -221,9 +257,9 @@ exclude in the analysis:
 ```{r tool1_filter}
 # create new Tool1 object
 t2 <- nemo::Tool1$new(path = tool1_path)
-t2$files
+t2$list_files()
 t2$filter_files(include = c("tool1_table2", "tool1_table3"))
-t2$files
+t2$list_files()
 ```
 
 ### write
@@ -239,7 +275,7 @@ use the prefix of the file basename.
 
 ```{r tool1_write}
 t2$tidy() # first need to tidy
-outdir1 <- tempdir()
+outdir1 <- file.path(tempdir(), "tool1_write")
 fmt <- "csv"
 t2$write(
   output_dir = outdir1,
@@ -255,25 +291,26 @@ wfiles |>
 # readr::read_csv(wfiles$path[1], show_col_types = FALSE) # see tidywf/tidywigits#137
 ```
 
-### wrangle
+### run
 
-The `wrangle` function is a convenient wrapper for the process of filtering,
+The `run` function is a convenient wrapper for the process of filtering,
 tidying, and writing.
 
-```{r wrangle1}
+```{r run1}
 t3 <- nemo::Tool1$new(path = tool1_path)
-outdir2 <- file.path(tempdir(), "t3") |> fs::dir_create()
-t3$files
-t3$wrangle(
+outdir2 <- file.path(tempdir(), "t3")
+t3$list_files()
+t3$run(
   output_dir = outdir2,
   format = "tsv",
-  input_id = "run_t3"
+  input_id = "run_t3",
+  output_id = "out456",
+  prefix_include = TRUE
 )
 wfiles2 <- fs::dir_info(outdir2) |>
   dplyr::mutate(bname = basename(.data$path))
 wfiles2 |>
   dplyr::select("bname", "size", "type")
-# no output_id or input_prefix specified
 tbl1_path <- wfiles2$path[grep("tool1_table1", wfiles2$bname)[1]]
 readr::read_tsv(tbl1_path, show_col_types = FALSE)
 ```
@@ -287,17 +324,17 @@ tidy tables from a variety of bioinformatic tools. See `?Workflow`.
 For example, {nemo} contains a `Workflow1` class as a `Workflow` child (containing
 only a single `Tool1` for simplicity). Similarly to `Tool`, a `Workflow` object
 contains functions such as `filter_files`, `list_files`, `tidy`, `write` and
-`wrangle`:
+`run`:
 
 ```{r w1_init}
 w <- system.file("extdata/tool1", package = "nemo") |>
   nemo::Workflow1$new()
-outdir3 <- file.path(tempdir(), "oa") |> fs::dir_create()
+outdir3 <- file.path(tempdir(), "w1")
 w$list_files()
-x <- w$wrangle(
+x <- w$run(
   output_dir = outdir3,
   format = "tsv",
-  input_id = "workflow1_run1",
+  input_id = "wf1_run1",
   output_id = "out1",
   prefix_include = TRUE
 )
@@ -310,7 +347,7 @@ wfiles3 |>
 
 ## Metadata
 
-After each `Workflow$write()` or `Workflow$wrangle()` call (for non-`db` formats),
+After each `Workflow$write()` or `Workflow$run()` call (for non-`db` formats),
 a `metadata.parquet` file is written directly to the output directory alongside
 the tidy tables.
 It is a single-row tibble capturing the run context: IDs, input/output paths,
