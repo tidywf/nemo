@@ -4,17 +4,14 @@
 \alias{config_prep_multi}
 \title{Prepare config for multiple raw files}
 \usage{
-config_prep_multi(x, tool_descr = NULL)
+config_prep_multi(x)
 }
 \arguments{
 \item{x}{(\code{tibble()})\cr
 Tibble with columns \code{name}, \code{descr}, \code{pat}, \code{type}, and \code{path}.}
-
-\item{tool_descr}{(\code{character(1)})\cr
-Tool description.}
 }
 \value{
-A named list with the config info.
+A list \code{list(tables = ...)} ready to write with \code{config_prep_write()}.
 }
 \description{
 Prepare config for multiple raw files
@@ -30,6 +27,5 @@ x <- tibble::tibble(
   type = c("txt", "txt"),
   path = c(path1, path2)
 )
-tool_descr <- "Tool1 does amazing things."
-config <- config_prep_multi(x, tool_descr)
+config <- config_prep_multi(x)
 }

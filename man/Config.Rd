@@ -49,12 +49,6 @@ Package name tool belongs to (for config lookup).}
 
 \item{\code{tables}}{(\code{list()})\cr
 Tables list (parsed from schema.yaml).}
-
-\item{\code{schemas_raw}}{(\code{tibble()})\cr
-All raw schemas for tool (versioned, for schema_guess).}
-
-\item{\code{schemas_tidy}}{(\code{tibble()})\cr
-All tidy schemas for tool (versioned, computed once at init).}
 }
 \if{html}{\out{</div>}}
 }

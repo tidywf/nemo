@@ -74,13 +74,6 @@ Config <- R6::R6Class(
     #' @field tables (`list()`)\cr
     #' Tables list (parsed from schema.yaml).
     tables = NULL,
-    #' @field schemas_raw (`tibble()`)\cr
-    #' All raw schemas for tool (versioned, for schema_guess).
-    schemas_raw = NULL,
-    #' @field schemas_tidy (`tibble()`)\cr
-    #' All tidy schemas for tool (versioned, computed once at init).
-    schemas_tidy = NULL,
-
     #' @description Create a new Config object.
     #' @param tool (`character(1)`)\cr
     #' Tool name.
@@ -89,15 +82,15 @@ Config <- R6::R6Class(
     #' @return (`R6::R6Class()`)\cr
     #' R6 object.
     initialize = function(tool, pkg) {
-      stopifnot("tool not single char string" = rlang::is_scalar_character(tool))
-      stopifnot("pkg not single char string" = rlang::is_scalar_character(pkg))
+      nemo_assert_scalar_chr(tool)
+      nemo_assert_scalar_chr(pkg)
       tool <- tolower(tool)
       self$tool <- tool
       self$pkg <- pkg
       self$tables <- private$read()[["tables"]]
       private$schemas_cache <- private$compute_schemas()
-      self$schemas_raw <- private$derive_schema(private$schemas_cache, "raw")
-      self$schemas_tidy <- private$derive_schema(private$schemas_cache, "tidy")
+      private$schemas_raw <- private$derive_schema(private$schemas_cache, "raw")
+      private$schemas_tidy <- private$derive_schema(private$schemas_cache, "tidy")
     },
 
     #' @description Print details about the Config.
@@ -156,13 +149,13 @@ Config <- R6::R6Class(
     #' @return (`tibble()`)\cr
     #' Table `name`, `tbl_description`, `version`, and `schema`
     #' (list-col of tibble(field, type)).
-    get_schemas_raw = function() self$schemas_raw,
+    get_schemas_raw = function() private$schemas_raw,
 
     #' @description Return tidy schemas for all tables.
     #' @return (`tibble()`)\cr
     #' Table `name`, `tbl_description`, `version`, and `schema`
     #' (list-col of tibble(field, type)).
-    get_schemas_tidy = function() self$schemas_tidy,
+    get_schemas_tidy = function() private$schemas_tidy,
 
     #' @description Return both raw and tidy schemas for all tables.
     #' @return (`tibble()`)\cr
@@ -178,7 +171,7 @@ Config <- R6::R6Class(
     #' @return (`tibble()`)\cr
     #' Table `version`, `field` and `type`.
     get_schema_raw = function(x = NULL, version = NULL) {
-      private$get_schema(x, version, self$schemas_raw)
+      private$get_schema(x, version, private$schemas_raw)
     },
     #' @description Get tidy schema for a specific table and optional version.
     #' @param x (`character(1)`)\cr
@@ -188,7 +181,7 @@ Config <- R6::R6Class(
     #' @return (`tibble()`)\cr
     #' Table `version`, `field` and `type`.
     get_schema_tidy = function(x = NULL, version = NULL) {
-      private$get_schema(x, version, self$schemas_tidy)
+      private$get_schema(x, version, private$schemas_tidy)
     },
     #' @description Validate schemas.
     #' Intentionally soft: returns `FALSE` + warning (not `stop()`) so callers
@@ -198,12 +191,12 @@ Config <- R6::R6Class(
     validate_schemas = function() {
       valid_types <- c(char = "c", int = "i", float = "d")
       valid_types_print <- glue::glue_collapse(valid_types, sep = ", ", last = " or ")
-      invalid <- self$schemas_raw |>
+      invalid <- private$schemas_raw |>
         tidyr::unnest("schema") |>
         dplyr::mutate(invalid_type = !.data$type %in% valid_types) |>
         dplyr::filter(.data$invalid_type) |>
         dplyr::mutate(
-          warn = glue::glue(
+          warn = glue(
             "{.data$name} -> {.data$version} -> {.data$field} -> {.data$type}"
           )
         )
@@ -226,7 +219,7 @@ Config <- R6::R6Class(
     #' @param version (`character(1)`)\cr
     #' Version. If NULL, uses the latest version.
     get_col_map = function(x = NULL, version = NULL) {
-      stopifnot("x not single char string" = rlang::is_scalar_character(x))
+      nemo_assert_scalar_chr(x)
       assertthat::assert_that(
         x %in% names(self$tables),
         msg = glue("{x} not found in tables for {self$tool}.")
@@ -239,11 +232,9 @@ Config <- R6::R6Class(
       versions <- tbl_rows[["version"]]
       if (is.null(version)) {
         version <- versions[length(versions)]
+      } else {
+        private$assert_version(x, version, versions)
       }
-      assertthat::assert_that(
-        version %in% versions,
-        msg = glue("{version} not found in versions for {x} in {self$tool}.")
-      )
       tbl_rows |>
         dplyr::filter(.data$version == .env$version) |>
         tidyr::unnest("schema") |>
@@ -251,6 +242,14 @@ Config <- R6::R6Class(
     }
   ), # end public
   private = list(
+    schemas_raw = NULL,
+    schemas_tidy = NULL,
+    assert_version = function(x, version, versions) {
+      assertthat::assert_that(
+        version %in% versions,
+        msg = glue("{version} not found in versions for {x} in {self$tool}.")
+      )
+    },
     read = function() {
       pkg_config_path <- system.file("config/tools", package = self$pkg)
       assertthat::assert_that(
@@ -322,7 +321,7 @@ Config <- R6::R6Class(
         )
     },
     get_schema = function(x, version, schemas) {
-      stopifnot("x must be a single character string" = rlang::is_scalar_character(x))
+      nemo_assert_scalar_chr(x)
       assertthat::assert_that(
         x %in% schemas[["name"]],
         msg = glue("{x} not found in schemas for {self$tool}.")
@@ -330,10 +329,7 @@ Config <- R6::R6Class(
       res <- schemas |>
         dplyr::filter(.data$name == x)
       if (!is.null(version)) {
-        assertthat::assert_that(
-          version %in% res[["version"]],
-          msg = glue("{version} not found in versions for {x} in {self$tool}.")
-        )
+        private$assert_version(x, version, res[["version"]])
         res <- res |>
           dplyr::filter(.data$version == .env$version)
       }
@@ -361,55 +357,74 @@ config_sort_versions <- function(versions) {
 #' Prepare config schema from raw file
 #'
 #' @description
-#' Prepares config schema from raw file.
+#' Scaffolds a schema tibble from a raw file. The `tidy` column is a
+#' best-effort snake_case conversion — edit the YAML after writing.
 #'
 #' @param path (`character(1)`)\cr
 #' File path.
+#' @param v (`character(1)`)\cr
+#' Version string to assign to all columns (default `"latest"`).
 #' @param ... Passed on to `readr::read_delim`.
-#' @returns A tibble with columns `field` and `type`, each single-quoted for
-#' prettier YAML export.
+#' @returns A tibble with columns `raw`, `tidy`, `type`, `description`,
+#' and `versions` (list-col of `list(v)`).
 #' @examples
 #' path <- system.file("extdata", "tool1/latest/sampleA.tool1.table1.tsv", package = "nemo")
 #' (x <- config_prep_raw_schema(path = path, delim = "\t"))
 #' @testexamples
-#' expect_equal(x[1, "field", drop = T], "'SampleID'")
+#' expect_named(x, c("raw", "tidy", "type", "description", "versions"))
+#' expect_equal(nrow(x), 6L)
+#' expect_equal(x[1, "raw",  drop = TRUE], "SampleID")
+#' expect_equal(x[1, "tidy", drop = TRUE], "sample_id")
+#' expect_equal(x[1, "type", drop = TRUE], "char")
+#' expect_equal(unlist(x[[1, "versions"]]), "latest")
 #' @export
-config_prep_raw_schema <- function(path, ...) {
+config_prep_raw_schema <- function(path, v = "latest", ...) {
   type_map <- c(
-    "character" = "'char'",
-    "integer" = "'int'",
-    "numeric" = "'float'",
-    "logical" = "'char'"
+    "character" = "char",
+    "integer" = "int",
+    "numeric" = "float",
+    "logical" = "char"
   )
+  .to_snake <- function(s) {
+    gsub(
+      "^_+|_+$",
+      "",
+      gsub("[^a-z0-9]+", "_", tolower(gsub("([[:lower:]])([[:upper:]])", "\\1_\\2", s)))
+    )
+  }
   path |>
     readr::read_delim(n_max = 100, show_col_types = FALSE, ...) |>
     purrr::map_chr(class) |>
-    tibble::enframe(name = "field", value = "type") |>
+    tibble::enframe(name = "raw", value = "type") |>
     dplyr::mutate(
-      type = type_map[.data$type],
-      field = paste0("'", .data$field, "'")
-    )
+      tidy = .to_snake(.data$raw),
+      type = unname(type_map[.data$type]),
+      description = "",
+      versions = purrr::map(.data$raw, \(.) list(v))
+    ) |>
+    dplyr::select("raw", "tidy", "type", "description", "versions")
 }
 
 #' Prepare config from raw file
 #'
 #' @description
-#' Prepares config from raw file.
+#' Scaffolds a single-table config entry from a raw file. Part of the
+#' `config_prep_*` family for bootstrapping a new `schema.yaml`.
 #'
 #' @param path (`character(1)`)\cr
 #' File path.
 #' @param name (`character(1)`)\cr
-#' File nickname.
+#' Table name (key in `tables:`).
 #' @param descr (`character(1)`)\cr
-#' File description.
+#' Table description.
 #' @param pat (`character(1)`)\cr
-#' File pattern.
+#' File pattern (regex).
 #' @param type (`character(1)`)\cr
-#' File type.
+#' File type (`ftype`).
 #' @param v (`character(1)`)\cr
-#' File version.
+#' Version string to assign to all columns (default `"latest"`).
 #' @param ... Passed on to `readr::read_delim`.
-#' @returns A named list with the config info.
+#' @returns A named list matching the `tables:` entry format for `schema.yaml`.
 #' @examples
 #' path <- system.file("extdata", "tool1/latest/sampleA.tool1.table1.tsv", package = "nemo")
 #' name <- "table1"
@@ -417,17 +432,22 @@ config_prep_raw_schema <- function(path, ...) {
 #' pat <- "\\.tool1\\.table1\\.tsv$"
 #' l <- config_prep_raw(path, name, descr, pat)
 #' @testexamples
-#' expect_equal(names(l[[1]]), c("description", "pattern", "ftype", "schema"))
+#' expect_equal(names(l[[1]]), c("description", "pattern", "ftype", "columns"))
+#' expect_equal(length(l[[1]][["columns"]]), 6L)
+#' col1 <- l[[1]][["columns"]][[1]]
+#' expect_named(col1, c("raw", "tidy", "type", "description", "versions"))
+#' expect_equal(col1[["raw"]], "SampleID")
+#' expect_equal(col1[["tidy"]], "sample_id")
 #' @export
 config_prep_raw <- function(path, name, descr, pat, type = "txt", v = "latest", ...) {
-  schema <- config_prep_raw_schema(path = path, ...)
-  attr(pat, "quoted") <- TRUE
+  schema <- config_prep_raw_schema(path = path, v = v, ...)
+  columns <- purrr::pmap(schema, list)
   list(
     list(
-      description = glue("'{descr}'"),
+      description = descr,
       pattern = pat,
-      ftype = glue("'{type}'"),
-      schema = list(schema) |> purrr::set_names(v)
+      ftype = type,
+      columns = columns
     )
   ) |>
     purrr::set_names(name)
@@ -437,10 +457,8 @@ config_prep_raw <- function(path, name, descr, pat, type = "txt", v = "latest", 
 #'
 #' @param x (`tibble()`)\cr
 #' Tibble with columns `name`, `descr`, `pat`, `type`, and `path`.
-#' @param tool_descr (`character(1)`)\cr
-#' Tool description.
 #'
-#' @returns A named list with the config info.
+#' @returns A list `list(tables = ...)` ready to write with `config_prep_write()`.
 #'
 #' @examples
 #' dir1 <-  "extdata/tool1/latest"
@@ -453,29 +471,25 @@ config_prep_raw <- function(path, name, descr, pat, type = "txt", v = "latest", 
 #'   type = c("txt", "txt"),
 #'   path = c(path1, path2)
 #' )
-#' tool_descr <- "Tool1 does amazing things."
-#' config <- config_prep_multi(x, tool_descr)
+#' config <- config_prep_multi(x)
+#' @testexamples
+#' expect_equal(names(config), "tables")
+#' expect_equal(names(config[["tables"]]), c("table1", "table2"))
+#' tbl1 <- config[["tables"]][["table1"]]
+#' expect_equal(names(tbl1), c("description", "pattern", "ftype", "columns"))
+#' expect_equal(length(tbl1[["columns"]]), 6L)
+#' expect_named(tbl1[["columns"]][[1]], c("raw", "tidy", "type", "description", "versions"))
 #' @export
-config_prep_multi <- function(x, tool_descr = NULL) {
+config_prep_multi <- function(x) {
   stopifnot(
     tibble::is_tibble(x),
-    all(c("name", "descr", "pat", "type", "path") %in% colnames(x)),
-    !is.null(tool_descr)
+    all(c("name", "descr", "pat", "type", "path") %in% colnames(x))
   )
-  l <- x |>
-    dplyr::rowwise() |>
-    dplyr::mutate(
-      config = config_prep_raw(
-        path = .data$path,
-        name = .data$name,
-        descr = .data$descr,
-        pat = .data$pat,
-        type = .data$type
-      )
-    ) |>
-    dplyr::ungroup() |>
-    dplyr::pull("config")
-  list(description = glue::glue("'{tool_descr}'"), raw = l)
+  tables <- purrr::pmap(x, function(name, descr, pat, type, path) {
+    config_prep_raw(path = path, name = name, descr = descr, pat = pat, type = type)
+  }) |>
+    purrr::flatten()
+  list(tables = tables)
 }
 
 #' Write config to YAML file
@@ -487,8 +501,31 @@ config_prep_multi <- function(x, tool_descr = NULL) {
 #'
 #' @returns Nothing, called for side effects.
 #'
+#' @examples
+#' dir1 <- "extdata/tool1/latest"
+#' path1 <- system.file(dir1, "sampleA.tool1.table1.tsv", package = "nemo")
+#' path2 <- system.file(dir1, "sampleA.tool1.table2.tsv", package = "nemo")
+#' x <- tibble::tibble(
+#'   name = c("table1", "table2"),
+#'   descr = c("Table1 from Tool1.", "Table2 from Tool1."),
+#'   pat = c("\\.tool1\\.table1\\.tsv$", "\\.tool1\\.table2\\.tsv$"),
+#'   type = c("txt", "txt"),
+#'   path = c(path1, path2)
+#' )
+#' config <- config_prep_multi(x)
+#' out <- tempfile(fileext = ".yaml")
+#' config_prep_write(config, out)
+#' @testexamples
+#' parsed <- yaml::read_yaml(out)
+#' expect_equal(names(parsed), "tables")
+#' expect_equal(names(parsed[["tables"]]), c("table1", "table2"))
+#' tbl1 <- parsed[["tables"]][["table1"]]
+#' expect_equal(names(tbl1), c("description", "pattern", "ftype", "columns"))
+#' col1 <- tbl1[["columns"]][[1]]
+#' expect_named(col1, c("raw", "tidy", "type", "description", "versions"))
+#' expect_equal(col1[["raw"]], "SampleID")
+#' expect_equal(col1[["versions"]][[1]], "latest")
 #' @export
 config_prep_write <- function(x, out) {
   yaml::write_yaml(x, out, column.major = FALSE)
-  system2("sed", args = c("-i", "", "s/'''/'/g", out))
 }
