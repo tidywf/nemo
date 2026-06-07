@@ -124,13 +124,13 @@ config_prep_raw <- function(path, name, descr, pat, type = "txt", v = "latest", 
 #' @export
 config_prep_multi <- function(x) {
   if (!tibble::is_tibble(x)) {
-    stop("'x' must be a tibble.", call. = FALSE)
+    nemo_stop("'x' must be a tibble.")
   }
   if (!all(c("name", "descr", "pat", "type", "path") %in% colnames(x))) {
-    stop("'x' must have columns: name, descr, pat, type, path.", call. = FALSE)
+    nemo_stop("'x' must have columns: name, descr, pat, type, path.")
   }
   if (nrow(x) == 0) {
-    stop("'x' must have at least one row.", call. = FALSE)
+    nemo_stop("'x' must have at least one row.")
   }
   tables <- purrr::pmap(
     dplyr::select(x, "name", "descr", "pat", "type", "path"),

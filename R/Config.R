@@ -85,7 +85,7 @@ Config <- R6::R6Class(
       private$tables <- private$read()
       invalid <- private$collect_invalid_schema_types()
       if (nrow(invalid) > 0) {
-        stop(private$format_invalid_types_msg(invalid), call. = FALSE)
+        nemo_stop(private$format_invalid_types_msg(invalid))
       }
       private$schemas_both <- private$compute_schemas()
       private$schemas_raw <- private$derive_schema(private$schemas_both, "raw")
@@ -237,7 +237,7 @@ Config <- R6::R6Class(
     },
     assert_version = function(x, version, versions) {
       if (!version %in% versions) {
-        stop(glue("{version} not found in versions for {x} in {self$tool}."), call. = FALSE)
+        nemo_stop(glue("{version} not found in versions for {x} in {self$tool}."))
       }
     },
     # Resolve a version arg: NULL defaults to the last sorted version (highest
@@ -252,32 +252,26 @@ Config <- R6::R6Class(
     read = function() {
       pkg_config_path <- system.file("config/tools", package = self$pkg)
       if (!dir.exists(pkg_config_path)) {
-        stop(
-          glue("Config directory not found for package '{self$pkg}': {pkg_config_path}"),
-          call. = FALSE
-        )
+        nemo_stop(glue("Config directory not found for package '{self$pkg}': {pkg_config_path}"))
       }
       tool_path <- file.path(pkg_config_path, self$tool)
       if (!dir.exists(tool_path)) {
-        stop(glue("No config for {self$tool} under {pkg_config_path}."), call. = FALSE)
+        nemo_stop(glue("No config for {self$tool} under {pkg_config_path}."))
       }
       schema_path <- file.path(tool_path, "schema.yaml")
       if (!file.exists(schema_path)) {
-        stop(glue("schema.yaml not found for {self$tool} at {schema_path}."), call. = FALSE)
+        nemo_stop(glue("schema.yaml not found for {self$tool} at {schema_path}."))
       }
       cfg <- yaml::read_yaml(schema_path)
       if (!"tables" %in% names(cfg)) {
-        stop(
-          glue("schema.yaml for {self$tool} is missing the top-level 'tables' key."),
-          call. = FALSE
-        )
+        nemo_stop(glue("schema.yaml for {self$tool} is missing the top-level 'tables' key."))
       }
       cfg[["tables"]]
     },
     get_field_for_table = function(x, key) {
       nemo_assert_scalar_chr(x)
       if (!x %in% names(private$tables)) {
-        stop(glue("{x} not found in tables for {self$tool}."), call. = FALSE)
+        nemo_stop(glue("{x} not found in tables for {self$tool}."))
       }
       private$tables[[x]][[key]]
     },
@@ -335,7 +329,7 @@ Config <- R6::R6Class(
         nemo_assert_scalar_chr(version)
       }
       if (!x %in% private$schemas_both[["name"]]) {
-        stop(glue("{x} not found in schemas for {self$tool}."), call. = FALSE)
+        nemo_stop(glue("{x} not found in schemas for {self$tool}."))
       }
       rows <- private$schemas_both |> dplyr::filter(.data$name == x)
       version <- private$resolve_version(x, version, rows[["version"]])
@@ -346,7 +340,7 @@ Config <- R6::R6Class(
     get_schema = function(x, version, schemas) {
       nemo_assert_scalar_chr(x)
       if (!x %in% schemas[["name"]]) {
-        stop(glue("{x} not found in schemas for {self$tool}."), call. = FALSE)
+        nemo_stop(glue("{x} not found in schemas for {self$tool}."))
       }
       res <- schemas |>
         dplyr::filter(.data$name == x)

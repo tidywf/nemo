@@ -37,7 +37,7 @@ meta_files_from_written <- function(written_files) {
 #' @export
 nemo_metadata <- function(files, pkgs, input_id, output_id, input_dirs, output_dir) {
   if (!is.data.frame(files)) {
-    stop("'files' must be a data.frame.", call. = FALSE)
+    nemo_stop("'files' must be a data.frame.")
   }
   nemo_assert_chr(pkgs)
   nemo_assert_chr(input_dirs)
@@ -50,10 +50,7 @@ nemo_metadata <- function(files, pkgs, input_id, output_id, input_dirs, output_d
   }
   missing_pkgs <- pkgs[!purrr::map_lgl(pkgs, pkg_found)]
   if (length(missing_pkgs) > 0) {
-    stop(
-      glue("Packages not installed: {glue::glue_collapse(missing_pkgs, sep = ', ')}."),
-      call. = FALSE
-    )
+    nemo_stop(glue("Packages not installed: {glue::glue_collapse(missing_pkgs, sep = ', ')}."))
   }
   pkg_versions <- tibble::tibble(
     name = pkgs,

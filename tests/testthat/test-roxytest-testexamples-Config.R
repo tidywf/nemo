@@ -49,7 +49,7 @@ test_that("Function Config() @ L62", {
 })
 
 
-test_that("Function config_sort_versions() @ L390", {
+test_that("Function config_sort_versions() @ L384", {
   
   config_sort_versions(c("v2.0.0", "v1.0.0", "latest"))
   config_sort_versions(c("latest", "v1.2.3"))

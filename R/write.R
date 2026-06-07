@@ -36,7 +36,7 @@
 #' @export
 nemo_write <- function(d, fpfix = NULL, format = "tsv", dbconn = NULL, dbtab = NULL) {
   if (!is.data.frame(d)) {
-    stop("'d' must be a data.frame.", call. = FALSE)
+    nemo_stop("'d' must be a data.frame.")
   }
   if (format == "db") {
     nemo_assert_not_null(dbconn)
@@ -79,7 +79,7 @@ nemo_write <- function(d, fpfix = NULL, format = "tsv", dbconn = NULL, dbtab = N
 valid_out_fmt <- function(x, choices = nemo_out_formats()) {
   y <- glue::glue_collapse(choices, sep = ", ", last = " or ")
   if (!rlang::is_scalar_character(x) || !x %in% choices) {
-    stop(glue("Output format should be _one_ of {y}."), call. = FALSE)
+    nemo_stop(glue("Output format should be _one_ of {y}."))
   }
   invisible(TRUE)
 }
@@ -113,7 +113,7 @@ nemo_osfx <- function(fpfix, format) {
   # is safe to call standalone without a prior validation step.
   valid_out_fmt(format)
   if (format == "db") {
-    stop("nemo_osfx() is not applicable for format 'db'.", call. = FALSE)
+    nemo_stop("nemo_osfx() is not applicable for format 'db'.")
   }
   fpfix <- as.character(fpfix)
   sfx <- c(tsv = "tsv.gz", csv = "csv.gz", parquet = "parquet", rds = "rds")

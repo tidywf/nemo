@@ -36,6 +36,6 @@ nemo_cli <- function(pkg, descr, wf = NULL) {
   } else {
     all_subp <- c("'tidy'", "'list'") |>
       glue::glue_collapse(sep = ", ", last = " or ")
-    stop("Need to specify one of the following: ", all_subp)
+    nemo_stop("Need to specify one of the following: ", all_subp)
   }
 }

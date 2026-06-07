@@ -93,7 +93,7 @@ cli_tidy_parse_args <- function(args, wf = NULL, dbdrv = NULL) {
   output_dir <- args$output_dir
   if (args$format != "db") {
     if (is.null(output_dir)) {
-      stop("Output directory must be specified when format is not 'db'.")
+      nemo_stop("Output directory must be specified when format is not 'db'.")
     }
     fs::dir_create(output_dir)
     output_dir <- normalizePath(output_dir)

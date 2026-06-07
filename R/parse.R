@@ -113,13 +113,10 @@ parse_file_nohead <- function(fpath, pname, schemas_all, delim = "\t", ...) {
     dplyr::select("version", "schema") |>
     dplyr::filter(purrr::map_int(.data$schema, nrow) == ncols)
   if (nrow(schema) != 1) {
-    stop(
-      glue(
-        "Expected exactly one schema version matching {ncols} columns ",
-        "for '{pname}', found {nrow(schema)}."
-      ),
-      call. = FALSE
-    )
+    nemo_stop(glue(
+      "Expected exactly one schema version matching {ncols} columns ",
+      "for '{pname}', found {nrow(schema)}."
+    ))
   }
   version <- schema[["version"]]
   schema_deframed <- schema[["schema"]][[1]] |>
@@ -201,29 +198,26 @@ file_hdr <- function(fpath, delim = "\t", n_max = 0, ...) {
 #' @export
 schema_guess <- function(pname, cnames, schemas_all) {
   if (!rlang::is_bare_character(cnames)) {
-    stop("'cnames' must be a bare character vector.", call. = FALSE)
+    nemo_stop("'cnames' must be a bare character vector.")
   }
   if (!tibble::is_tibble(schemas_all)) {
-    stop("'schemas_all' must be a tibble.", call. = FALSE)
+    nemo_stop("'schemas_all' must be a tibble.")
   }
   if (!all(c("name", "version", "schema") %in% colnames(schemas_all))) {
-    stop("'schemas_all' must have columns: name, version, schema.", call. = FALSE)
+    nemo_stop("'schemas_all' must have columns: name, version, schema.")
   }
   if (!pname %in% schemas_all[["name"]]) {
-    stop(glue("'{pname}' not found in schemas_all$name."), call. = FALSE)
+    nemo_stop(glue("'{pname}' not found in schemas_all$name."))
   }
   s <- schemas_all |>
     dplyr::filter(.data$name == pname) |>
     dplyr::select("version", "schema") |>
     dplyr::filter(purrr::map_lgl(.data$schema, \(sch) identical(cnames, sch[["field"]])))
   if (nrow(s) != 1) {
-    stop(
-      glue(
-        "Expected 1 matching schema for '{pname}', found {nrow(s)}. ",
-        "Column names seen: {glue::glue_collapse(cnames, sep = ', ')}."
-      ),
-      call. = FALSE
-    )
+    nemo_stop(glue(
+      "Expected 1 matching schema for '{pname}', found {nrow(s)}. ",
+      "Column names seen: {glue::glue_collapse(cnames, sep = ', ')}."
+    ))
   }
   version <- s$version
   schema <- s |>
@@ -267,7 +261,7 @@ schema_guess <- function(pname, cnames, schemas_all) {
 parse_file_keyvalue <- function(fpath, pname, schemas_all, delim = "\t", ...) {
   ncols <- count_file_cols(fpath, delim, ...)
   if (ncols != 2) {
-    stop(glue("Expected 2 columns, but found {ncols} in {fpath}"), call. = FALSE)
+    nemo_stop(glue("Expected 2 columns, but found {ncols} in {fpath}"))
   }
   d <- readr::read_delim(
     file = fpath,

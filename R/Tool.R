@@ -199,13 +199,10 @@ Tool <- R6::R6Class(
       }
       conflicts <- intersect(names(new_cols), names(d))
       if (length(conflicts) > 0) {
-        stop(
-          glue(
-            "Tidy table '{tidy_name}' already contains reserved column(s): ",
-            "{glue::glue_collapse(conflicts, sep = ', ')}."
-          ),
-          call. = FALSE
-        )
+        nemo_stop(glue(
+          "Tidy table '{tidy_name}' already contains reserved column(s): ",
+          "{glue::glue_collapse(conflicts, sep = ', ')}."
+        ))
       }
       dplyr::relocate(
         dplyr::mutate(d, !!!new_cols),
@@ -246,7 +243,7 @@ Tool <- R6::R6Class(
         "csv" = private$parse_file(x, table_name, delim = ","),
         "txt-nohead" = private$parse_file_nohead(x, table_name),
         "txt-keyvalue" = private$parse_file_keyvalue(x, table_name),
-        stop(glue(
+        nemo_stop(glue(
           "No default parser for ftype '{ftype}' (table '{table_name}'). ",
           "Define parse_{table_name}() in the subclass."
         ))
@@ -270,13 +267,10 @@ Tool <- R6::R6Class(
       version <- get_tbl_version_attr(x)
       schema <- self$config$get_schema_tidy(table_name, version = version)
       if (ncol(x) != nrow(schema)) {
-        stop(
-          glue(
-            "tidy_file: column count mismatch for '{table_name}' (version '{version}'): ",
-            "parsed data has {ncol(x)} column(s) but schema defines {nrow(schema)}."
-          ),
-          call. = FALSE
-        )
+        nemo_stop(glue(
+          "tidy_file: column count mismatch for '{table_name}' (version '{version}'): ",
+          "parsed data has {ncol(x)} column(s) but schema defines {nrow(schema)}."
+        ))
       }
       colnames(x) <- schema[["field"]]
       if (convert_types) {
@@ -342,17 +336,17 @@ Tool <- R6::R6Class(
     #' R6 object.
     initialize = function(name, pkg, path = NULL, files_tbl = NULL) {
       if (is.null(path) && is.null(files_tbl)) {
-        stop("Supply either 'path' or 'files_tbl'.", call. = FALSE)
+        nemo_stop("Supply either 'path' or 'files_tbl'.")
       }
       if (!is.null(path) && !is.null(files_tbl)) {
-        stop("Supply 'path' or 'files_tbl', not both.", call. = FALSE)
+        nemo_stop("Supply 'path' or 'files_tbl', not both.")
       }
       nemo_assert_scalar_chr(name)
       nemo_assert_scalar_chr(pkg)
       if (!is.null(files_tbl)) {
         assert_files_tbl(files_tbl)
       } else if (!dir.exists(path)) {
-        stop(glue("Path does not exist: {path}"), call. = FALSE)
+        nemo_stop(glue("Path does not exist: {path}"))
       }
       self$name <- name
       self$pkg <- pkg
@@ -400,7 +394,7 @@ Tool <- R6::R6Class(
     filter_files = function(include = NULL, exclude = NULL) {
       assert_include_exclude(include, exclude)
       if (private$is_tidied) {
-        stop("Cannot filter files after tidy() has been called.", call. = FALSE)
+        nemo_stop("Cannot filter files after tidy() has been called.")
       }
       known <- paste0(self$name, "_", self$config$get_patterns()$name)
       if (!is.null(include)) {
@@ -489,18 +483,17 @@ Tool <- R6::R6Class(
         return(invisible(self))
       }
       if (!private$is_tidied) {
-        stop("Did you forget to tidy?", call. = FALSE)
+        nemo_stop("Did you forget to tidy?")
       }
       if (write_metadata && format != "db" && is.null(self$path)) {
-        stop(
+        nemo_stop(
           "Cannot write metadata: Tool was initialised with 'files_tbl' and has no 'path'. ",
-          "Set write_metadata = FALSE to suppress metadata writing.",
-          call. = FALSE
+          "Set write_metadata = FALSE to suppress metadata writing."
         )
       }
       if (format != "db") {
         if (is.null(output_dir)) {
-          stop("Output directory must be specified when format is not 'db'.", call. = FALSE)
+          nemo_stop("Output directory must be specified when format is not 'db'.")
         }
         output_dir <- normalizePath(output_dir, mustWork = FALSE)
       }

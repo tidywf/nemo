@@ -92,12 +92,9 @@ Workflow <- R6::R6Class(
       nemo_assert_chr(metapkg)
       nemo_assert_chr(path)
       if (!all(dir.exists(path))) {
-        stop(
-          glue(
-            "Path(s) do not exist: {glue::glue_collapse(path[!dir.exists(path)], sep = ', ')}."
-          ),
-          call. = FALSE
-        )
+        nemo_stop(glue(
+          "Path(s) do not exist: {glue::glue_collapse(path[!dir.exists(path)], sep = ', ')}."
+        ))
       }
       self$name <- name
       self$metapkg <- metapkg
@@ -140,7 +137,7 @@ Workflow <- R6::R6Class(
     filter_files = function(include = NULL, exclude = NULL) {
       assert_include_exclude(include, exclude)
       if (private$is_tidied) {
-        stop("Cannot filter files after tidy() has been called.", call. = FALSE)
+        nemo_stop("Cannot filter files after tidy() has been called.")
       }
       known <- purrr::map(private$tools, \(x) {
         paste0(x$name, "_", x$config$get_patterns()$name)
@@ -242,7 +239,7 @@ Workflow <- R6::R6Class(
         return(invisible(self))
       }
       if (!private$is_tidied) {
-        stop("Did you forget to tidy?", call. = FALSE)
+        nemo_stop("Did you forget to tidy?")
       }
       if (format != "db") {
         # normalise once here so all tools receive a canonical path; Tool$write()
@@ -394,19 +391,19 @@ Workflow <- R6::R6Class(
   private = list(
     validate_tools = function(x) {
       if (!rlang::is_bare_list(x)) {
-        stop("`tools` must be a list.", call. = FALSE)
+        nemo_stop("`tools` must be a list.")
       }
       if (length(x) == 0) {
-        stop("`tools` must not be empty.", call. = FALSE)
+        nemo_stop("`tools` must not be empty.")
       }
       if (is.null(names(x)) || any(names(x) == "")) {
-        stop("`tools` must be a named list.", call. = FALSE)
+        nemo_stop("`tools` must be a named list.")
       }
       if (!all(purrr::map_lgl(x, R6::is.R6Class))) {
-        stop("All elements of `tools` must be R6 classes.", call. = FALSE)
+        nemo_stop("All elements of `tools` must be R6 classes.")
       }
       if (!all(purrr::map_lgl(x, wf_is_tool_subclass))) {
-        stop("All elements of `tools` must inherit from Tool.", call. = FALSE)
+        nemo_stop("All elements of `tools` must inherit from Tool.")
       }
     },
     is_tidied = FALSE,

@@ -51,7 +51,7 @@ list_files_dir <- function(d, max_files = NULL, type = "file") {
 get_tbl_version_attr <- function(tbl) {
   v <- attr(tbl, "file_version")
   if (is.null(v)) {
-    stop("The table does not have the required attribute: file_version", call. = FALSE)
+    nemo_stop("The table does not have the required attribute: file_version")
   }
   v
 }
@@ -100,10 +100,10 @@ empty_tbl <- function(cnames, ctypes = readr::cols(.default = "c")) {
 
 assert_files_tbl <- function(x) {
   if (!tibble::is_tibble(x)) {
-    stop("'files_tbl' must be a tibble.", call. = FALSE)
+    nemo_stop("'files_tbl' must be a tibble.")
   }
   if (!identical(colnames(x), c("bname", "size", "lastmodified", "path"))) {
-    stop("'files_tbl' must have columns: bname, size, lastmodified, path.", call. = FALSE)
+    nemo_stop("'files_tbl' must have columns: bname, size, lastmodified, path.")
   }
 }
 
@@ -154,14 +154,14 @@ nemoverse_wf_dispatch <- function(wf) {
   if (!wf %in% all_wfs) {
     all_wfs_glued <- glue::glue_collapse(all_wfs, sep = ", ", last = " or ")
     msg <- glue("Workflow '{wf}' not found. Available: {all_wfs_glued}")
-    stop(msg, call. = FALSE)
+    nemo_stop(msg)
   }
   x <- wfs[[wf]]
   if (pkg_found(x[["pkg"]])) {
     pkgfun <- getExportedValue(x[["pkg"]], x[["wf"]])
   } else {
     msg <- glue("Package {x[['pkg']]} not found, please install from {x[['repo']]}")
-    stop(msg, call. = FALSE)
+    nemo_stop(msg)
   }
   pkgfun
 }
