@@ -497,15 +497,12 @@ Parsed data in tibble.
 \subsection{Method \code{tidy()}}{
 Tidy a list of files. The result is reflected in the \code{tbls} field.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Tool$tidy(do_tidy = TRUE, keep_raw = FALSE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Tool$tidy(keep_raw = FALSE)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{do_tidy}}{(\code{logical(1)})\cr
-Should the raw parsed tibbles get tidied?}
-
 \item{\code{keep_raw}}{(\code{logical(1)})\cr
 Should the raw parsed tibbles be kept in the final output?}
 }

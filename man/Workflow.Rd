@@ -175,15 +175,12 @@ Bound \code{list_files()} tibbles from all Tools, with a leading \code{tool} col
 \subsection{Method \code{tidy()}}{
 Tidy Workflow files.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Workflow$tidy(do_tidy = TRUE, keep_raw = FALSE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Workflow$tidy(keep_raw = FALSE)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{do_tidy}}{(\code{logical(1)})\cr
-Should the raw parsed tibbles get tidied?}
-
 \item{\code{keep_raw}}{(\code{logical(1)})\cr
 Should the raw parsed tibbles be kept in the final output?}
 }
@@ -206,7 +203,8 @@ Write tidy tibbles.
   input_id = NULL,
   output_id = NULL,
   prefix_include = FALSE,
-  dbconn = NULL
+  dbconn = NULL,
+  write_metadata = TRUE
 )}\if{html}{\out{</div>}}
 }
 
@@ -230,6 +228,10 @@ If \code{TRUE}, prepend an \code{input_prefix} column to each tidy table.}
 
 \item{\code{dbconn}}{(\code{DBIConnection})\cr
 Database connection object (see \code{DBI::dbConnect}).}
+
+\item{\code{write_metadata}}{(\code{logical(1)})\cr
+If \code{TRUE} (default), write a \code{metadata.parquet} file alongside the tidy
+outputs. Set to \code{FALSE} to suppress.}
 }
 \if{html}{\out{</div>}}
 }
@@ -252,7 +254,8 @@ Parse, filter, tidy and write files.
   prefix_include = FALSE,
   dbconn = NULL,
   include = NULL,
-  exclude = NULL
+  exclude = NULL,
+  write_metadata = TRUE
 )}\if{html}{\out{</div>}}
 }
 
@@ -282,6 +285,9 @@ tool_parser names to include (e.g. \code{"tool1_table1"}).}
 
 \item{\code{exclude}}{(\code{character(n)})\cr
 tool_parser names to exclude (e.g. \code{"tool1_table5"}).}
+
+\item{\code{write_metadata}}{(\code{logical(1)})\cr
+If \code{TRUE} (default), write a \code{metadata.parquet} file. Set to \code{FALSE} to suppress.}
 }
 \if{html}{\out{</div>}}
 }

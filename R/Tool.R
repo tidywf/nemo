@@ -116,10 +116,8 @@
 Tool <- R6::R6Class(
   "Tool",
   private = list(
-    # Do files need to be tidied? Used when no files are detected, so we can
-    # use downstream as a bypass.
-    is_tidied = NULL,
-    is_written = NULL,
+    is_tidied = FALSE,
+    is_written = FALSE,
     files_tbl = NULL,
     empty_files_tbl = function() {
       tibble::tibble(
@@ -220,9 +218,6 @@ Tool <- R6::R6Class(
       self$path <- path
       self$config <- Config$new(self$name, pkg = self$pkg)
       private$files_tbl <- files_tbl
-      private$is_tidied <- FALSE
-      private$is_written <- FALSE
-      # upon init, files starts off as the raw list of files
       self$files <- self$list_files(type = "file")
     },
     #' @description Print details about the Tool.
@@ -521,13 +516,11 @@ Tool <- R6::R6Class(
       )
     },
     #' @description Tidy a list of files. The result is reflected in the `tbls` field.
-    #' @param do_tidy (`logical(1)`)\cr
-    #' Should the raw parsed tibbles get tidied?
     #' @param keep_raw (`logical(1)`)\cr
     #' Should the raw parsed tibbles be kept in the final output?
     #' @return (`R6::R6Class()`)\cr
     #' R6 object invisibly.
-    tidy = function(do_tidy = TRUE, keep_raw = FALSE) {
+    tidy = function(keep_raw = FALSE) {
       if (private$is_tidied) {
         return(invisible(self))
       }
@@ -540,16 +533,12 @@ Tool <- R6::R6Class(
         dplyr::rowwise() |>
         dplyr::mutate(
           raw = list(self$.dispatch_parse(.data$path, .data$parser)),
-          tidy = list(if (do_tidy) self$.dispatch_tidy(.data$raw, .data$parser) else NULL)
+          tidy = list(self$.dispatch_tidy(.data$raw, .data$parser))
         ) |>
         dplyr::ungroup()
       if (!keep_raw) {
         d <- d |>
           dplyr::select(-"raw")
-      }
-      if (!do_tidy) {
-        d <- d |>
-          dplyr::select(-"tidy")
       }
       self$tbls <- d
       private$is_tidied <- TRUE
@@ -593,9 +582,6 @@ Tool <- R6::R6Class(
         output_dir <- normalizePath(output_dir)
       }
       assertthat::assert_that(private$is_tidied, msg = "Did you forget to tidy?")
-      if (!is.null(self$tbls) && !"tidy" %in% names(self$tbls)) {
-        stop("Cannot write: tidy() was called with do_tidy = FALSE.", call. = FALSE)
-      }
       if (is.null(self$tbls)) {
         self$written_files <- NULL
         return(invisible(self))
@@ -610,7 +596,7 @@ Tool <- R6::R6Class(
           "tidy"
         ) |>
         tidyr::unnest("tidy", names_sep = "_") |>
-        dplyr::rename(tidy_raw = "tidy_data") |>
+        dplyr::rename(tidy_unnested = "tidy_data") |>
         dplyr::mutate(
           tbl_name = dplyr::if_else(
             .data$parser == .data$tidy_name,
@@ -623,7 +609,7 @@ Tool <- R6::R6Class(
         dplyr::mutate(
           tidy_data = list(
             private$prepend_id_cols(
-              tidy_raw,
+              tidy_unnested,
               .data$tidy_name,
               .data$prefix,
               input_id,
@@ -651,8 +637,8 @@ Tool <- R6::R6Class(
           "tbl_name",
           "outpath"
         )
-      private$is_written <- TRUE
       self$written_files <- d_write
+      private$is_written <- TRUE
       if (write_metadata && format != "db") {
         if (is.null(self$path)) {
           stop(

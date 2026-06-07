@@ -101,11 +101,8 @@ Workflow <- R6::R6Class(
       self$name <- name
       self$metapkg <- metapkg
       private$validate_tools(tools)
-      private$is_tidied <- FALSE
-      private$is_written <- FALSE
       self$path <- normalizePath(path)
       private$files_tbl <- list_files_dir(self$path)
-      # handle everything in a list of Tools
       self$tools <- tools |>
         purrr::map(\(x) x$new(files_tbl = private$files_tbl))
     },
@@ -136,6 +133,10 @@ Workflow <- R6::R6Class(
     #' @return (`R6::R6Class()`)\cr
     #' R6 object invisibly.
     filter_files = function(include = NULL, exclude = NULL) {
+      assertthat::assert_that(
+        !private$is_tidied,
+        msg = "Cannot filter files after tidy() has been called."
+      )
       assert_include_exclude(include, exclude)
       all_parsers <- unlist(purrr::map(self$tools, \(x) unique(x$files$tool_parser)))
       if (!is.null(include)) {
@@ -159,18 +160,15 @@ Workflow <- R6::R6Class(
     #' Bound `list_files()` tibbles from all Tools, with a leading `tool` column.
     list_files = function() private$gather_tool_field("files"),
     #' @description Tidy Workflow files.
-    #' @param do_tidy (`logical(1)`)\cr
-    #' Should the raw parsed tibbles get tidied?
     #' @param keep_raw (`logical(1)`)\cr
     #' Should the raw parsed tibbles be kept in the final output?
     #' @return (`R6::R6Class()`)\cr
     #' R6 object invisibly.
-    tidy = function(do_tidy = TRUE, keep_raw = FALSE) {
-      # if no tidying needed, early return
+    tidy = function(keep_raw = FALSE) {
       if (private$is_tidied) {
         return(invisible(self))
       }
-      purrr::walk(self$tools, \(x) x$tidy(do_tidy = do_tidy, keep_raw = keep_raw))
+      purrr::walk(self$tools, \(x) x$tidy(keep_raw = keep_raw))
       private$is_tidied <- TRUE
       return(invisible(self))
     },
@@ -201,6 +199,7 @@ Workflow <- R6::R6Class(
       dbconn = NULL,
       write_metadata = TRUE
     ) {
+      valid_out_fmt(format)
       assertthat::assert_that(private$is_tidied, msg = "Did you forget to tidy?")
       if (format != "db") {
         fs::dir_create(output_dir)
@@ -372,6 +371,15 @@ Workflow <- R6::R6Class(
         dplyr::bind_rows()
     },
     gather_tool_schemas = function(method_name) {
+      valid_methods <- c("get_schemas_raw", "get_schemas_tidy")
+      if (!method_name %in% valid_methods) {
+        stop(
+          glue(
+            "Invalid method_name '{method_name}'. Must be one of: {glue::glue_collapse(valid_methods, sep = ', ')}."
+          ),
+          call. = FALSE
+        )
+      }
       self$tools |>
         purrr::map(\(x) {
           x$config[[method_name]]() |>
@@ -379,10 +387,8 @@ Workflow <- R6::R6Class(
         }) |>
         dplyr::bind_rows()
     },
-    # Do files need to be tidied? Used when no files are detected, so we can
-    # use downstream as a bypass.
-    is_tidied = NULL,
-    is_written = NULL,
+    is_tidied = FALSE,
+    is_written = FALSE,
     files_tbl = NULL
   ) # private end
 )
