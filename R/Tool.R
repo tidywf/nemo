@@ -93,7 +93,7 @@
 #' meta_c <- arrow::read_parquet(file.path(dir1, "metadata_tool1.parquet"))
 #' expect_named(meta_c, c("input_id", "output_id", "input_dirs", "output_dir", "pkg_versions", "files"))
 #' expect_equal(meta_c$input_id, "run1")
-#' expect_named(toolD$written_files, c("raw_path", "tool_parser", "prefix", "tidy_data", "tbl_name", "outpath"))
+#' expect_named(toolD$written_files, c("raw_path", "tool_parser", "prefix", "tbl_name", "outpath"))
 #' # input_id / output_id / prefix_include column tests
 #' toolE <- Tool$new(name = name, pkg = pkg, path = path)$
 #'   filter_files(include = "tool1_table1")$tidy()
@@ -131,6 +131,52 @@ Tool <- R6::R6Class(
         prefix = character(),
         group = character()
       )
+    },
+    compute_files = function(type = "file") {
+      files_tbl <- private$files_tbl
+      patterns <- self$config$get_patterns() |>
+        dplyr::rename(pat_name = "name", pat_value = "pattern")
+      files <- files_tbl %||% list_files_dir(self$path, type = type)
+      res <- purrr::map(seq_len(nrow(patterns)), \(i) {
+        pat_value <- patterns$pat_value[[i]]
+        idx <- grepl(pat_value, files$bname, perl = TRUE)
+        if (!any(idx)) {
+          return(NULL)
+        }
+        files[idx, ] |>
+          dplyr::mutate(parser = patterns$pat_name[[i]], pattern = pat_value)
+      }) |>
+        dplyr::bind_rows()
+      if (nrow(res) == 0) {
+        return(private$empty_files_tbl())
+      }
+      res <- res |>
+        dplyr::select("parser", "bname", "size", "lastmodified", "path", "pattern")
+      res |>
+        dplyr::mutate(
+          prefix = stringr::str_remove(.data$bname, .data$pattern),
+          prefix = dplyr::if_else(.data$prefix == "", .data$parser, .data$prefix),
+          tool_parser = paste0(self$name, "_", .data$parser)
+        ) |>
+        dplyr::mutate(group = dplyr::row_number(), .by = "bname") |>
+        dplyr::mutate(
+          group = dplyr::if_else(.data$group == 1, "", paste0("_", .data$group)),
+          prefix = paste0(.data$prefix, .data$group)
+        ) |>
+        # two files with different basenames can reduce to the same prefix when
+        # matched by different patterns for the same table (e.g. *.flagstat and
+        # *.flag_counts.tsv both stripping to "sample1"). Append _2, _3, ... to
+        # disambiguate so outputs don't overwrite each other.
+        dplyr::mutate(grp2 = dplyr::row_number(), .by = c("tool_parser", "prefix")) |>
+        dplyr::mutate(
+          prefix = dplyr::if_else(
+            .data$grp2 == 1,
+            .data$prefix,
+            paste0(.data$prefix, "_", .data$grp2)
+          )
+        ) |>
+        dplyr::select(-"grp2") |>
+        dplyr::relocate("tool_parser", .before = 1)
     },
     prepend_id_cols = function(d, tidy_name, prefix, input_id, output_id, prefix_include) {
       new_cols <- c(
@@ -213,7 +259,7 @@ Tool <- R6::R6Class(
       self$path <- path
       self$config <- Config$new(self$name, pkg = self$pkg)
       private$files_tbl <- files_tbl
-      self$files <- self$list_files(type = "file")
+      self$files <- private$compute_files(type = "file")
     },
     #' @description Print details about the Tool.
     #' @param ... (ignored).
@@ -270,11 +316,8 @@ Tool <- R6::R6Class(
       }
       return(invisible(self))
     },
-    #' @description List only files of interest in given tool directory, i.e.
-    #' only those files that match the patterns listed in the tool config.
-    #' @param type (`character(1)`)\cr
-    #' File type(s) to return (e.g. any, file, directory, symlink).
-    #' See `fs::dir_info`.
+    #' @description Return the current file set. Reflects any prior
+    #' `filter_files()` calls — equivalent to reading `$files` directly.
     #' @return (`tibble()`)\cr
     #' A tibble with:
     #' - `tool_parser`: tool name followed by parser name;
@@ -287,51 +330,8 @@ Tool <- R6::R6Class(
     #' - `prefix`: file prefix;
     #' - `group`: if multiple files have the same basename then this is used
     #' as a differentiator.
-    list_files = function(type = "file") {
-      files_tbl <- private$files_tbl
-      patterns <- self$config$get_patterns() |>
-        dplyr::rename(pat_name = "name", pat_value = "pattern")
-      files <- files_tbl %||% list_files_dir(self$path, type = type)
-      res <- purrr::map(seq_len(nrow(patterns)), \(i) {
-        pat_value <- patterns$pat_value[[i]]
-        idx <- grepl(pat_value, files$bname, perl = TRUE)
-        if (!any(idx)) {
-          return(NULL)
-        }
-        files[idx, ] |>
-          dplyr::mutate(parser = patterns$pat_name[[i]], pattern = pat_value)
-      }) |>
-        dplyr::bind_rows()
-      if (nrow(res) == 0) {
-        return(private$empty_files_tbl())
-      }
-      res <- res |>
-        dplyr::select("parser", "bname", "size", "lastmodified", "path", "pattern")
-      res |>
-        dplyr::mutate(
-          prefix = stringr::str_remove(.data$bname, .data$pattern),
-          prefix = dplyr::if_else(.data$prefix == "", .data$parser, .data$prefix),
-          tool_parser = paste0(self$name, "_", .data$parser)
-        ) |>
-        dplyr::mutate(group = dplyr::row_number(), .by = "bname") |>
-        dplyr::mutate(
-          group = dplyr::if_else(.data$group == 1, "", paste0("_", .data$group)),
-          prefix = paste0(.data$prefix, .data$group)
-        ) |>
-        # two files with different basenames can reduce to the same prefix when
-        # matched by different patterns for the same table (e.g. *.flagstat and
-        # *.flag_counts.tsv both stripping to "sample1"). Append _2, _3, ... to
-        # disambiguate so outputs don't overwrite each other.
-        dplyr::mutate(grp2 = dplyr::row_number(), .by = c("tool_parser", "prefix")) |>
-        dplyr::mutate(
-          prefix = dplyr::if_else(
-            .data$grp2 == 1,
-            .data$prefix,
-            paste0(.data$prefix, "_", .data$grp2)
-          )
-        ) |>
-        dplyr::select(-"grp2") |>
-        dplyr::relocate("tool_parser", .before = 1)
+    list_files = function() {
+      self$files
     },
     #' @description Get specific tidy schema.
     #' @param table_name (`character(1)`)\cr
@@ -532,12 +532,10 @@ Tool <- R6::R6Class(
         return(invisible(self))
       }
       d <- self$files |>
-        dplyr::rowwise() |>
         dplyr::mutate(
-          raw = list(self$.dispatch_parse(.data$path, .data$parser)),
-          tidy = list(self$.dispatch_tidy(.data$raw, .data$parser))
-        ) |>
-        dplyr::ungroup()
+          raw = purrr::map2(.data$path, .data$parser, \(p, t) self$.dispatch_parse(p, t)),
+          tidy = purrr::map2(.data$raw, .data$parser, \(r, t) self$.dispatch_tidy(r, t))
+        )
       if (!keep_raw) {
         d <- d |>
           dplyr::select(-"raw")
@@ -576,27 +574,21 @@ Tool <- R6::R6Class(
       write_metadata = TRUE
     ) {
       valid_out_fmt(format)
+      assertthat::assert_that(private$is_tidied, msg = "Did you forget to tidy?")
       if (format != "db") {
         if (is.null(output_dir)) {
           stop("Output directory must be specified when format is not 'db'.")
         }
+        output_dir <- normalizePath(output_dir, mustWork = FALSE)
         fs::dir_create(output_dir)
-        output_dir <- normalizePath(output_dir)
       }
-      assertthat::assert_that(private$is_tidied, msg = "Did you forget to tidy?")
       if (is.null(self$tbls)) {
         self$written_files <- NULL
         return(invisible(self))
       }
       d_write <- self$tbls |>
         dplyr::rename(raw_path = "path") |>
-        dplyr::select(
-          "raw_path",
-          "tool_parser",
-          "parser",
-          "prefix",
-          "tidy"
-        ) |>
+        dplyr::select("raw_path", "tool_parser", "parser", "prefix", "tidy") |>
         tidyr::unnest("tidy", names_sep = "_") |>
         dplyr::mutate(
           tbl_name = dplyr::if_else(
@@ -604,40 +596,25 @@ Tool <- R6::R6Class(
             .data$tool_parser,
             paste0(.data$tool_parser, .data$tidy_name)
           ),
-          fpfix = paste(file.path(output_dir, .data$prefix), .data$tbl_name, sep = "_")
-        ) |>
-        dplyr::rowwise() |>
-        dplyr::mutate(
-          tidy_data = list(
-            private$prepend_id_cols(
-              tidy_data,
-              .data$tidy_name,
-              .data$prefix,
-              input_id,
-              output_id,
-              prefix_include
-            )
+          fpfix = paste(file.path(output_dir, .data$prefix), .data$tbl_name, sep = "_"),
+          tidy_data = purrr::pmap(
+            list(.data$tidy_data, .data$tidy_name, .data$prefix),
+            \(d, nm, pfx) private$prepend_id_cols(d, nm, pfx, input_id, output_id, prefix_include)
           ),
-          out = list(
-            nemo_write(
-              d = .data$tidy_data,
-              fpfix = .data$fpfix,
-              format = format,
-              dbconn = dbconn,
-              dbtab = if (format == "db") .data$tbl_name else NULL
-            )
-          ),
-          outpath = attr(out, "outpath")
+          outpath = purrr::pmap_chr(
+            list(.data$tidy_data, .data$fpfix, .data$tbl_name),
+            \(d, fp, tn) {
+              nemo_write(
+                d = d,
+                fpfix = fp,
+                format = format,
+                dbconn = dbconn,
+                dbtab = if (format == "db") tn else NULL
+              )
+            }
+          )
         ) |>
-        dplyr::ungroup() |>
-        dplyr::select(
-          "raw_path",
-          "tool_parser",
-          "prefix",
-          "tidy_data",
-          "tbl_name",
-          "outpath"
-        )
+        dplyr::select("raw_path", "tool_parser", "prefix", "tbl_name", "outpath")
       self$written_files <- d_write
       private$is_written <- TRUE
       if (write_metadata && format != "db") {
@@ -676,7 +653,7 @@ Tool <- R6::R6Class(
       if (is.null(pkgs)) {
         pkgs <- self$pkg
       }
-      if (private$is_written) {
+      if (!is.null(self$written_files)) {
         files <- self$written_files |>
           dplyr::mutate(outpath = basename(.data$outpath)) |>
           dplyr::select(tbl = "tbl_name", "prefix", fout = "outpath", fin = "raw_path") |>

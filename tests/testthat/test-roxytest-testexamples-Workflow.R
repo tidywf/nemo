@@ -38,7 +38,7 @@ test_that("Function Workflow() @ L61", {
   # write: two table4 output files (one per version)
   expect_equal(sum(grepl("table4", basename(lf1))), 2)
   expect_named(
-    wf$written_files, c("raw_path", "tool_parser", "prefix", "tidy_data", "tbl_name", "outpath")
+    wf$written_files, c("raw_path", "tool_parser", "prefix", "tbl_name", "outpath")
   )
   # get_metadata
   expect_named(meta, c("input_id", "output_id", "input_dirs", "output_dir", "pkg_versions", "files"))

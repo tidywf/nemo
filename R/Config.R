@@ -211,8 +211,8 @@ Config <- R6::R6Class(
     #' Tibble with columns `raw`, `tidy`, `type`, `description`.
     get_col_map = function(x, version = NULL) {
       nemo_assert_scalar_chr(x)
-      if (!x %in% names(private$tables)) {
-        stop(glue("{x} not found in tables for {self$tool}."), call. = FALSE)
+      if (!x %in% private$schemas_both[["name"]]) {
+        stop(glue("{x} not found in schemas for {self$tool}."), call. = FALSE)
       }
       if (!is.null(version)) {
         nemo_assert_scalar_chr(version)

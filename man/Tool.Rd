@@ -186,21 +186,12 @@ R6 object invisibly.
 \if{html}{\out{<a id="method-Tool-list_files"></a>}}
 \if{latex}{\out{\hypertarget{method-Tool-list_files}{}}}
 \subsection{Method \code{list_files()}}{
-List only files of interest in given tool directory, i.e.
-only those files that match the patterns listed in the tool config.
+Return the current file set. Reflects any prior
+\code{filter_files()} calls — equivalent to reading \verb{$files} directly.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Tool$list_files(type = "file")}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Tool$list_files()}\if{html}{\out{</div>}}
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{type}}{(\code{character(1)})\cr
-File type(s) to return (e.g. any, file, directory, symlink).
-See \code{fs::dir_info}.}
-}
-\if{html}{\out{</div>}}
-}
 \subsection{Returns}{
 (\code{tibble()})\cr
 A tibble with:

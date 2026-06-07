@@ -23,6 +23,10 @@ Database connection object (see \code{DBI::dbConnect}). Used only when format is
 \item{dbtab}{(\code{character(1)})\cr
 Database table name (see \code{DBI::dbWriteTable}). Used only when format is db.}
 }
+\value{
+(\code{character(1)})\cr
+The output file path (invisibly). \code{NA_character_} when format is \code{"db"}.
+}
 \description{
 Writes tabular data in the given format.
 }

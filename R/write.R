@@ -13,6 +13,8 @@
 #' Database connection object (see `DBI::dbConnect`). Used only when format is db.
 #' @param dbtab (`character(1)`)\cr
 #' Database table name (see `DBI::dbWriteTable`). Used only when format is db.
+#' @return (`character(1)`)\cr
+#' The output file path (invisibly). `NA_character_` when format is `"db"`.
 #'
 #' @examples
 #' d <- tibble::tibble(name = "foo", data = 123)
@@ -59,8 +61,7 @@ nemo_write <- function(d, fpfix = NULL, format = "tsv", dbconn = NULL, dbtab = N
     fun <- getExportedValue(x[["pkg"]], x[["fun"]])
     fun(d, osfx)
   }
-  attr(d, "outpath") <- if (format == "db") NA_character_ else osfx
-  invisible(d)
+  invisible(if (format == "db") NA_character_ else osfx)
 }
 
 #' Output Format is Valid
