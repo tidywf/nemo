@@ -159,9 +159,8 @@ Tool <- R6::R6Class(
       if (!is.null(output_id)) {
         d <- tibble::add_column(d, output_id = as.character(output_id))
       }
-      new_cols <- intersect(c("input_id", "input_prefix", "output_id"), names(d))
-      if (length(new_cols) > 0) {
-        d <- dplyr::relocate(d, dplyr::all_of(new_cols), .before = 1)
+      if (length(requested) > 0) {
+        d <- dplyr::relocate(d, dplyr::all_of(requested), .before = 1)
       }
       d
     }
@@ -594,6 +593,9 @@ Tool <- R6::R6Class(
         output_dir <- normalizePath(output_dir)
       }
       assertthat::assert_that(private$is_tidied, msg = "Did you forget to tidy?")
+      if (!is.null(self$tbls) && !"tidy" %in% names(self$tbls)) {
+        stop("Cannot write: tidy() was called with do_tidy = FALSE.", call. = FALSE)
+      }
       if (is.null(self$tbls)) {
         self$written_files <- NULL
         return(invisible(self))
@@ -608,7 +610,7 @@ Tool <- R6::R6Class(
           "tidy"
         ) |>
         tidyr::unnest("tidy", names_sep = "_") |>
-        dplyr::rename(tidy_df = "tidy_data") |>
+        dplyr::rename(tidy_raw = "tidy_data") |>
         dplyr::mutate(
           tbl_name = dplyr::if_else(
             .data$parser == .data$tidy_name,
@@ -621,7 +623,7 @@ Tool <- R6::R6Class(
         dplyr::mutate(
           tidy_data = list(
             private$prepend_id_cols(
-              tidy_df,
+              tidy_raw,
               .data$tidy_name,
               .data$prefix,
               input_id,

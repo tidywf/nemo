@@ -137,15 +137,15 @@ Workflow <- R6::R6Class(
     #' R6 object invisibly.
     filter_files = function(include = NULL, exclude = NULL) {
       assert_include_exclude(include, exclude)
-      known_per_tool <- purrr::map(self$tools, \(x) unique(x$files$tool_parser))
-      all_parsers <- unlist(known_per_tool)
+      all_parsers <- unlist(purrr::map(self$tools, \(x) unique(x$files$tool_parser)))
       if (!is.null(include)) {
         check_unknown_parsers(include, all_parsers, "include")
       }
       if (!is.null(exclude)) {
         check_unknown_parsers(exclude, all_parsers, "exclude")
       }
-      purrr::walk2(self$tools, known_per_tool, \(x, known) {
+      purrr::walk(self$tools, \(x) {
+        known <- unique(x$files$tool_parser)
         tool_include <- if (!is.null(include)) include[include %in% known] else NULL
         tool_exclude <- if (!is.null(exclude)) exclude[exclude %in% known] else NULL
         x$filter_files(include = tool_include, exclude = tool_exclude)
@@ -187,6 +187,9 @@ Workflow <- R6::R6Class(
     #' If `TRUE`, prepend an `input_prefix` column to each tidy table.
     #' @param dbconn (`DBIConnection`)\cr
     #' Database connection object (see `DBI::dbConnect`).
+    #' @param write_metadata (`logical(1)`)\cr
+    #' If `TRUE` (default), write a `metadata.parquet` file alongside the tidy
+    #' outputs. Set to `FALSE` to suppress.
     #' @return (`R6::R6Class()`)\cr
     #' R6 object invisibly.
     write = function(
@@ -195,9 +198,14 @@ Workflow <- R6::R6Class(
       input_id = NULL,
       output_id = NULL,
       prefix_include = FALSE,
-      dbconn = NULL
+      dbconn = NULL,
+      write_metadata = TRUE
     ) {
       assertthat::assert_that(private$is_tidied, msg = "Did you forget to tidy?")
+      if (format != "db") {
+        fs::dir_create(output_dir)
+        output_dir <- normalizePath(output_dir)
+      }
       res <- self$tools |>
         purrr::map(\(x) {
           x$write(
@@ -214,8 +222,7 @@ Workflow <- R6::R6Class(
         dplyr::bind_rows()
       self$written_files <- if (nrow(res) > 0) res else NULL
       private$is_written <- nrow(res) > 0
-      # Write metadata
-      if (format != "db" && nrow(res) > 0) {
+      if (write_metadata && format != "db" && nrow(res) > 0) {
         meta <- self$get_metadata(
           input_id = input_id,
           output_id = output_id,
@@ -242,6 +249,8 @@ Workflow <- R6::R6Class(
     #' tool_parser names to include (e.g. `"tool1_table1"`).
     #' @param exclude (`character(n)`)\cr
     #' tool_parser names to exclude (e.g. `"tool1_table5"`).
+    #' @param write_metadata (`logical(1)`)\cr
+    #' If `TRUE` (default), write a `metadata.parquet` file. Set to `FALSE` to suppress.
     #' @return (`R6::R6Class()`)\cr
     #' R6 object invisibly.
     wrangle = function(
@@ -252,7 +261,8 @@ Workflow <- R6::R6Class(
       prefix_include = FALSE,
       dbconn = NULL,
       include = NULL,
-      exclude = NULL
+      exclude = NULL,
+      write_metadata = TRUE
     ) {
       # fmt: skip
       self$filter_files(include = include, exclude = exclude)$
@@ -263,7 +273,8 @@ Workflow <- R6::R6Class(
           input_id = input_id,
           output_id = output_id,
           prefix_include = prefix_include,
-          dbconn = dbconn
+          dbconn = dbconn,
+          write_metadata = write_metadata
       )
     },
     #' @description Get raw schemas for all Tools.
@@ -364,8 +375,7 @@ Workflow <- R6::R6Class(
       self$tools |>
         purrr::map(\(x) {
           x$config[[method_name]]() |>
-            dplyr::mutate(tool = x$name) |>
-            dplyr::relocate("tool", .before = 1)
+            dplyr::mutate(tool = x$name, .before = 1)
         }) |>
         dplyr::bind_rows()
     },
