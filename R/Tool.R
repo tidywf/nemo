@@ -161,7 +161,7 @@ Tool <- R6::R6Class(
       nemo_assert_scalar_chr(name)
       nemo_assert_scalar_chr(pkg)
       if (!is.null(files_tbl)) {
-        stopifnot(is_files_tbl(files_tbl))
+        is_files_tbl(files_tbl)
         path <- NULL
       }
       self$name <- name

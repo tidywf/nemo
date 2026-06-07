@@ -52,7 +52,7 @@ test_that("Function Config() @ L65", {
 })
 
 
-test_that("Function config_prep_raw_schema() @ L381", {
+test_that("Function config_prep_raw_schema() @ L385", {
   
   path <- system.file("extdata", "tool1/latest/sampleA.tool1.table1.tsv", package = "nemo")
   (x <- config_prep_raw_schema(path = path, delim = "\t"))
@@ -65,7 +65,7 @@ test_that("Function config_prep_raw_schema() @ L381", {
 })
 
 
-test_that("Function config_prep_raw() @ L447", {
+test_that("Function config_prep_raw() @ L451", {
   
   path <- system.file("extdata", "tool1/latest/sampleA.tool1.table1.tsv", package = "nemo")
   name <- "table1"
@@ -81,7 +81,7 @@ test_that("Function config_prep_raw() @ L447", {
 })
 
 
-test_that("Function config_prep_multi() @ L481", {
+test_that("Function config_prep_multi() @ L485", {
   
   dir1 <-  "extdata/tool1/latest"
   path1 <- system.file(dir1, "sampleA.tool1.table1.tsv", package = "nemo")
@@ -103,7 +103,7 @@ test_that("Function config_prep_multi() @ L481", {
 })
 
 
-test_that("Function config_prep_write() @ L527", {
+test_that("Function config_prep_write() @ L531", {
   
   dir1 <- "extdata/tool1/latest"
   path1 <- system.file(dir1, "sampleA.tool1.table1.tsv", package = "nemo")

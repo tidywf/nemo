@@ -310,8 +310,8 @@ Config <- R6::R6Class(
           tibble::tibble(version = v, schema = list(cols_v))
         }) |>
           dplyr::bind_rows()
-        tibble::tibble(name = tab_name, tbl_description = tab[["description"]]) |>
-          dplyr::bind_cols(schema_rows)
+        schema_rows |>
+          dplyr::mutate(name = tab_name, tbl_description = tab[["description"]], .before = 1)
       }
       self$tables |>
         purrr::imap(.get_one) |>
@@ -354,9 +354,7 @@ Config <- R6::R6Class(
 #' @keywords internal
 config_sort_versions <- function(versions) {
   non_latest <- versions[versions != "latest"]
-  if (length(non_latest) > 0) {
-    non_latest <- non_latest[order(numeric_version(gsub("^[vV]", "", non_latest)))]
-  }
+  non_latest <- non_latest[order(numeric_version(gsub("^[vV]", "", non_latest)))]
   c(non_latest, if ("latest" %in% versions) "latest")
 }
 
