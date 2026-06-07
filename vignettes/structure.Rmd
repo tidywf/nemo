@@ -1,10 +1,6 @@
 ---
 title: "Structure"
 output: rmarkdown::html_document
-vignette: >
-  %\VignetteIndexEntry{Structure}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
 knitr:
   opts_chunk:
     collapse: true
@@ -92,7 +88,7 @@ See `?Config`.
 ```{r tool1_config1}
 tool <- params$tool
 workflow <- params$workflow
-conf <- Config$new(tool, pkg = "nemo")
+conf <- nemo::Config$new(tool, pkg = "nemo")
 conf
 ```
 
@@ -256,7 +252,7 @@ wfiles <- fs::dir_info(outdir1) |> dplyr::select(1:5)
 wfiles |>
   dplyr::mutate(bname = basename(.data$path)) |>
   dplyr::select("bname", "size", "type")
-# readr::read_csv(wfiles$path[1], show_col_types = F) # see tidywf/tidywigits#137
+# readr::read_csv(wfiles$path[1], show_col_types = FALSE) # see tidywf/tidywigits#137
 ```
 
 ### wrangle
@@ -278,7 +274,8 @@ wfiles2 <- fs::dir_info(outdir2) |>
 wfiles2 |>
   dplyr::select("bname", "size", "type")
 # no output_id or input_prefix specified
-readr::read_tsv(wfiles2$path[2], show_col_types = F)
+tbl1_path <- wfiles2$path[grep("tool1_table1", wfiles2$bname)[1]]
+readr::read_tsv(tbl1_path, show_col_types = FALSE)
 ```
 
 ## `Workflow`

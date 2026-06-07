@@ -19,7 +19,7 @@
 #' fpfix <- file.path(tempdir(), "data_test1")
 #' format <- "csv"
 #' nemo_write(d = d, fpfix = fpfix, format = format)
-#' (res <- readr::read_csv(glue("{fpfix}.csv.gz"), show_col_types = FALSE))
+#' (res <- readr::read_csv(glue::glue("{fpfix}.csv.gz"), show_col_types = FALSE))
 #' \dontrun{
 #' # for database writing — supply a DBI driver from e.g. RPostgres or duckdb
 #' con <- DBI::dbConnect(RPostgres::Postgres(), dbname = "mydb", user = "me")

@@ -1,9 +1,5 @@
 ---
 title: "Schema Walkthrough"
-vignette: >
-  %\VignetteIndexEntry{Schema Walkthrough}
-  %\VignetteEngine{quarto::html}
-  %\VignetteEncoding{UTF-8}
 knitr:
   opts_chunk:
     collapse: true
@@ -160,16 +156,13 @@ conf$get_description("table1")
 
 ```{r}
 #| label: get_schemas_raw
-(raw_schemas <- conf$get_schemas_raw() |>
-  select("name", "version", "schema"))
+conf$get_schemas_raw() |> select("name", "version", "schema")
 ```
 
 The `schema` list-col holds the `(field, type)` pairs used when reading a file:
 
 ```{r}
 #| label: get_schema_table1_raw
-raw_schemas[["schema"]][[1]]
-# or alternatively
 conf$get_schema_raw("table1", version = "v1.2.3")
 ```
 
@@ -177,11 +170,16 @@ conf$get_schema_raw("table1", version = "v1.2.3")
 
 ```{r}
 #| label: get_schemas_tidy
-tidy_schemas <- conf$get_schemas_tidy() |>
-  select("name", "version", "schema")
-tidy_schemas[["schema"]][[1]]
-# or alternatively
+conf$get_schemas_tidy() |> select("name", "version", "schema")
 conf$get_schema_tidy("table1", version = "v1.2.3")
+```
+
+- `get_schemas_both()` returns the unified raw/tidy/type/description view — the
+source both schemas are derived from:
+
+```{r}
+#| label: get_schemas_both
+conf$get_schemas_both()
 ```
 
 For `csv-nohead-long` tables, `get_col_map()` returns the metric-name mapping

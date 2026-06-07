@@ -8,7 +8,7 @@ test_that("Function nemo_write() @ L35", {
   fpfix <- file.path(tempdir(), "data_test1")
   format <- "csv"
   nemo_write(d = d, fpfix = fpfix, format = format)
-  (res <- readr::read_csv(glue("{fpfix}.csv.gz"), show_col_types = FALSE))
+  (res <- readr::read_csv(glue::glue("{fpfix}.csv.gz"), show_col_types = FALSE))
   
   expect_equal(nrow(res), 1)
 })
