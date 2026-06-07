@@ -34,7 +34,6 @@ obj2 <- Tool1$new(indir)$tidy()
 \item \href{#method-Tool1-tidy_table3}{\code{Tool1$tidy_table3()}}
 \item \href{#method-Tool1-parse_table5}{\code{Tool1$parse_table5()}}
 \item \href{#method-Tool1-tidy_table5}{\code{Tool1$tidy_table5()}}
-\item \href{#method-Tool1-clone}{\code{Tool1$clone()}}
 }
 }
 \if{html}{\out{
@@ -140,23 +139,6 @@ Path to file or already parsed tibble.}
 \subsection{Returns}{
 (\code{tibble()})\cr
 Tidy data in enframed tibble, pivoted wide from long format.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Tool1-clone"></a>}}
-\if{latex}{\out{\hypertarget{method-Tool1-clone}{}}}
-\subsection{Method \code{clone()}}{
-The objects of this class are cloneable with this method.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Tool1$clone(deep = FALSE)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{deep}}{Whether to make a deep clone.}
-}
-\if{html}{\out{</div>}}
 }
 }
 }

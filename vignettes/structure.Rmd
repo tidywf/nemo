@@ -326,13 +326,14 @@ tidy tables from a variety of bioinformatic tools. See `?Workflow`.
 
 For example, {nemo} contains a `Workflow1` class as a `Workflow` child (containing
 only a single `Tool1` for simplicity). Similarly to `Tool`, a `Workflow` object
-contains functions such as `filter_files`, `list_files`, `tidy`, `write` and
-`run`:
+contains functions such as `filter_files`, `list_files`, `tidy`, `write`,
+`run`, and `get_tools()` (to access the instantiated `Tool` objects):
 
 ```{r w1_init}
 w <- system.file("extdata/tool1", package = "nemo") |>
   nemo::Workflow1$new()
 outdir3 <- file.path(tempdir(), "w1")
+w$get_tools()
 w$list_files()
 x <- w$run(
   output_dir = outdir3,

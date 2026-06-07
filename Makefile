@@ -29,7 +29,7 @@ endif
 	@gh workflow run bump.yaml --ref $(BRANCH) --field version=$(VERSION)
 
 test:
-	@R -e "devtools::test()" --no-restore --no-save
+	@R -e "devtools::test()" --quiet --no-restore --no-save
 
 check:
-	@R -e "devtools::check()" --no-restore --no-save
+	@R -e "devtools::check()" --quiet --no-restore --no-save

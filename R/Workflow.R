@@ -60,6 +60,7 @@
 #' @export
 Workflow <- R6::R6Class(
   "Workflow",
+  cloneable = FALSE,
   public = list(
     #' @field name (`character(1)`)\cr
     #' Name of workflow.
@@ -67,9 +68,6 @@ Workflow <- R6::R6Class(
     #' @field path (`character(n)`)\cr
     #' Path(s) to workflow results.
     path = NULL,
-    #' @field tools (`list(n)`)\cr
-    #' List of Tools that compose a Workflow.
-    tools = NULL,
     #' @field metapkg (`character(n)`)\cr
     #' Package name(s) used for metadata version reporting.
     metapkg = NULL,
@@ -83,7 +81,8 @@ Workflow <- R6::R6Class(
     #' @param path (`character(n)`)\cr
     #' Path(s) to workflow results.
     #' @param tools (`list(n)`)\cr
-    #' List of Tools that compose a Workflow.
+    #' Named list of Tool subclasses that compose a Workflow. List names serve
+    #' as aliases and need not match each tool's own `$name` field.
     #' @param metapkg (`character(n)`)\cr
     #' Package name(s) used for metadata version reporting.
     #' @return (`R6::R6Class()`)\cr
@@ -105,7 +104,7 @@ Workflow <- R6::R6Class(
       private$validate_tools(tools)
       self$path <- normalizePath(path)
       private$files_tbl <- list_files_dir(self$path)
-      self$tools <- tools |>
+      private$tools <- tools |>
         purrr::map(\(x) x$new(files_tbl = private$files_tbl))
     },
     #' @description Print details about the Workflow.
@@ -117,7 +116,7 @@ Workflow <- R6::R6Class(
         ~var            , ~value                                     ,
         "name"          , self$name                                  ,
         "path"          , glue::glue_collapse(self$path, sep = ", ") ,
-        "ntools"        , as.character(length(self$tools))           ,
+        "ntools"        , as.character(length(private$tools))        ,
         "files_total"   , as.character(nrow(private$files_tbl))      ,
         "files_matched" , as.character(nrow(self$list_files()))      ,
         "tidied"        , tolower(as.character(private$is_tidied))   ,
@@ -127,6 +126,10 @@ Workflow <- R6::R6Class(
       print(knitr::kable(res))
       invisible(self)
     },
+    #' @description Get the list of Tool objects in this Workflow.
+    #' @return (`list(n)`)\cr
+    #' Named list of instantiated Tool objects.
+    get_tools = function() private$tools,
     #' @description Filter files in given workflow directory.
     #' @param include (`character(n)`)\cr
     #' tool_parser names to include (e.g. `"tool1_table1"`).
@@ -139,43 +142,37 @@ Workflow <- R6::R6Class(
       if (private$is_tidied) {
         stop("Cannot filter files after tidy() has been called.", call. = FALSE)
       }
-      all_parsers <- purrr::map(self$tools, \(x) x$list_files()$tool_parser) |>
+      known <- purrr::map(private$tools, \(x) {
+        paste0(x$name, "_", x$config$get_patterns()$name)
+      }) |>
         unlist() |>
         unique()
-      if (length(all_parsers) == 0) {
-        known <- purrr::map(self$tools, \(x) paste0(x$name, "_", x$config$get_patterns()$name)) |>
-          unlist() |>
-          unique()
-        if (!is.null(include)) {
-          check_unknown_parsers(include, known, "include")
-        }
-        if (!is.null(exclude)) {
-          check_unknown_parsers(exclude, known, "exclude")
-        }
-        return(invisible(self))
-      }
       if (!is.null(include)) {
-        check_unknown_parsers(include, all_parsers, "include")
+        check_unknown_parsers(include, known, "include")
       }
       if (!is.null(exclude)) {
-        check_unknown_parsers(exclude, all_parsers, "exclude")
+        check_unknown_parsers(exclude, known, "exclude")
       }
-      purrr::walk(self$tools, \(x) {
-        known <- unique(x$list_files()$tool_parser)
+      if (all(purrr::map_lgl(private$tools, \(x) nrow(x$list_files()) == 0))) {
+        return(invisible(self))
+      }
+      purrr::walk(private$tools, \(x) {
+        tool_parsers <- unique(x$list_files()$tool_parser)
         # Use if/else rather than character(0) args: an empty intersection means
         # "no include parsers match this tool" so we explicitly exclude all it has.
         if (!is.null(include)) {
-          matched <- include[include %in% known]
+          matched <- include[include %in% tool_parsers]
           if (length(matched) > 0) {
             x$filter_files(include = matched)
-          } else if (length(known) > 0) {
-            x$filter_files(exclude = known)
+          } else if (length(tool_parsers) > 0) {
+            x$filter_files(exclude = tool_parsers)
           }
         } else if (!is.null(exclude)) {
-          matched <- exclude[exclude %in% known]
+          matched <- exclude[exclude %in% tool_parsers]
           if (length(matched) > 0) {
             x$filter_files(exclude = matched)
           }
+          # tools with no matching parsers are left untouched
         }
       })
       invisible(self)
@@ -186,7 +183,7 @@ Workflow <- R6::R6Class(
     #' @return (`tibble()`)\cr
     #' Bound `files` tibbles from all Tools, with a leading `tool` column.
     list_files = function() {
-      self$tools |>
+      private$tools |>
         purrr::map(\(x) {
           f <- x$list_files()
           # Tool$list_files() always returns a tibble (never NULL); check nrow, not is.null.
@@ -207,7 +204,7 @@ Workflow <- R6::R6Class(
       if (private$is_tidied) {
         return(invisible(self))
       }
-      purrr::walk(self$tools, \(x) x$tidy(keep_raw = keep_raw))
+      purrr::walk(private$tools, \(x) x$tidy(keep_raw = keep_raw))
       private$is_tidied <- TRUE
       return(invisible(self))
     },
@@ -252,7 +249,7 @@ Workflow <- R6::R6Class(
         # repeats the normalisation but that is idempotent.
         output_dir <- normalizePath(output_dir, mustWork = FALSE)
       }
-      res <- self$tools |>
+      res <- private$tools |>
         purrr::map(\(x) {
           x$write(
             output_dir = output_dir,
@@ -268,7 +265,7 @@ Workflow <- R6::R6Class(
         dplyr::bind_rows()
       has_output <- nrow(res) > 0
       self$written_files <- if (has_output) res else NULL
-      private$is_written <- has_output
+      private$is_written <- TRUE
       if (write_metadata && format != "db" && has_output) {
         meta <- self$get_metadata(
           input_id = input_id,
@@ -311,6 +308,8 @@ Workflow <- R6::R6Class(
       include = NULL,
       exclude = NULL
     ) {
+      # fail-fast before tidy(); write() re-checks but tidy can be slow
+      valid_out_fmt(format)
       # fmt: skip
       self$filter_files(include = include, exclude = exclude)$
         tidy()$
@@ -330,7 +329,7 @@ Workflow <- R6::R6Class(
     get_schemas_raw = function() {
       # get_schemas_raw and get_schemas_tidy are symmetric (same pattern, different Config method).
       # The repetition is intentional — extraction was tried and reversed; they're simple enough to read in full.
-      self$tools |>
+      private$tools |>
         purrr::map(\(x) dplyr::mutate(x$config$get_schemas_raw(), tool = x$name, .before = 1)) |>
         dplyr::bind_rows()
     },
@@ -338,18 +337,21 @@ Workflow <- R6::R6Class(
     #' @return (`tibble()`)\cr
     #' Bound tidy schema tibbles from all Tools, with a leading `tool` column.
     get_schemas_tidy = function() {
-      self$tools |>
+      private$tools |>
         purrr::map(\(x) dplyr::mutate(x$config$get_schemas_tidy(), tool = x$name, .before = 1)) |>
         dplyr::bind_rows()
     },
     #' @description Get tidy tibbles for all Tools.
     #' @return (`tibble()`)\cr
     #' Bound `tbls` tibbles from all Tools, with a leading `tool` column.
+    #' When `tidy(keep_raw = TRUE)` was used, each tool's tibble also contains
+    #' a `raw` list-column. Note: `get_tbls()` checks `is.null()` (not `nrow()`)
+    #' because `Tool$get_tbls()` returns `NULL` when nothing was tidied, whereas
+    #' `Tool$list_files()` always returns a zero-row tibble (never `NULL`).
     get_tbls = function() {
-      self$tools |>
+      private$tools |>
         purrr::map(\(x) {
           t <- x$get_tbls()
-          # Tool$get_tbls() returns NULL when tidy() produced no tables; check is.null, not nrow.
           if (is.null(t)) {
             return(NULL)
           }
@@ -403,13 +405,14 @@ Workflow <- R6::R6Class(
       if (!all(purrr::map_lgl(x, R6::is.R6Class))) {
         stop("All elements of `tools` must be R6 classes.", call. = FALSE)
       }
-      if (!all(purrr::map_lgl(x, is_tool_subclass))) {
+      if (!all(purrr::map_lgl(x, wf_is_tool_subclass))) {
         stop("All elements of `tools` must inherit from Tool.", call. = FALSE)
       }
     },
     is_tidied = FALSE,
     is_written = FALSE,
-    files_tbl = NULL
+    files_tbl = NULL,
+    tools = NULL
   ) # private end
 )
 
@@ -418,7 +421,7 @@ Workflow <- R6::R6Class(
 # itself — get() is required to resolve it. We start from parent.env(.GlobalEnv)
 # so a user variable named "Tool" in .GlobalEnv cannot shadow the real class.
 # Do not attempt to traverse $inherit directly without resolving via get().
-is_tool_subclass <- function(cls) {
+wf_is_tool_subclass <- function(cls) {
   parent <- cls$inherit
   while (!is.null(parent)) {
     parent_cls <- tryCatch(

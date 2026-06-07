@@ -11,7 +11,7 @@ nemo_osfx(fpfix, format)
 Vector of one or more file prefixes e.g. /path/to/foo}
 
 \item{format}{(\code{character(1)})\cr
-Output format. One of tsv, csv, parquet, rds, or db.}
+Output format. One of tsv, csv, parquet, or rds. Not applicable for db.}
 }
 \value{
 Character vector of output file paths

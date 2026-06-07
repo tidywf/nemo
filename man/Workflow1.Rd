@@ -21,7 +21,6 @@ wf$run(output_dir = dir1, format = "parquet", input_id = "run1")
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-Workflow1-new}{\code{Workflow1$new()}}
-\item \href{#method-Workflow1-clone}{\code{Workflow1$clone()}}
 }
 }
 \if{html}{\out{
@@ -32,6 +31,7 @@ wf$run(output_dir = dir1, format = "parquet", input_id = "run1")
 <li><span class="pkg-link" data-pkg="nemo" data-topic="Workflow" data-id="get_schemas_raw"><a href='../../nemo/html/Workflow.html#method-Workflow-get_schemas_raw'><code>nemo::Workflow$get_schemas_raw()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="nemo" data-topic="Workflow" data-id="get_schemas_tidy"><a href='../../nemo/html/Workflow.html#method-Workflow-get_schemas_tidy'><code>nemo::Workflow$get_schemas_tidy()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="nemo" data-topic="Workflow" data-id="get_tbls"><a href='../../nemo/html/Workflow.html#method-Workflow-get_tbls'><code>nemo::Workflow$get_tbls()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="nemo" data-topic="Workflow" data-id="get_tools"><a href='../../nemo/html/Workflow.html#method-Workflow-get_tools'><code>nemo::Workflow$get_tools()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="nemo" data-topic="Workflow" data-id="list_files"><a href='../../nemo/html/Workflow.html#method-Workflow-list_files'><code>nemo::Workflow$list_files()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="nemo" data-topic="Workflow" data-id="print"><a href='../../nemo/html/Workflow.html#method-Workflow-print'><code>nemo::Workflow$print()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="nemo" data-topic="Workflow" data-id="run"><a href='../../nemo/html/Workflow.html#method-Workflow-run'><code>nemo::Workflow$run()</code></a></span></li>
@@ -60,23 +60,6 @@ Path(s) to Workflow1 results.}
 \subsection{Returns}{
 (\code{R6::R6Class()})\cr
 R6 object.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Workflow1-clone"></a>}}
-\if{latex}{\out{\hypertarget{method-Workflow1-clone}{}}}
-\subsection{Method \code{clone()}}{
-The objects of this class are cloneable with this method.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Workflow1$clone(deep = FALSE)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{deep}}{Whether to make a deep clone.}
-}
-\if{html}{\out{</div>}}
 }
 }
 }

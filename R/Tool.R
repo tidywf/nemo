@@ -116,6 +116,7 @@
 #' @export
 Tool <- R6::R6Class(
   "Tool",
+  cloneable = FALSE,
   private = list(
     is_tidied = FALSE,
     is_written = FALSE,
@@ -137,11 +138,11 @@ Tool <- R6::R6Class(
         prefix_suffix = character()
       )
     },
-    compute_files = function(type = "file") {
+    compute_files = function() {
       files_tbl <- private$files_tbl
       patterns <- self$config$get_patterns() |>
         dplyr::rename(pat_name = "name", pat_value = "pattern")
-      files <- files_tbl %||% list_files_dir(self$path, type = type)
+      files <- files_tbl %||% list_files_dir(self$path)
       res <- purrr::map(seq_len(nrow(patterns)), \(i) {
         pat_value <- patterns$pat_value[[i]]
         idx <- grepl(pat_value, files$bname, perl = TRUE)
@@ -224,6 +225,10 @@ Tool <- R6::R6Class(
     },
     # Dispatch tidy for a table: calls custom tidy_{table_name}() if defined
     # in the subclass, otherwise falls back to tidy_file().
+    # x may be a file path (character) or an already-parsed tibble — dispatch
+    # is called with a path when keep_raw = FALSE (the default) and with a tibble
+    # when keep_raw = TRUE. Both tidy_file() and any custom tidy_{name}() in a
+    # subclass must handle both forms by checking is_tibble(x) before parsing.
     dispatch_tidy = function(x, table_name) {
       fun <- glue("tidy_{table_name}")
       if (is.function(self[[fun]])) {
@@ -264,6 +269,15 @@ Tool <- R6::R6Class(
       }
       version <- get_tbl_version_attr(x)
       schema <- self$config$get_schema_tidy(table_name, version = version)
+      if (ncol(x) != nrow(schema)) {
+        stop(
+          glue(
+            "tidy_file: column count mismatch for '{table_name}' (version '{version}'): ",
+            "parsed data has {ncol(x)} column(s) but schema defines {nrow(schema)}."
+          ),
+          call. = FALSE
+        )
+      }
       colnames(x) <- schema[["field"]]
       if (convert_types) {
         ctypes <- schema |>
@@ -337,17 +351,15 @@ Tool <- R6::R6Class(
       nemo_assert_scalar_chr(pkg)
       if (!is.null(files_tbl)) {
         assert_files_tbl(files_tbl)
-      } else {
-        if (!dir.exists(path)) {
-          stop(glue("Path does not exist: {path}"), call. = FALSE)
-        }
+      } else if (!dir.exists(path)) {
+        stop(glue("Path does not exist: {path}"), call. = FALSE)
       }
       self$name <- name
       self$pkg <- pkg
       self$path <- if (!is.null(path)) normalizePath(path) else NULL
       self$config <- Config$new(self$name, pkg = self$pkg)
       private$files_tbl <- files_tbl
-      private$files <- private$compute_files(type = "file")
+      private$files <- private$compute_files()
     },
     #' @description Print details about the Tool.
     #' @param ... (ignored).
@@ -368,11 +380,14 @@ Tool <- R6::R6Class(
     },
     #' @description List files matching this tool's patterns.
     #' @return (`tibble()`)\cr
-    #' The `files` tibble of matched files.
+    #' The `files` tibble of matched files. Always a tibble (possibly zero-row),
+    #' never `NULL`.
     list_files = function() private$files,
     #' @description Get tidy tibbles after parsing and tidying.
     #' @return (`tibble()` or `NULL`)\cr
-    #' The `tbls` tibble, or `NULL` if `tidy()` has not been called.
+    #' The `tbls` tibble, or `NULL` if `tidy()` has not been called or if
+    #' `tidy()` found no matching files. When `tidy(keep_raw = TRUE)` was used,
+    #' the tibble also contains a `raw` list-column of the unparsed tibbles.
     get_tbls = function() private$tbls,
     #' @description Filter files in given tool directory based on inclusion or
     #' exclusion tool_parser names. The result is reflected in the `files` field.
@@ -387,23 +402,21 @@ Tool <- R6::R6Class(
       if (private$is_tidied) {
         stop("Cannot filter files after tidy() has been called.", call. = FALSE)
       }
+      known <- paste0(self$name, "_", self$config$get_patterns()$name)
+      if (!is.null(include)) {
+        check_unknown_parsers(include, known, "include")
+      }
+      if (!is.null(exclude)) {
+        check_unknown_parsers(exclude, known, "exclude")
+      }
       if (nrow(private$files) == 0) {
-        known <- paste0(self$name, "_", self$config$get_patterns()$name)
-        if (!is.null(include)) {
-          check_unknown_parsers(include, known, "include")
-        }
-        if (!is.null(exclude)) {
-          check_unknown_parsers(exclude, known, "exclude")
-        }
         return(invisible(self))
       }
       if (!is.null(include)) {
-        check_unknown_parsers(include, private$files$tool_parser, "include")
         private$files <- private$files |>
           dplyr::filter(.data$tool_parser %in% include)
       }
       if (!is.null(exclude)) {
-        check_unknown_parsers(exclude, private$files$tool_parser, "exclude")
         private$files <- private$files |>
           dplyr::filter(!(.data$tool_parser %in% exclude))
       }
@@ -427,6 +440,7 @@ Tool <- R6::R6Class(
         d <- private$files |>
           dplyr::mutate(
             raw = purrr::map2(.data$path, .data$parser, \(p, t) private$dispatch_parse(p, t)),
+            # pass already-parsed raw to dispatch_tidy to avoid re-reading the file
             tidy = purrr::map2(.data$raw, .data$parser, \(r, t) private$dispatch_tidy(r, t))
           )
       } else {
@@ -477,16 +491,26 @@ Tool <- R6::R6Class(
       if (!private$is_tidied) {
         stop("Did you forget to tidy?", call. = FALSE)
       }
+      if (write_metadata && format != "db" && is.null(self$path)) {
+        stop(
+          "Cannot write metadata: Tool was initialised with 'files_tbl' and has no 'path'. ",
+          "Set write_metadata = FALSE to suppress metadata writing.",
+          call. = FALSE
+        )
+      }
       if (format != "db") {
         if (is.null(output_dir)) {
-          stop("Output directory must be specified when format is not 'db'.")
+          stop("Output directory must be specified when format is not 'db'.", call. = FALSE)
         }
         output_dir <- normalizePath(output_dir, mustWork = FALSE)
-        fs::dir_create(output_dir)
       }
       if (is.null(private$tbls)) {
         self$written_files <- NULL
+        private$is_written <- TRUE
         return(invisible(self))
+      }
+      if (format != "db") {
+        fs::dir_create(output_dir)
       }
       # Pure data preparation: unnest, compute names/paths, prepend ID cols
       d_write <- private$tbls |>
@@ -524,13 +548,6 @@ Tool <- R6::R6Class(
       self$written_files <- d_write
       private$is_written <- TRUE
       if (write_metadata && format != "db") {
-        if (is.null(self$path)) {
-          stop(
-            "Cannot write metadata: Tool was initialised with 'files_tbl' and has no 'path'. ",
-            "Set write_metadata = FALSE to suppress metadata writing.",
-            call. = FALSE
-          )
-        }
         meta <- self$get_metadata(
           input_id = input_id,
           output_id = output_id,
@@ -606,6 +623,8 @@ Tool <- R6::R6Class(
       include = NULL,
       exclude = NULL
     ) {
+      # fail-fast before tidy(); write() re-checks but tidy can be slow
+      valid_out_fmt(format)
       # fmt: skip
       self$
         filter_files(include = include, exclude = exclude)$

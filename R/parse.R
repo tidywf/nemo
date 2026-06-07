@@ -1,3 +1,15 @@
+count_file_cols <- function(fpath, delim, ...) {
+  readr::read_delim(
+    file = fpath,
+    delim = delim,
+    col_names = FALSE,
+    col_types = readr::cols(.default = "c"),
+    n_max = 1L,
+    ...
+  ) |>
+    ncol()
+}
+
 #' Parse file
 #'
 #' @description
@@ -93,18 +105,9 @@ parse_file <- function(fpath, pname, schemas_all, delim = "\t", ...) {
 #' expect_equal(attr(d_v1, "file_version"), "v1.0.0")
 #' @export
 parse_file_nohead <- function(fpath, pname, schemas_all, delim = "\t", ...) {
-  # Use col_names = FALSE so the first data row is read as data (not treated as a
-  # header), then count columns. file_hdr() would also work but treats the first
-  # row as a header, which is semantically wrong for headless files.
-  ncols <- readr::read_delim(
-    file = fpath,
-    delim = delim,
-    col_names = FALSE,
-    col_types = readr::cols(.default = "c"),
-    n_max = 1L,
-    ...
-  ) |>
-    ncol()
+  # count_file_cols reads with col_names = FALSE so the first data row is treated
+  # as data, not a header — file_hdr() would be semantically wrong here.
+  ncols <- count_file_cols(fpath, delim, ...)
   schema <- schemas_all |>
     dplyr::filter(.data$name == pname) |>
     dplyr::select("version", "schema") |>
@@ -215,7 +218,10 @@ schema_guess <- function(pname, cnames, schemas_all) {
     dplyr::filter(purrr::map_lgl(.data$schema, \(sch) identical(cnames, sch[["field"]])))
   if (nrow(s) != 1) {
     stop(
-      glue("There were {nrow(s)} matching schemas for {pname}. Check the configs!"),
+      glue(
+        "Expected 1 matching schema for '{pname}', found {nrow(s)}. ",
+        "Column names seen: {glue::glue_collapse(cnames, sep = ', ')}."
+      ),
       call. = FALSE
     )
   }
@@ -259,7 +265,7 @@ schema_guess <- function(pname, cnames, schemas_all) {
 #' expect_equal(names(d3_lat), c("SampleID", "QCStatus", "TotalReads", "MappedReads", "UnmappedReads"))
 #' @export
 parse_file_keyvalue <- function(fpath, pname, schemas_all, delim = "\t", ...) {
-  ncols <- file_hdr(fpath, delim = delim, ...) |> length()
+  ncols <- count_file_cols(fpath, delim, ...)
   if (ncols != 2) {
     stop(glue("Expected 2 columns, but found {ncols} in {fpath}"), call. = FALSE)
   }

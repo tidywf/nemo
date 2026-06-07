@@ -13,7 +13,8 @@ Written files.}
 \item{pkgs}{(\code{character(n)})\cr
 Packages to include versions of.}
 
-\item{input_id}{Input ID to use for the dataset (e.g. \code{run123}).}
+\item{input_id}{(\code{character(1)})\cr
+Input ID to use for the dataset (e.g. \code{run123}).}
 
 \item{output_id}{(\code{character(1)})\cr
 Output ID to use for the dataset (e.g. \code{run123}).}

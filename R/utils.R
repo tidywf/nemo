@@ -37,8 +37,6 @@ list_files_dir <- function(d, max_files = NULL, type = "file") {
 #' Get the version attribute from a table.
 #' @param tbl (`tibble()`)\cr
 #' Table with a version attribute.
-#' @param x (`character(1)`)\cr
-#' Name of the attribute to retrieve.
 #' @examples
 #' path <- system.file("extdata/tool1", package = "nemo")
 #' path2 <- file.path(path, "v1.2.3", "sampleA.tool1.table1.tsv")
@@ -50,11 +48,12 @@ list_files_dir <- function(d, max_files = NULL, type = "file") {
 #' @testexamples
 #' expect_equal(v, "v1.2.3")
 #' @export
-get_tbl_version_attr <- function(tbl, x = "file_version") {
-  if (is.null(attr(tbl, x))) {
-    stop(paste("The table does not have the required attribute:", x), call. = FALSE)
+get_tbl_version_attr <- function(tbl) {
+  v <- attr(tbl, "file_version")
+  if (is.null(v)) {
+    stop("The table does not have the required attribute: file_version", call. = FALSE)
   }
-  attr(tbl, x)
+  v
 }
 
 #' Set Table Version Attribute
@@ -64,8 +63,6 @@ get_tbl_version_attr <- function(tbl, x = "file_version") {
 #' Table with a version attribute.
 #' @param v (`character(1)`)\cr
 #' Version string to set.
-#' @param x (`character(1)`)\cr
-#' Name of the attribute to retrieve.
 #' @examples
 #' d <- tibble::tibble(a = 1:3, b = letters[1:3])
 #' v <- "v1.2.3"
@@ -75,8 +72,8 @@ get_tbl_version_attr <- function(tbl, x = "file_version") {
 #' @testexamples
 #' expect_equal(a, v)
 #' @export
-set_tbl_version_attr <- function(tbl, v, x = "file_version") {
-  attr(tbl, x) <- v
+set_tbl_version_attr <- function(tbl, v) {
+  attr(tbl, "file_version") <- v
   tbl
 }
 
@@ -85,10 +82,10 @@ set_tbl_version_attr <- function(tbl, v, x = "file_version") {
 #' From https://stackoverflow.com/a/62535671/2169986. Useful for handling
 #' edge cases with empty data. e.g. virusbreakend.vcf.summary.tsv
 #'
-#' @param ctypes (`character(n)`)\cr
-#' Character vector of column types corresponding to `cnames`.
 #' @param cnames (`character(n)`)\cr
 #' Character vector of column names to use.
+#' @param ctypes (`character(n)`)\cr
+#' Character vector of column types corresponding to `cnames`.
 #'
 #' @return A tibble with 0 rows and the given column names.
 #' @examples
@@ -157,14 +154,14 @@ nemoverse_wf_dispatch <- function(wf) {
   if (!wf %in% all_wfs) {
     all_wfs_glued <- glue::glue_collapse(all_wfs, sep = ", ", last = " or ")
     msg <- glue("Workflow '{wf}' not found. Available: {all_wfs_glued}")
-    stop(msg)
+    stop(msg, call. = FALSE)
   }
   x <- wfs[[wf]]
   if (pkg_found(x[["pkg"]])) {
     pkgfun <- getExportedValue(x[["pkg"]], x[["wf"]])
   } else {
     msg <- glue("Package {x[['pkg']]} not found, please install from {x[['repo']]}")
-    stop(msg)
+    stop(msg, call. = FALSE)
   }
   pkgfun
 }

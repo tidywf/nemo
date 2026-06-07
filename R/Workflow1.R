@@ -12,8 +12,8 @@
 #' (lf <- list.files(dir1, pattern = "tool1.*parquet", full.names = TRUE))
 #' @testexamples
 #' # initialize
-#' expect_equal(length(wf$tools), 1)
-#' expect_equal(wf$tools[[1]]$name, "tool1")
+#' expect_equal(length(wf$get_tools()), 1)
+#' expect_equal(wf$get_tools()[[1]]$name, "tool1")
 #' # list_files: all parsers present
 #' expect_true(all(c("tool1_table1", "tool1_table2", "tool1_table4") %in% lf_all$tool_parser))
 #' # wrangle: two table4 output files (one per version)
@@ -21,6 +21,7 @@
 #' @export
 Workflow1 <- R6::R6Class(
   "Workflow1",
+  cloneable = FALSE,
   inherit = Workflow,
   public = list(
     #' @description Create a new Workflow1 object.
@@ -32,7 +33,7 @@ Workflow1 <- R6::R6Class(
       tools <- list(
         tool1 = Tool1
       )
-      super$initialize(name = "Workflow1", path = path, tools = tools)
+      super$initialize(name = "workflow1", path = path, tools = tools)
     }
   ) # public end
 )

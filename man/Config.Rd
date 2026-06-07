@@ -34,7 +34,6 @@ conf <- Config$new(tool, pkg)
 (s1 <- conf$get_schema_raw("table1"))
 conf$get_schema_raw("table1", version = "v1.2.3")
 conf$get_schema_tidy("table1")
-conf$validate_schemas()
 (cm <- conf$get_col_map("table5"))
 
 }
@@ -66,9 +65,7 @@ Package name tool belongs to (for config lookup).}
 \item \href{#method-Config-get_schemas_both}{\code{Config$get_schemas_both()}}
 \item \href{#method-Config-get_schema_raw}{\code{Config$get_schema_raw()}}
 \item \href{#method-Config-get_schema_tidy}{\code{Config$get_schema_tidy()}}
-\item \href{#method-Config-validate_schemas}{\code{Config$validate_schemas()}}
 \item \href{#method-Config-get_col_map}{\code{Config$get_col_map()}}
-\item \href{#method-Config-clone}{\code{Config$clone()}}
 }
 }
 \if{html}{\out{<hr>}}
@@ -337,23 +334,6 @@ Table \code{version}, \code{field} and \code{type}.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Config-validate_schemas"></a>}}
-\if{latex}{\out{\hypertarget{method-Config-validate_schemas}{}}}
-\subsection{Method \code{validate_schemas()}}{
-Validate schemas.
-Intentionally soft: returns \code{FALSE} + warning (not \code{stop()}) so callers
-can report schema problems without halting execution.
-Checks raw YAML types from \code{tables} directly, before remapping.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Config$validate_schemas()}\if{html}{\out{</div>}}
-}
-
-\subsection{Returns}{
-(\code{logical(1)})\cr
-\code{TRUE} if all field types are valid, \code{FALSE} otherwise.
-}
-}
-\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Config-get_col_map"></a>}}
 \if{latex}{\out{\hypertarget{method-Config-get_col_map}{}}}
 \subsection{Method \code{get_col_map()}}{
@@ -383,23 +363,6 @@ or \code{"latest"} if defined.}
 \subsection{Returns}{
 (\code{tibble()})\cr
 Tibble with columns \code{raw}, \code{tidy}, \code{type}, \code{description}.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Config-clone"></a>}}
-\if{latex}{\out{\hypertarget{method-Config-clone}{}}}
-\subsection{Method \code{clone()}}{
-The objects of this class are cloneable with this method.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Config$clone(deep = FALSE)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{deep}}{Whether to make a deep clone.}
-}
-\if{html}{\out{</div>}}
 }
 }
 }

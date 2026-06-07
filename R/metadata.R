@@ -1,8 +1,7 @@
 meta_files_from_written <- function(written_files) {
   written_files |>
     dplyr::mutate(outpath = basename(.data$outpath)) |>
-    dplyr::select(tbl = "tbl_name", "prefix", fout = "outpath", fin = "raw_path") |>
-    dplyr::mutate(dplyr::across(dplyr::where(is.character), as.character))
+    dplyr::select(tbl = "tbl_name", "prefix", fout = "outpath", fin = "raw_path")
 }
 
 #' Assemble run metadata
@@ -11,7 +10,7 @@ meta_files_from_written <- function(written_files) {
 #' Written files.
 #' @param pkgs (`character(n)`)\cr
 #' Packages to include versions of.
-#' @param input_id
+#' @param input_id (`character(1)`)\cr
 #' Input ID to use for the dataset (e.g. `run123`).
 #' @param output_id (`character(1)`)\cr
 #' Output ID to use for the dataset (e.g. `run123`).
@@ -37,20 +36,29 @@ meta_files_from_written <- function(written_files) {
 #' nemo_metadata(files, pkgs, input_id, output_id, input_dirs, output_dir)
 #' @export
 nemo_metadata <- function(files, pkgs, input_id, output_id, input_dirs, output_dir) {
-  stopifnot(
-    is.data.frame(files),
-    rlang::is_character(pkgs),
-    rlang::is_character(input_dirs),
-    rlang::is_scalar_character(output_dir),
-    rlang::is_scalar_character(input_id) || is.null(input_id),
-    rlang::is_scalar_character(output_id) || is.null(output_id)
+  if (!is.data.frame(files)) {
+    stop("'files' must be a data.frame.", call. = FALSE)
+  }
+  nemo_assert_chr(pkgs)
+  nemo_assert_chr(input_dirs)
+  nemo_assert_scalar_chr(output_dir)
+  if (!is.null(input_id)) {
+    nemo_assert_scalar_chr(input_id)
+  }
+  if (!is.null(output_id)) {
+    nemo_assert_scalar_chr(output_id)
+  }
+  missing_pkgs <- pkgs[!purrr::map_lgl(pkgs, pkg_found)]
+  if (length(missing_pkgs) > 0) {
+    stop(
+      glue("Packages not installed: {glue::glue_collapse(missing_pkgs, sep = ', ')}."),
+      call. = FALSE
+    )
+  }
+  pkg_versions <- tibble::tibble(
+    name = pkgs,
+    version = purrr::map_chr(pkgs, \(p) as.character(utils::packageVersion(p)))
   )
-  stopifnot(all(purrr::map_lgl(pkgs, pkg_found)))
-  pkg_versions <- pkgs |>
-    tibble::as_tibble_col(column_name = "name") |>
-    dplyr::rowwise() |>
-    dplyr::mutate(version = as.character(utils::packageVersion(.data$name))) |>
-    dplyr::ungroup()
   input_id <- input_id %||% NA_character_
   output_id <- output_id %||% NA_character_
   tibble::tibble(

@@ -2,7 +2,7 @@
 
 # File R/Config.R: @testexamples
 
-test_that("Function Config() @ L65", {
+test_that("Function Config() @ L62", {
   
   tool <- "tool1"
   pkg <- "nemo"
@@ -18,7 +18,6 @@ test_that("Function Config() @ L65", {
   (s1 <- conf$get_schema_raw("table1"))
   conf$get_schema_raw("table1", version = "v1.2.3")
   conf$get_schema_tidy("table1")
-  conf$validate_schemas()
   (cm <- conf$get_col_map("table5"))
   
   # initialize
@@ -45,14 +44,12 @@ test_that("Function Config() @ L65", {
   expect_equal(nrow(conf$get_schema_raw("table1", version = "v4.5.6")), 4)
   expect_error(conf$get_schema_raw("foo"))
   expect_error(conf$get_schema_raw("table1", version = "foo"))
-  # validate_schemas
-  expect_true(conf$validate_schemas())
   # get_col_map
   expect_named(cm, c("raw", "tidy", "type", "description"))
 })
 
 
-test_that("Function config_sort_versions() @ L400", {
+test_that("Function config_sort_versions() @ L390", {
   
   config_sort_versions(c("v2.0.0", "v1.0.0", "latest"))
   config_sort_versions(c("latest", "v1.2.3"))
@@ -60,83 +57,5 @@ test_that("Function config_sort_versions() @ L400", {
   expect_equal(config_sort_versions(c("v2.0.0", "v1.0.0", "latest")), c("v1.0.0", "v2.0.0", "latest"))
   expect_equal(config_sort_versions(c("latest", "v1.2.3")), c("v1.2.3", "latest"))
   expect_equal(config_sort_versions(c("v1.0.0", "v10.0.0", "v2.0.0")), c("v1.0.0", "v2.0.0", "v10.0.0"))
-})
-
-
-test_that("Function config_prep_raw_schema() @ L430", {
-  
-  path <- system.file("extdata", "tool1/latest/sampleA.tool1.table1.tsv", package = "nemo")
-  (x <- config_prep_raw_schema(path = path, delim = "\t"))
-  expect_named(x, c("raw", "tidy", "type", "description", "versions"))
-  expect_equal(nrow(x), 6L)
-  expect_equal(x[1, "raw",  drop = TRUE], "SampleID")
-  expect_equal(x[1, "tidy", drop = TRUE], "sample_id")
-  expect_equal(x[1, "type", drop = TRUE], "char")
-  expect_equal(unlist(x[[1, "versions"]]), "latest")
-})
-
-
-test_that("Function config_prep_raw() @ L496", {
-  
-  path <- system.file("extdata", "tool1/latest/sampleA.tool1.table1.tsv", package = "nemo")
-  name <- "table1"
-  descr <- "Table1 from Tool1."
-  pat <- "\\.tool1\\.table1\\.tsv$"
-  l <- config_prep_raw(path, name, descr, pat)
-  expect_equal(names(l[[1]]), c("description", "pattern", "ftype", "columns"))
-  expect_equal(length(l[[1]][["columns"]]), 6L)
-  col1 <- l[[1]][["columns"]][[1]]
-  expect_named(col1, c("raw", "tidy", "type", "description", "versions"))
-  expect_equal(col1[["raw"]], "SampleID")
-  expect_equal(col1[["tidy"]], "sample_id")
-})
-
-
-test_that("Function config_prep_multi() @ L530", {
-  
-  dir1 <-  "extdata/tool1/latest"
-  path1 <- system.file(dir1, "sampleA.tool1.table1.tsv", package = "nemo")
-  path2 <- system.file(dir1, "sampleA.tool1.table2.tsv", package = "nemo")
-  x <- tibble::tibble(
-    name = c("table1", "table2"),
-    descr = c("Table1 from Tool1.", "Table2 from Tool1."),
-    pat = c("\\.tool1\\.table1\\.tsv$", "\\.tool1\\.table2\\.tsv$"),
-    type = c("txt", "txt"),
-    path = c(path1, path2)
-  )
-  config <- config_prep_multi(x)
-  expect_equal(names(config), "tables")
-  expect_equal(names(config[["tables"]]), c("table1", "table2"))
-  tbl1 <- config[["tables"]][["table1"]]
-  expect_equal(names(tbl1), c("description", "pattern", "ftype", "columns"))
-  expect_equal(length(tbl1[["columns"]]), 6L)
-  expect_named(tbl1[["columns"]][[1]], c("raw", "tidy", "type", "description", "versions"))
-})
-
-
-test_that("Function config_prep_write() @ L584", {
-  
-  dir1 <- "extdata/tool1/latest"
-  path1 <- system.file(dir1, "sampleA.tool1.table1.tsv", package = "nemo")
-  path2 <- system.file(dir1, "sampleA.tool1.table2.tsv", package = "nemo")
-  x <- tibble::tibble(
-    name = c("table1", "table2"),
-    descr = c("Table1 from Tool1.", "Table2 from Tool1."),
-    pat = c("\\.tool1\\.table1\\.tsv$", "\\.tool1\\.table2\\.tsv$"),
-    type = c("txt", "txt"),
-    path = c(path1, path2)
-  )
-  config <- config_prep_multi(x)
-  out <- tempfile(fileext = ".yaml")
-  config_prep_write(config, out)
-  parsed <- yaml::read_yaml(out)
-  expect_equal(names(parsed), "tables")
-  expect_equal(names(parsed[["tables"]]), c("table1", "table2"))
-  tbl1 <- parsed[["tables"]][["table1"]]
-  expect_equal(names(tbl1), c("description", "pattern", "ftype", "columns"))
-  col1 <- tbl1[["columns"]][[1]]
-  expect_named(col1, c("raw", "tidy", "type", "description", "versions"))
-  expect_equal(col1[["raw"]], "SampleID")
-  expect_equal(col1[["versions"]][[1]], "latest")
 })
 

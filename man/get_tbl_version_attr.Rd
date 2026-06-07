@@ -4,14 +4,11 @@
 \alias{get_tbl_version_attr}
 \title{Get Table Version Attribute}
 \usage{
-get_tbl_version_attr(tbl, x = "file_version")
+get_tbl_version_attr(tbl)
 }
 \arguments{
 \item{tbl}{(\code{tibble()})\cr
 Table with a version attribute.}
-
-\item{x}{(\code{character(1)})\cr
-Name of the attribute to retrieve.}
 }
 \description{
 Get the version attribute from a table.

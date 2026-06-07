@@ -10,7 +10,7 @@ test_that("Function list_files_dir() @ L20", {
 })
 
 
-test_that("Function get_tbl_version_attr() @ L53", {
+test_that("Function get_tbl_version_attr() @ L51", {
   
   path <- system.file("extdata/tool1", package = "nemo")
   path2 <- file.path(path, "v1.2.3", "sampleA.tool1.table1.tsv")
@@ -23,7 +23,7 @@ test_that("Function get_tbl_version_attr() @ L53", {
 })
 
 
-test_that("Function set_tbl_version_attr() @ L78", {
+test_that("Function set_tbl_version_attr() @ L75", {
   
   d <- tibble::tibble(a = 1:3, b = letters[1:3])
   v <- "v1.2.3"
@@ -34,14 +34,14 @@ test_that("Function set_tbl_version_attr() @ L78", {
 })
 
 
-test_that("Function empty_tbl() @ L99", {
+test_that("Function empty_tbl() @ L96", {
   
   (x <- empty_tbl(cnames = c("a", "b", "c")))
   expect_equal(nrow(x), 0)
 })
 
 
-test_that("Function nemoverse_wf_dispatch() @ L147", {
+test_that("Function nemoverse_wf_dispatch() @ L144", {
   
   wf <- "basemean"
   (fun <- nemoverse_wf_dispatch(wf))
@@ -51,7 +51,7 @@ test_that("Function nemoverse_wf_dispatch() @ L147", {
 })
 
 
-test_that("Function pkg_found() @ L185", {
+test_that("Function pkg_found() @ L182", {
   
   pkg_found("base")
   pkg_found("somefakepackagename")

@@ -84,7 +84,6 @@ Tibble of files written from \code{self$write()}.}
 \item \href{#method-Tool-write}{\code{Tool$write()}}
 \item \href{#method-Tool-get_metadata}{\code{Tool$get_metadata()}}
 \item \href{#method-Tool-run}{\code{Tool$run()}}
-\item \href{#method-Tool-clone}{\code{Tool$clone()}}
 }
 }
 \if{html}{\out{<hr>}}
@@ -150,7 +149,8 @@ List files matching this tool's patterns.
 
 \subsection{Returns}{
 (\code{tibble()})\cr
-The \code{files} tibble of matched files.
+The \code{files} tibble of matched files. Always a tibble (possibly zero-row),
+never \code{NULL}.
 }
 }
 \if{html}{\out{<hr>}}
@@ -164,7 +164,9 @@ Get tidy tibbles after parsing and tidying.
 
 \subsection{Returns}{
 (\code{tibble()} or \code{NULL})\cr
-The \code{tbls} tibble, or \code{NULL} if \code{tidy()} has not been called.
+The \code{tbls} tibble, or \code{NULL} if \code{tidy()} has not been called or if
+\code{tidy()} found no matching files. When \code{tidy(keep_raw = TRUE)} was used,
+the tibble also contains a \code{raw} list-column of the unparsed tibbles.
 }
 }
 \if{html}{\out{<hr>}}
@@ -353,23 +355,6 @@ tool_parser names to exclude (e.g. \code{"tool1_table5"}).}
 \subsection{Returns}{
 (\code{R6::R6Class()})\cr
 R6 object invisibly. Results stored in \code{self$written_files}.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Tool-clone"></a>}}
-\if{latex}{\out{\hypertarget{method-Tool-clone}{}}}
-\subsection{Method \code{clone()}}{
-The objects of this class are cloneable with this method.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Tool$clone(deep = FALSE)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{deep}}{Whether to make a deep clone.}
-}
-\if{html}{\out{</div>}}
 }
 }
 }

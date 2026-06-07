@@ -62,6 +62,7 @@
 #' @export
 Tool1 <- R6::R6Class(
   "Tool1",
+  cloneable = FALSE,
   inherit = Tool,
   public = list(
     #' @description Create a new Tool1 object.

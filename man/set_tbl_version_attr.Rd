@@ -4,7 +4,7 @@
 \alias{set_tbl_version_attr}
 \title{Set Table Version Attribute}
 \usage{
-set_tbl_version_attr(tbl, v, x = "file_version")
+set_tbl_version_attr(tbl, v)
 }
 \arguments{
 \item{tbl}{(\code{tibble()})\cr
@@ -12,9 +12,6 @@ Table with a version attribute.}
 
 \item{v}{(\code{character(1)})\cr
 Version string to set.}
-
-\item{x}{(\code{character(1)})\cr
-Name of the attribute to retrieve.}
 }
 \description{
 Set the version attribute from a table.

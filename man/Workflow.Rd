@@ -48,9 +48,6 @@ Name of workflow.}
 \item{\code{path}}{(\code{character(n)})\cr
 Path(s) to workflow results.}
 
-\item{\code{tools}}{(\code{list(n)})\cr
-List of Tools that compose a Workflow.}
-
 \item{\code{metapkg}}{(\code{character(n)})\cr
 Package name(s) used for metadata version reporting.}
 
@@ -64,6 +61,7 @@ Tibble of files written from \code{self$write()}.}
 \itemize{
 \item \href{#method-Workflow-new}{\code{Workflow$new()}}
 \item \href{#method-Workflow-print}{\code{Workflow$print()}}
+\item \href{#method-Workflow-get_tools}{\code{Workflow$get_tools()}}
 \item \href{#method-Workflow-filter_files}{\code{Workflow$filter_files()}}
 \item \href{#method-Workflow-list_files}{\code{Workflow$list_files()}}
 \item \href{#method-Workflow-tidy}{\code{Workflow$tidy()}}
@@ -73,7 +71,6 @@ Tibble of files written from \code{self$write()}.}
 \item \href{#method-Workflow-get_schemas_tidy}{\code{Workflow$get_schemas_tidy()}}
 \item \href{#method-Workflow-get_tbls}{\code{Workflow$get_tbls()}}
 \item \href{#method-Workflow-get_metadata}{\code{Workflow$get_metadata()}}
-\item \href{#method-Workflow-clone}{\code{Workflow$clone()}}
 }
 }
 \if{html}{\out{<hr>}}
@@ -95,7 +92,8 @@ Name of workflow.}
 Path(s) to workflow results.}
 
 \item{\code{tools}}{(\code{list(n)})\cr
-List of Tools that compose a Workflow.}
+Named list of Tool subclasses that compose a Workflow. List names serve
+as aliases and need not match each tool's own \verb{$name} field.}
 
 \item{\code{metapkg}}{(\code{character(n)})\cr
 Package name(s) used for metadata version reporting.}
@@ -126,6 +124,20 @@ Print details about the Workflow.
 \subsection{Returns}{
 (\code{R6::R6Class()})\cr
 R6 object invisibly.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Workflow-get_tools"></a>}}
+\if{latex}{\out{\hypertarget{method-Workflow-get_tools}{}}}
+\subsection{Method \code{get_tools()}}{
+Get the list of Tool objects in this Workflow.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Workflow$get_tools()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+(\code{list(n)})\cr
+Named list of instantiated Tool objects.
 }
 }
 \if{html}{\out{<hr>}}
@@ -336,6 +348,10 @@ Get tidy tibbles for all Tools.
 \subsection{Returns}{
 (\code{tibble()})\cr
 Bound \code{tbls} tibbles from all Tools, with a leading \code{tool} column.
+When \code{tidy(keep_raw = TRUE)} was used, each tool's tibble also contains
+a \code{raw} list-column. Note: \code{get_tbls()} checks \code{is.null()} (not \code{nrow()})
+because \code{Tool$get_tbls()} returns \code{NULL} when nothing was tidied, whereas
+\code{Tool$list_files()} always returns a zero-row tibble (never \code{NULL}).
 }
 }
 \if{html}{\out{<hr>}}
@@ -368,23 +384,6 @@ Which R packages to extract versions for.}
 (\code{tibble()})\cr
 Single-row tibble with columns \code{input_id}, \code{output_id}, \code{input_dirs},
 \code{output_dir}, \code{pkg_versions}, and \code{files}.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Workflow-clone"></a>}}
-\if{latex}{\out{\hypertarget{method-Workflow-clone}{}}}
-\subsection{Method \code{clone()}}{
-The objects of this class are cloneable with this method.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Workflow$clone(deep = FALSE)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{deep}}{Whether to make a deep clone.}
-}
-\if{html}{\out{</div>}}
 }
 }
 }
