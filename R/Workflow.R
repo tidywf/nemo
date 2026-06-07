@@ -84,13 +84,13 @@ Workflow <- R6::R6Class(
     #' Path(s) to workflow results.
     #' @param tools (`list(n)`)\cr
     #' List of Tools that compose a Workflow.
-    #' @param metapkg (`character(1)`)\cr
-    #' Package name used for metadata version reporting.
+    #' @param metapkg (`character(n)`)\cr
+    #' Package name(s) used for metadata version reporting.
     #' @return (`R6::R6Class()`)\cr
     #' R6 object.
     initialize = function(name, path, tools, metapkg = "nemo") {
       nemo_assert_scalar_chr(name)
-      nemo_assert_scalar_chr(metapkg)
+      nemo_assert_chr(metapkg)
       nemo_assert_chr(path)
       assertthat::assert_that(
         all(dir.exists(path)),
@@ -219,8 +219,8 @@ Workflow <- R6::R6Class(
           x$written_files
         }) |>
         dplyr::bind_rows()
-      private$is_written <- TRUE
-      self$written_files <- res
+      self$written_files <- if (nrow(res) > 0) res else NULL
+      private$is_written <- nrow(res) > 0
       # Write metadata
       if (format != "db" && nrow(res) > 0) {
         meta <- self$get_metadata(

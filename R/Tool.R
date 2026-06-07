@@ -638,7 +638,14 @@ Tool <- R6::R6Class(
         )
       private$is_written <- TRUE
       self$written_files <- d_write
-      if (write_metadata && format != "db" && !is.null(self$path)) {
+      if (write_metadata && format != "db") {
+        if (is.null(self$path)) {
+          stop(
+            "Cannot write metadata: Tool was initialised with 'files_tbl' and has no 'path'. ",
+            "Set write_metadata = FALSE to suppress metadata writing.",
+            call. = FALSE
+          )
+        }
         meta <- self$get_metadata(
           input_id = input_id,
           output_id = output_id,
