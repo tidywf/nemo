@@ -42,21 +42,19 @@
 #' @export
 parse_file <- function(fpath, pname, schemas_all, delim = "\t", ...) {
   cnames <- file_hdr(fpath, delim = delim, ...)
-  schema <- schema_guess(
+  schema_tbl <- schema_guess(
     pname = pname,
     cnames = cnames,
     schemas_all = schemas_all
   )
-  schema[["schema"]] <- schema[["schema"]] |>
-    tibble::deframe()
-  ctypes <- rlang::exec(readr::cols, !!!schema[["schema"]])
+  ctypes <- rlang::exec(readr::cols, !!!tibble::deframe(schema_tbl[["schema"]]))
   d <- readr::read_delim(
     file = fpath,
     delim = delim,
     col_types = ctypes,
     ...
   )
-  attr(d, "file_version") <- schema[["version"]]
+  attr(d, "file_version") <- schema_tbl[["version"]]
   d[]
 }
 
@@ -98,16 +96,11 @@ parse_file <- function(fpath, pname, schemas_all, delim = "\t", ...) {
 #' expect_equal(attr(d_v1, "file_version"), "v1.0.0")
 #' @export
 parse_file_nohead <- function(fpath, schema, delim = "\t", ...) {
-  assertthat::assert_that(
-    nrow(schema) == 1,
-    identical(sapply(schema, class), c(version = "character", schema = "list"))
-  )
+  stopifnot(nrow(schema) == 1)
+  stopifnot(is.character(schema$version), is.list(schema$schema))
   version <- schema[["version"]]
   schema <- schema[["schema"]][[1]] |>
     tibble::deframe()
-  # check if number of cols is as expected
-  ncols <- file_hdr(fpath, delim = delim, ...) |> length()
-  assertthat::assert_that(length(schema) == ncols)
   ctypes <- paste0(schema, collapse = "")
   d <- readr::read_delim(
     file = fpath,

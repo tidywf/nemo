@@ -14,7 +14,7 @@ A Config object:
 \itemize{
 \item belongs to a package (\code{pkg})
 \item has a tool name (\code{tool})
-\item has a parsed tables list (\code{tables})
+\item has a parsed tables list (accessible via \code{get_tables()})
 \item caches all raw schemas as a flat tibble (\code{schemas_raw})
 \item caches all tidy schemas as a flat tibble (\code{schemas_tidy})
 }
@@ -46,9 +46,6 @@ Tool name.}
 
 \item{\code{pkg}}{(\code{character(1)})\cr
 Package name tool belongs to (for config lookup).}
-
-\item{\code{tables}}{(\code{list()})\cr
-Tables list (parsed from schema.yaml).}
 }
 \if{html}{\out{</div>}}
 }
@@ -63,6 +60,7 @@ Tables list (parsed from schema.yaml).}
 \item \href{#method-Config-get_pattern}{\code{Config$get_pattern()}}
 \item \href{#method-Config-get_ftype}{\code{Config$get_ftype()}}
 \item \href{#method-Config-get_description}{\code{Config$get_description()}}
+\item \href{#method-Config-get_tables}{\code{Config$get_tables()}}
 \item \href{#method-Config-get_schemas_raw}{\code{Config$get_schemas_raw()}}
 \item \href{#method-Config-get_schemas_tidy}{\code{Config$get_schemas_tidy()}}
 \item \href{#method-Config-get_schemas_both}{\code{Config$get_schemas_both()}}
@@ -228,6 +226,20 @@ Table description.
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Config-get_tables"></a>}}
+\if{latex}{\out{\hypertarget{method-Config-get_tables}{}}}
+\subsection{Method \code{get_tables()}}{
+Return the parsed tables list.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Config$get_tables()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+(\code{list()})\cr
+Named list of table definitions from schema.yaml.
+}
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Config-get_schemas_raw"></a>}}
 \if{latex}{\out{\hypertarget{method-Config-get_schemas_raw}{}}}
 \subsection{Method \code{get_schemas_raw()}}{
@@ -329,7 +341,7 @@ Table \code{version}, \code{field} and \code{type}.
 Validate schemas.
 Intentionally soft: returns \code{FALSE} + warning (not \code{stop()}) so callers
 can report schema problems without halting execution.
-Checks raw YAML types from \code{self$tables} directly, before remapping.
+Checks raw YAML types from \code{tables} directly, before remapping.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Config$validate_schemas()}\if{html}{\out{</div>}}
 }
@@ -356,7 +368,8 @@ Used for tables with custom parse logic (e.g. csv-nohead-long).
 Table name.}
 
 \item{\code{version}}{(\code{character(1)})\cr
-Version. If NULL, uses the latest version.}
+Version. If NULL, uses the latest version. Unlike \code{get_schema_raw()}/\code{get_schema_tidy()},
+which return all versions when NULL, this always resolves to a single version.}
 }
 \if{html}{\out{</div>}}
 }

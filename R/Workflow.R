@@ -127,8 +127,8 @@ Workflow <- R6::R6Class(
         "tidied"     , tolower(as.character(private$is_tidied))   ,
         "written"    , tolower(as.character(private$is_written))
       )
-      cat("#--- Workflow ---#\n")
-      print(res)
+      cat(glue("#--- Workflow {self$name} ---#\n"))
+      print(knitr::kable(res))
       invisible(self)
     },
     #' @description Filter files in given workflow directory.
@@ -139,10 +139,7 @@ Workflow <- R6::R6Class(
     #' @return (`R6::R6Class()`)\cr
     #' R6 object invisibly.
     filter_files = function(include = NULL, exclude = NULL) {
-      assertthat::assert_that(
-        is.null(include) || is.null(exclude),
-        msg = "You cannot define both include and exclude!"
-      )
+      assert_include_exclude(include, exclude)
       known_per_tool <- purrr::map(self$tools, \(x) unique(x$files$tool_parser))
       all_parsers <- unlist(known_per_tool)
       if (!is.null(include)) {
@@ -163,7 +160,7 @@ Workflow <- R6::R6Class(
           )
         )
       }
-      self$tools <- purrr::map2(self$tools, known_per_tool, \(x, known) {
+      purrr::walk2(self$tools, known_per_tool, \(x, known) {
         tool_include <- if (!is.null(include)) include[include %in% known] else NULL
         tool_exclude <- if (!is.null(exclude)) exclude[exclude %in% known] else NULL
         x$filter_files(include = tool_include, exclude = tool_exclude)
@@ -195,8 +192,7 @@ Workflow <- R6::R6Class(
       if (private$is_tidied) {
         return(invisible(self))
       }
-      self$tools <- self$tools |>
-        purrr::map(\(x) x$tidy(do_tidy = do_tidy, keep_raw = keep_raw))
+      purrr::walk(self$tools, \(x) x$tidy(do_tidy = do_tidy, keep_raw = keep_raw))
       private$is_tidied <- TRUE
       return(invisible(self))
     },
@@ -223,12 +219,7 @@ Workflow <- R6::R6Class(
       prefix_include = FALSE,
       dbconn = NULL
     ) {
-      assertthat::assert_that(
-        format %in% nemo_out_formats(),
-        msg = glue(
-          "Invalid format '{format}'. Must be one of: {glue::glue_collapse(nemo_out_formats(), sep = ', ')}."
-        )
-      )
+      valid_out_fmt(format)
       stopifnot("Did you forget to tidy?" = private$is_tidied)
       res <- self$tools |>
         purrr::map(\(x) {
@@ -246,8 +237,7 @@ Workflow <- R6::R6Class(
       private$is_written <- TRUE
       self$written_files <- res
       # Write metadata
-      if (format != "db" && !is.null(res)) {
-        output_dir <- normalizePath(output_dir)
+      if (format != "db" && nrow(res) > 0) {
         meta <- self$get_metadata(
           input_id = input_id,
           output_id = output_id,
@@ -301,27 +291,11 @@ Workflow <- R6::R6Class(
     #' @description Get raw schemas for all Tools.
     #' @return (`tibble()`)\cr
     #' Bound `schemas_raw` tibbles from all Tools, with a leading `tool` column.
-    get_schemas_raw = function() {
-      self$tools |>
-        purrr::map(\(x) {
-          x$config$get_schemas_raw() |>
-            dplyr::mutate(tool = x$name) |>
-            dplyr::relocate("tool", .before = 1)
-        }) |>
-        dplyr::bind_rows()
-    },
+    get_schemas_raw = function() private$gather_tool_schemas("get_schemas_raw"),
     #' @description Get tidy schemas for all Tools.
     #' @return (`tibble()`)\cr
     #' Bound tidy schema tibbles from all Tools, with a leading `tool` column.
-    get_schemas_tidy = function() {
-      self$tools |>
-        purrr::map(\(x) {
-          x$config$get_schemas_tidy() |>
-            dplyr::mutate(tool = x$name) |>
-            dplyr::relocate("tool", .before = 1)
-        }) |>
-        dplyr::bind_rows()
-    },
+    get_schemas_tidy = function() private$gather_tool_schemas("get_schemas_tidy"),
     #' @description Get tidy tibbles for all Tools.
     #' @return (`tibble()`)\cr
     #' Bound `tbls` tibbles from all Tools, with a leading `tool` column.
@@ -351,7 +325,6 @@ Workflow <- R6::R6Class(
       if (is.null(pkgs)) {
         pkgs <- self$metapkg
       }
-      files <- NULL
       if (private$is_written) {
         # just keep bname and provide output_dir, no need for full outpath since
         # it's a flat output structure.
@@ -366,7 +339,7 @@ Workflow <- R6::R6Class(
           dplyr::select(fin = "path", "size") |>
           dplyr::mutate(size = as.numeric(.data$size))
       }
-      meta <- nemo_metadata(
+      nemo_metadata(
         files = files,
         pkgs = pkgs,
         input_id = input_id,
@@ -374,7 +347,6 @@ Workflow <- R6::R6Class(
         input_dirs = self$path,
         output_dir = output_dir
       )
-      return(meta)
     }
   ), # public end
   private = list(
@@ -389,10 +361,33 @@ Workflow <- R6::R6Class(
         all(purrr::map_lgl(x, R6::is.R6Class)),
         msg = "All elements of `tools` must be R6 classes."
       )
+      is_tool_subclass <- function(cls) {
+        parent <- cls$inherit
+        while (!is.null(parent)) {
+          if (as.character(parent) == "Tool") {
+            return(TRUE)
+          }
+          parent_cls <- tryCatch(get(as.character(parent)), error = function(e) NULL)
+          if (is.null(parent_cls)) {
+            return(FALSE)
+          }
+          parent <- parent_cls$inherit
+        }
+        FALSE
+      }
       assertthat::assert_that(
-        all(purrr::map(x, "inherit") == as.symbol("Tool")),
+        all(purrr::map_lgl(x, is_tool_subclass)),
         msg = "All elements of `tools` must inherit from Tool."
       )
+    },
+    gather_tool_schemas = function(method_name) {
+      self$tools |>
+        purrr::map(\(x) {
+          x$config[[method_name]]() |>
+            dplyr::mutate(tool = x$name) |>
+            dplyr::relocate("tool", .before = 1)
+        }) |>
+        dplyr::bind_rows()
     },
     # Do files need to be tidied? Used when no files are detected, so we can
     # use downstream as a bypass.

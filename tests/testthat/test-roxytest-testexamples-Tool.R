@@ -58,7 +58,7 @@ test_that("Function Tool() @ L116", {
     "unknown tool_parser"
   )
   # write: invalid format
-  expect_error(toolC$write(output_dir = tempdir(), format = "invalid"), "Invalid format")
+  expect_error(toolC$write(output_dir = tempdir(), format = "invalid"), "Output format")
   # tidy: structure and column names
   expect_false(is.null(toolC$tbls))
   expect_named(

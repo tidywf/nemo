@@ -105,17 +105,13 @@ empty_tbl <- function(cnames, ctypes = readr::cols(.default = "c")) {
 is_files_tbl <- function(x) {
   assertthat::assert_that(
     tibble::is_tibble(x),
-    identical(colnames(x), c("bname", "size", "lastmodified", "path"))
+    msg = "'files_tbl' must be a tibble."
+  )
+  assertthat::assert_that(
+    identical(colnames(x), c("bname", "size", "lastmodified", "path")),
+    msg = "'files_tbl' must have columns: bname, size, lastmodified, path."
   )
 }
-
-.schema_type_map <- c(char = "c", float = "d", int = "i")
-
-schema_type_remap <- function(x) {
-  stopifnot(x %in% names(.schema_type_map))
-  unname(.schema_type_map[x])
-}
-
 
 #' Enframe Data
 #'
@@ -130,8 +126,7 @@ enframe_data <- function(x) {
 #' Get Python Binary
 #'
 #' Get the path to the Python binary in the system PATH.
-#' @return Path to the Python binary.
-#' @export
+#' @keywords internal
 get_python <- function() {
   py <- Sys.which("python")
   stopifnot("Cannot find Python in PATH." = nchar(py) > 0)
@@ -150,7 +145,7 @@ get_python <- function() {
 #' @testexamples
 #' expect_equal(fun, base::mean)
 #' expect_error(nemoverse_wf_dispatch("foo"))
-#' expect_error(nemoverse_wf_dispatch("dummy1"))
+#' expect_error(nemoverse_wf_dispatch("dummy_pkg_test"))
 #' @export
 nemoverse_wf_dispatch <- function(wf) {
   nemo_assert_not_null(wf)
@@ -158,9 +153,7 @@ nemoverse_wf_dispatch <- function(wf) {
     wigits = list(pkg = "tidywigits", wf = "Wigits", repo = "https://github.com/tidywf/tidywigits"),
     workflow1 = list(pkg = "nemo", wf = "Workflow1", repo = "https://github.com/tidywf/nemo"),
     basemean = list(pkg = "base", wf = "mean", repo = "CRAN"),
-    dummy1 = list(pkg = "dummy1", wf = "bar", repo = "BAZ")
-    # dragen = list(pkg = "dracarys", wf = "Dragen"),
-    # cttso = list(pkg = "cttsor", wf = "Tso")
+    dummy_pkg_test = list(pkg = "nonexistent_pkg_xyz", wf = "bar", repo = "BAZ") # test-only: exercises package-not-found path
   )
   all_wfs <- names(wfs)
   # check if wf available
@@ -176,7 +169,7 @@ nemoverse_wf_dispatch <- function(wf) {
     msg <- glue("Package {x[['pkg']]} not found, please install from {x[['repo']]}")
     stop(msg)
   }
-  return(pkgfun)
+  pkgfun
 }
 
 #' Check if Package is Installed

@@ -31,7 +31,7 @@ test_that("Function parse_file() @ L43", {
 })
 
 
-test_that("Function parse_file_nohead() @ L100", {
+test_that("Function parse_file_nohead() @ L98", {
   
   path <- system.file("extdata/tool1", package = "nemo")
   x <- Tool$new("tool1", pkg = "nemo", path)
@@ -57,7 +57,7 @@ test_that("Function parse_file_nohead() @ L100", {
 })
 
 
-test_that("Function file_hdr() @ L145", {
+test_that("Function file_hdr() @ L138", {
   
   dir1 <- system.file("extdata/tool1", package = "nemo")
   fpath <- file.path(dir1, "latest", "sampleA.tool1.table1.tsv")
@@ -67,7 +67,7 @@ test_that("Function file_hdr() @ L145", {
 })
 
 
-test_that("Function schema_guess() @ L186", {
+test_that("Function schema_guess() @ L179", {
   
   dir1 <- system.file("extdata/tool1", package = "nemo")
   fpath1 <- file.path(dir1, "latest", "sampleA.tool1.table1.tsv")
@@ -86,7 +86,7 @@ test_that("Function schema_guess() @ L186", {
 })
 
 
-test_that("Function parse_file_keyvalue() @ L248", {
+test_that("Function parse_file_keyvalue() @ L241", {
   
   path <- system.file("extdata/tool1", package = "nemo")
   x <- Tool1$new(path)

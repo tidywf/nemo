@@ -72,7 +72,7 @@
 #'   "unknown tool_parser"
 #' )
 #' # write: invalid format
-#' expect_error(toolC$write(output_dir = tempdir(), format = "invalid"), "Invalid format")
+#' expect_error(toolC$write(output_dir = tempdir(), format = "invalid"), "Output format")
 #' # tidy: structure and column names
 #' expect_false(is.null(toolC$tbls))
 #' expect_named(
@@ -157,7 +157,10 @@ Tool <- R6::R6Class(
     #' @return (`R6::R6Class()`)\cr
     #' R6 object.
     initialize = function(name, pkg, path = NULL, files_tbl = NULL) {
-      stopifnot(!is.null(path) || !is.null(files_tbl))
+      assertthat::assert_that(
+        !is.null(path) || !is.null(files_tbl),
+        msg = "Supply either 'path' or 'files_tbl'."
+      )
       nemo_assert_scalar_chr(name)
       nemo_assert_scalar_chr(pkg)
       if (!is.null(files_tbl)) {
@@ -186,9 +189,8 @@ Tool <- R6::R6Class(
         "files"   , as.character(nrow(self$files))   ,
         "tidied"  , as.character(private$is_tidied)  ,
         "written" , as.character(private$is_written)
-      ) |>
-        tidyr::unnest("value")
-      cat(glue("#--- Tool {self$pkg}::{self$name} ---#"))
+      )
+      cat(glue("#--- Tool {self$pkg}::{self$name} ---#\n"))
       print(knitr::kable(res))
       invisible(self)
     },
@@ -201,9 +203,10 @@ Tool <- R6::R6Class(
     #' @return (`R6::R6Class()`)\cr
     #' R6 object invisibly.
     filter_files = function(include = NULL, exclude = NULL) {
+      assert_include_exclude(include, exclude)
       assertthat::assert_that(
-        is.null(include) || is.null(exclude),
-        msg = "You cannot define both include and exclude!"
+        !private$is_tidied,
+        msg = "Cannot filter files after tidy() has been called."
       )
       if (nrow(self$files) == 0) {
         return(invisible(self))
@@ -268,7 +271,7 @@ Tool <- R6::R6Class(
         dplyr::bind_rows()
       if (nrow(res) == 0) {
         return(
-          dplyr::tibble(
+          tibble::tibble(
             tool_parser = character(),
             parser = character(),
             bname = character(),
@@ -286,12 +289,7 @@ Tool <- R6::R6Class(
       res |>
         dplyr::mutate(
           prefix = stringr::str_remove(.data$bname, .data$pattern),
-          # handle wigits version files
-          prefix = dplyr::if_else(
-            .data$parser == "version" & .data$prefix == "",
-            "version",
-            .data$prefix
-          ),
+          prefix = dplyr::if_else(.data$prefix == "", .data$parser, .data$prefix),
           tool_parser = paste0(self$name, "_", .data$parser)
         ) |>
         dplyr::mutate(group = dplyr::row_number(), .by = "bname") |>
@@ -322,7 +320,7 @@ Tool <- R6::R6Class(
     #' @return (`tibble()`)\cr
     #' Tidy schema tibble.
     get_schema_tidy = function(table_name = NULL, version = NULL) {
-      self$config$get_schema_tidy(x = table_name, version = version)
+      self$config$get_schema_tidy(table_name, version = version)
     },
     #' @description Get specific raw schema.
     #' @param table_name (`character(1)`)\cr
@@ -332,7 +330,7 @@ Tool <- R6::R6Class(
     #' @return (`tibble()`)\cr
     #' Raw schema tibble.
     get_schema_raw = function(table_name = NULL, version = NULL) {
-      self$config$get_schema_raw(x = table_name, version = version)
+      self$config$get_schema_raw(table_name, version = version)
     },
     #' @description Get column mapping (raw -> tidy) for a table.
     #' @param table_name (`character(1)`)\cr
@@ -342,7 +340,7 @@ Tool <- R6::R6Class(
     #' @return (`tibble()`)\cr
     #' Column map tibble with `raw`, `tidy`, `type`, and `description` columns.
     get_col_map = function(table_name = NULL, version = NULL) {
-      self$config$get_col_map(x = table_name, version = version)
+      self$config$get_col_map(table_name, version = version)
     },
     #' @description Dispatch parse for a table: calls custom `parse_{table_name}()` if
     #' defined in the subclass, otherwise falls back to `.parse_by_ftype()`.
@@ -432,7 +430,6 @@ Tool <- R6::R6Class(
         x <- self$.dispatch_parse(x, table_name)
       }
       version <- get_tbl_version_attr(x)
-      nemo_assert_not_null(version)
       schema <- self$get_schema_tidy(table_name, version = version)
       colnames(x) <- schema[["field"]]
       if (convert_types) {
@@ -507,30 +504,19 @@ Tool <- R6::R6Class(
     #' @return (`R6::R6Class()`)\cr
     #' R6 object invisibly.
     tidy = function(do_tidy = TRUE, keep_raw = FALSE) {
-      # if no tidying needed, early return
       if (private$is_tidied) {
         return(invisible(self))
       }
-      # if no files found, early return
       if (nrow(self$files) == 0) {
         self$tbls <- NULL
         private$is_tidied <- TRUE
-        return(invisible(self))
-      }
-      # if both FALSE, just return the file list
-      if (!do_tidy && !keep_raw) {
-        self$tbls <- self$files
         return(invisible(self))
       }
       d <- self$files |>
         dplyr::rowwise() |>
         dplyr::mutate(
           raw = list(self$.dispatch_parse(.data$path, .data$parser)),
-          tidy = dplyr::if_else(
-            do_tidy,
-            list(self$.dispatch_tidy(.data$raw, .data$parser)),
-            list(NULL)
-          )
+          tidy = list(if (do_tidy) self$.dispatch_tidy(.data$raw, .data$parser) else NULL)
         ) |>
         dplyr::ungroup()
       if (!keep_raw) {
@@ -569,12 +555,7 @@ Tool <- R6::R6Class(
       prefix_include = FALSE,
       dbconn = NULL
     ) {
-      assertthat::assert_that(
-        format %in% nemo_out_formats(),
-        msg = glue(
-          "Invalid format '{format}'. Must be one of: {glue::glue_collapse(nemo_out_formats(), sep = ', ')}."
-        )
-      )
+      valid_out_fmt(format)
       if (format != "db") {
         if (is.null(output_dir)) {
           stop("Output directory must be specified when format is not 'db'.")
@@ -597,10 +578,11 @@ Tool <- R6::R6Class(
           "tidy"
         ) |>
         tidyr::unnest("tidy", names_sep = "_") |>
+        dplyr::rename(tidy_df = "tidy_data") |>
         dplyr::rowwise() |>
         dplyr::mutate(
           tidy_data = list({
-            d <- tidy_data
+            d <- tidy_df
             if (!is.null(output_id)) {
               d <- tibble::add_column(d, output_id = as.character(output_id), .before = 1)
             }
@@ -620,11 +602,7 @@ Tool <- R6::R6Class(
           ),
           # used to write when non-db format
           fpfix = paste(file.path(output_dir, .data$prefix), .data$tbl_name, sep = "_"),
-          dbtab = ifelse(
-            format == "db",
-            list(.data$tbl_name),
-            list(NULL)
-          ),
+          dbtab = list(if (format == "db") .data$tbl_name else NULL),
           out = list(
             nemo_write(
               d = .data$tidy_data,

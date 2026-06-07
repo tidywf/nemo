@@ -6,9 +6,7 @@
 \usage{
 get_python()
 }
-\value{
-Path to the Python binary.
-}
 \description{
 Get the path to the Python binary in the system PATH.
 }
+\keyword{internal}

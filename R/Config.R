@@ -10,7 +10,7 @@
 #' A Config object:
 #' - belongs to a package (`pkg`)
 #' - has a tool name (`tool`)
-#' - has a parsed tables list (`tables`)
+#' - has a parsed tables list (accessible via `get_tables()`)
 #' - caches all raw schemas as a flat tibble (`schemas_raw`)
 #' - caches all tidy schemas as a flat tibble (`schemas_tidy`)
 #' @examples
@@ -71,9 +71,6 @@ Config <- R6::R6Class(
     #' @field pkg (`character(1)`)\cr
     #' Package name tool belongs to (for config lookup).
     pkg = NULL,
-    #' @field tables (`list()`)\cr
-    #' Tables list (parsed from schema.yaml).
-    tables = NULL,
     #' @description Create a new Config object.
     #' @param tool (`character(1)`)\cr
     #' Tool name.
@@ -87,13 +84,11 @@ Config <- R6::R6Class(
       tool <- tolower(tool)
       self$tool <- tool
       self$pkg <- pkg
-      self$tables <- private$read()[["tables"]]
-      if (!self$validate_schemas()) {
-        stop(glue("Aborting: invalid field types in schema.yaml for '{self$tool}'."), call. = FALSE)
-      }
-      private$schemas_cache <- private$compute_schemas()
-      private$schemas_raw <- private$derive_schema(private$schemas_cache, "raw")
-      private$schemas_tidy <- private$derive_schema(private$schemas_cache, "tidy")
+      private$tables <- private$read()[["tables"]]
+      private$check_schemas()
+      private$schemas_both <- private$compute_schemas()
+      private$schemas_raw <- private$derive_schema(private$schemas_both, "raw")
+      private$schemas_tidy <- private$derive_schema(private$schemas_both, "tidy")
     },
 
     #' @description Print details about the Config.
@@ -102,10 +97,10 @@ Config <- R6::R6Class(
     #' R6 object invisibly.
     print = function(...) {
       res <- tibble::tribble(
-        ~var    , ~value                            ,
-        "tool"  , self$tool                         ,
-        "pkg"   , self$pkg                          ,
-        "ntbls" , as.character(length(self$tables))
+        ~var    , ~value                               ,
+        "tool"  , self$tool                            ,
+        "pkg"   , self$pkg                             ,
+        "ntbls" , as.character(length(private$tables))
       )
       cat(glue("#--- Config {self$pkg}::{self$tool} ---#\n"))
       print(knitr::kable(res))
@@ -148,6 +143,11 @@ Config <- R6::R6Class(
     #' Table description.
     get_description = function(x) private$get_field_for_table(x, "description"),
 
+    #' @description Return the parsed tables list.
+    #' @return (`list()`)\cr
+    #' Named list of table definitions from schema.yaml.
+    get_tables = function() private$tables,
+
     #' @description Return raw schemas for all tables.
     #' @return (`tibble()`)\cr
     #' Table `name`, `tbl_description`, `version`, and `schema`
@@ -164,7 +164,7 @@ Config <- R6::R6Class(
     #' @return (`tibble()`)\cr
     #' Table `name`, `tbl_description`, `version`, and `schema`
     #' (list-col of tibble(raw, tidy, type)).
-    get_schemas_both = function() private$schemas_cache,
+    get_schemas_both = function() private$schemas_both,
 
     #' @description Get raw schema for a specific table and optional version.
     #' @param x (`character(1)`)\cr
@@ -189,19 +189,19 @@ Config <- R6::R6Class(
     #' @description Validate schemas.
     #' Intentionally soft: returns `FALSE` + warning (not `stop()`) so callers
     #' can report schema problems without halting execution.
-    #' Checks raw YAML types from `self$tables` directly, before remapping.
+    #' Checks raw YAML types from `tables` directly, before remapping.
     #' @return (`logical(1)`)\cr
     #' `TRUE` if all field types are valid, `FALSE` otherwise.
     validate_schemas = function() {
       valid_types <- names(.schema_type_map)
       valid_types_print <- glue::glue_collapse(valid_types, sep = ", ", last = " or ")
-      invalid <- self$tables |>
+      invalid <- private$tables |>
         purrr::imap(\(tab, tab_name) {
           purrr::map(tab[["columns"]], \(col) {
             tibble::tibble(name = tab_name, field = col[["raw"]], type = col[["type"]])
-          }) |>
-            dplyr::bind_rows()
+          })
         }) |>
+        purrr::list_flatten() |>
         dplyr::bind_rows() |>
         dplyr::filter(!.data$type %in% valid_types) |>
         dplyr::mutate(warn = glue("{.data$name} -> {.data$field} -> {.data$type}"))
@@ -222,21 +222,22 @@ Config <- R6::R6Class(
     #' @param x (`character(1)`)\cr
     #' Table name.
     #' @param version (`character(1)`)\cr
-    #' Version. If NULL, uses the latest version.
+    #' Version. If NULL, uses the latest version. Unlike `get_schema_raw()`/`get_schema_tidy()`,
+    #' which return all versions when NULL, this always resolves to a single version.
     #' @return (`tibble()`)\cr
     #' Tibble with columns `raw`, `tidy`, `type`, `description`.
     get_col_map = function(x, version = NULL) {
       nemo_assert_scalar_chr(x)
-      if (!x %in% names(self$tables)) {
+      if (!x %in% names(private$tables)) {
         stop(glue("{x} not found in tables for {self$tool}."), call. = FALSE)
       }
       if (!is.null(version)) {
         nemo_assert_scalar_chr(version)
       }
-      tbl_rows <- private$schemas_cache |> dplyr::filter(.data$name == x)
+      tbl_rows <- private$schemas_both |> dplyr::filter(.data$name == x)
       versions <- tbl_rows[["version"]]
       if (is.null(version)) {
-        version <- versions[length(versions)]
+        version <- tail(versions, 1)
       } else {
         private$assert_version(x, version, versions)
       }
@@ -247,9 +248,37 @@ Config <- R6::R6Class(
     }
   ), # end public
   private = list(
+    tables = NULL,
     schemas_raw = NULL,
     schemas_tidy = NULL,
-    schemas_cache = NULL,
+    schemas_both = NULL,
+    check_schemas = function() {
+      valid_types <- names(.schema_type_map)
+      valid_types_print <- glue::glue_collapse(valid_types, sep = ", ", last = " or ")
+      invalid <- private$tables |>
+        purrr::imap(\(tab, tab_name) {
+          purrr::map(tab[["columns"]], \(col) {
+            tibble::tibble(name = tab_name, field = col[["raw"]], type = col[["type"]])
+          })
+        }) |>
+        purrr::list_flatten() |>
+        dplyr::bind_rows() |>
+        dplyr::filter(!.data$type %in% valid_types) |>
+        dplyr::mutate(msg = glue("{.data$name} -> {.data$field} -> {.data$type}"))
+      if (nrow(invalid) > 0) {
+        msg1 <- invalid |>
+          dplyr::pull("msg") |>
+          glue::glue_collapse(sep = "; ")
+        stop(
+          glue(
+            "Field types need to be one of: {valid_types_print}\n",
+            "Check the following in the {self$tool} config:\n{msg1}"
+          ),
+          call. = FALSE
+        )
+      }
+      invisible(NULL)
+    },
     assert_version = function(x, version, versions) {
       if (!version %in% versions) {
         stop(glue("{version} not found in versions for {x} in {self$tool}."), call. = FALSE)
@@ -282,39 +311,44 @@ Config <- R6::R6Class(
     },
     get_field_for_table = function(x, key) {
       nemo_assert_scalar_chr(x)
-      if (!x %in% names(self$tables)) {
+      if (!x %in% names(private$tables)) {
         stop(glue("{x} not found in tables for {self$tool}."), call. = FALSE)
       }
-      self$tables[[x]][[key]]
+      private$tables[[x]][[key]]
     },
     get_field_for_all_tables = function(key) {
-      self$tables |>
+      private$tables |>
         purrr::map(key) |>
         tibble::enframe(value = key) |>
         tidyr::unnest(dplyr::all_of(key))
     },
-    compute_schemas = function() {
-      .get_one <- function(tab, tab_name) {
-        cols_df <- tab[["columns"]] |>
-          purrr::map(\(col) {
-            col[["versions"]] <- list(col[["versions"]])
-            tibble::as_tibble_row(col)
-          }) |>
-          dplyr::bind_rows()
-        versions <- config_sort_versions(unique(unlist(cols_df[["versions"]])))
-        schema_rows <- purrr::map(versions, \(v) {
-          cols_v <- cols_df |>
-            dplyr::filter(purrr::map_lgl(.data$versions, \(vs) v %in% vs)) |>
-            dplyr::mutate(type = schema_type_remap(.data$type)) |>
-            dplyr::select("raw", "tidy", "type", "description")
-          tibble::tibble(version = v, schema = list(cols_v))
+    compute_schema_one = function(tab, tab_name) {
+      cols_df <- tab[["columns"]] |>
+        purrr::map(\(col) {
+          tibble::tibble(
+            raw = col[["raw"]],
+            tidy = col[["tidy"]],
+            type = col[["type"]],
+            description = col[["description"]],
+            versions = list(col[["versions"]])
+          )
         }) |>
-          dplyr::bind_rows()
-        schema_rows |>
-          dplyr::mutate(name = tab_name, tbl_description = tab[["description"]], .before = 1)
-      }
-      self$tables |>
-        purrr::imap(.get_one) |>
+        dplyr::bind_rows()
+      versions <- config_sort_versions(unique(unlist(cols_df[["versions"]])))
+      schema_rows <- purrr::map(versions, \(v) {
+        cols_v <- cols_df |>
+          dplyr::filter(purrr::map_lgl(.data$versions, \(vs) v %in% vs)) |>
+          dplyr::mutate(type = schema_type_remap(.data$type)) |>
+          dplyr::select("raw", "tidy", "type", "description")
+        tibble::tibble(version = v, schema = list(cols_v))
+      }) |>
+        dplyr::bind_rows()
+      schema_rows |>
+        dplyr::mutate(name = tab_name, tbl_description = tab[["description"]], .before = 1)
+    },
+    compute_schemas = function() {
+      private$tables |>
+        purrr::imap(private$compute_schema_one) |>
         dplyr::bind_rows()
     },
     derive_schema = function(cache, side) {
@@ -345,6 +379,12 @@ Config <- R6::R6Class(
     }
   ) # end private
 )
+
+.schema_type_map <- c(char = "c", float = "d", int = "i")
+
+schema_type_remap <- function(x) {
+  unname(.schema_type_map[x])
+}
 
 #' Sort version strings with "latest" always last
 #'
@@ -398,7 +438,7 @@ config_prep_raw_schema <- function(path, v = "latest", ...) {
   }
   raw_types <- path |>
     readr::read_delim(n_max = 100, show_col_types = FALSE, ...) |>
-    purrr::map_chr(class)
+    purrr::map_chr(\(x) class(x)[1])
   unknown <- setdiff(unique(raw_types), names(type_map))
   if (length(unknown) > 0) {
     warning(glue("Column types not in type_map will produce NA: {paste(unknown, collapse = ', ')}"))
@@ -487,9 +527,12 @@ config_prep_multi <- function(x) {
     tibble::is_tibble(x),
     all(c("name", "descr", "pat", "type", "path") %in% colnames(x))
   )
-  tables <- purrr::pmap(x, function(name, descr, pat, type, path) {
-    config_prep_raw(path = path, name = name, descr = descr, pat = pat, type = type)
-  }) |>
+  tables <- purrr::pmap(
+    dplyr::select(x, "name", "descr", "pat", "type", "path"),
+    \(name, descr, pat, type, path) {
+      config_prep_raw(path = path, name = name, descr = descr, pat = pat, type = type)
+    }
+  ) |>
     purrr::list_flatten()
   list(tables = tables)
 }
