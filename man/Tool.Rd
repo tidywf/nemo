@@ -13,8 +13,8 @@ A Tool object:
 \item has a name (\code{name});
 \item has a path to a directory with its outputs (\code{path});
 \item has a schema configuration \code{Config} object (\code{config});
-\item has a tibble of files matching its \code{Config} patterns (\code{files});
-\item has a tibble with the parsed and tidied files (\code{tbls});
+\item exposes matched files via \code{list_files()};
+\item exposes parsed and tidied tables via \code{get_tbls()};
 }
 
 The typical workflow is: optionally filter files with \code{filter_files()}, parse

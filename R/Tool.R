@@ -9,8 +9,8 @@
 #' - has a name (`name`);
 #' - has a path to a directory with its outputs (`path`);
 #' - has a schema configuration `Config` object (`config`);
-#' - has a tibble of files matching its `Config` patterns (`files`);
-#' - has a tibble with the parsed and tidied files (`tbls`);
+#' - exposes matched files via `list_files()`;
+#' - exposes parsed and tidied tables via `get_tbls()`;
 #'
 #' The typical workflow is: optionally filter files with `filter_files()`, parse
 #' and tidy with `tidy()`, then write outputs with `write()`. `run()` chains

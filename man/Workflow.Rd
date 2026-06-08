@@ -11,8 +11,8 @@ A Workflow object:
 \itemize{
 \item has a name (\code{name});
 \item has one or more paths to workflow results (\code{path});
-\item has a list of \code{Tool} subclass objects (\code{tools});
-\item has a tibble of all files in the shared directory (\code{files_tbl});
+\item holds \code{Tool} subclass objects accessible via \code{get_tools()};
+\item exposes matched files across all tools via \code{list_files()};
 \item has a tibble of written output files, populated after \code{write()} (\code{written_files});
 }
 

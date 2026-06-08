@@ -2,7 +2,7 @@
 
 # File R/assert.R: @testexamples
 
-test_that("Function nemo_assert_out_fmt() @ L59", {
+test_that("Function nemo_assert_out_fmt() @ L65", {
   
   nemo_assert_out_fmt("tsv")
   expect_true(nemo_assert_out_fmt("tsv"))

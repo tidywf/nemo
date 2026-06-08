@@ -1,3 +1,9 @@
+#' Stop with call suppressed
+#'
+#' Thin wrapper around [stop()] with `call. = FALSE`.
+#' @param ... Passed to [stop()].
+#' @return Does not return.
+#' @export
 nemo_stop <- function(...) stop(..., call. = FALSE)
 
 #' Assert scalar character

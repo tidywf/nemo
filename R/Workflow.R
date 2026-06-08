@@ -7,8 +7,8 @@
 #' A Workflow object:
 #' - has a name (`name`);
 #' - has one or more paths to workflow results (`path`);
-#' - has a list of `Tool` subclass objects (`tools`);
-#' - has a tibble of all files in the shared directory (`files_tbl`);
+#' - holds `Tool` subclass objects accessible via `get_tools()`;
+#' - exposes matched files across all tools via `list_files()`;
 #' - has a tibble of written output files, populated after `write()` (`written_files`);
 #'
 #' The typical workflow is: optionally filter with `filter_files()`, tidy with
@@ -157,15 +157,7 @@ Workflow <- R6::R6Class(
     #' Bound `files` tibbles from all Tools, with a leading `tool` column.
     list_files = function() {
       private$tools |>
-        purrr::map(\(x) {
-          f <- x$list_files()
-          # Tool$list_files() always returns a tibble (never NULL); check nrow, not is.null.
-          if (nrow(f) == 0) {
-            return(NULL)
-          }
-          dplyr::mutate(f, tool = x$name, .before = 1)
-        }) |>
-        purrr::compact() |>
+        purrr::map(\(x) dplyr::mutate(x$list_files(), tool = x$name, .before = 1)) |>
         dplyr::bind_rows()
     },
     #' @description Tidy Workflow files.

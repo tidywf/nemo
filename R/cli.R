@@ -35,5 +35,7 @@ nemo_cli <- function(pkg, descr, wf = NULL) {
     cli_tidy_parse_args(args, wf)
   } else if (args$subparser_name == "list") {
     cli_list_parse_args(args, wf)
+  } else {
+    nemo_stop(glue("Unknown subcommand: '{args$subparser_name}'."))
   }
 }
