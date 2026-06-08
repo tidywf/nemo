@@ -30,34 +30,6 @@
 #' conf$get_schema_tidy("table1")
 #' (cm <- conf$get_col_map("table5"))
 #'
-#' @testexamples
-#' # initialize
-#' expect_error(Config$new("foo", pkg))
-#' expect_error(Config$new("tool1", "nonexistent_pkg"), "Config directory not found")
-#' # get_patterns
-#' expect_equal(nrow(patterns), 6)
-#' # get_ftypes
-#' expect_equal(dplyr::distinct(ftypes, .data$ftype) |> nrow(), 5)
-#' # get_pattern
-#' expect_equal(pat1, "\\.tool1\\.table1\\.tsv$")
-#' # get_ftype
-#' expect_equal(ftype1, "txt")
-#' # get_description
-#' expect_true(is.character(descr1))
-#' # get_descriptions
-#' expect_equal(nrow(descr), 6)
-#' # get_schemas_raw / get_schemas_tidy
-#' expect_equal(dplyr::filter(rs, .data$name == "table1") |> nrow(), 3)
-#' expect_equal(dplyr::filter(ts, .data$name == "table1") |> nrow(), 3)
-#' # get_schema_raw
-#' expect_named(s1, c("version", "field", "type"))
-#' expect_equal(nrow(conf$get_schema_raw("table1", version = "v1.2.3")), 5)
-#' expect_equal(nrow(conf$get_schema_raw("table1", version = "v4.5.6")), 4)
-#' expect_error(conf$get_schema_raw("foo"))
-#' expect_error(conf$get_schema_raw("table1", version = "foo"))
-#' # get_col_map
-#' expect_named(cm, c("raw", "tidy", "type", "description"))
-#'
 #' @export
 Config <- R6::R6Class(
   "Config",

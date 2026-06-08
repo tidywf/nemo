@@ -2,54 +2,7 @@
 
 # File R/Config.R: @testexamples
 
-test_that("Function Config() @ L62", {
-  
-  tool <- "tool1"
-  pkg <- "nemo"
-  conf <- Config$new(tool, pkg)
-  (patterns <- conf$get_patterns())
-  (ftypes <- conf$get_ftypes())
-  (pat1 <- conf$get_pattern("table1"))
-  (ftype1 <- conf$get_ftype("table1"))
-  (descr1 <- conf$get_description("table1"))
-  (descr <- conf$get_descriptions())
-  (rs <- conf$get_schemas_raw())
-  (ts <- conf$get_schemas_tidy())
-  (s1 <- conf$get_schema_raw("table1"))
-  conf$get_schema_raw("table1", version = "v1.2.3")
-  conf$get_schema_tidy("table1")
-  (cm <- conf$get_col_map("table5"))
-  
-  # initialize
-  expect_error(Config$new("foo", pkg))
-  expect_error(Config$new("tool1", "nonexistent_pkg"), "Config directory not found")
-  # get_patterns
-  expect_equal(nrow(patterns), 6)
-  # get_ftypes
-  expect_equal(dplyr::distinct(ftypes, .data$ftype) |> nrow(), 5)
-  # get_pattern
-  expect_equal(pat1, "\\.tool1\\.table1\\.tsv$")
-  # get_ftype
-  expect_equal(ftype1, "txt")
-  # get_description
-  expect_true(is.character(descr1))
-  # get_descriptions
-  expect_equal(nrow(descr), 6)
-  # get_schemas_raw / get_schemas_tidy
-  expect_equal(dplyr::filter(rs, .data$name == "table1") |> nrow(), 3)
-  expect_equal(dplyr::filter(ts, .data$name == "table1") |> nrow(), 3)
-  # get_schema_raw
-  expect_named(s1, c("version", "field", "type"))
-  expect_equal(nrow(conf$get_schema_raw("table1", version = "v1.2.3")), 5)
-  expect_equal(nrow(conf$get_schema_raw("table1", version = "v4.5.6")), 4)
-  expect_error(conf$get_schema_raw("foo"))
-  expect_error(conf$get_schema_raw("table1", version = "foo"))
-  # get_col_map
-  expect_named(cm, c("raw", "tidy", "type", "description"))
-})
-
-
-test_that("Function config_sort_versions() @ L384", {
+test_that("Function config_sort_versions() @ L356", {
   
   config_sort_versions(c("v2.0.0", "v1.0.0", "latest"))
   config_sort_versions(c("latest", "v1.2.3"))

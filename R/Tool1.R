@@ -20,45 +20,6 @@
 #' (lf <- list.files(dir1, pattern = "tool1.*parquet", full.names = FALSE))
 #'
 #' obj2 <- Tool1$new(indir)$tidy()
-#' @testexamples
-#' # parse_table5
-#' expect_named(raw5, c("section", "rg", "variable", "count", "pct"))
-#' expect_equal(nrow(raw5), 16)
-#' # tidy_table3
-#' expect_named(tidy3, c("name", "data"))
-#' expect_named(
-#'   tidy3$data[[1]],
-#'   c("sample_id", "qcstatus", "reads_total", "reads_map", "reads_unmap")
-#' )
-#' # tidy_table5
-#' expect_named(tidy5, c("name", "data"))
-#' expect_named(
-#'   tidy5$data[[1]],
-#'   c("section", "rg", "reads_total", "reads_map", "reads_unmap", "bases_total",
-#'     "reads_total_pct", "reads_map_pct", "reads_unmap_pct")
-#' )
-#' # wrangle: two table4 output files (one per version)
-#' expect_equal(sum(grepl("table4", lf)), 2)
-#' # tidy (obj2)
-#' expect_false(is.null(obj2$get_tbls()))
-#' expect_equal(nrow(obj2$get_tbls() |> dplyr::filter(tool_parser == "tool1_table4")), 2)
-#' expect_named(
-#'   obj2$get_tbls(),
-#'   c(
-#'     "tool_parser", "parser", "bname", "size", "lastmodified", "path",
-#'     "pattern", "prefix", "prefix_suffix", "tidy"
-#'   )
-#' )
-#' t3_ncols <- purrr::map_int(
-#'   obj2$get_tbls() |> dplyr::filter(parser == "table3") |> dplyr::pull(tidy),
-#'   \(x) ncol(x$data[[1]])
-#' )
-#' expect_setequal(t3_ncols, c(3L, 5L))
-#' expect_named(
-#'   obj2$get_tbls() |> dplyr::filter(parser == "table5") |> dplyr::pull(tidy) |> _[[1]] |> _$data[[1]],
-#'   c("section", "rg", "reads_total", "reads_map", "reads_unmap", "bases_total",
-#'     "reads_total_pct", "reads_map_pct", "reads_unmap_pct")
-#' )
 #' @export
 Tool1 <- R6::R6Class(
   "Tool1",

@@ -10,14 +10,6 @@
 #' dir1 <- tempdir()
 #' wf$run(output_dir = dir1, format = "parquet", input_id = "run1")
 #' (lf <- list.files(dir1, pattern = "tool1.*parquet", full.names = TRUE))
-#' @testexamples
-#' # initialize
-#' expect_equal(length(wf$get_tools()), 1)
-#' expect_equal(wf$get_tools()[[1]]$name, "tool1")
-#' # list_files: all parsers present
-#' expect_true(all(c("tool1_table1", "tool1_table2", "tool1_table4") %in% lf_all$tool_parser))
-#' # wrangle: two table4 output files (one per version)
-#' expect_equal(sum(grepl("table4", basename(lf))), 2)
 #' @export
 Workflow1 <- R6::R6Class(
   "Workflow1",

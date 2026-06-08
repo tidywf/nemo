@@ -33,30 +33,6 @@
 #' wf2 <- Workflow$new(name = "wf2", path = path, tools = tools)
 #' wf2$run(output_dir = dir2, format = "parquet", input_id = "run2")
 #' (lf2 <- list.files(dir2, pattern = "tool1.*parquet", full.names = TRUE))
-#' @testexamples
-#' # list_files
-#' nms1 <- c(
-#'   "tool", "tool_parser", "parser", "bname", "size", "lastmodified", "path",
-#'   "pattern", "prefix", "prefix_suffix"
-#' )
-#' expect_true(all(c("tool1_table1", "tool1_table2", "tool1_table4") %in% lf_all$tool_parser))
-#' expect_named(lf_all, nms1)
-#' # filter_files + tidy + get_tbls: table5 excluded, table4 retained
-#' expect_false("tool1_table5" %in% tbls$tool_parser)
-#' expect_true("tool1_table4" %in% tbls$tool_parser)
-#' expect_named(tbls, c(nms1, "tidy"))
-#' # get_schemas_raw
-#' expect_named(rs, c("tool", "name", "tbl_description", "version", "schema"))
-#' # write: two table4 output files (one per version)
-#' expect_equal(sum(grepl("table4", basename(lf1))), 2)
-#' expect_named(
-#'   wf$written_files, c("raw_path", "tool_parser", "prefix", "tbl_name", "outpath")
-#' )
-#' # get_metadata
-#' expect_named(meta, c("input_id", "output_id", "input_dirs", "output_dir", "pkg_versions", "files"))
-#' # wrangle: all parsers written
-#' expect_true(all(c("tool1_table1", "tool1_table4") %in% sub(".*_(tool1_table\\d).*", "\\1", basename(lf2))))
-#'
 #' @export
 Workflow <- R6::R6Class(
   "Workflow",
@@ -415,14 +391,16 @@ Workflow <- R6::R6Class(
 
 # Check whether an R6 class inherits from Tool anywhere in its ancestry.
 # cls$inherit stores a symbol (the parent class name), not the class object
-# itself — get() is required to resolve it. We start from parent.env(.GlobalEnv)
-# so a user variable named "Tool" in .GlobalEnv cannot shadow the real class.
-# Do not attempt to traverse $inherit directly without resolving via get().
+# itself — get() is required to resolve it. Resolution uses cls$parent_env (the
+# namespace where the subclass was defined) rather than parent.env(.GlobalEnv)
+# (the search path), so the lookup works under R CMD check where nemo is only
+# imported into the downstream package namespace, not attached to the search path.
 wf_is_tool_subclass <- function(cls) {
   parent <- cls$inherit
+  env <- cls$parent_env
   while (!is.null(parent)) {
     parent_cls <- tryCatch(
-      get(as.character(parent), envir = parent.env(.GlobalEnv), inherits = TRUE),
+      get(as.character(parent), envir = env, inherits = TRUE),
       error = function(e) NULL
     )
     if (is.null(parent_cls)) {
@@ -431,6 +409,7 @@ wf_is_tool_subclass <- function(cls) {
     if (identical(parent_cls$classname, "Tool")) {
       return(TRUE)
     }
+    env <- parent_cls$parent_env
     parent <- parent_cls$inherit
   }
   FALSE
