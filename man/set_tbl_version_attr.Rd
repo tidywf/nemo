@@ -14,7 +14,7 @@ Table with a version attribute.}
 Version string to set.}
 }
 \description{
-Set the version attribute from a table.
+Set the version attribute on a table.
 }
 \examples{
 d <- tibble::tibble(a = 1:3, b = letters[1:3])

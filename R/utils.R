@@ -58,7 +58,7 @@ get_tbl_version_attr <- function(tbl) {
 
 #' Set Table Version Attribute
 #'
-#' Set the version attribute from a table.
+#' Set the version attribute on a table.
 #' @param tbl (`tibble()`)\cr
 #' Table with a version attribute.
 #' @param v (`character(1)`)\cr
@@ -114,7 +114,7 @@ nemo_enframe <- function(x) {
 #' @keywords internal
 get_python <- function() {
   py <- Sys.which("python")
-  if (nchar(py) == 0) {
+  if (!nzchar(py)) {
     nemo_stop("Cannot find Python in PATH.")
   }
   py
@@ -138,6 +138,7 @@ nemoverse_wf_dispatch <- function(wf) {
   wfs <- list(
     wigits = list(pkg = "tidywigits", wf = "Wigits", repo = "https://github.com/tidywf/tidywigits"),
     workflow1 = list(pkg = "nemo", wf = "Workflow1", repo = "https://github.com/tidywf/nemo"),
+    # basemean is a test/example entry only — not a real workflow
     basemean = list(pkg = "base", wf = "mean", repo = "CRAN")
   )
   all_wfs <- names(wfs)
@@ -147,13 +148,10 @@ nemoverse_wf_dispatch <- function(wf) {
     nemo_stop(msg)
   }
   x <- wfs[[wf]]
-  if (pkg_found(x[["pkg"]])) {
-    pkgfun <- getExportedValue(x[["pkg"]], x[["wf"]])
-  } else {
-    msg <- glue("Package {x[['pkg']]} not found, please install from {x[['repo']]}")
-    nemo_stop(msg)
+  if (!pkg_found(x[["pkg"]])) {
+    nemo_stop(glue("Package {x[['pkg']]} not found, please install from {x[['repo']]}"))
   }
-  pkgfun
+  getExportedValue(x[["pkg"]], x[["wf"]])
 }
 
 #' Check if Package is Installed

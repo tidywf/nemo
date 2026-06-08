@@ -51,15 +51,11 @@ nemo_uml <- function(classes, output_dir = NULL, pkg = "nemo") {
       args = c("-tsvg", "-pipe"),
       stdin = tmp_uml,
       stdout = TRUE,
-      stderr = TRUE
+      stderr = FALSE
     )
-    if (!is.null(attr(svg1, "status")) && attr(svg1, "status") != 0L) {
-      nemo_stop(
-        "plantuml failed (exit ",
-        attr(svg1, "status"),
-        "):\n",
-        paste(svg1, collapse = "\n")
-      )
+    status <- attr(svg1, "status") %||% 0L
+    if (status != 0L) {
+      nemo_stop("plantuml failed (exit ", status, ").")
     }
     return(paste(svg1, collapse = "\n"))
   }

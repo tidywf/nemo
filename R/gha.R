@@ -116,8 +116,10 @@ nemo_gha_mermaid <- function(actions_url, deploy_yaml) {
   )
 }
 
+.gha_skip_patterns <- c("app token", "codeout", "dvc setup", "dvc pull")
+
 .gha_ignore_steps <- function(name) {
-  grepl("app token|codeout|dvc setup|dvc pull", tolower(name))
+  grepl(paste(.gha_skip_patterns, collapse = "|"), tolower(name))
 }
 
 .gha_read_steps <- function(path) {

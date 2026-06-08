@@ -1,5 +1,12 @@
 #' @keywords internal
 meta_files_from_written <- function(written_files) {
+  required <- c("tbl_name", "prefix", "outpath", "raw_path")
+  missing <- required[!required %in% colnames(written_files)]
+  if (length(missing) > 0) {
+    nemo_stop(glue(
+      "'written_files' is missing columns: {glue::glue_collapse(missing, sep = ', ')}."
+    ))
+  }
   written_files |>
     dplyr::mutate(outpath = basename(.data$outpath)) |>
     dplyr::select(tbl = "tbl_name", "prefix", fout = "outpath", fin = "raw_path")

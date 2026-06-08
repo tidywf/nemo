@@ -276,6 +276,8 @@ parse_file_keyvalue <- function(fpath, pname, schemas_all, delim = "\t", ...) {
     cnames = colnames(d_wide),
     schemas_all = schemas_all
   )
+  # schema is used only for version detection; column types are not applied because
+  # key-value files are inherently all-character after the pivot.
   attr(d_wide, "file_version") <- schema[["version"]]
   d_wide[]
 }

@@ -57,8 +57,8 @@ nemo_assert_not_null <- function(x, arg = deparse(substitute(x))) {
 #' expect_error(nemo_assert_out_fmt(c("tsv", "csv")))
 #' @export
 nemo_assert_out_fmt <- function(format, choices = nemo_out_formats()) {
-  y <- glue::glue_collapse(choices, sep = ", ", last = " or ")
   if (!rlang::is_scalar_character(format) || !format %in% choices) {
+    y <- glue::glue_collapse(choices, sep = ", ", last = " or ")
     nemo_stop(glue("Output format should be _one_ of {y}."))
   }
   invisible(TRUE)

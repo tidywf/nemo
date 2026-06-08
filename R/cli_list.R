@@ -23,7 +23,7 @@ cli_list_add_args <- function(subp, wf = NULL) {
   }
   l$add_argument("-d", "--in_dir", help = "Input directory.", required = TRUE)
   # fmt: skip
-  l$add_argument("-f", "--format", help = paste0("Format of list output [def: %(default)s] (", fmts, ")"), default = cli_nemo_list_formats["pretty"])
+  l$add_argument("-f", "--format", help = paste0("Format of list output [def: %(default)s] (", fmts, ")"), default = cli_nemo_list_formats[["pretty"]])
   l$add_argument("-m", "--max", help = "Max rows to show.", type = "integer")
   l$add_argument("-q", "--quiet", help = "Shush all the logs.", action = "store_true")
 }
