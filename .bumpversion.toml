@@ -25,19 +25,9 @@ search = "Version: {current_version}"
 replace = "Version: {new_version}"
 
 [[tool.bumpversion.files]]
-filename = ".github/workflows/deploy.yaml"
-search = "pkg_version: '{current_version}' # bump"
-replace = "pkg_version: '{new_version}' # bump"
-
-[[tool.bumpversion.files]]
 filename = "deploy/conda/recipe/recipe.yaml"
 search = "version: {current_version}"
 replace = "version: {new_version}"
-
-[[tool.bumpversion.files]]
-filename = "deploy/conda/env/yaml/bump.yaml"
-search = "r-nemo =={current_version}"
-replace = "r-nemo =={new_version}"
 
 [[tool.bumpversion.files]]
 filename = "deploy/conda/env/yaml/nemo.yaml"
