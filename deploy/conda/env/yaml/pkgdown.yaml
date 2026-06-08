@@ -11,3 +11,5 @@ dependencies:
   - r-here
   - r-r6toplant
   - plantuml
+  - r-htmltools
+  - r-reactable
