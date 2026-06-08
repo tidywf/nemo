@@ -187,7 +187,7 @@ cli_nemo_tidy <- function(
   include = NULL,
   exclude = NULL
 ) {
-  valid_out_fmt(out_format)
+  nemo_assert_out_fmt(out_format)
   fun <- nemoverse_wf_dispatch(workflow)
   dbconn <- NULL
   if (out_format == "db") {

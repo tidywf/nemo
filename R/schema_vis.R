@@ -201,9 +201,7 @@ nemo_schemavis_data <- function(tools, pkg = "nemo") {
   purrr::map(tools, get_one) |>
     dplyr::bind_rows() |>
     dplyr::mutate(row_id = dplyr::row_number(), n = .data$row_id) |>
-    dplyr::relocate("n") |>
-    dplyr::relocate("tool", .after = "n") |>
-    dplyr::relocate("schema_version", .after = "tbl")
+    dplyr::select("n", "tool", "tbl", "schema_version", "description", "row_id")
 }
 
 #' Render an interactive schema explorer

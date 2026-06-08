@@ -97,7 +97,7 @@ cli_list_parse_args <- function(args, wf = NULL) {
 #' @export
 cli_nemo_list <- function(in_dir, workflow, format = "pretty", max = NULL) {
   fun <- nemoverse_wf_dispatch(workflow)
-  valid_out_fmt(format, choices = cli_nemo_list_formats)
+  nemo_assert_out_fmt(format, choices = cli_nemo_list_formats)
   obj <- fun$new(in_dir)
   d <- obj$list_files()
   res <- d |>

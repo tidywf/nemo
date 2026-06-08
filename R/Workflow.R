@@ -232,9 +232,9 @@ Workflow <- R6::R6Class(
       dbconn = NULL,
       write_metadata = TRUE
     ) {
-      # valid_out_fmt is also checked in Tool$write() and nemo_osfx(); each layer
+      # nemo_assert_out_fmt is also checked in Tool$write() and nemo_osfx(); each layer
       # keeps its own check so callers don't need to worry about ordering.
-      valid_out_fmt(format)
+      nemo_assert_out_fmt(format)
       if (private$is_written) {
         return(invisible(self))
       }
@@ -306,7 +306,7 @@ Workflow <- R6::R6Class(
       exclude = NULL
     ) {
       # fail-fast before tidy(); write() re-checks but tidy can be slow
-      valid_out_fmt(format)
+      nemo_assert_out_fmt(format)
       # fmt: skip
       self$filter_files(include = include, exclude = exclude)$
         tidy()$

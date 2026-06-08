@@ -38,6 +38,7 @@ nemo_write <- function(d, fpfix = NULL, format = "tsv", dbconn = NULL, dbtab = N
   if (!is.data.frame(d)) {
     nemo_stop("'d' must be a data.frame.")
   }
+  nemo_assert_out_fmt(format)
   if (format == "db") {
     nemo_assert_not_null(dbconn)
     nemo_assert_not_null(dbtab)
@@ -48,40 +49,20 @@ nemo_write <- function(d, fpfix = NULL, format = "tsv", dbconn = NULL, dbtab = N
       append = TRUE,
       overwrite = FALSE
     )
-  } else {
-    nemo_assert_not_null(fpfix)
-    fpfix <- as.character(fpfix)
-    osfx <- nemo_osfx(fpfix, format)
-    fs::dir_create(dirname(fpfix))
-    switch(
-      format,
-      tsv = readr::write_tsv(d, osfx),
-      csv = readr::write_csv(d, osfx),
-      parquet = arrow::write_parquet(d, osfx),
-      rds = readr::write_rds(d, osfx)
-    )
+    return(invisible(NA_character_))
   }
-  invisible(if (format == "db") NA_character_ else osfx)
-}
-
-#' Output Format is Valid
-#'
-#' Checks that the specified output format is valid.
-#' @param x Output format.
-#' @param choices Available choices for valid output formats.
-#' @examples
-#' valid_out_fmt("tsv")
-#' @testexamples
-#' expect_true(valid_out_fmt("tsv"))
-#' expect_error(valid_out_fmt("foo"))
-#' expect_error(valid_out_fmt(c("tsv", "csv")))
-#' @export
-valid_out_fmt <- function(x, choices = nemo_out_formats()) {
-  y <- glue::glue_collapse(choices, sep = ", ", last = " or ")
-  if (!rlang::is_scalar_character(x) || !x %in% choices) {
-    nemo_stop(glue("Output format should be _one_ of {y}."))
-  }
-  invisible(TRUE)
+  nemo_assert_not_null(fpfix)
+  fpfix <- as.character(fpfix)
+  osfx <- nemo_osfx(fpfix, format)
+  fs::dir_create(dirname(fpfix))
+  switch(
+    format,
+    tsv = readr::write_tsv(d, osfx),
+    csv = readr::write_csv(d, osfx),
+    parquet = arrow::write_parquet(d, osfx),
+    rds = readr::write_rds(d, osfx)
+  )
+  invisible(osfx)
 }
 
 #' Output Formats Supported
@@ -111,7 +92,7 @@ nemo_out_formats <- function() {
 nemo_osfx <- function(fpfix, format) {
   # already validated upstream by Tool$write() / Workflow$write(); kept so nemo_osfx()
   # is safe to call standalone without a prior validation step.
-  valid_out_fmt(format)
+  nemo_assert_out_fmt(format)
   if (format == "db") {
     nemo_stop("nemo_osfx() is not applicable for format 'db'.")
   }

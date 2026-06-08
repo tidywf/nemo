@@ -1,5 +1,9 @@
+nemo_log_enabled <- function() {
+  Sys.getenv("NEMO_LOG_ENABLE", "TRUE") == "TRUE"
+}
+
 .onLoad <- function(libname, pkgname) {
-  if (Sys.getenv("NEMO_LOG_ENABLE", "TRUE") == "TRUE") {
+  if (nemo_log_enabled()) {
     level <- Sys.getenv("NEMO_LOG_LEVEL", "INFO")
     assign(
       "logger",
@@ -18,17 +22,14 @@
 #' @param ... Values to format into the message. See [sprintf] for details.
 #' @export
 nemo_log <- function(level, msg, ...) {
-  if (
-    Sys.getenv("NEMO_LOG_ENABLE", "TRUE") == "TRUE" &&
-      exists("logger", envir = parent.env(environment()))
-  ) {
-    logger <- get("logger", envir = parent.env(environment()))
-    log4r::levellog(logger, level, sprintf(msg, ...))
+  env <- parent.env(environment())
+  if (nemo_log_enabled() && exists("logger", envir = env)) {
+    log4r::levellog(get("logger", envir = env), level, sprintf(msg, ...))
   }
 }
 
 nemo_log_layout <- function(level, ...) {
-  paste0(nemo_log_date(), " nemo ", level, ": ", ..., "\n", collapse = "")
+  paste0(nemo_log_date(), " nemo ", level, ": ", ..., "\n")
 }
 
 #' Print current timestamp for logging

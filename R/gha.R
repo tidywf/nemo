@@ -106,7 +106,7 @@ nemo_gha_mermaid <- function(actions_url, deploy_yaml) {
       "",
       bump_to_deploy,
       "",
-      paste0(i1, "subgraph DEPLOY [\"\U0001F527 conda-docs\"]"),
+      paste0(i1, "subgraph DEPLOY [\"\U0001F527 Deploy\"]"),
       deploy_subgraph_lines,
       "",
       job_chain,
@@ -117,14 +117,7 @@ nemo_gha_mermaid <- function(actions_url, deploy_yaml) {
 }
 
 .gha_ignore_steps <- function(name) {
-  ignore <- c(
-    "app token",
-    "codeout",
-    "dvc setup",
-    "dvc pull"
-  )
-  lname <- tolower(name)
-  any(purrr::map_lgl(ignore, \(p) grepl(p, lname, fixed = TRUE)))
+  grepl("app token|codeout|dvc setup|dvc pull", tolower(name))
 }
 
 .gha_read_steps <- function(path) {

@@ -1,3 +1,4 @@
+#' @keywords internal
 meta_files_from_written <- function(written_files) {
   written_files |>
     dplyr::mutate(outpath = basename(.data$outpath)) |>

@@ -1,3 +1,4 @@
+#' @keywords internal
 count_file_cols <- function(fpath, delim, ...) {
   readr::read_delim(
     file = fpath,
@@ -119,17 +120,15 @@ parse_file_nohead <- function(fpath, pname, schemas_all, delim = "\t", ...) {
     ))
   }
   version <- schema[["version"]]
-  schema_deframed <- schema[["schema"]][[1]] |>
-    tibble::deframe()
-  ctypes <- paste0(schema_deframed, collapse = "")
+  schema_deframed <- tibble::deframe(schema[["schema"]][[1]])
+  ctypes <- rlang::exec(readr::cols, !!!schema_deframed)
   d <- readr::read_delim(
     file = fpath,
-    col_names = FALSE,
+    col_names = names(schema_deframed),
     col_types = ctypes,
     delim = delim,
     ...
   )
-  colnames(d) <- names(schema_deframed)
   attr(d, "file_version") <- version
   d[]
 }
@@ -261,7 +260,7 @@ schema_guess <- function(pname, cnames, schemas_all) {
 parse_file_keyvalue <- function(fpath, pname, schemas_all, delim = "\t", ...) {
   ncols <- count_file_cols(fpath, delim, ...)
   if (ncols != 2) {
-    nemo_stop(glue("Expected 2 columns, but found {ncols} in {fpath}"))
+    nemo_stop(glue("Expected 2 columns, but found {ncols} in '{fpath}'."))
   }
   d <- readr::read_delim(
     file = fpath,

@@ -65,7 +65,7 @@ nemo_uml <- function(classes, output_dir = NULL, pkg = "nemo") {
   }
   fs::dir_create(output_dir)
   out_uml <- file.path(output_dir, paste0(pkg, ".uml"))
-  file.copy(tmp_uml, out_uml, overwrite = TRUE)
+  fs::file_copy(tmp_uml, out_uml, overwrite = TRUE)
   status <- system2("plantuml", args = c("-tsvg", out_uml))
   if (status != 0L) {
     nemo_stop("plantuml failed (exit ", status, ").")

@@ -2,7 +2,7 @@
 #'
 #' Lists files inside a given directory.
 #'
-#' @param d (`character(n)`)\cr
+#' @param path (`character(n)`)\cr
 #' Character vector of one or more paths.
 #' @param max_files (`integer(1)`)\cr
 #' Max files returned.
@@ -17,8 +17,8 @@
 #' @testexamples
 #' expect_equal(names(x), c("bname", "size", "lastmodified", "path"))
 #' @export
-list_files_dir <- function(d, max_files = NULL, type = "file") {
-  d <- fs::dir_info(path = d, recurse = TRUE, type = type) |>
+list_files_dir <- function(path, max_files = NULL, type = "file") {
+  d <- fs::dir_info(path = path, recurse = TRUE, type = type) |>
     dplyr::mutate(
       path = normalizePath(.data$path),
       bname = basename(.data$path),
@@ -98,22 +98,13 @@ empty_tbl <- function(cnames, ctypes = readr::cols(.default = "c")) {
   d[]
 }
 
-assert_files_tbl <- function(x) {
-  if (!tibble::is_tibble(x)) {
-    nemo_stop("'files_tbl' must be a tibble.")
-  }
-  if (!identical(colnames(x), c("bname", "size", "lastmodified", "path"))) {
-    nemo_stop("'files_tbl' must have columns: bname, size, lastmodified, path.")
-  }
-}
-
 #' Enframe Data
 #'
 #' @return Enframed data with column name "data".
 #' @param x (`list()`)\cr
 #' List to enframe.
 #' @export
-enframe_data <- function(x) {
+nemo_enframe <- function(x) {
   tibble::enframe(x, name = "name", value = "data")
 }
 
@@ -123,7 +114,9 @@ enframe_data <- function(x) {
 #' @keywords internal
 get_python <- function() {
   py <- Sys.which("python")
-  stopifnot("Cannot find Python in PATH." = nchar(py) > 0)
+  if (nchar(py) == 0) {
+    nemo_stop("Cannot find Python in PATH.")
+  }
   py
 }
 
@@ -139,18 +132,15 @@ get_python <- function() {
 #' @testexamples
 #' expect_equal(fun, base::mean)
 #' expect_error(nemoverse_wf_dispatch("foo"))
-#' expect_error(nemoverse_wf_dispatch("dummy_pkg_test"))
 #' @export
 nemoverse_wf_dispatch <- function(wf) {
   nemo_assert_not_null(wf)
   wfs <- list(
     wigits = list(pkg = "tidywigits", wf = "Wigits", repo = "https://github.com/tidywf/tidywigits"),
     workflow1 = list(pkg = "nemo", wf = "Workflow1", repo = "https://github.com/tidywf/nemo"),
-    basemean = list(pkg = "base", wf = "mean", repo = "CRAN"),
-    dummy_pkg_test = list(pkg = "nonexistent_pkg_xyz", wf = "bar", repo = "BAZ") # test-only: exercises package-not-found path
+    basemean = list(pkg = "base", wf = "mean", repo = "CRAN")
   )
   all_wfs <- names(wfs)
-  # check if wf available
   if (!wf %in% all_wfs) {
     all_wfs_glued <- glue::glue_collapse(all_wfs, sep = ", ", last = " or ")
     msg <- glue("Workflow '{wf}' not found. Available: {all_wfs_glued}")

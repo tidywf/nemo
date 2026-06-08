@@ -124,7 +124,7 @@ Tool1 <- R6::R6Class(
       d_tidy <- dplyr::left_join(d_count, d_pct, by = c("section", "rg"))
       list(d_tidy) |>
         rlang::set_names("table5") |>
-        enframe_data()
+        nemo_enframe()
     }
   )
 )
