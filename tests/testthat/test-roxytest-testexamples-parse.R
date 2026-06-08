@@ -2,7 +2,7 @@
 
 # File R/parse.R: @testexamples
 
-test_that("Function parse_file() @ L43", {
+test_that("Function parse_file() @ L56", {
   
   path <- system.file("extdata/tool1", package = "nemo")
   x <- Tool$new("tool1", pkg = "nemo", path)
@@ -31,7 +31,7 @@ test_that("Function parse_file() @ L43", {
 })
 
 
-test_that("Function parse_file_nohead() @ L98", {
+test_that("Function parse_file_nohead() @ L108", {
   
   path <- system.file("extdata/tool1", package = "nemo")
   x <- Tool$new("tool1", pkg = "nemo", path)
@@ -39,14 +39,8 @@ test_that("Function parse_file_nohead() @ L98", {
   pname <- "table4"
   fpath_latest <- file.path(path, "latest", "sampleA.tool1.table4.tsv")
   fpath_v1 <- file.path(path, "v1.0.0", "sampleA.tool1.table4.tsv")
-  schema_latest <- schemas_all |>
-    dplyr::filter(.data$name == pname, .data$version == "latest") |>
-    dplyr::select("version", "schema")
-  schema_v1 <- schemas_all |>
-    dplyr::filter(.data$name == pname, .data$version == "v1.0.0") |>
-    dplyr::select("version", "schema")
-  (d_latest <- parse_file_nohead(fpath_latest, schema_latest))
-  (d_v1 <- parse_file_nohead(fpath_v1, schema_v1))
+  (d_latest <- parse_file_nohead(fpath_latest, pname, schemas_all))
+  (d_v1 <- parse_file_nohead(fpath_v1, pname, schemas_all))
   
   expect_equal(ncol(d_latest), 5)
   expect_equal(ncol(d_v1), 3)
@@ -57,7 +51,7 @@ test_that("Function parse_file_nohead() @ L98", {
 })
 
 
-test_that("Function file_hdr() @ L139", {
+test_that("Function file_hdr() @ L157", {
   
   dir1 <- system.file("extdata/tool1", package = "nemo")
   fpath <- file.path(dir1, "latest", "sampleA.tool1.table1.tsv")
@@ -67,7 +61,7 @@ test_that("Function file_hdr() @ L139", {
 })
 
 
-test_that("Function schema_guess() @ L180", {
+test_that("Function schema_guess() @ L198", {
   
   dir1 <- system.file("extdata/tool1", package = "nemo")
   fpath1 <- file.path(dir1, "latest", "sampleA.tool1.table1.tsv")
@@ -86,7 +80,7 @@ test_that("Function schema_guess() @ L180", {
 })
 
 
-test_that("Function parse_file_keyvalue() @ L242", {
+test_that("Function parse_file_keyvalue() @ L260", {
   
   path <- system.file("extdata/tool1", package = "nemo")
   x <- Tool1$new(path)

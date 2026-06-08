@@ -4,10 +4,10 @@
 \alias{list_files_dir}
 \title{List Files}
 \usage{
-list_files_dir(d, max_files = NULL, type = "file")
+list_files_dir(path, max_files = NULL, type = "file")
 }
 \arguments{
-\item{d}{(\code{character(n)})\cr
+\item{path}{(\code{character(n)})\cr
 Character vector of one or more paths.}
 
 \item{max_files}{(\code{integer(1)})\cr

@@ -11,13 +11,13 @@ A Workflow object:
 \itemize{
 \item has a name (\code{name});
 \item has one or more paths to workflow results (\code{path});
-\item has a list of \code{Tool} subclass objects (\code{tools});
-\item has a tibble of all files in the shared directory (\code{files_tbl});
+\item holds \code{Tool} subclass objects accessible via \code{get_tools()};
+\item exposes matched files across all tools via \code{list_files()};
 \item has a tibble of written output files, populated after \code{write()} (\code{written_files});
 }
 
 The typical workflow is: optionally filter with \code{filter_files()}, tidy with
-\code{tidy()}, then write with \code{write()}. \code{wrangle()} chains all three steps.
+\code{tidy()}, then write with \code{write()}. \code{run()} chains all three steps.
 }
 \examples{
 fs::path(tempdir(), letters[1:5]) |>
@@ -36,7 +36,7 @@ wf$write(output_dir = dir1, format = "parquet", input_id = "run1")
 (lf1 <- list.files(dir1, pattern = "tool1.*parquet", full.names = TRUE))
 (meta <- wf$get_metadata(input_id = "run1", output_id = "out1", output_dir = dir1))
 wf2 <- Workflow$new(name = "wf2", path = path, tools = tools)
-wf2$wrangle(output_dir = dir2, format = "parquet", input_id = "run2")
+wf2$run(output_dir = dir2, format = "parquet", input_id = "run2")
 (lf2 <- list.files(dir2, pattern = "tool1.*parquet", full.names = TRUE))
 }
 \section{Public fields}{
@@ -47,9 +47,6 @@ Name of workflow.}
 
 \item{\code{path}}{(\code{character(n)})\cr
 Path(s) to workflow results.}
-
-\item{\code{tools}}{(\code{list(n)})\cr
-List of Tools that compose a Workflow.}
 
 \item{\code{metapkg}}{(\code{character(n)})\cr
 Package name(s) used for metadata version reporting.}
@@ -64,16 +61,16 @@ Tibble of files written from \code{self$write()}.}
 \itemize{
 \item \href{#method-Workflow-new}{\code{Workflow$new()}}
 \item \href{#method-Workflow-print}{\code{Workflow$print()}}
+\item \href{#method-Workflow-get_tools}{\code{Workflow$get_tools()}}
 \item \href{#method-Workflow-filter_files}{\code{Workflow$filter_files()}}
 \item \href{#method-Workflow-list_files}{\code{Workflow$list_files()}}
 \item \href{#method-Workflow-tidy}{\code{Workflow$tidy()}}
 \item \href{#method-Workflow-write}{\code{Workflow$write()}}
-\item \href{#method-Workflow-wrangle}{\code{Workflow$wrangle()}}
+\item \href{#method-Workflow-run}{\code{Workflow$run()}}
 \item \href{#method-Workflow-get_schemas_raw}{\code{Workflow$get_schemas_raw()}}
 \item \href{#method-Workflow-get_schemas_tidy}{\code{Workflow$get_schemas_tidy()}}
 \item \href{#method-Workflow-get_tbls}{\code{Workflow$get_tbls()}}
 \item \href{#method-Workflow-get_metadata}{\code{Workflow$get_metadata()}}
-\item \href{#method-Workflow-clone}{\code{Workflow$clone()}}
 }
 }
 \if{html}{\out{<hr>}}
@@ -95,7 +92,8 @@ Name of workflow.}
 Path(s) to workflow results.}
 
 \item{\code{tools}}{(\code{list(n)})\cr
-List of Tools that compose a Workflow.}
+Named list of Tool subclasses that compose a Workflow. List names serve
+as aliases and need not match each tool's own \verb{$name} field.}
 
 \item{\code{metapkg}}{(\code{character(n)})\cr
 Package name(s) used for metadata version reporting.}
@@ -126,6 +124,20 @@ Print details about the Workflow.
 \subsection{Returns}{
 (\code{R6::R6Class()})\cr
 R6 object invisibly.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Workflow-get_tools"></a>}}
+\if{latex}{\out{\hypertarget{method-Workflow-get_tools}{}}}
+\subsection{Method \code{get_tools()}}{
+Get the list of Tool objects in this Workflow.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Workflow$get_tools()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+(\code{list(n)})\cr
+Named list of instantiated Tool objects.
 }
 }
 \if{html}{\out{<hr>}}
@@ -166,7 +178,7 @@ config.
 
 \subsection{Returns}{
 (\code{tibble()})\cr
-Bound \code{list_files()} tibbles from all Tools, with a leading \code{tool} column.
+Bound \code{files} tibbles from all Tools, with a leading \code{tool} column.
 }
 }
 \if{html}{\out{<hr>}}
@@ -241,12 +253,12 @@ R6 object invisibly.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Workflow-wrangle"></a>}}
-\if{latex}{\out{\hypertarget{method-Workflow-wrangle}{}}}
-\subsection{Method \code{wrangle()}}{
-Parse, filter, tidy and write files.
+\if{html}{\out{<a id="method-Workflow-run"></a>}}
+\if{latex}{\out{\hypertarget{method-Workflow-run}{}}}
+\subsection{Method \code{run()}}{
+Filter, tidy, and write files in one step.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Workflow$wrangle(
+\if{html}{\out{<div class="r">}}\preformatted{Workflow$run(
   output_dir = ".",
   format = "tsv",
   input_id = NULL,
@@ -336,6 +348,10 @@ Get tidy tibbles for all Tools.
 \subsection{Returns}{
 (\code{tibble()})\cr
 Bound \code{tbls} tibbles from all Tools, with a leading \code{tool} column.
+When \code{tidy(keep_raw = TRUE)} was used, each tool's tibble also contains
+a \code{raw} list-column. Note: \code{get_tbls()} checks \code{is.null()} (not \code{nrow()})
+because \code{Tool$get_tbls()} returns \code{NULL} when nothing was tidied, whereas
+\code{Tool$list_files()} always returns a zero-row tibble (never \code{NULL}).
 }
 }
 \if{html}{\out{<hr>}}
@@ -368,23 +384,6 @@ Which R packages to extract versions for.}
 (\code{tibble()})\cr
 Single-row tibble with columns \code{input_id}, \code{output_id}, \code{input_dirs},
 \code{output_dir}, \code{pkg_versions}, and \code{files}.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Workflow-clone"></a>}}
-\if{latex}{\out{\hypertarget{method-Workflow-clone}{}}}
-\subsection{Method \code{clone()}}{
-The objects of this class are cloneable with this method.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Workflow$clone(deep = FALSE)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{deep}}{Whether to make a deep clone.}
-}
-\if{html}{\out{</div>}}
 }
 }
 }

@@ -18,7 +18,6 @@ Depends:
 Imports:
     argparse,
     arrow,
-    assertthat,
     DBI,
     dplyr,
     fs,
@@ -39,7 +38,8 @@ Suggests:
     htmltools,
     R6toPlant,
     reactable,
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
+    withr
 Remotes:
     gitlab::b-rowlingson/R6toPlant
 Roxygen: list(markdown = TRUE,

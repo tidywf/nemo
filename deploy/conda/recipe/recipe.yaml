@@ -16,26 +16,6 @@ build:
 requirements:
   host:
     - r-base
-    - r-argparse
-    - r-arrow
-    - r-assertthat
-    - r-dbi
-    - r-dplyr
-    - r-fs
-    - r-glue
-    - r-htmltools
-    - r-knitr
-    - r-log4r
-    - r-purrr
-    - r-r6
-    - r-reactable
-    - r-readr
-    - r-rlang
-    - r-stringr
-    - r-tibble
-    - r-tidyr
-    - r-ulid
-    - r-yaml
   run:
     - r-base
     - r-argparse
@@ -57,6 +37,7 @@ requirements:
     - r-tibble
     - r-tidyr
     - r-ulid
+    - r-withr
     - r-yaml
 
 tests:
@@ -64,7 +45,7 @@ tests:
       libraries:
         - nemo
   - script:
-    - nemo.R --version
+      - nemo.R --version
 
 about:
   homepage: https://github.com/tidywf/nemo

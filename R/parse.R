@@ -1,3 +1,16 @@
+#' @keywords internal
+count_file_cols <- function(fpath, delim, ...) {
+  readr::read_delim(
+    file = fpath,
+    delim = delim,
+    col_names = FALSE,
+    col_types = readr::cols(.default = "c"),
+    n_max = 1L,
+    ...
+  ) |>
+    ncol()
+}
+
 #' Parse file
 #'
 #' @description
@@ -61,12 +74,15 @@ parse_file <- function(fpath, pname, schemas_all, delim = "\t", ...) {
 #' Parse headless file
 #'
 #' @description
-#' Parses files with no column names.
+#' Parses files with no column names. Selects the schema version whose column
+#' count matches the file.
 #'
 #' @param fpath (`character(1)`)\cr
 #' File path.
-#' @param schema (`tibble()`)\cr
-#' Schema tibble with version and schema list-col.
+#' @param pname (`character(1)`)\cr
+#' Parser name (e.g. "table4" - see docs).
+#' @param schemas_all (`tibble()`)\cr
+#' Tibble with name, version and schema list-col.
 #' @param delim (`character(1)`)\cr
 #' File delimiter.
 #' @param ... Passed on to `readr::read_delim`.
@@ -78,14 +94,8 @@ parse_file <- function(fpath, pname, schemas_all, delim = "\t", ...) {
 #' pname <- "table4"
 #' fpath_latest <- file.path(path, "latest", "sampleA.tool1.table4.tsv")
 #' fpath_v1 <- file.path(path, "v1.0.0", "sampleA.tool1.table4.tsv")
-#' schema_latest <- schemas_all |>
-#'   dplyr::filter(.data$name == pname, .data$version == "latest") |>
-#'   dplyr::select("version", "schema")
-#' schema_v1 <- schemas_all |>
-#'   dplyr::filter(.data$name == pname, .data$version == "v1.0.0") |>
-#'   dplyr::select("version", "schema")
-#' (d_latest <- parse_file_nohead(fpath_latest, schema_latest))
-#' (d_v1 <- parse_file_nohead(fpath_v1, schema_v1))
+#' (d_latest <- parse_file_nohead(fpath_latest, pname, schemas_all))
+#' (d_v1 <- parse_file_nohead(fpath_v1, pname, schemas_all))
 #'
 #' @testexamples
 #' expect_equal(ncol(d_latest), 5)
@@ -95,22 +105,30 @@ parse_file <- function(fpath, pname, schemas_all, delim = "\t", ...) {
 #' expect_equal(attr(d_latest, "file_version"), "latest")
 #' expect_equal(attr(d_v1, "file_version"), "v1.0.0")
 #' @export
-parse_file_nohead <- function(fpath, schema, delim = "\t", ...) {
-  assertthat::assert_that(nrow(schema) == 1, msg = "'schema' must have exactly one row.")
-  nemo_assert_scalar_chr(schema$version)
-  assertthat::assert_that(is.list(schema$schema), msg = "'schema$schema' must be a list.")
+parse_file_nohead <- function(fpath, pname, schemas_all, delim = "\t", ...) {
+  # count_file_cols reads with col_names = FALSE so the first data row is treated
+  # as data, not a header — file_hdr() would be semantically wrong here.
+  ncols <- count_file_cols(fpath, delim, ...)
+  schema <- schemas_all |>
+    dplyr::filter(.data$name == pname) |>
+    dplyr::select("version", "schema") |>
+    dplyr::filter(purrr::map_int(.data$schema, nrow) == ncols)
+  if (nrow(schema) != 1) {
+    nemo_stop(glue(
+      "Expected exactly one schema version matching {ncols} columns ",
+      "for '{pname}', found {nrow(schema)}."
+    ))
+  }
   version <- schema[["version"]]
-  schema <- schema[["schema"]][[1]] |>
-    tibble::deframe()
-  ctypes <- paste0(schema, collapse = "")
+  schema_deframed <- tibble::deframe(schema[["schema"]][[1]])
+  ctypes <- rlang::exec(readr::cols, !!!schema_deframed)
   d <- readr::read_delim(
     file = fpath,
-    col_names = FALSE,
+    col_names = names(schema_deframed),
     col_types = ctypes,
     delim = delim,
     ...
   )
-  colnames(d) <- names(schema)
   attr(d, "file_version") <- version
   d[]
 }
@@ -178,28 +196,28 @@ file_hdr <- function(fpath, delim = "\t", n_max = 0, ...) {
 #' expect_equal(s2[["version"]], "v1.2.3")
 #' @export
 schema_guess <- function(pname, cnames, schemas_all) {
-  assertthat::assert_that(
-    rlang::is_bare_character(cnames),
-    tibble::is_tibble(schemas_all),
-    all(c("name", "version", "schema") %in% colnames(schemas_all)),
-    pname %in% schemas_all[["name"]]
-  )
+  if (!rlang::is_bare_character(cnames)) {
+    nemo_stop("'cnames' must be a bare character vector.")
+  }
+  if (!tibble::is_tibble(schemas_all)) {
+    nemo_stop("'schemas_all' must be a tibble.")
+  }
+  if (!all(c("name", "version", "schema") %in% colnames(schemas_all))) {
+    nemo_stop("'schemas_all' must have columns: name, version, schema.")
+  }
+  if (!pname %in% schemas_all[["name"]]) {
+    nemo_stop(glue("'{pname}' not found in schemas_all$name."))
+  }
   s <- schemas_all |>
     dplyr::filter(.data$name == pname) |>
     dplyr::select("version", "schema") |>
-    dplyr::rowwise() |>
-    dplyr::mutate(
-      length_match = length(cnames) == nrow(.data$schema),
-      all_match = if (.data$length_match) {
-        identical(cnames, .data$schema[["field"]])
-      } else {
-        FALSE
-      }
-    ) |>
-    dplyr::filter(.data$all_match) |>
-    dplyr::ungroup()
-  msg <- glue("There were {nrow(s)} matching schemas for {pname}. Check the configs!")
-  assertthat::assert_that(nrow(s) == 1, msg = msg)
+    dplyr::filter(purrr::map_lgl(.data$schema, \(sch) identical(cnames, sch[["field"]])))
+  if (nrow(s) != 1) {
+    nemo_stop(glue(
+      "Expected 1 matching schema for '{pname}', found {nrow(s)}. ",
+      "Column names seen: {glue::glue_collapse(cnames, sep = ', ')}."
+    ))
+  }
   version <- s$version
   schema <- s |>
     dplyr::select("schema") |>
@@ -240,9 +258,10 @@ schema_guess <- function(pname, cnames, schemas_all) {
 #' expect_equal(names(d3_lat), c("SampleID", "QCStatus", "TotalReads", "MappedReads", "UnmappedReads"))
 #' @export
 parse_file_keyvalue <- function(fpath, pname, schemas_all, delim = "\t", ...) {
-  ncols <- file_hdr(fpath, delim = delim, ...) |> length()
-  msg <- glue("Expected 2 columns, but found {ncols} in {fpath}")
-  assertthat::assert_that(ncols == 2, msg = msg)
+  ncols <- count_file_cols(fpath, delim, ...)
+  if (ncols != 2) {
+    nemo_stop(glue("Expected 2 columns, but found {ncols} in '{fpath}'."))
+  }
   d <- readr::read_delim(
     file = fpath,
     col_names = c("key", "value"),
@@ -257,6 +276,8 @@ parse_file_keyvalue <- function(fpath, pname, schemas_all, delim = "\t", ...) {
     cnames = colnames(d_wide),
     schemas_all = schemas_all
   )
+  # schema is used only for version detection; column types are not applied because
+  # key-value files are inherently all-character after the pivot.
   attr(d_wide, "file_version") <- schema[["version"]]
   d_wide[]
 }

@@ -93,7 +93,7 @@ cli_tidy_parse_args <- function(args, wf = NULL, dbdrv = NULL) {
   output_dir <- args$output_dir
   if (args$format != "db") {
     if (is.null(output_dir)) {
-      stop("Output directory must be specified when format is not 'db'.")
+      nemo_stop("Output directory must be specified when format is not 'db'.")
     }
     fs::dir_create(output_dir)
     output_dir <- normalizePath(output_dir)
@@ -187,7 +187,7 @@ cli_nemo_tidy <- function(
   include = NULL,
   exclude = NULL
 ) {
-  valid_out_fmt(out_format)
+  nemo_assert_out_fmt(out_format)
   fun <- nemoverse_wf_dispatch(workflow)
   dbconn <- NULL
   if (out_format == "db") {
@@ -202,7 +202,7 @@ cli_nemo_tidy <- function(
   }
   nemo_log("INFO", paste("Tidying dir:", in_dir))
   obj <- fun$new(in_dir)
-  res <- obj$wrangle(
+  res <- obj$run(
     output_dir = output_dir,
     format = out_format,
     input_id = input_id,

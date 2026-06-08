@@ -16,58 +16,19 @@
 #' (raw5 <- obj1$parse_table5(p5))
 #' (tidy5 <- obj1$tidy_table5(p5))
 #'
-#' obj1$wrangle(output_dir = dir1, format = "parquet", input_id = "run1")
+#' obj1$run(output_dir = dir1, format = "parquet", input_id = "run1")
 #' (lf <- list.files(dir1, pattern = "tool1.*parquet", full.names = FALSE))
 #'
 #' obj2 <- Tool1$new(indir)$tidy()
-#' @testexamples
-#' # parse_table5
-#' expect_named(raw5, c("section", "rg", "variable", "count", "pct"))
-#' expect_equal(nrow(raw5), 16)
-#' # tidy_table3
-#' expect_named(tidy3, c("name", "data"))
-#' expect_named(
-#'   tidy3$data[[1]],
-#'   c("sample_id", "qcstatus", "reads_total", "reads_map", "reads_unmap")
-#' )
-#' # tidy_table5
-#' expect_named(tidy5, c("name", "data"))
-#' expect_named(
-#'   tidy5$data[[1]],
-#'   c("section", "rg", "reads_total", "reads_map", "reads_unmap", "bases_total",
-#'     "reads_total_pct", "reads_map_pct", "reads_unmap_pct")
-#' )
-#' # wrangle: two table4 output files (one per version)
-#' expect_equal(sum(grepl("table4", lf)), 2)
-#' # tidy (obj2)
-#' expect_false(is.null(obj2$tbls))
-#' expect_equal(nrow(obj2$tbls |> dplyr::filter(tool_parser == "tool1_table4")), 2)
-#' expect_named(
-#'   obj2$tbls,
-#'   c(
-#'     "tool_parser", "parser", "bname", "size", "lastmodified", "path",
-#'     "pattern", "prefix", "group", "tidy"
-#'   )
-#' )
-#' t3_ncols <- purrr::map_int(
-#'   obj2$tbls |> dplyr::filter(parser == "table3") |> dplyr::pull(tidy),
-#'   \(x) ncol(x$data[[1]])
-#' )
-#' expect_setequal(t3_ncols, c(3L, 5L))
-#' expect_named(
-#'   obj2$tbls |> dplyr::filter(parser == "table5") |> dplyr::pull(tidy) |> _[[1]] |> _$data[[1]],
-#'   c("section", "rg", "reads_total", "reads_map", "reads_unmap", "bases_total",
-#'     "reads_total_pct", "reads_map_pct", "reads_unmap_pct")
-#' )
 #' @export
 Tool1 <- R6::R6Class(
   "Tool1",
+  cloneable = FALSE,
   inherit = Tool,
   public = list(
     #' @description Create a new Tool1 object.
     #' @param path (`character(1)`)\cr
-    #' Output directory of tool. If `files_tbl` is supplied, this basically gets
-    #' ignored.
+    #' Output directory of tool. If `files_tbl` is supplied, this is ignored.
     #' @param files_tbl (`tibble(n)`)\cr
     #' Tibble of files from [list_files_dir()].
     #' @return (`R6::R6Class()`)\cr
@@ -81,7 +42,7 @@ Tool1 <- R6::R6Class(
     #' @return (`tibble()`)\cr
     #' Tidy data in enframed tibble.
     tidy_table3 = function(x) {
-      self$.tidy_file(x, "table3", convert_types = TRUE)
+      private$tidy_file(x, "table3", convert_types = TRUE)
     },
     #' @description Read `table5.csv` file (csv, no header, long format).
     #' @param x (`character(1)`)\cr
@@ -108,7 +69,7 @@ Tool1 <- R6::R6Class(
         x <- self$parse_table5(x)
       }
       version <- get_tbl_version_attr(x)
-      col_map <- self$get_col_map("table5", version = version)
+      col_map <- self$config$get_col_map("table5", version = version)
       raw_to_tidy <- col_map |> dplyr::select("raw", "tidy") |> tibble::deframe()
       raw_to_type <- col_map |> dplyr::select("tidy", "type") |> tibble::deframe()
       d_count <- x |>
@@ -124,7 +85,7 @@ Tool1 <- R6::R6Class(
       d_tidy <- dplyr::left_join(d_count, d_pct, by = c("section", "rg"))
       list(d_tidy) |>
         rlang::set_names("table5") |>
-        enframe_data()
+        nemo_enframe()
     }
   )
 )

@@ -127,18 +127,23 @@ reactable_schema <- function(dat, ...) {
                   '</thead>',
                   '<tbody>',
                   paste(
-                    apply(schema_data, 1, function(row) {
-                      paste0(
-                        '<tr>',
+                    vapply(
+                      seq_len(nrow(schema_data)),
+                      function(r) {
+                        cells <- as.character(unlist(schema_data[r, ]))
                         paste0(
-                          '<td style="border: 1px solid #ddd; padding: 6px;">',
-                          as.character(row),
-                          '</td>',
-                          collapse = ""
-                        ),
-                        '</tr>'
-                      )
-                    }),
+                          '<tr>',
+                          paste0(
+                            '<td style="border: 1px solid #ddd; padding: 6px;">',
+                            cells,
+                            '</td>',
+                            collapse = ""
+                          ),
+                          '</tr>'
+                        )
+                      },
+                      character(1)
+                    ),
                     collapse = ""
                   ),
                   '</tbody>',
@@ -201,9 +206,7 @@ nemo_schemavis_data <- function(tools, pkg = "nemo") {
   purrr::map(tools, get_one) |>
     dplyr::bind_rows() |>
     dplyr::mutate(row_id = dplyr::row_number(), n = .data$row_id) |>
-    dplyr::relocate("n") |>
-    dplyr::relocate("tool", .after = "n") |>
-    dplyr::relocate("schema_version", .after = "tbl")
+    dplyr::select("n", "tool", "tbl", "schema_version", "description", "row_id")
 }
 
 #' Render an interactive schema explorer

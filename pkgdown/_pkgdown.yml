@@ -28,8 +28,6 @@ navbar:
           href: articles/installation.html
         - text: Structure
           href: articles/structure.html
-        - text: Schema Walkthrough
-          href: articles/schema_walkthrough.html
         - text: Schema Table
           href: articles/schema_table.html
         - text: Contribute
