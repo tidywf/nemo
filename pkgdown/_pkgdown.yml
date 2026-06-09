@@ -30,8 +30,8 @@ navbar:
           href: articles/structure.html
         - text: Schema Table
           href: articles/schema_table.html
-        - text: Contribute
-          href: articles/contribute.html
+        - text: New Tool
+          href: articles/new-tool.html
         - text: UML Diagram
           href: articles/uml.html
         - text: CI/CD Workflow
@@ -49,6 +49,7 @@ reference:
       - Workflow
   - title: "Config"
     contents:
+      - config_sort_versions
       - config_prep_raw
       - config_prep_raw_schema
       - config_prep_multi
@@ -83,6 +84,8 @@ reference:
       - nemo_assert_chr
       - nemo_assert_not_null
       - nemo_assert_scalar_chr
+      - nemo_assert_out_fmt
+      - nemo_stop
   - title: "Other"
     contents:
       - empty_tbl
@@ -92,9 +95,8 @@ reference:
       - nemo_osfx
       - nemo_out_formats
       - nemo_write
-      - valid_out_fmt
+      - nemo_enframe
       - set_tbl_version_attr
-      - enframe_data
       - get_python
       - nemo_gha_mermaid
       - nemo_cli

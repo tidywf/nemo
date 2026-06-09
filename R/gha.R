@@ -138,6 +138,9 @@ nemo_gha_mermaid <- function(actions_url, deploy_yaml) {
 }
 
 .gha_render_steps <- function(steps, prefix, indent) {
+  if (length(steps) == 0) {
+    return(list(ids = character(0), lines = character(0)))
+  }
   ids <- paste0(prefix, seq_along(steps))
   nodes <- paste0(indent, ids, '["', steps, '"]')
   edges <- if (length(ids) > 1) {
