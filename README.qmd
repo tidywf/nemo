@@ -95,7 +95,7 @@ bioinformatic pipelines WiGiTS/hmftools and Illumina DRAGEN, respectively.
 
 [tidywigits]: <https://github.com/tidywf/tidywigits> "tidywigits"
 [tidydragen]: <https://github.com/tidywf/tidydragen> "tidydragen"
-[WiGiTS/hmtools]: <https://github.com/hartwigmedical/hmftools> "hmftools"
+[WiGiTS/hmftools]: <https://github.com/hartwigmedical/hmftools> "hmftools"
 [Illumina DRAGEN]: <https://help.dragen.illumina.com/> "Illumina DRAGEN"
 
 ## ⚡ Quickstart
