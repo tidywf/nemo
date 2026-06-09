@@ -60,8 +60,6 @@ glue(
 )
 ```
 
-## 🤔 The Problem
-
 Bioinformatic pipelines produce a lot of output files, but consuming them
 downstream is harder than it should be:
 
@@ -77,37 +75,33 @@ downstream is harder than it should be:
 - **No run-level provenance**: it is hard to tell which output file came from
   which sample or processing run once files are collected into a shared directory
 
-{nemo} addresses this by providing a schema-driven parsing and tidying layer
-that turns raw pipeline outputs into consistently structured, versioned,
-analysis-ready tables.
+{nemo} is an R package that attempts to address these issues by providing a
+schema-driven parsing and tidying layer that turns raw pipeline outputs into
+consistently structured, versioned, analysis-ready tables.
+
 Its R6 classes (`Tool`, `Workflow`, `Config`) are used for parsing,
 tidying, and writing bioinformatic pipeline outputs. Given a directory of
-results, it identifies files by YAML-defined schemas, reshapes and renames
-columns to a consistent tidy form, and writes to Apache Parquet, TSV, CSV,
-RDS, or PostgreSQL. Each run also produces a `metadata.parquet` file alongside
-the tidy tables, capturing IDs, paths, and package versions.
+bioinformatic results, it identifies files by YAML-defined schemas, reshapes
+and renames columns to a consistent tidy form, and writes to a format of choice
+(Apache Parquet, TSV, CSV, RDS, or PostgreSQL). Each run also produces a
+`metadata.parquet` file alongside the tidy tables, capturing IDs, paths, and
+package versions.
 
-Tool-specific schemas and parsers live in child packages - {[tidywigits]} for
-the WiGiTS suite and {[tidydragen]} (WIP) for Illumina DRAGEN - under
-`inst/config/tools/` in each respective package.
-
-Three optional columns can be prepended to every written table to support
-downstream tracing and joining. All are opt-in and off by default, but highly
-recommended for any multi-sample or multi-run pipeline:
-
-| Column       | Purpose                            |
-| ------------ | ---------------------------------- |
-| `input_id`   | identifies the sample or input run |
-| `output_id`  | identifies the processing run      |
-| `input_prefix` | filename prefix (e.g. sample name) |
+Child R packages can implement this {nemo} functionality by including
+tool-specific schemas and parsers in a certain structure.
+{[tidywigits]} and {[tidydragen]} are example R packages
+that target the large number of outputs from the established
+bioinformatic pipelines WiGiTS/hmftools and Illumina DRAGEN, respectively.
 
 [tidywigits]: <https://github.com/tidywf/tidywigits> "tidywigits"
 [tidydragen]: <https://github.com/tidywf/tidydragen> "tidydragen"
+[WiGiTS/hmftools]: <https://github.com/hartwigmedical/hmftools> "hmftools"
+[Illumina DRAGEN]: <https://help.dragen.illumina.com/> "Illumina DRAGEN"
 
 ## ⚡ Quickstart
 
-Raw pipeline outputs often have non-standard layouts. This file stores QC
-metrics as key-value rows rather than columns:
+Raw pipeline outputs often have non-standard layouts. For
+example, this file stores QC metrics as key-value rows rather than columns:
 
 ```{r}
 #| label: quickstart_raw
@@ -118,7 +112,7 @@ path <- system.file("extdata/tool1/latest", package = "nemo")
 writeLines(readLines(file.path(path, "sampleA.tool1.table3.tsv")))
 ```
 
-`run()` filters, tidies, and writes all tables in one call:
+The `run()` method is able to filter, tidy, and write all tables of interest in one call:
 
 ```{r}
 #| label: quickstart
@@ -142,6 +136,16 @@ Read back the tidied table:
 #| label: quickstart_read
 arrow::read_parquet(file.path(outdir, "sampleA_tool1_table3.parquet"))
 ```
+
+Three optional columns can be prepended to every written table to support
+downstream tracing and joining. All are opt-in and off by default, but highly
+recommended for any multi-sample or multi-run pipeline:
+
+| Column         | Purpose                            |
+| -------------- | ---------------------------------- |
+| `input_id`     | identifies the sample or input run |
+| `output_id`    | identifies the processing run      |
+| `input_prefix` | filename prefix (e.g. sample name) |
 
 ## 🍕 Installation
 
