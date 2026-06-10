@@ -25,16 +25,6 @@ knitr:
 | `rattler-build build -r recipe.yaml --output-dir ${HOME}/tmp`                           | build conda pkg from a recipe file                                |
 | `rattler-build upload anaconda -o umccr --api-key <xxx> ${HOME}/tmp/r-tidywigits.conda` | upload conda pkg to anaconda                                      |
 
-#### recipe.yaml dependency sections
-
-| Section | Purpose |
-| ------- | ------- |
-| `build` | Tools that run on the CI machine itself (compilers, code generators). Rarely needed for pure-R packages. |
-| `host` | Packages installed into the build prefix when the build script runs (e.g. `R CMD INSTALL`). For `noarch: generic` R packages with no compiled code, only `r-base` is needed here. |
-| `run` | Packages required at runtime — recorded as install-time dependencies for end users. All R package dependencies go here. |
-
-For pure-R (`noarch: generic`) packages, `host` needs only `r-base`. If a package has C/C++ extensions that link against another package (e.g. `r-rcpp`), that package goes in both `host` (for headers during compilation) and `run` (for the shared library at runtime).
-
 ### pkgdown
 
 | Command                                  | Comment                         |
