@@ -9,7 +9,7 @@ matching the given column names. Errors out if unsuccessful."><meta property="og
 
     <a class="navbar-brand me-2" href="../index.html">nemo</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.0.3.9020</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.0.3.9022</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -22,9 +22,8 @@ matching the given column names. Errors out if unsuccessful."><meta property="og
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/installation.html">Installation</a></li>
     <li><a class="dropdown-item" href="../articles/structure.html">Structure</a></li>
-    <li><a class="dropdown-item" href="../articles/schema_walkthrough.html">Schema Walkthrough</a></li>
     <li><a class="dropdown-item" href="../articles/schema_table.html">Schema Table</a></li>
-    <li><a class="dropdown-item" href="../articles/contribute.html">Contribute</a></li>
+    <li><a class="dropdown-item" href="../articles/new-tool.html">New Tool</a></li>
     <li><a class="dropdown-item" href="../articles/uml.html">UML Diagram</a></li>
     <li><a class="dropdown-item" href="../articles/cicd.html">CI/CD Workflow</a></li>
     <li><a class="dropdown-item" href="../articles/devnotes.html">Devnotes</a></li>
@@ -85,7 +84,7 @@ Tibble with name, version and schema list-col.</p></dd>
 <span class="r-in"><span><span class="va">cnames1</span> <span class="op">&lt;-</span> <span class="fu"><a href="file_hdr.html">file_hdr</a></span><span class="op">(</span><span class="va">fpath1</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">cnames2</span> <span class="op">&lt;-</span> <span class="fu"><a href="file_hdr.html">file_hdr</a></span><span class="op">(</span><span class="va">fpath2</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">conf</span> <span class="op">&lt;-</span> <span class="va"><a href="Config.html">Config</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="st">"tool1"</span>, pkg <span class="op">=</span> <span class="st">"nemo"</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">schemas_all</span> <span class="op">&lt;-</span> <span class="va">conf</span><span class="op">$</span><span class="fu">get_schemas_all</span><span class="op">(</span><span class="st">"raw"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">schemas_all</span> <span class="op">&lt;-</span> <span class="va">conf</span><span class="op">$</span><span class="fu">get_schemas_raw</span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">(</span><span class="va">s1</span> <span class="op">&lt;-</span> <span class="fu">schema_guess</span><span class="op">(</span><span class="va">pname</span>, <span class="va">cnames1</span>, <span class="va">schemas_all</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $schema</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 6 × 2</span></span>

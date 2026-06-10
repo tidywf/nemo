@@ -28,7 +28,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">nemo</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.0.3.9020</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.0.3.9022</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -43,9 +43,8 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/installation.html">Installation</a></li>
     <li><a class="dropdown-item" href="../articles/structure.html">Structure</a></li>
-    <li><a class="dropdown-item" href="../articles/schema_walkthrough.html">Schema Walkthrough</a></li>
     <li><a class="dropdown-item" href="../articles/schema_table.html">Schema Table</a></li>
-    <li><a class="dropdown-item" href="../articles/contribute.html">Contribute</a></li>
+    <li><a class="dropdown-item" href="../articles/new-tool.html">New Tool</a></li>
     <li><a class="dropdown-item" href="../articles/uml.html">UML Diagram</a></li>
     <li><a class="dropdown-item" href="../articles/cicd.html">CI/CD Workflow</a></li>
     <li><a class="dropdown-item" href="../articles/devnotes.html">Devnotes</a></li>
@@ -83,47 +82,30 @@
 
     <section class="level2"><h2 id="v0-1-0-2026-06-04">v0.1.0 (2026-06-04)<a class="anchor" aria-label="anchor" href="#v0-1-0-2026-06-04"></a>
 </h2>
-<section class="level3"><h3 id="cli">CLI<a class="anchor" aria-label="anchor" href="#cli"></a>
+<section class="level3"><h3 id="breaking-changes">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes"></a>
+</h3>
+<ul>
+<li>Unified schema format: <code>schema.yaml</code> replaces separate <code>raw.yaml</code> + <code>tidy.yaml</code> per tool. Each column now carries its raw name, tidy name, type, description, and applicable versions in one place</li>
+<li>CLI: <code>--out_dir</code> → <code>--output_dir</code>; <code>--pfix_include</code> → <code>--prefix_include</code>; output column <code>input_pfix</code> → <code>input_prefix</code>
+</li>
+<li>
+<code>Config</code>, <code>Tool</code>, and <code>Workflow</code> APIs overhauled — methods and fields renamed for consistency across the package</li>
+</ul></section><section class="level3"><h3 id="new-features">New features<a class="anchor" aria-label="anchor" href="#new-features"></a>
 </h3>
 <ul>
 <li>
-<code>tidy</code>: rename <code>-i ID</code> to <code>--input_id</code>; add <code>--output_id</code> and <code>--ulid</code> (mutually exclusive) for attaching an output run identifier; <code>--ulid</code> auto-generates a ULID</li>
+<code>tidy</code>: add <code>--output_id</code> / <code>--ulid</code> for tagging outputs with a run identifier (<code>--ulid</code> auto-generates one)</li>
 <li>
-<code>tidy</code>: add <code>--prefix_include</code> flag to opt in to an <code>input_pfix</code> column in outputs; previously <code>input_pfix</code> was always prepended</li>
+<code>tidy</code>: <code>--prefix_include</code> is now opt-in — <code>input_prefix</code> is no longer added to outputs by default</li>
+<li>New file types supported by <code>Tool</code>: <code>txt-nohead</code>, <code>csv-nohead-long</code>, <code>csv</code>
+</li>
+<li>Metadata exported to <code>metadata.parquet</code> per run (<a href="https://github.com/tidywf/nemo/pull/62" class="external-link">pr62</a>, <a href="https://github.com/tidywf/nemo/issues/61" class="external-link">iss61</a>)</li>
 <li>
-<code>tidy</code> + <code>list</code>: fix <code>-q</code>/<code>--quiet</code> to set <code>NEMO_LOG_ENABLE=FALSE</code> instead of using <code><a href="https://rdrr.io/r/base/message.html" class="external-link">suppressMessages()</a></code>; <code><a href="../reference/nemo_log.html">nemo_log()</a></code> now re-checks the env var at call time so the flag takes effect after package load</li>
-<li>Add <code>Workflow1</code> to CLI workflow dispatcher (<code>nemoverse_wf_dispatch</code>) for end-to-end CLI testing</li>
-</ul></section><section class="level3"><h3 id="api">API<a class="anchor" aria-label="anchor" href="#api"></a>
+<code><a href="../reference/nemo_gha_mermaid.html">nemo_gha_mermaid()</a></code>: generates a Mermaid flowchart of the full CI/CD pipeline (<a href="https://github.com/tidywf/nemo/pull/52" class="external-link">pr52</a>)</li>
+</ul></section><section class="level3"><h3 id="performance">Performance<a class="anchor" aria-label="anchor" href="#performance"></a>
 </h3>
 <ul>
-<li>
-<code>Tool$write</code>, <code>Workflow$write</code>, <code>Workflow$nemofy</code>: add <code>pfix_include</code> argument (default <code>FALSE</code>) to control whether <code>input_pfix</code> is prepended to tidy tables</li>
-<li>
-<code>Tool</code>: refactor parse/tidy dispatch — subclasses can now override per-table <code>parse_&lt;tname&gt;()</code> and <code>tidy_&lt;tname&gt;()</code> methods; falls back to ftype-based dispatch otherwise. Add support for <code>txt-nohead</code>, <code>csv-nohead-long</code>, and <code>csv</code> file types. <code>csv</code> auto-dispatches to <code>.parse_file()</code> with <code>delim = ","</code> so no subclass override is needed for standard comma-delimited files with a header</li>
-<li>
-<code>Tool$list_files()</code>: disambiguate when file names with different basenames reduce to the same prefix when matched by different patterns for the same table (e.g. <code>sample1.flagstat</code> and <code>sample1.flag_counts.tsv</code> both stripping to <code>sample1</code>)</li>
-<li>
-<code><a href="../reference/nemo_uml.html">nemo_uml()</a></code>: refactor UML generation — cleaner entry-point, improved docs (<a href="https://github.com/tidywf/nemo/pull/51" class="external-link">pr51</a>)</li>
-<li>Metadata: export to <code>metadata.parquet</code> at the result level (<a href="https://github.com/tidywf/nemo/pull/62" class="external-link">pr62</a>, <a href="https://github.com/tidywf/nemo/issues/61" class="external-link">iss61</a>)</li>
-</ul></section><section class="level3"><h3 id="schema">Schema<a class="anchor" aria-label="anchor" href="#schema"></a>
-</h3>
-<ul>
-<li>Replace separate <code>raw.yaml</code> + <code>tidy.yaml</code> per tool with a single unified <code>schema.yaml</code>. Each table entry now has a flat <code>columns</code> list where each column carries its raw name, tidy name, type, description, and <code>versions</code> array. <code>Config</code> derives versioned raw and tidy views from this unified source on demand</li>
-<li>
-<code>Tool1</code>: add <code>table4</code> (txt-nohead), <code>table5</code> (csv-nohead-long), and <code>table6</code> (csv) as examples of the new file type support</li>
-<li>
-<code>inst/scripts/file_to_yaml.R</code>: refactor to generate <code>schema.yaml</code> skeletons from sample files; output goes to <code>inst/config/tools/_tmp/</code> to avoid overwriting real schemas</li>
-</ul></section><section class="level3"><h3 id="ci">CI<a class="anchor" aria-label="anchor" href="#ci"></a>
-</h3>
-<ul>
-<li>Refactor deploy workflow for dev and main branches (<a href="https://github.com/tidywf/nemo/pull/34" class="external-link">pr34</a>)</li>
-<li>Add dedicated conda env for version bumping (<a href="https://github.com/tidywf/nemo/pull/50" class="external-link">pr50</a>)</li>
-</ul></section><section class="level3"><h3 id="docs">Docs<a class="anchor" aria-label="anchor" href="#docs"></a>
-</h3>
-<ul>
-<li>Add <code><a href="../reference/nemo_gha_mermaid.html">nemo_gha_mermaid()</a></code> and CI/CD vignette: reads local <code>deploy.yaml</code> and fetches reusable workflow YAMLs from tidywf/actions to generate a Mermaid flowchart of the full CI/CD pipeline (<a href="https://github.com/tidywf/nemo/pull/52" class="external-link">pr52</a>)</li>
-<li>Reorganise vignettes and make names clearer</li>
-<li>Schema vignette: document the <code>csv</code> ftype with a live <code>table6</code> example</li>
+<li>File discovery ~20× faster on large directories — benchmarked at 1.9 s → 0.1 s on 43k files × 15 patterns</li>
 </ul></section></section><section class="level2"><h2 id="v0-0-3-2026-02-09">v0.0.3 (2026-02-09)<a class="anchor" aria-label="anchor" href="#v0-0-3-2026-02-09"></a>
 </h2>
 <ul>

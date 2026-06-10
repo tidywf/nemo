@@ -4,24 +4,24 @@ discovery, filtering, tidying, and writing in a single pipeline.
 A Workflow object:
 has a name (name);
 has one or more paths to workflow results (path);
-has a list of Tool subclass objects (tools);
-has a tibble of all files in the shared directory (files_tbl);
+holds Tool subclass objects accessible via get_tools();
+exposes matched files across all tools via list_files();
 has a tibble of written output files, populated after write() (written_files);
 
 
 The typical workflow is: optionally filter with filter_files(), tidy with
-tidy(), then write with write(). nemofy() chains all three steps."><meta property="og:description" content="Orchestrates multiple Tool objects over a shared directory, handling file
+tidy(), then write with write(). run() chains all three steps."><meta property="og:description" content="Orchestrates multiple Tool objects over a shared directory, handling file
 discovery, filtering, tidying, and writing in a single pipeline.
 A Workflow object:
 has a name (name);
 has one or more paths to workflow results (path);
-has a list of Tool subclass objects (tools);
-has a tibble of all files in the shared directory (files_tbl);
+holds Tool subclass objects accessible via get_tools();
+exposes matched files across all tools via list_files();
 has a tibble of written output files, populated after write() (written_files);
 
 
 The typical workflow is: optionally filter with filter_files(), tidy with
-tidy(), then write with write(). nemofy() chains all three steps."><meta property="og:image" content="https://tidywf.github.io/nemo/logo.png"><meta name="robots" content="noindex"></head><body>
+tidy(), then write with write(). run() chains all three steps."><meta property="og:image" content="https://tidywf.github.io/nemo/logo.png"><meta name="robots" content="noindex"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -29,7 +29,7 @@ tidy(), then write with write(). nemofy() chains all three steps."><meta propert
 
     <a class="navbar-brand me-2" href="../index.html">nemo</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.0.3.9020</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.0.3.9022</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -42,9 +42,8 @@ tidy(), then write with write(). nemofy() chains all three steps."><meta propert
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/installation.html">Installation</a></li>
     <li><a class="dropdown-item" href="../articles/structure.html">Structure</a></li>
-    <li><a class="dropdown-item" href="../articles/schema_walkthrough.html">Schema Walkthrough</a></li>
     <li><a class="dropdown-item" href="../articles/schema_table.html">Schema Table</a></li>
-    <li><a class="dropdown-item" href="../articles/contribute.html">Contribute</a></li>
+    <li><a class="dropdown-item" href="../articles/new-tool.html">New Tool</a></li>
     <li><a class="dropdown-item" href="../articles/uml.html">UML Diagram</a></li>
     <li><a class="dropdown-item" href="../articles/cicd.html">CI/CD Workflow</a></li>
     <li><a class="dropdown-item" href="../articles/devnotes.html">Devnotes</a></li>
@@ -71,11 +70,11 @@ tidy(), then write with write(). nemofy() chains all three steps."><meta propert
 discovery, filtering, tidying, and writing in a single pipeline.</p>
 <p>A Workflow object:</p><ul><li><p>has a name (<code>name</code>);</p></li>
 <li><p>has one or more paths to workflow results (<code>path</code>);</p></li>
-<li><p>has a list of <code>Tool</code> subclass objects (<code>tools</code>);</p></li>
-<li><p>has a tibble of all files in the shared directory (<code>files_tbl</code>);</p></li>
+<li><p>holds <code>Tool</code> subclass objects accessible via <code>get_tools()</code>;</p></li>
+<li><p>exposes matched files across all tools via <code>list_files()</code>;</p></li>
 <li><p>has a tibble of written output files, populated after <code><a href="https://rdrr.io/r/base/write.html" class="external-link">write()</a></code> (<code>written_files</code>);</p></li>
 </ul><p>The typical workflow is: optionally filter with <code>filter_files()</code>, tidy with
-<code>tidy()</code>, then write with <code><a href="https://rdrr.io/r/base/write.html" class="external-link">write()</a></code>. <code>nemofy()</code> chains all three steps.</p>
+<code>tidy()</code>, then write with <code><a href="https://rdrr.io/r/base/write.html" class="external-link">write()</a></code>. <code>run()</code> chains all three steps.</p>
     </div>
 
 
@@ -91,19 +90,9 @@ Name of workflow.</p></dd>
 Path(s) to workflow results.</p></dd>
 
 
-<dt><code>tools</code></dt>
-<dd><p>(<code>list(n)</code>)<br>
-List of Tools that compose a Workflow.</p></dd>
-
-
-<dt><code>files_tbl</code></dt>
-<dd><p>(<code>tibble(n)</code>)<br>
-Tibble of files from <code><a href="list_files_dir.html">list_files_dir()</a></code>.</p></dd>
-
-
 <dt><code>metapkg</code></dt>
-<dd><p>(<code>character(1)</code>)<br>
-Package name used for metadata version reporting.</p></dd>
+<dd><p>(<code>character(n)</code>)<br>
+Package name(s) used for metadata version reporting.</p></dd>
 
 
 <dt><code>written_files</code></dt>
@@ -121,21 +110,21 @@ Tibble of files written from <code>self$write()</code>.</p></dd>
 
 <ul><li><p><a href="#method-Workflow-new"><code>Workflow$new()</code></a></p></li>
 <li><p><a href="#method-Workflow-print"><code>Workflow$print()</code></a></p></li>
+<li><p><a href="#method-Workflow-get_tools"><code>Workflow$get_tools()</code></a></p></li>
 <li><p><a href="#method-Workflow-filter_files"><code>Workflow$filter_files()</code></a></p></li>
 <li><p><a href="#method-Workflow-list_files"><code>Workflow$list_files()</code></a></p></li>
 <li><p><a href="#method-Workflow-tidy"><code>Workflow$tidy()</code></a></p></li>
 <li><p><a href="#method-Workflow-write"><code>Workflow$write()</code></a></p></li>
-<li><p><a href="#method-Workflow-nemofy"><code>Workflow$nemofy()</code></a></p></li>
-<li><p><a href="#method-Workflow-get_raw_schemas_all"><code>Workflow$get_raw_schemas_all()</code></a></p></li>
-<li><p><a href="#method-Workflow-get_tidy_schemas_all"><code>Workflow$get_tidy_schemas_all()</code></a></p></li>
+<li><p><a href="#method-Workflow-run"><code>Workflow$run()</code></a></p></li>
+<li><p><a href="#method-Workflow-get_schemas_raw"><code>Workflow$get_schemas_raw()</code></a></p></li>
+<li><p><a href="#method-Workflow-get_schemas_tidy"><code>Workflow$get_schemas_tidy()</code></a></p></li>
 <li><p><a href="#method-Workflow-get_tbls"><code>Workflow$get_tbls()</code></a></p></li>
 <li><p><a href="#method-Workflow-get_metadata"><code>Workflow$get_metadata()</code></a></p></li>
-<li><p><a href="#method-Workflow-clone"><code>Workflow$clone()</code></a></p></li>
 </ul></div><p></p><hr><a id="method-Workflow-new"></a><div class="section">
 <h3 id="method-new-">Method <code>new()</code><a class="anchor" aria-label="anchor" href="#method-new-"></a></h3>
 <p>Create a new Workflow object.</p><div class="section">
 <h4 id="usage">Usage<a class="anchor" aria-label="anchor" href="#usage"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va"><a href="../reference/Workflow.html">Workflow</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span>name <span class="op">=</span> <span class="cn">NULL</span>, path <span class="op">=</span> <span class="cn">NULL</span>, tools <span class="op">=</span> <span class="cn">NULL</span>, metapkg <span class="op">=</span> <span class="st">"nemo"</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va"><a href="../reference/Workflow.html">Workflow</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="va">name</span>, <span class="va">path</span>, <span class="va">tools</span>, metapkg <span class="op">=</span> <span class="st">"nemo"</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
@@ -152,12 +141,13 @@ Path(s) to workflow results.</p></dd>
 
 <dt><code>tools</code></dt>
 <dd><p>(<code>list(n)</code>)<br>
-List of Tools that compose a Workflow.</p></dd>
+Named list of Tool subclasses that compose a Workflow. List names serve
+as aliases and need not match each tool's own <code>$name</code> field.</p></dd>
 
 
 <dt><code>metapkg</code></dt>
-<dd><p>(<code>character(1)</code>)<br>
-Package name used for metadata version reporting.</p></dd>
+<dd><p>(<code>character(n)</code>)<br>
+Package name(s) used for metadata version reporting.</p></dd>
 
 
 </dl><p></p></div>
@@ -189,10 +179,23 @@ R6 object.</p>
 R6 object invisibly.</p>
 </div>
 
+</div><p></p><hr><a id="method-Workflow-get_tools"></a><div class="section">
+<h3 id="method-get-tools-">Method <code>get_tools()</code><a class="anchor" aria-label="anchor" href="#method-get-tools-"></a></h3>
+<p>Get the list of Tool objects in this Workflow.</p><div class="section">
+<h4 id="usage-2">Usage<a class="anchor" aria-label="anchor" href="#usage-2"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Workflow</span><span class="op">$</span><span class="fu">get_tools</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+<div class="section">
+<h4 id="returns-2">Returns<a class="anchor" aria-label="anchor" href="#returns-2"></a></h4>
+<p>(<code>list(n)</code>)<br>
+Named list of instantiated Tool objects.</p>
+</div>
+
 </div><p></p><hr><a id="method-Workflow-filter_files"></a><div class="section">
 <h3 id="method-filter-files-">Method <code>filter_files()</code><a class="anchor" aria-label="anchor" href="#method-filter-files-"></a></h3>
 <p>Filter files in given workflow directory.</p><div class="section">
-<h4 id="usage-2">Usage<a class="anchor" aria-label="anchor" href="#usage-2"></a></h4>
+<h4 id="usage-3">Usage<a class="anchor" aria-label="anchor" href="#usage-3"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Workflow</span><span class="op">$</span><span class="fu">filter_files</span><span class="op">(</span>include <span class="op">=</span> <span class="cn">NULL</span>, exclude <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -211,7 +214,7 @@ tool_parser names to exclude (e.g. <code>"tool1_table5"</code>).</p></dd>
 </dl><p></p></div>
 </div>
 <div class="section">
-<h4 id="returns-2">Returns<a class="anchor" aria-label="anchor" href="#returns-2"></a></h4>
+<h4 id="returns-3">Returns<a class="anchor" aria-label="anchor" href="#returns-3"></a></h4>
 <p>(<code><a href="https://r6.r-lib.org/reference/R6Class.html" class="external-link">R6::R6Class()</a></code>)<br>
 R6 object invisibly.</p>
 </div>
@@ -221,97 +224,28 @@ R6 object invisibly.</p>
 <p>List only files of interest in given workflow directory, i.e.
 only those files that match the patterns listed in the individual tool
 config.</p><div class="section">
-<h4 id="usage-3">Usage<a class="anchor" aria-label="anchor" href="#usage-3"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Workflow</span><span class="op">$</span><span class="fu">list_files</span><span class="op">(</span>type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"file"</span>, <span class="st">"symlink"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<h4 id="usage-4">Usage<a class="anchor" aria-label="anchor" href="#usage-4"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Workflow</span><span class="op">$</span><span class="fu">list_files</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-3">Arguments<a class="anchor" aria-label="anchor" href="#arguments-3"></a></h4>
-<p></p><div class="arguments"><dl><dt><code>type</code></dt>
-<dd><p>(<code>character(1)</code>)<br>
-File types(s) to return (e.g. any, file, directory, symlink).
-See <code><a href="https://fs.r-lib.org/reference/dir_ls.html" class="external-link">fs::dir_info</a></code>.</p></dd>
-
-
-</dl><p></p></div>
-</div>
-<div class="section">
-<h4 id="returns-3">Returns<a class="anchor" aria-label="anchor" href="#returns-3"></a></h4>
+<h4 id="returns-4">Returns<a class="anchor" aria-label="anchor" href="#returns-4"></a></h4>
 <p>(<code>tibble()</code>)<br>
-Bound <code>list_files()</code> tibbles from all Tools.</p>
+Bound <code>files</code> tibbles from all Tools, with a leading <code>tool</code> column.</p>
 </div>
 
 </div><p></p><hr><a id="method-Workflow-tidy"></a><div class="section">
 <h3 id="method-tidy-">Method <code>tidy()</code><a class="anchor" aria-label="anchor" href="#method-tidy-"></a></h3>
 <p>Tidy Workflow files.</p><div class="section">
-<h4 id="usage-4">Usage<a class="anchor" aria-label="anchor" href="#usage-4"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Workflow</span><span class="op">$</span><span class="fu">tidy</span><span class="op">(</span>tidy <span class="op">=</span> <span class="cn">TRUE</span>, keep_raw <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<h4 id="usage-5">Usage<a class="anchor" aria-label="anchor" href="#usage-5"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Workflow</span><span class="op">$</span><span class="fu">tidy</span><span class="op">(</span>keep_raw <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-4">Arguments<a class="anchor" aria-label="anchor" href="#arguments-4"></a></h4>
-<p></p><div class="arguments"><dl><dt><code>tidy</code></dt>
-<dd><p>(<code>logical(1)</code>)<br>
-Should the raw parsed tibbles get tidied?</p></dd>
-
-
-<dt><code>keep_raw</code></dt>
+<h4 id="arguments-3">Arguments<a class="anchor" aria-label="anchor" href="#arguments-3"></a></h4>
+<p></p><div class="arguments"><dl><dt><code>keep_raw</code></dt>
 <dd><p>(<code>logical(1)</code>)<br>
 Should the raw parsed tibbles be kept in the final output?</p></dd>
-
-
-</dl><p></p></div>
-</div>
-<div class="section">
-<h4 id="returns-4">Returns<a class="anchor" aria-label="anchor" href="#returns-4"></a></h4>
-<p>(<code><a href="https://r6.r-lib.org/reference/R6Class.html" class="external-link">R6::R6Class()</a></code>)<br>
-R6 object invisibly.</p>
-</div>
-
-</div><p></p><hr><a id="method-Workflow-write"></a><div class="section">
-<h3 id="method-write-">Method <code><a href="https://rdrr.io/r/base/write.html" class="external-link">write()</a></code><a class="anchor" aria-label="anchor" href="#method-write-"></a></h3>
-<p>Write tidy tibbles.</p><div class="section">
-<h4 id="usage-5">Usage<a class="anchor" aria-label="anchor" href="#usage-5"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Workflow</span><span class="op">$</span><span class="fu">write</span><span class="op">(</span></span>
-<span>  diro <span class="op">=</span> <span class="st">"."</span>,</span>
-<span>  format <span class="op">=</span> <span class="st">"tsv"</span>,</span>
-<span>  input_id <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  output_id <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  pfix_include <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  dbconn <span class="op">=</span> <span class="cn">NULL</span></span>
-<span><span class="op">)</span></span></code></pre></div><p></p></div>
-</div>
-
-<div class="section">
-<h4 id="arguments-5">Arguments<a class="anchor" aria-label="anchor" href="#arguments-5"></a></h4>
-<p></p><div class="arguments"><dl><dt><code>diro</code></dt>
-<dd><p>(<code>character(1)</code>)<br>
-Directory path to output tidy files.</p></dd>
-
-
-<dt><code>format</code></dt>
-<dd><p>(<code>character(1)</code>)<br>
-Format of output.</p></dd>
-
-
-<dt><code>input_id</code></dt>
-<dd><p>(<code>character(1)</code>)<br>
-Input ID to use for the dataset (e.g. <code>run123</code>).</p></dd>
-
-
-<dt><code>output_id</code></dt>
-<dd><p>(<code>character(1)</code>)<br>
-Output ID to use for the dataset (e.g. <code>run123</code>).</p></dd>
-
-
-<dt><code>pfix_include</code></dt>
-<dd><p>(<code>logical(1)</code>)<br>
-If <code>TRUE</code>, prepend an <code>input_pfix</code> column to each tidy table.</p></dd>
-
-
-<dt><code>dbconn</code></dt>
-<dd><p>(<code>DBIConnection</code>)<br>
-Database connection object (see <code><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">DBI::dbConnect</a></code>).</p></dd>
 
 
 </dl><p></p></div>
@@ -322,25 +256,24 @@ Database connection object (see <code><a href="https://dbi.r-dbi.org/reference/d
 R6 object invisibly.</p>
 </div>
 
-</div><p></p><hr><a id="method-Workflow-nemofy"></a><div class="section">
-<h3 id="method-nemofy-">Method <code>nemofy()</code><a class="anchor" aria-label="anchor" href="#method-nemofy-"></a></h3>
-<p>Parse, filter, tidy and write files.</p><div class="section">
+</div><p></p><hr><a id="method-Workflow-write"></a><div class="section">
+<h3 id="method-write-">Method <code><a href="https://rdrr.io/r/base/write.html" class="external-link">write()</a></code><a class="anchor" aria-label="anchor" href="#method-write-"></a></h3>
+<p>Write tidy tibbles.</p><div class="section">
 <h4 id="usage-6">Usage<a class="anchor" aria-label="anchor" href="#usage-6"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Workflow</span><span class="op">$</span><span class="fu">nemofy</span><span class="op">(</span></span>
-<span>  diro <span class="op">=</span> <span class="st">"."</span>,</span>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Workflow</span><span class="op">$</span><span class="fu">write</span><span class="op">(</span></span>
+<span>  output_dir <span class="op">=</span> <span class="st">"."</span>,</span>
 <span>  format <span class="op">=</span> <span class="st">"tsv"</span>,</span>
 <span>  input_id <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  output_id <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  pfix_include <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  prefix_include <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  dbconn <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  include <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  exclude <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  write_metadata <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-6">Arguments<a class="anchor" aria-label="anchor" href="#arguments-6"></a></h4>
-<p></p><div class="arguments"><dl><dt><code>diro</code></dt>
+<h4 id="arguments-4">Arguments<a class="anchor" aria-label="anchor" href="#arguments-4"></a></h4>
+<p></p><div class="arguments"><dl><dt><code>output_dir</code></dt>
 <dd><p>(<code>character(1)</code>)<br>
 Directory path to output tidy files.</p></dd>
 
@@ -357,17 +290,85 @@ Input ID to use for the dataset (e.g. <code>run123</code>).</p></dd>
 
 <dt><code>output_id</code></dt>
 <dd><p>(<code>character(1)</code>)<br>
-Output ID to use for the dataset (e.g. <code>run123</code>).</p></dd>
+Output ID to use for the dataset (e.g. <code>out1</code>).</p></dd>
 
 
-<dt><code>pfix_include</code></dt>
+<dt><code>prefix_include</code></dt>
 <dd><p>(<code>logical(1)</code>)<br>
-If <code>TRUE</code>, prepend an <code>input_pfix</code> column to each tidy table.</p></dd>
+If <code>TRUE</code>, prepend an <code>input_prefix</code> column to each tidy table.</p></dd>
 
 
 <dt><code>dbconn</code></dt>
 <dd><p>(<code>DBIConnection</code>)<br>
 Database connection object (see <code><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">DBI::dbConnect</a></code>).</p></dd>
+
+
+<dt><code>write_metadata</code></dt>
+<dd><p>(<code>logical(1)</code>)<br>
+If <code>TRUE</code> (default), write a <code>metadata.parquet</code> file alongside the tidy
+outputs. Set to <code>FALSE</code> to suppress.</p></dd>
+
+
+</dl><p></p></div>
+</div>
+<div class="section">
+<h4 id="returns-6">Returns<a class="anchor" aria-label="anchor" href="#returns-6"></a></h4>
+<p>(<code><a href="https://r6.r-lib.org/reference/R6Class.html" class="external-link">R6::R6Class()</a></code>)<br>
+R6 object invisibly.</p>
+</div>
+
+</div><p></p><hr><a id="method-Workflow-run"></a><div class="section">
+<h3 id="method-run-">Method <code>run()</code><a class="anchor" aria-label="anchor" href="#method-run-"></a></h3>
+<p>Filter, tidy, and write files in one step.</p><div class="section">
+<h4 id="usage-7">Usage<a class="anchor" aria-label="anchor" href="#usage-7"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Workflow</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span></span>
+<span>  output_dir <span class="op">=</span> <span class="st">"."</span>,</span>
+<span>  format <span class="op">=</span> <span class="st">"tsv"</span>,</span>
+<span>  input_id <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  output_id <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  prefix_include <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  dbconn <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  write_metadata <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  include <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  exclude <span class="op">=</span> <span class="cn">NULL</span></span>
+<span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+<div class="section">
+<h4 id="arguments-5">Arguments<a class="anchor" aria-label="anchor" href="#arguments-5"></a></h4>
+<p></p><div class="arguments"><dl><dt><code>output_dir</code></dt>
+<dd><p>(<code>character(1)</code>)<br>
+Directory path to output tidy files.</p></dd>
+
+
+<dt><code>format</code></dt>
+<dd><p>(<code>character(1)</code>)<br>
+Format of output.</p></dd>
+
+
+<dt><code>input_id</code></dt>
+<dd><p>(<code>character(1)</code>)<br>
+Input ID to use for the dataset (e.g. <code>run123</code>).</p></dd>
+
+
+<dt><code>output_id</code></dt>
+<dd><p>(<code>character(1)</code>)<br>
+Output ID to use for the dataset (e.g. <code>out1</code>).</p></dd>
+
+
+<dt><code>prefix_include</code></dt>
+<dd><p>(<code>logical(1)</code>)<br>
+If <code>TRUE</code>, prepend an <code>input_prefix</code> column to each tidy table.</p></dd>
+
+
+<dt><code>dbconn</code></dt>
+<dd><p>(<code>DBIConnection</code>)<br>
+Database connection object (see <code><a href="https://dbi.r-dbi.org/reference/dbConnect.html" class="external-link">DBI::dbConnect</a></code>).</p></dd>
+
+
+<dt><code>write_metadata</code></dt>
+<dd><p>(<code>logical(1)</code>)<br>
+If <code>TRUE</code> (default), write a <code>metadata.parquet</code> file. Set to <code>FALSE</code> to suppress.</p></dd>
 
 
 <dt><code>include</code></dt>
@@ -383,33 +384,33 @@ tool_parser names to exclude (e.g. <code>"tool1_table5"</code>).</p></dd>
 </dl><p></p></div>
 </div>
 <div class="section">
-<h4 id="returns-6">Returns<a class="anchor" aria-label="anchor" href="#returns-6"></a></h4>
+<h4 id="returns-7">Returns<a class="anchor" aria-label="anchor" href="#returns-7"></a></h4>
 <p>(<code><a href="https://r6.r-lib.org/reference/R6Class.html" class="external-link">R6::R6Class()</a></code>)<br>
 R6 object invisibly.</p>
 </div>
 
-</div><p></p><hr><a id="method-Workflow-get_raw_schemas_all"></a><div class="section">
-<h3 id="method-get-raw-schemas-all-">Method <code>get_raw_schemas_all()</code><a class="anchor" aria-label="anchor" href="#method-get-raw-schemas-all-"></a></h3>
+</div><p></p><hr><a id="method-Workflow-get_schemas_raw"></a><div class="section">
+<h3 id="method-get-schemas-raw-">Method <code>get_schemas_raw()</code><a class="anchor" aria-label="anchor" href="#method-get-schemas-raw-"></a></h3>
 <p>Get raw schemas for all Tools.</p><div class="section">
-<h4 id="usage-7">Usage<a class="anchor" aria-label="anchor" href="#usage-7"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Workflow</span><span class="op">$</span><span class="fu">get_raw_schemas_all</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
-</div>
-
-<div class="section">
-<h4 id="returns-7">Returns<a class="anchor" aria-label="anchor" href="#returns-7"></a></h4>
-<p>(<code>tibble()</code>)<br>
-Bound <code>raw_schemas_all</code> tibbles from all Tools, with a leading <code>tool</code> column.</p>
-</div>
-
-</div><p></p><hr><a id="method-Workflow-get_tidy_schemas_all"></a><div class="section">
-<h3 id="method-get-tidy-schemas-all-">Method <code>get_tidy_schemas_all()</code><a class="anchor" aria-label="anchor" href="#method-get-tidy-schemas-all-"></a></h3>
-<p>Get tidy schemas for all Tools.</p><div class="section">
 <h4 id="usage-8">Usage<a class="anchor" aria-label="anchor" href="#usage-8"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Workflow</span><span class="op">$</span><span class="fu">get_tidy_schemas_all</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Workflow</span><span class="op">$</span><span class="fu">get_schemas_raw</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
 <h4 id="returns-8">Returns<a class="anchor" aria-label="anchor" href="#returns-8"></a></h4>
+<p>(<code>tibble()</code>)<br>
+Bound <code>schemas_raw</code> tibbles from all Tools, with a leading <code>tool</code> column.</p>
+</div>
+
+</div><p></p><hr><a id="method-Workflow-get_schemas_tidy"></a><div class="section">
+<h3 id="method-get-schemas-tidy-">Method <code>get_schemas_tidy()</code><a class="anchor" aria-label="anchor" href="#method-get-schemas-tidy-"></a></h3>
+<p>Get tidy schemas for all Tools.</p><div class="section">
+<h4 id="usage-9">Usage<a class="anchor" aria-label="anchor" href="#usage-9"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Workflow</span><span class="op">$</span><span class="fu">get_schemas_tidy</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+<div class="section">
+<h4 id="returns-9">Returns<a class="anchor" aria-label="anchor" href="#returns-9"></a></h4>
 <p>(<code>tibble()</code>)<br>
 Bound tidy schema tibbles from all Tools, with a leading <code>tool</code> column.</p>
 </div>
@@ -417,25 +418,29 @@ Bound tidy schema tibbles from all Tools, with a leading <code>tool</code> colum
 </div><p></p><hr><a id="method-Workflow-get_tbls"></a><div class="section">
 <h3 id="method-get-tbls-">Method <code>get_tbls()</code><a class="anchor" aria-label="anchor" href="#method-get-tbls-"></a></h3>
 <p>Get tidy tibbles for all Tools.</p><div class="section">
-<h4 id="usage-9">Usage<a class="anchor" aria-label="anchor" href="#usage-9"></a></h4>
+<h4 id="usage-10">Usage<a class="anchor" aria-label="anchor" href="#usage-10"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Workflow</span><span class="op">$</span><span class="fu">get_tbls</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="returns-9">Returns<a class="anchor" aria-label="anchor" href="#returns-9"></a></h4>
+<h4 id="returns-10">Returns<a class="anchor" aria-label="anchor" href="#returns-10"></a></h4>
 <p>(<code>tibble()</code>)<br>
-Bound <code>tbls</code> tibbles from all Tools.</p>
+Bound <code>tbls</code> tibbles from all Tools, with a leading <code>tool</code> column.
+When <code>tidy(keep_raw = TRUE)</code> was used, each tool's tibble also contains
+a <code>raw</code> list-column. Note: <code>get_tbls()</code> checks <code><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null()</a></code> (not <code><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow()</a></code>)
+because <code>Tool$get_tbls()</code> returns <code>NULL</code> when nothing was tidied, whereas
+<code>Tool$list_files()</code> always returns a zero-row tibble (never <code>NULL</code>).</p>
 </div>
 
 </div><p></p><hr><a id="method-Workflow-get_metadata"></a><div class="section">
 <h3 id="method-get-metadata-">Method <code>get_metadata()</code><a class="anchor" aria-label="anchor" href="#method-get-metadata-"></a></h3>
 <p>Get metadata for the workflow run.</p><div class="section">
-<h4 id="usage-10">Usage<a class="anchor" aria-label="anchor" href="#usage-10"></a></h4>
+<h4 id="usage-11">Usage<a class="anchor" aria-label="anchor" href="#usage-11"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Workflow</span><span class="op">$</span><span class="fu">get_metadata</span><span class="op">(</span><span class="va">input_id</span>, <span class="va">output_id</span>, <span class="va">output_dir</span>, pkgs <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-7">Arguments<a class="anchor" aria-label="anchor" href="#arguments-7"></a></h4>
+<h4 id="arguments-6">Arguments<a class="anchor" aria-label="anchor" href="#arguments-6"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>input_id</code></dt>
 <dd><p>(<code>character(1)</code>)<br>
 Input ID to use for the dataset (e.g. <code>run123</code>).</p></dd>
@@ -443,7 +448,7 @@ Input ID to use for the dataset (e.g. <code>run123</code>).</p></dd>
 
 <dt><code>output_id</code></dt>
 <dd><p>(<code>character(1)</code>)<br>
-Output ID to use for the dataset (e.g. <code>run123</code>).</p></dd>
+Output ID to use for the dataset (e.g. <code>out1</code>).</p></dd>
 
 
 <dt><code>output_dir</code></dt>
@@ -459,26 +464,10 @@ Which R packages to extract versions for.</p></dd>
 </dl><p></p></div>
 </div>
 <div class="section">
-<h4 id="returns-10">Returns<a class="anchor" aria-label="anchor" href="#returns-10"></a></h4>
+<h4 id="returns-11">Returns<a class="anchor" aria-label="anchor" href="#returns-11"></a></h4>
 <p>(<code>tibble()</code>)<br>
 Single-row tibble with columns <code>input_id</code>, <code>output_id</code>, <code>input_dirs</code>,
 <code>output_dir</code>, <code>pkg_versions</code>, and <code>files</code>.</p>
-</div>
-
-</div><p></p><hr><a id="method-Workflow-clone"></a><div class="section">
-<h3 id="method-clone-">Method <code>clone()</code><a class="anchor" aria-label="anchor" href="#method-clone-"></a></h3>
-<p>The objects of this class are cloneable with this method.</p><div class="section">
-<h4 id="usage-11">Usage<a class="anchor" aria-label="anchor" href="#usage-11"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Workflow</span><span class="op">$</span><span class="fu">clone</span><span class="op">(</span>deep <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div><p></p></div>
-</div>
-
-<div class="section">
-<h4 id="arguments-8">Arguments<a class="anchor" aria-label="anchor" href="#arguments-8"></a></h4>
-<p></p><div class="arguments"><dl><dt><code>deep</code></dt>
-<dd><p>Whether to make a deep clone.</p></dd>
-
-
-</dl><p></p></div>
 </div>
 
 </div>
@@ -494,40 +483,41 @@ Single-row tibble with columns <code>input_id</code>, <code>output_id</code>, <c
 <span class="r-in"><span><span class="va">tools</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>tool1 <span class="op">=</span> <span class="va">Tool1</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">wf</span> <span class="op">&lt;-</span> <span class="va">Workflow</span><span class="op">$</span><span class="fu">new</span><span class="op">(</span>name <span class="op">=</span> <span class="st">"wf1"</span>, path <span class="op">=</span> <span class="va">path</span>, tools <span class="op">=</span> <span class="va">tools</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">(</span><span class="va">lf_all</span> <span class="op">&lt;-</span> <span class="va">wf</span><span class="op">$</span><span class="fu">list_files</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 12 × 9</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    tool_parser parser bname  size lastmodified        path  pattern prefix group</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;glue&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;fs:&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dttm&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;glue&gt;</span> <span style="color: #949494; font-style: italic;">&lt;glu&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> tool1_tabl… table1 samp…    93 2026-06-04 <span style="color: #949494;">15:05:16</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl…      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> tool1_tabl… table1 samp…   113 2026-06-04 <span style="color: #949494;">15:05:16</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl… _2   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> tool1_tabl… table1 samp…   133 2026-06-04 <span style="color: #949494;">15:05:16</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl… _3   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> tool1_tabl… table2 samp…    47 2026-06-04 <span style="color: #949494;">15:05:16</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl…      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> tool1_tabl… table2 samp…    70 2026-06-04 <span style="color: #949494;">15:05:16</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl… _2   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> tool1_tabl… table3 samp…    48 2026-06-04 <span style="color: #949494;">15:05:16</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl…      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> tool1_tabl… table3 samp…    83 2026-06-04 <span style="color: #949494;">15:05:16</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl… _2   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> tool1_tabl… table4 samp…    34 2026-06-04 <span style="color: #949494;">15:05:16</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl…      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> tool1_tabl… table4 samp…    52 2026-06-04 <span style="color: #949494;">15:05:16</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl… _2   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> tool1_tabl… table5 samp…   994 2026-06-04 <span style="color: #949494;">15:05:16</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl…      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">11</span> tool1_tabl… table6 samp…    78 2026-06-04 <span style="color: #949494;">15:05:16</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl…      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">12</span> tool1_tabl… table6 samp…   100 2026-06-04 <span style="color: #949494;">15:05:16</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl… _2   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 12 × 10</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    tool  tool_parser parser bname  size lastmodified        path  pattern prefix</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;fs:&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dttm&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> tool1 tool1_tabl… table1 samp…   133 2026-06-10 <span style="color: #949494;">04:27:43</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> tool1 tool1_tabl… table1 samp…   113 2026-06-10 <span style="color: #949494;">04:27:43</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> tool1 tool1_tabl… table1 samp…    93 2026-06-10 <span style="color: #949494;">04:27:43</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> tool1 tool1_tabl… table2 samp…    70 2026-06-10 <span style="color: #949494;">04:27:43</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> tool1 tool1_tabl… table2 samp…    47 2026-06-10 <span style="color: #949494;">04:27:43</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> tool1 tool1_tabl… table3 samp…    83 2026-06-10 <span style="color: #949494;">04:27:43</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> tool1 tool1_tabl… table3 samp…    48 2026-06-10 <span style="color: #949494;">04:27:43</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> tool1 tool1_tabl… table4 samp…    52 2026-06-10 <span style="color: #949494;">04:27:43</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> tool1 tool1_tabl… table4 samp…    34 2026-06-10 <span style="color: #949494;">04:27:43</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> tool1 tool1_tabl… table6 samp…   100 2026-06-10 <span style="color: #949494;">04:27:43</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">11</span> tool1 tool1_tabl… table6 samp…    78 2026-06-10 <span style="color: #949494;">04:27:43</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">12</span> tool1 tool1_tabl… table5 samp…   994 2026-06-10 <span style="color: #949494;">04:27:43</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 1 more variable: prefix_suffix &lt;chr&gt;</span></span>
 <span class="r-in"><span><span class="va">wf</span><span class="op">$</span><span class="fu">filter_files</span><span class="op">(</span>exclude <span class="op">=</span> <span class="st">"tool1_table5"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">wf</span><span class="op">$</span><span class="fu">tidy</span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">(</span><span class="va">tbls</span> <span class="op">&lt;-</span> <span class="va">wf</span><span class="op">$</span><span class="fu">get_tbls</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 11 × 10</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    tool_parser parser bname  size lastmodified        path  pattern prefix group</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;glue&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;fs:&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dttm&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;glue&gt;</span> <span style="color: #949494; font-style: italic;">&lt;glu&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> tool1_tabl… table1 samp…    93 2026-06-04 <span style="color: #949494;">15:05:16</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl…      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> tool1_tabl… table1 samp…   113 2026-06-04 <span style="color: #949494;">15:05:16</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl… _2   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> tool1_tabl… table1 samp…   133 2026-06-04 <span style="color: #949494;">15:05:16</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl… _3   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> tool1_tabl… table2 samp…    47 2026-06-04 <span style="color: #949494;">15:05:16</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl…      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> tool1_tabl… table2 samp…    70 2026-06-04 <span style="color: #949494;">15:05:16</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl… _2   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> tool1_tabl… table3 samp…    48 2026-06-04 <span style="color: #949494;">15:05:16</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl…      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> tool1_tabl… table3 samp…    83 2026-06-04 <span style="color: #949494;">15:05:16</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl… _2   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> tool1_tabl… table4 samp…    34 2026-06-04 <span style="color: #949494;">15:05:16</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl…      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> tool1_tabl… table4 samp…    52 2026-06-04 <span style="color: #949494;">15:05:16</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl… _2   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> tool1_tabl… table6 samp…    78 2026-06-04 <span style="color: #949494;">15:05:16</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl…      </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">11</span> tool1_tabl… table6 samp…   100 2026-06-04 <span style="color: #949494;">15:05:16</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl… _2   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 1 more variable: tidy &lt;list&gt;</span></span>
-<span class="r-in"><span><span class="op">(</span><span class="va">rs</span> <span class="op">&lt;-</span> <span class="va">wf</span><span class="op">$</span><span class="fu">get_raw_schemas_all</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 11 × 11</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    tool  tool_parser parser bname  size lastmodified        path  pattern prefix</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;fs:&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dttm&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> tool1 tool1_tabl… table1 samp…   133 2026-06-10 <span style="color: #949494;">04:27:43</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> tool1 tool1_tabl… table1 samp…   113 2026-06-10 <span style="color: #949494;">04:27:43</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> tool1 tool1_tabl… table1 samp…    93 2026-06-10 <span style="color: #949494;">04:27:43</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> tool1 tool1_tabl… table2 samp…    70 2026-06-10 <span style="color: #949494;">04:27:43</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> tool1 tool1_tabl… table2 samp…    47 2026-06-10 <span style="color: #949494;">04:27:43</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> tool1 tool1_tabl… table3 samp…    83 2026-06-10 <span style="color: #949494;">04:27:43</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> tool1 tool1_tabl… table3 samp…    48 2026-06-10 <span style="color: #949494;">04:27:43</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> tool1 tool1_tabl… table4 samp…    52 2026-06-10 <span style="color: #949494;">04:27:43</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> tool1 tool1_tabl… table4 samp…    34 2026-06-10 <span style="color: #949494;">04:27:43</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> tool1 tool1_tabl… table6 samp…   100 2026-06-10 <span style="color: #949494;">04:27:43</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">11</span> tool1 tool1_tabl… table6 samp…    78 2026-06-10 <span style="color: #949494;">04:27:43</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 2 more variables: prefix_suffix &lt;chr&gt;, tidy &lt;list&gt;</span></span>
+<span class="r-in"><span><span class="op">(</span><span class="va">rs</span> <span class="op">&lt;-</span> <span class="va">wf</span><span class="op">$</span><span class="fu">get_schemas_raw</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 12 × 5</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    tool  name   tbl_description                                 version schema  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                                           <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;list&gt;</span>  </span>
@@ -544,39 +534,39 @@ Single-row tibble with columns <code>input_id</code>, <code>output_id</code>, <c
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">11</span> tool1 table6 Table6 for tool1 (csv: header present, comma-d… latest  <span style="color: #949494;">&lt;tibble&gt;</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">12</span> tool1 table5 Table5 for tool1 (csv-nohead-long: no header, … latest  <span style="color: #949494;">&lt;tibble&gt;</span></span>
 <span class="r-in"><span><span class="va">dir1</span> <span class="op">&lt;-</span> <span class="fu">fs</span><span class="fu">::</span><span class="fu"><a href="https://fs.r-lib.org/reference/file_temp.html" class="external-link">file_temp</a></span><span class="op">(</span><span class="op">)</span>; <span class="va">dir2</span> <span class="op">&lt;-</span> <span class="fu">fs</span><span class="fu">::</span><span class="fu"><a href="https://fs.r-lib.org/reference/file_temp.html" class="external-link">file_temp</a></span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">wf</span><span class="op">$</span><span class="fu">write</span><span class="op">(</span>diro <span class="op">=</span> <span class="va">dir1</span>, format <span class="op">=</span> <span class="st">"parquet"</span>, input_id <span class="op">=</span> <span class="st">"run1"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">wf</span><span class="op">$</span><span class="fu">write</span><span class="op">(</span>output_dir <span class="op">=</span> <span class="va">dir1</span>, format <span class="op">=</span> <span class="st">"parquet"</span>, input_id <span class="op">=</span> <span class="st">"run1"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">(</span><span class="va">lf1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="va">dir1</span>, pattern <span class="op">=</span> <span class="st">"tool1.*parquet"</span>, full.names <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] "/tmp/RtmpgZV5jJ/c/sampleA_2_tool1_table1.parquet"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [2] "/tmp/RtmpgZV5jJ/c/sampleA_2_tool1_table2.parquet"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [3] "/tmp/RtmpgZV5jJ/c/sampleA_2_tool1_table3.parquet"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [4] "/tmp/RtmpgZV5jJ/c/sampleA_2_tool1_table4.parquet"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [5] "/tmp/RtmpgZV5jJ/c/sampleA_2_tool1_table6.parquet"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [6] "/tmp/RtmpgZV5jJ/c/sampleA_3_tool1_table1.parquet"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [7] "/tmp/RtmpgZV5jJ/c/sampleA_tool1_table1.parquet"  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [8] "/tmp/RtmpgZV5jJ/c/sampleA_tool1_table2.parquet"  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [9] "/tmp/RtmpgZV5jJ/c/sampleA_tool1_table3.parquet"  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [10] "/tmp/RtmpgZV5jJ/c/sampleA_tool1_table4.parquet"  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [11] "/tmp/RtmpgZV5jJ/c/sampleA_tool1_table6.parquet"  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] "/tmp/RtmpyNHuJO/c/sampleA_2_tool1_table1.parquet"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [2] "/tmp/RtmpyNHuJO/c/sampleA_2_tool1_table2.parquet"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [3] "/tmp/RtmpyNHuJO/c/sampleA_2_tool1_table3.parquet"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [4] "/tmp/RtmpyNHuJO/c/sampleA_2_tool1_table4.parquet"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [5] "/tmp/RtmpyNHuJO/c/sampleA_2_tool1_table6.parquet"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [6] "/tmp/RtmpyNHuJO/c/sampleA_3_tool1_table1.parquet"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [7] "/tmp/RtmpyNHuJO/c/sampleA_tool1_table1.parquet"  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [8] "/tmp/RtmpyNHuJO/c/sampleA_tool1_table2.parquet"  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [9] "/tmp/RtmpyNHuJO/c/sampleA_tool1_table3.parquet"  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [10] "/tmp/RtmpyNHuJO/c/sampleA_tool1_table4.parquet"  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [11] "/tmp/RtmpyNHuJO/c/sampleA_tool1_table6.parquet"  </span>
 <span class="r-in"><span><span class="op">(</span><span class="va">meta</span> <span class="op">&lt;-</span> <span class="va">wf</span><span class="op">$</span><span class="fu">get_metadata</span><span class="op">(</span>input_id <span class="op">=</span> <span class="st">"run1"</span>, output_id <span class="op">=</span> <span class="st">"out1"</span>, output_dir <span class="op">=</span> <span class="va">dir1</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 1 × 6</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   input_id output_id input_dirs output_dir        pkg_versions files        </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;list&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;fs::path&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;list&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;list&gt;</span>       </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> run1     out1      <span style="color: #949494;">&lt;chr [1]&gt;</span>  <span style="color: #0000BB; font-weight: bold;">/tmp/RtmpgZV5jJ/c</span> <span style="color: #949494;">&lt;df [1 × 2]&gt;</span> <span style="color: #949494;">&lt;df [11 × 4]&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> run1     out1      <span style="color: #949494;">&lt;chr [1]&gt;</span>  <span style="color: #0000BB; font-weight: bold;">/tmp/RtmpyNHuJO/c</span> <span style="color: #949494;">&lt;df [1 × 2]&gt;</span> <span style="color: #949494;">&lt;df [11 × 4]&gt;</span></span>
 <span class="r-in"><span><span class="va">wf2</span> <span class="op">&lt;-</span> <span class="va">Workflow</span><span class="op">$</span><span class="fu">new</span><span class="op">(</span>name <span class="op">=</span> <span class="st">"wf2"</span>, path <span class="op">=</span> <span class="va">path</span>, tools <span class="op">=</span> <span class="va">tools</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">wf2</span><span class="op">$</span><span class="fu">nemofy</span><span class="op">(</span>diro <span class="op">=</span> <span class="va">dir2</span>, format <span class="op">=</span> <span class="st">"parquet"</span>, input_id <span class="op">=</span> <span class="st">"run2"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">wf2</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span>output_dir <span class="op">=</span> <span class="va">dir2</span>, format <span class="op">=</span> <span class="st">"parquet"</span>, input_id <span class="op">=</span> <span class="st">"run2"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">(</span><span class="va">lf2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="va">dir2</span>, pattern <span class="op">=</span> <span class="st">"tool1.*parquet"</span>, full.names <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] "/tmp/RtmpgZV5jJ/d/sampleA_2_tool1_table1.parquet"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [2] "/tmp/RtmpgZV5jJ/d/sampleA_2_tool1_table2.parquet"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [3] "/tmp/RtmpgZV5jJ/d/sampleA_2_tool1_table3.parquet"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [4] "/tmp/RtmpgZV5jJ/d/sampleA_2_tool1_table4.parquet"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [5] "/tmp/RtmpgZV5jJ/d/sampleA_2_tool1_table6.parquet"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [6] "/tmp/RtmpgZV5jJ/d/sampleA_3_tool1_table1.parquet"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [7] "/tmp/RtmpgZV5jJ/d/sampleA_tool1_table1.parquet"  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [8] "/tmp/RtmpgZV5jJ/d/sampleA_tool1_table2.parquet"  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [9] "/tmp/RtmpgZV5jJ/d/sampleA_tool1_table3.parquet"  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [10] "/tmp/RtmpgZV5jJ/d/sampleA_tool1_table4.parquet"  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [11] "/tmp/RtmpgZV5jJ/d/sampleA_tool1_table5.parquet"  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [12] "/tmp/RtmpgZV5jJ/d/sampleA_tool1_table6.parquet"  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] "/tmp/RtmpyNHuJO/d/sampleA_2_tool1_table1.parquet"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [2] "/tmp/RtmpyNHuJO/d/sampleA_2_tool1_table2.parquet"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [3] "/tmp/RtmpyNHuJO/d/sampleA_2_tool1_table3.parquet"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [4] "/tmp/RtmpyNHuJO/d/sampleA_2_tool1_table4.parquet"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [5] "/tmp/RtmpyNHuJO/d/sampleA_2_tool1_table6.parquet"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [6] "/tmp/RtmpyNHuJO/d/sampleA_3_tool1_table1.parquet"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [7] "/tmp/RtmpyNHuJO/d/sampleA_tool1_table1.parquet"  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [8] "/tmp/RtmpyNHuJO/d/sampleA_tool1_table2.parquet"  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [9] "/tmp/RtmpyNHuJO/d/sampleA_tool1_table3.parquet"  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [10] "/tmp/RtmpyNHuJO/d/sampleA_tool1_table4.parquet"  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [11] "/tmp/RtmpyNHuJO/d/sampleA_tool1_table5.parquet"  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [12] "/tmp/RtmpyNHuJO/d/sampleA_tool1_table6.parquet"  </span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Contribute • nemo</title>
+<title>New Tool • nemo</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="../favicon-96x96.png">
 <link rel="icon" type="”image/svg+xml”" href="../favicon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="../apple-touch-icon.png">
@@ -14,9 +14,9 @@
 <link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><script src="contribute_files/libs/quarto-html/popper.min.js"></script><script src="contribute_files/libs/quarto-html/tippy.umd.min.js"></script><link href="contribute_files/libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="contribute_files/libs/quarto-html/light-border.css" rel="stylesheet">
-<!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Contribute">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><script src="new-tool_files/libs/quarto-html/popper.min.js"></script><script src="new-tool_files/libs/quarto-html/tippy.umd.min.js"></script><link href="new-tool_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="new-tool_files/libs/quarto-html/light-border.css" rel="stylesheet">
+<!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="New Tool">
 <meta property="og:image" content="https://tidywf.github.io/nemo/logo.png">
 <meta name="robots" content="noindex">
 </head>
@@ -28,7 +28,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">nemo</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.0.3.9020</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.0.3.9022</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -43,9 +43,8 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/installation.html">Installation</a></li>
     <li><a class="dropdown-item" href="../articles/structure.html">Structure</a></li>
-    <li><a class="dropdown-item" href="../articles/schema_walkthrough.html">Schema Walkthrough</a></li>
     <li><a class="dropdown-item" href="../articles/schema_table.html">Schema Table</a></li>
-    <li><a class="dropdown-item" href="../articles/contribute.html">Contribute</a></li>
+    <li><a class="dropdown-item" href="../articles/new-tool.html">New Tool</a></li>
     <li><a class="dropdown-item" href="../articles/uml.html">UML Diagram</a></li>
     <li><a class="dropdown-item" href="../articles/cicd.html">CI/CD Workflow</a></li>
     <li><a class="dropdown-item" href="../articles/devnotes.html">Devnotes</a></li>
@@ -67,12 +66,12 @@
 </nav><div class="container template-quarto">
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
-      <img src="../logo.png" class="logo" alt=""><h1>Contribute</h1>
+      <img src="../logo.png" class="logo" alt=""><h1>New Tool</h1>
 
 
 
 
-      <small class="dont-index">Source: <a href="https://github.com/tidywf/nemo/blob/dev/vignettes/contribute.qmd" class="external-link"><code>vignettes/contribute.qmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/tidywf/nemo/blob/dev/vignettes/new-tool.qmd" class="external-link"><code>vignettes/new-tool.qmd</code></a></small>
       <div class="d-none name"><code></code></div>
     </div>
 
@@ -81,9 +80,9 @@
 
 
 
-    <section class="level2"><h2 id="new-tool">New Tool<a class="anchor" aria-label="anchor" href="#new-tool"></a>
+    <section class="level2"><h2 id="adding-a-new-tool">Adding a New Tool<a class="anchor" aria-label="anchor" href="#adding-a-new-tool"></a>
 </h2>
-<p>Adding a new tool to a {nemo} child package consists of the following steps:</p>
+<p>Adding a new tool to a nemo child package consists of the following steps:</p>
 <ol type="1">
 <li>Data</li>
 </ol>
@@ -91,20 +90,38 @@
 <ol start="2" type="1">
 <li>Schema</li>
 </ol>
-<p>Use <code>inst/scripts/file_to_yaml.R</code> to generate a skeleton <code>schema.yaml</code> from the sample files. The script auto-detects raw column names and types; you then fill in:</p>
+<p>Use <code><a href="../reference/config_prep_multi.html">config_prep_multi()</a></code> + <code><a href="../reference/config_prep_write.html">config_prep_write()</a></code> to generate a skeleton <code>schema.yaml</code> from the sample files:</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/use.html" class="external-link">use</a></span><span class="op">(</span><span class="st">"nemo"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/use.html" class="external-link">use</a></span><span class="op">(</span><span class="st">"here"</span>, <span class="st">"here"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/use.html" class="external-link">use</a></span><span class="op">(</span><span class="st">"glue"</span>, <span class="st">"glue"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/use.html" class="external-link">use</a></span><span class="op">(</span><span class="st">"tibble"</span>, <span class="st">"tribble"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">tool</span> <span class="op">&lt;-</span> <span class="st">"mytool"</span></span>
+<span><span class="va">d1</span> <span class="op">&lt;-</span> <span class="fu">here</span><span class="op">(</span><span class="fu">glue</span><span class="op">(</span><span class="st">"inst/extdata/{tool}/latest"</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu">tribble</span><span class="op">(</span></span>
+<span>  <span class="op">~</span><span class="va">name</span>     , <span class="op">~</span><span class="va">descr</span>                 , <span class="op">~</span><span class="va">pat</span>                        , <span class="op">~</span><span class="va">type</span>  , <span class="op">~</span><span class="va">path</span>                                       ,</span>
+<span>  <span class="st">"table1"</span>  , <span class="st">"table1 description."</span>  , <span class="st">"\\.mytool\\.table1\\.tsv$"</span> , <span class="st">"txt"</span>  , <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">d1</span>, <span class="st">"sampleA.mytool.table1.tsv"</span><span class="op">)</span>  ,</span>
+<span>  <span class="st">"table2"</span>  , <span class="st">"table2 description."</span>  , <span class="st">"\\.mytool\\.table2\\.csv$"</span> , <span class="st">"csv"</span>  , <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">d1</span>, <span class="st">"sampleA.mytool.table2.csv"</span><span class="op">)</span>  ,</span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu">here</span><span class="op">(</span><span class="fu">glue</span><span class="op">(</span><span class="st">"inst/config/tools/{tool}/schema.yaml"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/config_prep_write.html">config_prep_write</a></span><span class="op">(</span><span class="fu"><a href="../reference/config_prep_multi.html">config_prep_multi</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>, <span class="va">out</span><span class="op">)</span></span></code></pre></div>
+<p>The functions auto-detect raw column names and types; you then fill in the following fields in the generated YAML manually:</p>
 <ul>
 <li>
-<code>tidy</code> — snake_case column name for the tidy output</li>
+<code>tidy</code>: column name for the tidy output (<code>snake_case</code>)</li>
 <li>
-<code>description</code> — human-readable field description (tool documentation is a good source)</li>
+<code>description</code>: field description (official tool documentation is a good source)</li>
 <li>
-<code>versions</code> — explicit array of every tool version the column appears in (e.g. <code>['v1.2.3', 'latest']</code>); use <code>['latest']</code> for columns present only in the current version</li>
+<code>versions</code>: explicit array of every tool version the column appears in (e.g. <code>['v1.2.3', 'latest']</code>); use <code>['latest']</code> for columns present only in the current version.</li>
 </ul>
-<p>Save the result as <code>inst/config/tools/&lt;tool&gt;/schema.yaml</code>. See <code><a href="../articles/structure.html">vignette("structure")</a></code> for details on the schema format and how <code>Config</code> reads it.</p>
+<p>Save the result as <code>inst/config/tools/&lt;tool&gt;/schema.yaml</code>. See <a href="https://tidywf.github.io/nemo/articles/structure.html" title="Structure">Structure</a> for details on the schema format and how <code>Config</code> reads it.</p>
 <ol start="3" type="1">
 <li>Parsers</li>
 </ol>
-<p>Create the R6 class under <code>R/&lt;Tool&gt;.R</code>. Use <code>Tool1</code> (<code>R/Tool1.R</code>) as a template — it demonstrates the full pattern for <code>initialize()</code>, per-table <code>parse_*()</code> / <code>tidy_*()</code> methods, and roxygen documentation with <code>@testexamples</code> blocks.</p>
+<p>Create the R6 class under <code>R/&lt;Tool&gt;.R</code>. Use <code>Tool1</code> (<code>R/Tool1.R</code>) as a template - it demonstrates the full pattern for <code>initialize()</code>, per-table <code>parse_*()</code> / <code>tidy_*()</code> methods, and roxygen documentation with <code>@testexamples</code> blocks.</p>
 </section><script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {
       var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);

@@ -29,7 +29,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">nemo</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.0.3.9020</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.0.3.9022</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -44,9 +44,8 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/installation.html">Installation</a></li>
     <li><a class="dropdown-item" href="../articles/structure.html">Structure</a></li>
-    <li><a class="dropdown-item" href="../articles/schema_walkthrough.html">Schema Walkthrough</a></li>
     <li><a class="dropdown-item" href="../articles/schema_table.html">Schema Table</a></li>
-    <li><a class="dropdown-item" href="../articles/contribute.html">Contribute</a></li>
+    <li><a class="dropdown-item" href="../articles/new-tool.html">New Tool</a></li>
     <li><a class="dropdown-item" href="../articles/uml.html">UML Diagram</a></li>
     <li><a class="dropdown-item" href="../articles/cicd.html">CI/CD Workflow</a></li>
     <li><a class="dropdown-item" href="../articles/devnotes.html">Devnotes</a></li>
@@ -102,35 +101,41 @@
     B4 --&gt; B5
     end
 
-    B5 --&gt; J1S1
+    BUMP --&gt; DEPLOY
 
-    subgraph DEPLOY ["🔧 conda-docs"]
+    subgraph DEPLOY ["🔧 Deploy"]
+        direction TB
+        subgraph version ["📋 Get version"]
+        end
         subgraph condarise ["🐍 Condarise"]
-        J1S1["👾 Miniforge setup"]
-        J1S2["🐍 Conda pkg build"]
-        J1S3["🐍 Conda pkg upload"]
-        J1S4["🔒 Conda lock"]
-        J1S5["💾 Commit lockfiles"]
-        J1S1 --&gt; J1S2
-        J1S2 --&gt; J1S3
-        J1S3 --&gt; J1S4
-        J1S4 --&gt; J1S5
+        J2S1["🏷️ Set dev flags"]
+        J2S2["👾 Miniforge setup"]
+        J2S3["🐍 Conda pkg build"]
+        J2S4["🐍 Conda pkg upload"]
+        J2S5["🔒 Conda lock"]
+        J2S6["💾 Commit lockfiles"]
+        J2S1 --&gt; J2S2
+        J2S2 --&gt; J2S3
+        J2S3 --&gt; J2S4
+        J2S4 --&gt; J2S5
+        J2S5 --&gt; J2S6
         end
         subgraph tag ["🔖 Tag"]
-        J2S1["📥 Pull latest commits"]
-        J2S2["🔖 Create tag"]
-        J2S1 --&gt; J2S2
+        J3S1["📥 Pull latest commits"]
+        J3S2["🔖 Create tag"]
+        J3S1 --&gt; J3S2
         end
         subgraph pkgdownise ["🌐 Pkgdownise"]
-        J3S1["👾 Miniforge setup"]
-        J3S2["📦 Install from source"]
-        J3S3["🌐 Website publish"]
-        J3S1 --&gt; J3S2
-        J3S2 --&gt; J3S3
+        J4S1["👾 Miniforge setup"]
+        J4S2["📦 Install from source"]
+        J4S3["🌐 Website publish"]
+        J4S1 --&gt; J4S2
+        J4S2 --&gt; J4S3
         end
 
-        J1S5 --&gt; J2S1
-        J2S2 --&gt; J3S1
+        version --&gt; condarise
+        J2S6 --&gt; J3S1
+        J3S2 --&gt; J4S1
     end
 </pre>
 </div>

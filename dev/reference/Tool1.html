@@ -11,7 +11,7 @@ methods are provided for tables that require non-standard handling."><meta prope
 
     <a class="navbar-brand me-2" href="../index.html">nemo</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.0.3.9020</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.0.3.9022</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -24,9 +24,8 @@ methods are provided for tables that require non-standard handling."><meta prope
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/installation.html">Installation</a></li>
     <li><a class="dropdown-item" href="../articles/structure.html">Structure</a></li>
-    <li><a class="dropdown-item" href="../articles/schema_walkthrough.html">Schema Walkthrough</a></li>
     <li><a class="dropdown-item" href="../articles/schema_table.html">Schema Table</a></li>
-    <li><a class="dropdown-item" href="../articles/contribute.html">Contribute</a></li>
+    <li><a class="dropdown-item" href="../articles/new-tool.html">New Tool</a></li>
     <li><a class="dropdown-item" href="../articles/uml.html">UML Diagram</a></li>
     <li><a class="dropdown-item" href="../articles/cicd.html">CI/CD Workflow</a></li>
     <li><a class="dropdown-item" href="../articles/devnotes.html">Devnotes</a></li>
@@ -69,18 +68,12 @@ methods are provided for tables that require non-standard handling.</p>
 <li><p><a href="#method-Tool1-tidy_table3"><code>Tool1$tidy_table3()</code></a></p></li>
 <li><p><a href="#method-Tool1-parse_table5"><code>Tool1$parse_table5()</code></a></p></li>
 <li><p><a href="#method-Tool1-tidy_table5"><code>Tool1$tidy_table5()</code></a></p></li>
-<li><p><a href="#method-Tool1-clone"><code>Tool1$clone()</code></a></p></li>
-</ul></div><p><details><summary>Inherited methods</summary><ul><li><span class="pkg-link" data-pkg="nemo" data-topic="Tool" data-id=".dispatch_parse"><a href="Tool.html#method-.dispatch_parse"><code>nemo::Tool$.dispatch_parse()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="nemo" data-topic="Tool" data-id=".dispatch_tidy"><a href="Tool.html#method-.dispatch_tidy"><code>nemo::Tool$.dispatch_tidy()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="nemo" data-topic="Tool" data-id=".parse_by_ftype"><a href="Tool.html#method-.parse_by_ftype"><code>nemo::Tool$.parse_by_ftype()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="nemo" data-topic="Tool" data-id=".parse_file"><a href="Tool.html#method-.parse_file"><code>nemo::Tool$.parse_file()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="nemo" data-topic="Tool" data-id=".parse_file_keyvalue"><a href="Tool.html#method-.parse_file_keyvalue"><code>nemo::Tool$.parse_file_keyvalue()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="nemo" data-topic="Tool" data-id=".parse_file_nohead"><a href="Tool.html#method-.parse_file_nohead"><code>nemo::Tool$.parse_file_nohead()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="nemo" data-topic="Tool" data-id=".tidy_file"><a href="Tool.html#method-.tidy_file"><code>nemo::Tool$.tidy_file()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="nemo" data-topic="Tool" data-id="filter_files"><a href="Tool.html#method-filter_files"><code>nemo::Tool$filter_files()</code></a></span></li>
+</ul></div><p><details><summary>Inherited methods</summary><ul><li><span class="pkg-link" data-pkg="nemo" data-topic="Tool" data-id="filter_files"><a href="Tool.html#method-filter_files"><code>nemo::Tool$filter_files()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="nemo" data-topic="Tool" data-id="get_metadata"><a href="Tool.html#method-get_metadata"><code>nemo::Tool$get_metadata()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="nemo" data-topic="Tool" data-id="get_tbls"><a href="Tool.html#method-get_tbls"><code>nemo::Tool$get_tbls()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="nemo" data-topic="Tool" data-id="list_files"><a href="Tool.html#method-list_files"><code>nemo::Tool$list_files()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="nemo" data-topic="Tool" data-id="nemofy"><a href="Tool.html#method-nemofy"><code>nemo::Tool$nemofy()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="nemo" data-topic="Tool" data-id="print"><a href="Tool.html#method-print"><code>nemo::Tool$print()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="nemo" data-topic="Tool" data-id="run"><a href="Tool.html#method-run"><code>nemo::Tool$run()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="nemo" data-topic="Tool" data-id="tidy"><a href="Tool.html#method-tidy"><code>nemo::Tool$tidy()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="nemo" data-topic="Tool" data-id="write"><a href="Tool.html#method-write"><code>nemo::Tool$write()</code></a></span></li>
 </ul></details></p><hr><a id="method-Tool1-new"></a><div class="section">
@@ -94,8 +87,7 @@ methods are provided for tables that require non-standard handling.</p>
 <h4 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>path</code></dt>
 <dd><p>(<code>character(1)</code>)<br>
-Output directory of tool. If <code>files_tbl</code> is supplied, this basically gets
-ignored.</p></dd>
+Output directory of tool. If <code>files_tbl</code> is supplied, this is ignored.</p></dd>
 
 
 <dt><code>files_tbl</code></dt>
@@ -177,22 +169,6 @@ Path to file or already parsed tibble.</p></dd>
 Tidy data in enframed tibble, pivoted wide from long format.</p>
 </div>
 
-</div><p></p><hr><a id="method-Tool1-clone"></a><div class="section">
-<h3 id="method-clone-">Method <code>clone()</code><a class="anchor" aria-label="anchor" href="#method-clone-"></a></h3>
-<p>The objects of this class are cloneable with this method.</p><div class="section">
-<h4 id="usage-4">Usage<a class="anchor" aria-label="anchor" href="#usage-4"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Tool1</span><span class="op">$</span><span class="fu">clone</span><span class="op">(</span>deep <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div><p></p></div>
-</div>
-
-<div class="section">
-<h4 id="arguments-4">Arguments<a class="anchor" aria-label="anchor" href="#arguments-4"></a></h4>
-<p></p><div class="arguments"><dl><dt><code>deep</code></dt>
-<dd><p>Whether to make a deep clone.</p></dd>
-
-
-</dl><p></p></div>
-</div>
-
 </div>
 
     </div>
@@ -236,14 +212,15 @@ Tidy data in enframed tibble, pivoted wide from long format.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;list&gt;</span>          </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> table5 <span style="color: #949494;">&lt;tibble [4 × 9]&gt;</span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="va">obj1</span><span class="op">$</span><span class="fu">nemofy</span><span class="op">(</span>diro <span class="op">=</span> <span class="va">dir1</span>, format <span class="op">=</span> <span class="st">"parquet"</span>, input_id <span class="op">=</span> <span class="st">"run1"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">obj1</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span>output_dir <span class="op">=</span> <span class="va">dir1</span>, format <span class="op">=</span> <span class="st">"parquet"</span>, input_id <span class="op">=</span> <span class="st">"run1"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">(</span><span class="va">lf</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="va">dir1</span>, pattern <span class="op">=</span> <span class="st">"tool1.*parquet"</span>, full.names <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] "sampleA_2_tool1_table1.parquet" "sampleA_2_tool1_table2.parquet"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [3] "sampleA_2_tool1_table3.parquet" "sampleA_2_tool1_table4.parquet"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [5] "sampleA_2_tool1_table6.parquet" "sampleA_3_tool1_table1.parquet"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [7] "sampleA_tool1_table1.parquet"   "sampleA_tool1_table2.parquet"  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [9] "sampleA_tool1_table3.parquet"   "sampleA_tool1_table4.parquet"  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [11] "sampleA_tool1_table5.parquet"   "sampleA_tool1_table6.parquet"  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] "metadata_tool1.parquet"         "sampleA_2_tool1_table1.parquet"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [3] "sampleA_2_tool1_table2.parquet" "sampleA_2_tool1_table3.parquet"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [5] "sampleA_2_tool1_table4.parquet" "sampleA_2_tool1_table6.parquet"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [7] "sampleA_3_tool1_table1.parquet" "sampleA_tool1_table1.parquet"  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [9] "sampleA_tool1_table2.parquet"   "sampleA_tool1_table3.parquet"  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [11] "sampleA_tool1_table4.parquet"   "sampleA_tool1_table5.parquet"  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [13] "sampleA_tool1_table6.parquet"  </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">obj2</span> <span class="op">&lt;-</span> <span class="va">Tool1</span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="va">indir</span><span class="op">)</span><span class="op">$</span><span class="fu">tidy</span><span class="op">(</span><span class="op">)</span></span></span>
 </code></pre></div>

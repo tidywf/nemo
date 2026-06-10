@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">nemo</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.0.3.9020</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.0.3.9022</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -20,9 +20,8 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/installation.html">Installation</a></li>
     <li><a class="dropdown-item" href="../articles/structure.html">Structure</a></li>
-    <li><a class="dropdown-item" href="../articles/schema_walkthrough.html">Schema Walkthrough</a></li>
     <li><a class="dropdown-item" href="../articles/schema_table.html">Schema Table</a></li>
-    <li><a class="dropdown-item" href="../articles/contribute.html">Contribute</a></li>
+    <li><a class="dropdown-item" href="../articles/new-tool.html">New Tool</a></li>
     <li><a class="dropdown-item" href="../articles/uml.html">UML Diagram</a></li>
     <li><a class="dropdown-item" href="../articles/cicd.html">CI/CD Workflow</a></li>
     <li><a class="dropdown-item" href="../articles/devnotes.html">Devnotes</a></li>
@@ -83,6 +82,13 @@
 
 
       <dl><dt>
+
+          <code><a href="config_sort_versions.html">config_sort_versions()</a></code>
+
+        </dt>
+        <dd>Sort version strings with "latest" always last</dd>
+
+        <dt>
 
           <code><a href="config_prep_raw.html">config_prep_raw()</a></code>
 
@@ -177,134 +183,6 @@
         </dt>
         <dd>Workflow1 Object</dd>
       </dl></div><div class="section level2">
-      <h2 id="other">Other<a class="anchor" aria-label="anchor" href="#other"></a></h2>
-
-
-
-      <dl></dl></div><div class="section level2">
-
-
-
-
-      <dl><dt>
-
-          <code><a href="empty_tbl.html">empty_tbl()</a></code>
-
-        </dt>
-        <dd>Create Empty Tibble</dd>
-
-        <dt>
-
-          <code><a href="get_tbl_version_attr.html">get_tbl_version_attr()</a></code>
-
-        </dt>
-        <dd>Get Table Version Attribute</dd>
-
-        <dt>
-
-          <code><a href="list_files_dir.html">list_files_dir()</a></code>
-
-        </dt>
-        <dd>List Files</dd>
-
-        <dt>
-
-          <code><a href="nemo_metadata.html">nemo_metadata()</a></code>
-
-        </dt>
-        <dd>Assemble run metadata</dd>
-
-        <dt>
-
-          <code><a href="nemo_osfx.html">nemo_osfx()</a></code>
-
-        </dt>
-        <dd>Construct Output File Paths with Format Suffix</dd>
-
-        <dt>
-
-          <code><a href="nemo_out_formats.html">nemo_out_formats()</a></code>
-
-        </dt>
-        <dd>Output Formats Supported</dd>
-
-        <dt>
-
-          <code><a href="nemo_write.html">nemo_write()</a></code>
-
-        </dt>
-        <dd>Write data</dd>
-
-        <dt>
-
-          <code><a href="valid_out_fmt.html">valid_out_fmt()</a></code>
-
-        </dt>
-        <dd>Output Format is Valid</dd>
-
-        <dt>
-
-          <code><a href="set_tbl_version_attr.html">set_tbl_version_attr()</a></code>
-
-        </dt>
-        <dd>Set Table Version Attribute</dd>
-
-        <dt>
-
-          <code><a href="enframe_data.html">enframe_data()</a></code>
-
-        </dt>
-        <dd>Enframe Data</dd>
-
-        <dt>
-
-          <code><a href="get_python.html">get_python()</a></code>
-
-        </dt>
-        <dd>Get Python Binary</dd>
-
-        <dt>
-
-          <code><a href="nemo_gha_mermaid.html">nemo_gha_mermaid()</a></code>
-
-        </dt>
-        <dd>Generate a Mermaid GitHub Actions flowchart</dd>
-
-        <dt>
-
-          <code><a href="nemo_cli.html">nemo_cli()</a></code>
-
-        </dt>
-        <dd>Command line interface for nemo</dd>
-
-        <dt>
-
-          <code><a href="nemo_log.html">nemo_log()</a></code>
-
-        </dt>
-        <dd>Log a message with a specified level</dd>
-
-        <dt>
-
-          <code><a href="nemo_log_date.html">nemo_log_date()</a></code>
-
-        </dt>
-        <dd>Print current timestamp for logging</dd>
-
-        <dt>
-
-          <code><a href="nemoverse_wf_dispatch.html">nemoverse_wf_dispatch()</a></code>
-
-        </dt>
-        <dd>Nemoverse Workflow Dispatcher</dd>
-
-        <dt>
-
-          <code><a href="pkg_found.html">pkg_found()</a></code>
-
-        </dt>
-        <dd>Check if Package is Installed</dd>
-      </dl></div><div class="section level2">
       <h2 id="cli">CLI<a class="anchor" aria-label="anchor" href="#cli"></a></h2>
 
 
@@ -370,14 +248,7 @@
           <code><a href="nemo_schemavis_data.html">nemo_schemavis_data()</a></code>
 
         </dt>
-        <dd>Build schema data for use with reactable_schema</dd>
-
-        <dt>
-
-          <code><a href="nemo_schema_check.html">nemo_schema_check()</a></code>
-
-        </dt>
-        <dd>Validate a tool's schema.yaml against nemo conventions</dd>
+        <dd>Build schema data for reactable_schema</dd>
 
         <dt>
 
@@ -399,6 +270,171 @@
 
         </dt>
         <dd>Generate UML diagram for nemo R6 classes</dd>
+      </dl></div><div class="section level2">
+      <h2 id="assertions">Assertions<a class="anchor" aria-label="anchor" href="#assertions"></a></h2>
+
+
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="nemo_assert_chr.html">nemo_assert_chr()</a></code>
+
+        </dt>
+        <dd>Assert character vector</dd>
+
+        <dt>
+
+          <code><a href="nemo_assert_not_null.html">nemo_assert_not_null()</a></code>
+
+        </dt>
+        <dd>Assert not NULL</dd>
+
+        <dt>
+
+          <code><a href="nemo_assert_scalar_chr.html">nemo_assert_scalar_chr()</a></code>
+
+        </dt>
+        <dd>Assert scalar character</dd>
+
+        <dt>
+
+          <code><a href="nemo_assert_out_fmt.html">nemo_assert_out_fmt()</a></code>
+
+        </dt>
+        <dd>Assert output format</dd>
+
+        <dt>
+
+          <code><a href="nemo_stop.html">nemo_stop()</a></code>
+
+        </dt>
+        <dd>Stop with call suppressed</dd>
+      </dl></div><div class="section level2">
+      <h2 id="other">Other<a class="anchor" aria-label="anchor" href="#other"></a></h2>
+
+
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="empty_tbl.html">empty_tbl()</a></code>
+
+        </dt>
+        <dd>Create Empty Tibble</dd>
+
+        <dt>
+
+          <code><a href="get_tbl_version_attr.html">get_tbl_version_attr()</a></code>
+
+        </dt>
+        <dd>Get Table Version Attribute</dd>
+
+        <dt>
+
+          <code><a href="list_files_dir.html">list_files_dir()</a></code>
+
+        </dt>
+        <dd>List Files</dd>
+
+        <dt>
+
+          <code><a href="nemo_metadata.html">nemo_metadata()</a></code>
+
+        </dt>
+        <dd>Assemble run metadata</dd>
+
+        <dt>
+
+          <code><a href="nemo_osfx.html">nemo_osfx()</a></code>
+
+        </dt>
+        <dd>Construct Output File Paths with Format Suffix</dd>
+
+        <dt>
+
+          <code><a href="nemo_out_formats.html">nemo_out_formats()</a></code>
+
+        </dt>
+        <dd>Output Formats Supported</dd>
+
+        <dt>
+
+          <code><a href="nemo_write.html">nemo_write()</a></code>
+
+        </dt>
+        <dd>Write data</dd>
+
+        <dt>
+
+          <code><a href="nemo_enframe.html">nemo_enframe()</a></code>
+
+        </dt>
+        <dd>Enframe Data</dd>
+
+        <dt>
+
+          <code><a href="set_tbl_version_attr.html">set_tbl_version_attr()</a></code>
+
+        </dt>
+        <dd>Set Table Version Attribute</dd>
+
+        <dt>
+
+          <code><a href="get_python.html">get_python()</a></code>
+
+        </dt>
+        <dd>Get Python Binary</dd>
+
+        <dt>
+
+          <code><a href="nemo_gha_mermaid.html">nemo_gha_mermaid()</a></code>
+
+        </dt>
+        <dd>Generate a Mermaid GitHub Actions flowchart</dd>
+
+        <dt>
+
+          <code><a href="nemo_cli.html">nemo_cli()</a></code>
+
+        </dt>
+        <dd>Command line interface for nemo</dd>
+
+        <dt>
+
+          <code><a href="nemo_log.html">nemo_log()</a></code>
+
+        </dt>
+        <dd>Log a message with a specified level</dd>
+
+        <dt>
+
+          <code><a href="nemo_log_date.html">nemo_log_date()</a></code>
+
+        </dt>
+        <dd>Print current timestamp for logging</dd>
+
+        <dt>
+
+          <code><a href="nemoverse_wf_dispatch.html">nemoverse_wf_dispatch()</a></code>
+
+        </dt>
+        <dd>Nemoverse Workflow Dispatcher</dd>
+
+        <dt>
+
+          <code><a href="pkg_found.html">pkg_found()</a></code>
+
+        </dt>
+        <dd>Check if Package is Installed</dd>
       </dl></div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
