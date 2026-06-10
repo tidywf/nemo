@@ -55,21 +55,21 @@ params <- list(
 options(width = 100)
 ```
 
-{nemo} is built on top of R's [R6] encapsulated object-oriented programming
+nemo is built on top of R's [R6] encapsulated object-oriented programming
 implementation, which helps with code organisation. It consists of several base
 classes (`Config`, `Tool`, and `Workflow`) which we describe below.
 Each R6 class can contain public and private functions and non-functions (fields).
 
-Other R packages like {[tidywigits]} and {[tidydragen]} can create their
+Other R packages like [tidywigits] and [tidydragen] can create their
 own `Tool` and `Workflow` children classes that inherit (or override) functions from
-the {nemo} parent classes. This allows for custom parsers and tidiers for specific
+the nemo parent classes. This allows for custom parsers and tidiers for specific
 bioinformatic tools and workflows.
 
 [R6]: <https://github.com/r-lib/R6> "R6 package repo"
 [tidywigits]: <https://github.com/tidywf/tidywigits> "tidywigits"
 [tidydragen]: <https://github.com/tidywf/tidydragen> "tidydragen"
 
-Here we use the `Tool1` and `Workflow1` {nemo} classes as examples to illustrate the
+Here we use the `Tool1` and `Workflow1` nemo classes as examples to illustrate the
 structure of the package.
 
 ## Config {.tabset .tabset-pills}
@@ -181,12 +181,12 @@ conf$get_col_map("table5")
 `Tool` is the main organisation class for all file parsers and tidiers.
 It contains functions for parsing and tidying typical CSV/TSV files (with
 column names), and TXT files where the column names are missing. Currently it
-utilises the very simple `readr::read_delim` function from the {[readr]} package
+utilises the very simple `readr::read_delim` function from the [readr] package
 that reads all the data into memory. See `?Tool`.
 
 These simple parsers are used in 80-90% of cases, so in the future we can
-optimise the parsing if needed with faster packages such as {[data.table]},
-{[duckdb-r]}/{[duckplyr]} or {[r-polars]}.
+optimise the parsing if needed with faster packages such as [data.table],
+[duckdb-r]/[duckplyr] or [r-polars].
 
 [readr]: <https://github.com/tidyverse/readr> "readr"
 [duckdb-r]: <https://github.com/duckdb/duckdb-r> "duckdb-r"
@@ -288,7 +288,6 @@ wfiles <- fs::dir_info(outdir1) |>
   dplyr::mutate(bname = basename(.data$path)) |>
   dplyr::select("bname", "size", "type")
 wfiles
-# readr::read_csv(wfiles$path[1], show_col_types = FALSE) # see tidywf/tidywigits#137
 ```
 
 ### run
@@ -324,7 +323,7 @@ A `Workflow` consists of a list of one or more `Tool`s. We can construct a
 certain `Workflow` with different `Tool`s, which would allow parsing and writing
 tidy tables from a variety of bioinformatic tools. See `?Workflow`.
 
-For example, {nemo} contains a `Workflow1` class as a `Workflow` child (containing
+For example, nemo contains a `Workflow1` class as a `Workflow` child (containing
 only a single `Tool1` for simplicity). Similarly to `Tool`, a `Workflow` object
 contains functions such as `filter_files`, `list_files`, `tidy`, `write`,
 `run`, and `get_tools()` (to access the instantiated `Tool` objects):

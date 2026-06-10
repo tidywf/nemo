@@ -4,23 +4,18 @@
 
 <a href="https://tidywf.github.io/nemo"><img src="man/figures/logo.png" alt="logo" align="left" height="100" /></a>
 
-# 🐢 Tidy and Explore Bioinformatic Pipeline Outputs
+# Tidy and Explore Bioinformatic Pipeline Outputs
 
 [![conda-latest1](https://anaconda.org/tidywf/r-nemo/badges/latest_release_date.svg "Conda Latest Release")](https://anaconda.org/tidywf/r-nemo)
 [![gha](https://github.com/tidywf/nemo/actions/workflows/deploy.yaml/badge.svg "GitHub Actions")](https://github.com/tidywf/nemo/actions/workflows/deploy.yaml)
 
 📚 Docs:
 [Installation](https://tidywf.github.io/nemo/articles/installation) \|
-[Files/tables
-supported](https://tidywf.github.io/nemo/articles/schema_table) \|
-[Schema
-walkthrough](https://tidywf.github.io/nemo/articles/schema_walkthrough)
+[Files supported](https://tidywf.github.io/nemo/articles/schema_table)
 \| [Changelog](https://tidywf.github.io/nemo/articles/NEWS) \| [R6
 structure](https://tidywf.github.io/nemo/articles/structure) \|
 [UML](https://tidywf.github.io/nemo/articles/uml) \|
 [CI/CD](https://tidywf.github.io/nemo/articles/cicd)
-
-## 🤔 The Problem
 
 Bioinformatic pipelines produce a lot of output files, but consuming
 them downstream is harder than it should be:
@@ -40,38 +35,29 @@ them downstream is harder than it should be:
   from which sample or processing run once files are collected into a
   shared directory
 
-{nemo} addresses this by providing a schema-driven parsing and tidying
-layer that turns raw pipeline outputs into consistently structured,
-versioned, analysis-ready tables. Its R6 classes (`Tool`, `Workflow`,
-`Config`) are used for parsing, tidying, and writing bioinformatic
-pipeline outputs. Given a directory of results, it identifies files by
-YAML-defined schemas, reshapes and renames columns to a consistent tidy
-form, and writes to Apache Parquet, TSV, CSV, RDS, or PostgreSQL. Each
-run also produces a `metadata.parquet` file alongside the tidy tables,
-capturing IDs, paths, and package versions.
+nemo is an R package that attempts to address these issues by providing
+a schema-driven parsing and tidying layer that turns raw pipeline
+outputs into consistently structured, versioned, analysis-ready tables.
 
-Tool-specific schemas and parsers live in child packages -
-{[tidywigits](https://github.com/tidywf/tidywigits "tidywigits")} for
-the WiGiTS suite and
-{[tidydragen](https://github.com/tidywf/tidydragen "tidydragen")} (WIP)
-for Illumina DRAGEN - under `inst/config/tools/` in each respective
-package.
+Its R6 classes (`Tool`, `Workflow`, `Config`) form the base layer: given
+a directory of bioinformatic results, they identify files by
+YAML-defined schemas, reshape and rename columns to a consistent tidy
+form, and write to a specified format (Apache Parquet, TSV, CSV, RDS, or
+PostgreSQL). Each run also produces a `metadata.parquet` file alongside
+the tidy tables, capturing IDs, paths, and package versions.
 
-Three optional columns can be prepended to every written table to
-support downstream tracing and joining. All are opt-in and off by
-default, but highly recommended for any multi-sample or multi-run
-pipeline:
+Downstream packages extend these base classes by supplying tool-specific
+schemas and parsers.
+[tidywigits](https://github.com/tidywf/tidywigits "tidywigits") and
+[tidydragen](https://github.com/tidywf/tidydragen "tidydragen") are
+example R packages that target the large number of outputs from the
+established bioinformatic pipelines WiGiTS/hmftools and Illumina DRAGEN,
+respectively.
 
-| Column         | Purpose                            |
-|----------------|------------------------------------|
-| `input_id`     | identifies the sample or input run |
-| `output_id`    | identifies the processing run      |
-| `input_prefix` | filename prefix (e.g. sample name) |
+## Quickstart
 
-## ⚡ Quickstart
-
-Raw pipeline outputs often have non-standard layouts. This file stores
-QC metrics as key-value rows rather than columns:
+Raw pipeline outputs often have non-standard layouts. For example, this
+file stores QC metrics as key-value rows rather than columns:
 
 ``` r
 library(nemo)
@@ -85,12 +71,13 @@ MappedReads 9500
 UnmappedReads   500
 ```
 
-`wrangle()` parses, tidies, and writes all tables in one call:
+The `run()` method is able to filter, tidy, and write all tables of
+interest in one call (`Workflow1` is nemo’s built-in example workflow):
 
 ``` r
 outdir <- file.path(tempdir(), "quickstart")
 
-Workflow1$new(path = path)$wrangle(
+Workflow1$new(path = path)$run(
   output_dir      = outdir,
   format       = "parquet",
   input_id     = "run1",
@@ -114,7 +101,18 @@ arrow::read_parquet(file.path(outdir, "sampleA_tool1_table3.parquet"))
 1 run1     sampleA      out1      sampleA   Pass           10000      9500         500
 ```
 
-## 🍕 Installation
+Three optional columns can be prepended to every written table to
+support downstream tracing and joining. All are opt-in and off by
+default, but highly recommended for any multi-sample or multi-run
+pipeline:
+
+| Column         | Purpose                            |
+|----------------|------------------------------------|
+| `input_id`     | identifies the sample or input run |
+| `output_id`    | identifies the processing run      |
+| `input_prefix` | filename prefix (e.g. sample name) |
+
+## Installation
 
 Using {remotes} directly from GitHub:
 
@@ -131,7 +129,7 @@ Alternatively:
 For more details see:
 <https://tidywf.github.io/nemo/articles/installation>
 
-## 🌀 CLI
+## CLI
 
 A `nemo.R` command line interface is available for convenience.
 

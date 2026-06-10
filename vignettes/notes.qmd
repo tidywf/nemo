@@ -6,7 +6,7 @@ knitr:
     comment: '#>'
 ---
 
-Just a dump of random notes!
+Reference notes on SQL, AWS (RDS and CDK), and Pixi for use in the tidywf ecosystem.
 
 ```{r}
 #| label: vars

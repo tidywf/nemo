@@ -8,7 +8,7 @@ knitr:
 
 ## Adding a New Tool
 
-Adding a new tool to a {nemo} child package consists of the following steps:
+Adding a new tool to a nemo child package consists of the following steps:
 
 1. Data
 

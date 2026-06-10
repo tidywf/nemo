@@ -6,15 +6,6 @@ knitr:
     comment: '#>'
 ---
 
-```{r}
-#| label: knitr_opts
-#| include: false
-knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>"
-)
-```
-
 ### R pkg dev
 
 | Command                               | Comment                                                 | Shortcut          |
