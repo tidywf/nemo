@@ -107,6 +107,7 @@ nemo_gha_mermaid <- function(actions_url, deploy_yaml) {
       bump_to_deploy,
       "",
       paste0(i1, "subgraph DEPLOY [\"\U0001F527 Deploy\"]"),
+      paste0(i2, "direction TB"),
       deploy_subgraph_lines,
       "",
       job_chain,

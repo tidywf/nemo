@@ -63,16 +63,16 @@ glue(
 Bioinformatic pipelines produce a lot of output files, but consuming them
 downstream is harder than it should be:
 
-- **Format variety**: tools write TSV, CSV and various other proprietary formats,
+- Format variety: tools write TSV, CSV and various other proprietary formats,
   often mixed within the same pipeline
-- **Non-standard structure**: files may be transposed, headerless, or embed
+- Non-standard structure: files may be transposed, headerless, or embed
   section labels alongside data, requiring custom parsing logic for each tool
-- **Messy column names**: raw names are frequently uppercase, space-separated,
+- Messy column names: raw names are frequently uppercase, space-separated,
   dot-delimited, or otherwise non-standard; joining across tools requires manual
   renaming
-- **Schema drift**: column names and file layouts change silently between tool
+- Schema drift: column names and file layouts change silently between tool
   versions, breaking downstream code with no clear signal of what changed
-- **No run-level provenance**: it is hard to tell which output file came from
+- No run-level provenance: it is hard to tell which output file came from
   which sample or processing run once files are collected into a shared directory
 
 nemo is an R package that attempts to address these issues by providing a
