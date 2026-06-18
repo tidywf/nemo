@@ -3,7 +3,7 @@ format: gfm
 knitr:
   opts_chunk:
     collapse: true
-    comment: ''
+    comment: '#>'
     fig.path: "man/figures/README-"
 ---
 
@@ -44,21 +44,17 @@ options(width = 100)
 [conda-latest1]: <https://anaconda.org/tidywf/r-nemo/badges/latest_release_date.svg> "Conda Latest Release"
 [gha]: <https://github.com/tidywf/nemo/actions/workflows/deploy.yaml/badge.svg> "GitHub Actions"
 
-```{r}
-#| label: toc
-#| echo: false
-#| results: asis
-base <- glue("https://{org_nm}.github.io/{pkg_nm}")
-glue(
-  "📚 Docs: ",
-  "[Installation]({base}/articles/installation) | ",
-  "[Files supported]({base}/articles/schema_table) | ",
-  "[Changelog]({base}/articles/NEWS) | ",
-  "[R6 structure]({base}/articles/structure) | ",
-  "[UML]({base}/articles/uml) | ",
-  "[CI/CD]({base}/articles/cicd)"
-)
-```
+## Contents
+
+- [nemo](#nemo)
+- [Documentation](#documentation)
+- [Quickstart](#quickstart)
+- [Installation](#installation)
+- [CLI](#cli)
+
+---
+
+## nemo
 
 Bioinformatic pipelines produce a lot of output files, but consuming them
 downstream is harder than it should be:
@@ -96,6 +92,27 @@ bioinformatic pipelines WiGiTS/hmftools and Illumina DRAGEN, respectively.
 [WiGiTS/hmftools]: <https://github.com/hartwigmedical/hmftools> "hmftools"
 [Illumina DRAGEN]: <https://help.dragen.illumina.com/> "Illumina DRAGEN"
 
+---
+
+## Documentation
+
+```{r}
+#| label: docs
+#| echo: false
+#| results: asis
+base <- glue("https://{org_nm}.github.io/{pkg_nm}")
+glue(
+"- Installation: <{base}/articles/installation>
+- Files supported: <{base}/articles/schema_table>
+- Changelog: <{base}/articles/NEWS>
+- R6 structure: <{base}/articles/structure>
+- UML: <{base}/articles/uml>
+- CI/CD: <{base}/articles/cicd>"
+)
+```
+
+---
+
 ## Quickstart
 
 Raw pipeline outputs often have non-standard layouts. For
@@ -116,12 +133,12 @@ The `run()` method is able to filter, tidy, and write all tables of interest in 
 #| label: quickstart
 #| message: false
 outdir <- file.path(tempdir(), "quickstart")
-
-Workflow1$new(path = path)$run(
-  output_dir      = outdir,
-  format       = "parquet",
-  input_id     = "run1",
-  output_id    = "out1",
+wf1 <- Workflow1$new(path = path)
+wf1$run(
+  output_dir     = outdir,
+  format         = "parquet",
+  input_id       = "run1",
+  output_id      = "out1",
   prefix_include = TRUE
 )
 
@@ -139,11 +156,13 @@ Three optional columns can be prepended to every written table to support
 downstream tracing and joining. All are opt-in and off by default, but highly
 recommended for any multi-sample or multi-run pipeline:
 
-| Column         | Purpose                            |
-| -------------- | ---------------------------------- |
-| `input_id`     | identifies the sample or input run |
-| `output_id`    | identifies the processing run      |
-| `input_prefix` | filename prefix (e.g. sample name) |
+| Column         | Purpose                                  | User-supplied or auto-generated? |
+| ---------------| ---------------------------------------- | -------------------------------- |
+| `input_id`     | identifies the sample or input run       | user                             |
+| `output_id`    | identifies the tidywigits processing run | user or auto (ULID)              |
+| `input_prefix` | filename prefix (e.g. sample name)       | auto                             |
+
+---
 
 ## Installation
 
@@ -156,6 +175,8 @@ Alternatively:
 - conda package: <https://anaconda.org/tidywf/r-nemo>
 
 For more details see: <https://tidywf.github.io/nemo/articles/installation>
+
+---
 
 ## CLI
 
@@ -177,6 +198,7 @@ export PATH="${nemo_cli}:${PATH}"
 ```{bash}
 #| label: cli2
 #| echo: false
+#| comment: ""
 nemo_cli=$(Rscript -e 'x = system.file("cli", package = "nemo"); cat(x, "\n")' | xargs)
 export PATH="${nemo_cli}:${PATH}"
 
@@ -192,3 +214,4 @@ echo "#-----------------------------------#"
 echo "$ nemo.R list --help" & nemo.R list --help
 echo ""
 ```
+

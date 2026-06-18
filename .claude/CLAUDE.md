@@ -1,17 +1,42 @@
 # CLAUDE.md — nemo
 
+## What this is
+
 Base R package providing R6 classes (`Tool`, `Workflow`, `Config`) inherited by all tidywf parsing R packages.
 For deep context use the routing table in `tidywf/CLAUDE.md` — auto-loaded by Claude Code from the parent directory.
+
+## Repo layout
+
+```
+nemo
+├── air.toml                       # config for code formatting
+├── data-raw/fake_tool1.R          # for example data construction
+├── deploy/conda                   # conda: envs for CI, recipe with deps for R pkg, lock file
+├── DESCRIPTION                    # keep in sync with conda recipe deps
+├── inst
+│   ├── cli/nemo.R                 # cli entry point
+│   ├── config/<...>/schema.yaml   # example schema config
+│   ├── doc-templates              # documentation templates in qmd/md, used in docs, README and other child pkgs
+│   ├── extdata                    # example data for tests and CI, loaded via systeme.file(), one dir per tool
+│   ├── scripts                    # for random scripts
+│   └── tiledb                     # ignore
+├── Makefile                       # Makefile, keep repetitive commands in here
+├── man                            # ignore (Rd files)
+├── NAMESPACE                      # NAMESPACE
+├── nogit                          # ignore
+├── pkgdown                        # pkgdown config and extra.scss
+├── R                              # R code
+├── README.qmd                     # README.md gets rendered via this
+├── README.md                      # do not edit this, see README.qmd
+├── tests                          # test scripts
+└── vignettes                      # articles for pkgdown website
+```
 
 ## Reference implementations
 
 `Tool1` (`R/Tool1.R`) and `Workflow1` (`R/Workflow1.R`) are the canonical examples — follow these
 when creating new tools or workflows. They demonstrate the full pattern: schema config,
 file discovery, raw parsing, and tidy output.
-
-## Test data
-Test data lives in `inst/extdata/` and is loaded via `system.file()`.
-Each tool has a subdirectory with example files.
 
 ## Testing
 
@@ -26,8 +51,7 @@ Two-tier approach:
 ## Critical gotchas
 
 - TODO tracked in `.claude/TODO.md`
-- Schema methods (`get_schema_raw`, `get_schema_tidy`, `get_col_map`) live on `Config`, not `Tool`. In subclass `tidy_*` methods use `self$config$get_col_map(...)`, not `private$get_col_map(...)` — those private wrappers were removed. Same applies to downstream packages (`tidywigits`, `tidydragen`).
-- `Tool$initialize` errors if both `path` and `files_tbl` are supplied. Supply one or the other.
+- Schema methods (`get_schema_raw`, `get_schema_tidy`, `get_col_map`) live on `Config`, not `Tool`. In subclass `tidy_*` methods use `self$config$get_col_map(...)`
 - Use accessor methods, not direct field access: `list_files()` not `$files`, `get_tbls()` not `$tbls`.
 
 ## CLI (`R/cli.R`, `inst/cli/nemo.R`)
