@@ -130,7 +130,7 @@ Using {remotes} directly from GitHub:
 ``` r
 install.packages("remotes")
 remotes::install_github("tidywf/nemo") # latest main commit
-remotes::install_github("tidywf/nemo@v0.0.3.9022") # specific version
+remotes::install_github("tidywf/nemo@v0.0.3.9023") # specific version
 ```
 
 Alternatively:
@@ -155,7 +155,7 @@ export PATH="${nemo_cli}:${PATH}"
 ```
 
     $ nemo.R --version
-    nemo 0.0.3.9022
+    nemo 0.0.3.9023
 
     #-----------------------------------#
     $ nemo.R --help
@@ -181,14 +181,12 @@ export PATH="${nemo_cli}:${PATH}"
 
     options:
       -h, --help            show this help message and exit
-      -w WORKFLOW, --workflow WORKFLOW
+      -w, --workflow WORKFLOW
                             Workflow name.
-      -d IN_DIR, --in_dir IN_DIR
-                            Input directory.
-      -o OUTPUT_DIR, --output_dir OUTPUT_DIR
+      -d, --in_dir IN_DIR   Input directory.
+      -o, --output_dir OUTPUT_DIR
                             Output directory.
-      -f FORMAT, --format FORMAT
-                            Format of output [def: parquet] (parquet, db, tsv,
+      -f, --format FORMAT   Format of output [def: parquet] (parquet, db, tsv,
                             csv, rds)
       --input_id INPUT_ID   Input ID for this run.
       --output_id OUTPUT_ID
@@ -207,11 +205,9 @@ export PATH="${nemo_cli}:${PATH}"
 
     options:
       -h, --help            show this help message and exit
-      -w WORKFLOW, --workflow WORKFLOW
+      -w, --workflow WORKFLOW
                             Workflow name.
-      -d IN_DIR, --in_dir IN_DIR
-                            Input directory.
-      -f FORMAT, --format FORMAT
-                            Format of list output [def: pretty] (tsv, pretty)
-      -m MAX, --max MAX     Max rows to show.
+      -d, --in_dir IN_DIR   Input directory.
+      -f, --format FORMAT   Format of list output [def: pretty] (tsv, pretty)
+      -m, --max MAX         Max rows to show.
       -q, --quiet           Shush all the logs.
