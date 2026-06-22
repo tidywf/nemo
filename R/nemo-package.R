@@ -8,5 +8,6 @@
 dummy1 <- function() {
   # Solves R CMD check: Namespaces in Imports field not imported from
   arrow::write_parquet
+  stringr::str_detect
   ulid::ulid
 }

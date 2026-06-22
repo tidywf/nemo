@@ -1,16 +1,23 @@
 ---
 title: "UML"
-vignette: >
-  %\VignetteIndexEntry{UML}
-  %\VignetteEngine{quarto::html}
-  %\VignetteEncoding{UTF-8}
 knitr:
   opts_chunk:
     collapse: true
     comment: '#>'
-lightbox: true
+    echo: false
 ---
 
-### nemo R6 Class UML diagram
+```{r}
+#| label: pkgs
+#| echo: false
+use("nemo", "nemo_uml")
+```
 
-![](fig/uml/nemo.svg "nemo UML diagram"){.lightbox}
+```{r}
+#| label: uml
+# hand it over directly to knitr for rendering, cat somehow doesn't work any more
+knitr::asis_output(nemo_uml(
+  classes = c("Config", "Tool", "Tool1", "Workflow", "Workflow1"),
+  pkg = "nemo"
+))
+```

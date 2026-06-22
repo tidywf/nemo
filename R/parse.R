@@ -1,3 +1,16 @@
+#' @keywords internal
+count_file_cols <- function(fpath, delim, ...) {
+  readr::read_delim(
+    file = fpath,
+    delim = delim,
+    col_names = FALSE,
+    col_types = readr::cols(.default = "c"),
+    n_max = 1L,
+    ...
+  ) |>
+    ncol()
+}
+
 #' Parse file
 #'
 #' @description
@@ -16,67 +29,106 @@
 #' @examples
 #' path <- system.file("extdata/tool1", package = "nemo")
 #' x <- Tool$new("tool1", pkg = "nemo", path)
-#' schemas_all <- x$raw_schemas_all
-#' pname <- "table1"
-#' fpath <- file.path(path, "latest", "sampleA.tool1.table1.tsv")
-#' (d <- parse_file(fpath, pname, schemas_all))
+#' schemas_all <- x$config$get_schemas_raw()
+#' f <- function(ver, tbl) file.path(path, ver, paste0("sampleA.tool1.", tbl, ".tsv"))
+#' # table1: three versions with different column sets
+#' (d1_v123 <- parse_file(f("v1.2.3", "table1"), "table1", schemas_all))
+#' (d1_v456 <- parse_file(f("v4.5.6", "table1"), "table1", schemas_all))
+#' (d1_lat  <- parse_file(f("latest", "table1"), "table1", schemas_all))
+#' # table2: two versions (v1.0.0 drops metricB)
+#' (d2_v1  <- parse_file(f("v1.0.0", "table2"), "table2", schemas_all))
+#' (d2_lat <- parse_file(f("latest", "table2"), "table2", schemas_all))
 #'
 #' @testexamples
-#' expect_equal(names(d)[1:3], c("SampleID", "Chromosome", "Start"))
+#' # table1 version detection
+#' expect_equal(attr(d1_v123, "file_version"), "v1.2.3")
+#' expect_equal(attr(d1_v456, "file_version"), "v4.5.6")
+#' expect_equal(attr(d1_lat,  "file_version"), "latest")
+#' expect_equal(names(d1_v123), c("SampleID", "Chromosome", "Start", "End", "metricX"))
+#' expect_equal(names(d1_v456), c("SampleID", "Chromosome", "Start", "End"))
+#' expect_equal(names(d1_lat),  c("SampleID", "Chromosome", "Start", "End", "metricY", "metricZ"))
+#' # table2 version detection
+#' expect_equal(attr(d2_v1,  "file_version"), "v1.0.0")
+#' expect_equal(attr(d2_lat, "file_version"), "latest")
+#' expect_equal(names(d2_v1),  c("SampleID", "metricA"))
+#' expect_equal(names(d2_lat), c("SampleID", "metricA", "metricB"))
 #' @export
 parse_file <- function(fpath, pname, schemas_all, delim = "\t", ...) {
   cnames <- file_hdr(fpath, delim = delim, ...)
-  schema <- schema_guess(
+  schema_tbl <- schema_guess(
     pname = pname,
     cnames = cnames,
     schemas_all = schemas_all
   )
-  schema[["schema"]] <- schema[["schema"]] |>
-    tibble::deframe()
-  ctypes <- rlang::exec(readr::cols, !!!schema[["schema"]])
+  ctypes <- rlang::exec(readr::cols, !!!tibble::deframe(schema_tbl[["schema"]]))
   d <- readr::read_delim(
     file = fpath,
     delim = delim,
     col_types = ctypes,
     ...
   )
-  attr(d, "file_version") <- schema[["version"]]
+  attr(d, "file_version") <- schema_tbl[["version"]]
   d[]
 }
 
 #' Parse headless file
 #'
 #' @description
-#' Parses files with no column names.
+#' Parses files with no column names. Selects the schema version whose column
+#' count matches the file.
 #'
 #' @param fpath (`character(1)`)\cr
 #' File path.
-#' @param schema (`tibble()`)\cr
-#' Schema tibble with version and schema list-col.
+#' @param pname (`character(1)`)\cr
+#' Parser name (e.g. "table4" - see docs).
+#' @param schemas_all (`tibble()`)\cr
+#' Tibble with name, version and schema list-col.
 #' @param delim (`character(1)`)\cr
 #' File delimiter.
 #' @param ... Passed on to `readr::read_delim`.
+#'
+#' @examples
+#' path <- system.file("extdata/tool1", package = "nemo")
+#' x <- Tool$new("tool1", pkg = "nemo", path)
+#' schemas_all <- x$config$get_schemas_raw()
+#' pname <- "table4"
+#' fpath_latest <- file.path(path, "latest", "sampleA.tool1.table4.tsv")
+#' fpath_v1 <- file.path(path, "v1.0.0", "sampleA.tool1.table4.tsv")
+#' (d_latest <- parse_file_nohead(fpath_latest, pname, schemas_all))
+#' (d_v1 <- parse_file_nohead(fpath_v1, pname, schemas_all))
+#'
+#' @testexamples
+#' expect_equal(ncol(d_latest), 5)
+#' expect_equal(ncol(d_v1), 3)
+#' expect_equal(names(d_latest), c("X1", "X2", "X3", "X4", "X5"))
+#' expect_equal(names(d_v1), c("X1", "X2", "X3"))
+#' expect_equal(attr(d_latest, "file_version"), "latest")
+#' expect_equal(attr(d_v1, "file_version"), "v1.0.0")
 #' @export
-parse_file_nohead <- function(fpath, schema, delim = "\t", ...) {
-  assertthat::assert_that(
-    nrow(schema) == 1,
-    identical(sapply(schema, class), c(version = "character", schema = "list"))
-  )
+parse_file_nohead <- function(fpath, pname, schemas_all, delim = "\t", ...) {
+  # count_file_cols reads with col_names = FALSE so the first data row is treated
+  # as data, not a header — file_hdr() would be semantically wrong here.
+  ncols <- count_file_cols(fpath, delim, ...)
+  schema <- schemas_all |>
+    dplyr::filter(.data$name == pname) |>
+    dplyr::select("version", "schema") |>
+    dplyr::filter(purrr::map_int(.data$schema, nrow) == ncols)
+  if (nrow(schema) != 1) {
+    nemo_stop(glue(
+      "Expected exactly one schema version matching {ncols} columns ",
+      "for '{pname}', found {nrow(schema)}."
+    ))
+  }
   version <- schema[["version"]]
-  schema <- schema[["schema"]][[1]] |>
-    tibble::deframe()
-  # check if number of cols is as expected
-  ncols <- file_hdr(fpath, delim = delim, ...) |> length()
-  assertthat::assert_that(length(schema) == ncols)
-  ctypes <- paste0(schema, collapse = "")
+  schema_deframed <- tibble::deframe(schema[["schema"]][[1]])
+  ctypes <- rlang::exec(readr::cols, !!!schema_deframed)
   d <- readr::read_delim(
     file = fpath,
-    col_names = FALSE,
+    col_names = names(schema_deframed),
     col_types = ctypes,
     delim = delim,
     ...
   )
-  colnames(d) <- names(schema)
   attr(d, "file_version") <- version
   d[]
 }
@@ -134,7 +186,7 @@ file_hdr <- function(fpath, delim = "\t", n_max = 0, ...) {
 #' cnames1 <- file_hdr(fpath1)
 #' cnames2 <- file_hdr(fpath2)
 #' conf <- Config$new("tool1", pkg = "nemo")
-#' schemas_all <- conf$get_raw_schemas_all()
+#' schemas_all <- conf$get_schemas_raw()
 #' (s1 <- schema_guess(pname, cnames1, schemas_all))
 #' (s2 <- schema_guess(pname, cnames2, schemas_all))
 #'
@@ -144,28 +196,28 @@ file_hdr <- function(fpath, delim = "\t", n_max = 0, ...) {
 #' expect_equal(s2[["version"]], "v1.2.3")
 #' @export
 schema_guess <- function(pname, cnames, schemas_all) {
-  assertthat::assert_that(
-    rlang::is_bare_character(cnames),
-    tibble::is_tibble(schemas_all),
-    all(c("name", "version", "schema") %in% colnames(schemas_all)),
-    pname %in% schemas_all[["name"]]
-  )
+  if (!rlang::is_bare_character(cnames)) {
+    nemo_stop("'cnames' must be a bare character vector.")
+  }
+  if (!tibble::is_tibble(schemas_all)) {
+    nemo_stop("'schemas_all' must be a tibble.")
+  }
+  if (!all(c("name", "version", "schema") %in% colnames(schemas_all))) {
+    nemo_stop("'schemas_all' must have columns: name, version, schema.")
+  }
+  if (!pname %in% schemas_all[["name"]]) {
+    nemo_stop(glue("'{pname}' not found in schemas_all$name."))
+  }
   s <- schemas_all |>
     dplyr::filter(.data$name == pname) |>
     dplyr::select("version", "schema") |>
-    dplyr::rowwise() |>
-    dplyr::mutate(
-      length_match = length(cnames) == nrow(.data$schema),
-      all_match = if (.data$length_match) {
-        identical(cnames, .data$schema[["field"]])
-      } else {
-        FALSE
-      }
-    ) |>
-    dplyr::filter(.data$all_match) |>
-    dplyr::ungroup()
-  msg <- glue("There were {nrow(s)} matching schemas for {pname}. Check the configs!")
-  assertthat::assert_that(nrow(s) == 1, msg = msg)
+    dplyr::filter(purrr::map_lgl(.data$schema, \(sch) identical(cnames, sch[["field"]])))
+  if (nrow(s) != 1) {
+    nemo_stop(glue(
+      "Expected 1 matching schema for '{pname}', found {nrow(s)}. ",
+      "Column names seen: {glue::glue_collapse(cnames, sep = ', ')}."
+    ))
+  }
   version <- s$version
   schema <- s |>
     dplyr::select("schema") |>
@@ -189,20 +241,27 @@ schema_guess <- function(pname, cnames, schemas_all) {
 #' @param ... Passed on to `readr::read_delim`.
 #'
 #' @examples
-#' dir1 <- system.file("extdata/tool1", package = "nemo")
-#' fpath <- file.path(dir1, "latest", "sampleA.tool1.table3.tsv")
-#' x <- Tool1$new(dir1)
-#' schemas_all <- x$raw_schemas_all
+#' path <- system.file("extdata/tool1", package = "nemo")
+#' x <- Tool1$new(path)
+#' schemas_all <- x$config$get_schemas_raw()
 #' pname <- "table3"
-#' (d <- parse_file_keyvalue(fpath, pname, schemas_all))
+#' f <- function(ver) file.path(path, ver, "sampleA.tool1.table3.tsv")
+#' # v1.0.0: 3 key-value pairs (SampleID, QCStatus, TotalReads)
+#' (d3_v1  <- parse_file_keyvalue(f("v1.0.0"), pname, schemas_all))
+#' # latest: 5 key-value pairs
+#' (d3_lat <- parse_file_keyvalue(f("latest"), pname, schemas_all))
 #'
 #' @testexamples
-#' expect_equal(names(d)[1:2], c("SampleID", "QCStatus"))
+#' expect_equal(attr(d3_v1,  "file_version"), "v1.0.0")
+#' expect_equal(attr(d3_lat, "file_version"), "latest")
+#' expect_equal(names(d3_v1),  c("SampleID", "QCStatus", "TotalReads"))
+#' expect_equal(names(d3_lat), c("SampleID", "QCStatus", "TotalReads", "MappedReads", "UnmappedReads"))
 #' @export
 parse_file_keyvalue <- function(fpath, pname, schemas_all, delim = "\t", ...) {
-  ncols <- file_hdr(fpath, delim = delim, ...) |> length()
-  msg <- glue("Expected 2 columns, but found {ncols} in {fpath}")
-  assertthat::assert_that(ncols == 2, msg = msg)
+  ncols <- count_file_cols(fpath, delim, ...)
+  if (ncols != 2) {
+    nemo_stop(glue("Expected 2 columns, but found {ncols} in '{fpath}'."))
+  }
   d <- readr::read_delim(
     file = fpath,
     col_names = c("key", "value"),
@@ -217,6 +276,8 @@ parse_file_keyvalue <- function(fpath, pname, schemas_all, delim = "\t", ...) {
     cnames = colnames(d_wide),
     schemas_all = schemas_all
   )
+  # schema is used only for version detection; column types are not applied because
+  # key-value files are inherently all-character after the pivot.
   attr(d_wide, "file_version") <- schema[["version"]]
   d_wide[]
 }

@@ -1,7 +1,0 @@
-Using {remotes} directly from GitHub:
-
-```r
-install.packages("remotes")
-remotes::install_github("umccr/nemo") # latest main commit
-remotes::install_github("umccr/nemo@v0.0.3") # released version
-```

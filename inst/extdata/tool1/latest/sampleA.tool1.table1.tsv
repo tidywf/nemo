@@ -1,4 +1,4 @@
-SampleID	Chromosome	Start	End	metricX	metricY	metricZ
-sampleA	chr1	10	50	0.1	0.4	0.7
-sampleA	chr2	100	500	0.2	0.5	0.8
-sampleA	chr3	1000	5000	0.3	0.6	0.9
+SampleID	Chromosome	Start	End	metricY	metricZ
+sampleA	chr1	10	50	0.4	0.7
+sampleA	chr2	100	500	0.5	0.8
+sampleA	chr3	1000	5000	0.6	0.9

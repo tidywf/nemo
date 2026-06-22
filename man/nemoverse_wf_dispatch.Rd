@@ -4,7 +4,7 @@
 \alias{nemoverse_wf_dispatch}
 \title{Nemoverse Workflow Dispatcher}
 \usage{
-nemoverse_wf_dispatch(wf = NULL)
+nemoverse_wf_dispatch(wf)
 }
 \arguments{
 \item{wf}{Workflow name.}

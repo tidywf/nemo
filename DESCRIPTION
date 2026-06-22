@@ -1,6 +1,6 @@
 Package: nemo
 Title: Tidy and explore outputs from bioinformatic pipelines
-Version: 0.0.3
+Version: 0.0.3.9022
 Description: Provides the base components for tidying and exploring
              outputs from bioinformatic pipelines.
 Authors@R: 
@@ -10,34 +10,38 @@ Authors@R:
            email = "peterdiakumis@gmail.com",
            comment = c(ORCID = "0000-0002-7502-7545"))
      )
-URL: https://github.com/umccr/nemo, https://umccr.github.io/nemo/
-BugReports: https://github.com/umccr/nemo/issues
+URL: https://github.com/tidywf/nemo, https://tidywf.github.io/nemo/
+BugReports: https://github.com/tidywf/nemo/issues
 License: MIT + file LICENSE
 Depends:
     R (>= 4.4)
 Imports:
+    argparse,
     arrow,
-    assertthat,
     DBI,
     dplyr,
     fs,
     glue,
-    jsonlite,
+    knitr,
     log4r,
     purrr,
     R6,
     readr,
     rlang,
+    stringr,
     tibble,
     tidyr,
     ulid,
     yaml
 Suggests:
-    argparse,
-    knitr,
-    quarto,
-    RPostgres,
-    testthat (>= 3.0.0)
+    here,
+    htmltools,
+    R6toPlant,
+    reactable,
+    testthat (>= 3.0.0),
+    withr
+Remotes:
+    gitlab::b-rowlingson/R6toPlant
 Roxygen: list(markdown = TRUE,
               roclets = c("namespace", "rd", "roxytest::testthat_roclet"))
 biocViews:
@@ -45,4 +49,3 @@ ByteCompile: true
 Config/testthat/edition: 3
 Encoding: UTF-8
 RoxygenNote: 7.3.3
-VignetteBuilder: quarto

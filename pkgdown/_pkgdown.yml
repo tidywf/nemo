@@ -1,4 +1,6 @@
-url: https://umccr.github.io/nemo
+url: https://tidywf.github.io/nemo
+development:
+  mode: auto
 title: nemo
 authors:
   Peter Diakumis:
@@ -6,10 +8,11 @@ authors:
 home:
   title: "Tidy Bioinformatic Pipeline Outputs"
   description: >
-    A tidyverse R6 approach for working with bioinformatic pipeline outputs.
+    Tidy and explore outputs from bioinformatic pipelines.
 template:
   bootstrap: 5
   bootswatch: zephyr
+llm-docs: false
 navbar:
   structure:
     left: [home, articles, news]
@@ -25,12 +28,16 @@ navbar:
           href: articles/installation.html
         - text: Structure
           href: articles/structure.html
-        - text: Contribute
-          href: articles/contribute.html
+        - text: Schema Table
+          href: articles/schema_table.html
+        - text: New Tool
+          href: articles/new-tool.html
+        - text: UML Diagram
+          href: articles/uml.html
+        - text: CI/CD Workflow
+          href: articles/cicd.html
         - text: Devnotes
           href: articles/devnotes.html
-        - text: UML
-          href: articles/uml.html
     news:
       text: NEWS
       href: articles/NEWS.html
@@ -42,6 +49,7 @@ reference:
       - Workflow
   - title: "Config"
     contents:
+      - config_sort_versions
       - config_prep_raw
       - config_prep_raw_schema
       - config_prep_multi
@@ -57,6 +65,27 @@ reference:
     contents:
       - Tool1
       - Workflow1
+  - title: "CLI"
+    contents:
+      - cli_tidy_add_args
+      - cli_tidy_parse_args
+      - cli_nemo_tidy
+      - cli_list_add_args
+      - cli_list_parse_args
+      - cli_nemo_list
+  - title: "Schema Visualisation"
+    contents:
+      - nemo_schemavis_data
+      - nemo_schema_reactable
+      - reactable_schema
+      - nemo_uml
+  - title: "Assertions"
+    contents:
+      - nemo_assert_chr
+      - nemo_assert_not_null
+      - nemo_assert_scalar_chr
+      - nemo_assert_out_fmt
+      - nemo_stop
   - title: "Other"
     contents:
       - empty_tbl
@@ -66,10 +95,10 @@ reference:
       - nemo_osfx
       - nemo_out_formats
       - nemo_write
-      - valid_out_fmt
+      - nemo_enframe
       - set_tbl_version_attr
-      - enframe_data
       - get_python
+      - nemo_gha_mermaid
       - nemo_cli
       - nemo_log
       - nemo_log_date

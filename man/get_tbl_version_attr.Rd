@@ -4,14 +4,11 @@
 \alias{get_tbl_version_attr}
 \title{Get Table Version Attribute}
 \usage{
-get_tbl_version_attr(tbl, x = "file_version")
+get_tbl_version_attr(tbl)
 }
 \arguments{
 \item{tbl}{(\code{tibble()})\cr
 Table with a version attribute.}
-
-\item{x}{(\code{character(1)})\cr
-Name of the attribute to retrieve.}
 }
 \description{
 Get the version attribute from a table.
@@ -20,8 +17,8 @@ Get the version attribute from a table.
 path <- system.file("extdata/tool1", package = "nemo")
 path2 <- file.path(path, "v1.2.3", "sampleA.tool1.table1.tsv")
 x <- Tool1$new(path)$tidy(keep_raw = TRUE)
-ind <- which(x$tbls$path == path2)
+ind <- which(x$get_tbls()$path == path2)
 stopifnot(length(ind) == 1)
-(v <- get_tbl_version_attr(x$tbls$raw[[ind]]))
+(v <- get_tbl_version_attr(x$get_tbls()$raw[[ind]]))
 
 }

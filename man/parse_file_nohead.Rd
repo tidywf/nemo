@@ -4,14 +4,17 @@
 \alias{parse_file_nohead}
 \title{Parse headless file}
 \usage{
-parse_file_nohead(fpath, schema, delim = "\\t", ...)
+parse_file_nohead(fpath, pname, schemas_all, delim = "\\t", ...)
 }
 \arguments{
 \item{fpath}{(\code{character(1)})\cr
 File path.}
 
-\item{schema}{(\code{tibble()})\cr
-Schema tibble with version and schema list-col.}
+\item{pname}{(\code{character(1)})\cr
+Parser name (e.g. "table4" - see docs).}
+
+\item{schemas_all}{(\code{tibble()})\cr
+Tibble with name, version and schema list-col.}
 
 \item{delim}{(\code{character(1)})\cr
 File delimiter.}
@@ -19,5 +22,17 @@ File delimiter.}
 \item{...}{Passed on to \code{readr::read_delim}.}
 }
 \description{
-Parses files with no column names.
+Parses files with no column names. Selects the schema version whose column
+count matches the file.
+}
+\examples{
+path <- system.file("extdata/tool1", package = "nemo")
+x <- Tool$new("tool1", pkg = "nemo", path)
+schemas_all <- x$config$get_schemas_raw()
+pname <- "table4"
+fpath_latest <- file.path(path, "latest", "sampleA.tool1.table4.tsv")
+fpath_v1 <- file.path(path, "v1.0.0", "sampleA.tool1.table4.tsv")
+(d_latest <- parse_file_nohead(fpath_latest, pname, schemas_all))
+(d_v1 <- parse_file_nohead(fpath_v1, pname, schemas_all))
+
 }

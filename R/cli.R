@@ -10,15 +10,17 @@
 #' @param wf (`character(1)`)\cr
 #' Workflow name.
 #' @export
-nemo_cli <- function(pkg = NULL, descr = NULL, wf = NULL) {
-  stopifnot(pkg_found(pkg))
-  stopifnot(!is.null(descr))
+nemo_cli <- function(pkg, descr, wf = NULL) {
+  if (!pkg_found(pkg)) {
+    nemo_stop(glue("Package '{pkg}' not found."))
+  }
+  nemo_assert_not_null(descr)
   prog_nm <- paste0(pkg, ".R")
   version <- as.character(utils::packageVersion(pkg))
   p <- argparse::ArgumentParser(
     description = descr,
     prog = prog_nm,
-    python_cmd = nemo::get_python()
+    python_cmd = get_python()
   )
   p$add_argument("-v", "--version", action = "version", version = paste(pkg, version))
   subparser_name <- "subparser_name"
@@ -34,8 +36,6 @@ nemo_cli <- function(pkg = NULL, descr = NULL, wf = NULL) {
   } else if (args$subparser_name == "list") {
     cli_list_parse_args(args, wf)
   } else {
-    all_subp <- c("'tidy'", "'list'") |>
-      glue::glue_collapse(sep = ", ", last = " or ")
-    stop("Need to specify one of the following: ", all_subp)
+    nemo_stop(glue("Unknown subcommand: '{args$subparser_name}'."))
   }
 }

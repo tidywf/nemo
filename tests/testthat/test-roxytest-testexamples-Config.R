@@ -2,50 +2,13 @@
 
 # File R/Config.R: @testexamples
 
-test_that("Function Config() @ L33", {
+test_that("Function config_sort_versions() @ L356", {
   
-  tool <- "tool1"
-  pkg <- "nemo"
-  conf <- Config$new(tool, pkg)
-  conf$get_raw_patterns()
-  (rv1 <- conf$get_raw_versions())
-  conf$get_raw_descriptions()
-  conf$get_raw_schemas_all()
-  conf$get_raw_schema("table1")
-  conf$get_raw_schema("table1", v = "v1.2.3")
-  conf$are_raw_schemas_valid()
-  conf$get_tidy_descriptions()
-  (ts1 <- conf$get_tidy_schemas_all())
-  conf$get_tidy_schema("table1")
-  conf$get_tidy_schema("table1", v = "v1.2.3")
-  conf$get_tidy_schema("table1", subtbl = "tbl1")
-  
-  expect_error(conf$get_raw_schema("foo"))
-  expect_error(conf$get_raw_schema("table1", v = "foo"))
-  expect_error(conf$get_tidy_schema("table1", v = "foo"))
-  expect_error(conf$get_tidy_schema("table1", subtbl = "foo"))
-  expect_true(conf$are_raw_schemas_valid())
-  expect_true(ts1 |> dplyr::filter(.data$name == "table1") |> nrow() == 2)
-  expect_true(all(unique(rv1$value) == c("v1.2.3", "latest")))
-  expect_error(Config$new("foo", pkg))
-})
-
-
-test_that("Function config_prep_raw_schema() @ L286", {
-  
-  path <- system.file("extdata", "tool1/latest/sampleA.tool1.table1.tsv", package = "nemo")
-  (x <- config_prep_raw_schema(path = path, delim = "\t"))
-  expect_equal(x[1, "field", drop = T], "'SampleID'")
-})
-
-
-test_that("Function config_prep_raw() @ L331", {
-  
-  path <- system.file("extdata", "tool1/latest/sampleA.tool1.table1.tsv", package = "nemo")
-  name <- "table1"
-  descr <- "Table1 from Tool1."
-  pat <- "\\.tool1\\.table1\\.tsv$"
-  l <- config_prep_raw(path, name, descr, pat)
-  expect_equal(names(l[[1]]), c("description", "pattern", "ftype", "schema"))
+  config_sort_versions(c("v2.0.0", "v1.0.0", "latest"))
+  config_sort_versions(c("latest", "v1.2.3"))
+  config_sort_versions(c("v1.0.0", "v10.0.0", "v2.0.0"))
+  expect_equal(config_sort_versions(c("v2.0.0", "v1.0.0", "latest")), c("v1.0.0", "v2.0.0", "latest"))
+  expect_equal(config_sort_versions(c("latest", "v1.2.3")), c("v1.2.3", "latest"))
+  expect_equal(config_sort_versions(c("v1.0.0", "v10.0.0", "v2.0.0")), c("v1.0.0", "v2.0.0", "v10.0.0"))
 })
 

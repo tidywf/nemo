@@ -10,20 +10,20 @@ test_that("Function list_files_dir() @ L20", {
 })
 
 
-test_that("Function get_tbl_version_attr() @ L53", {
+test_that("Function get_tbl_version_attr() @ L51", {
   
   path <- system.file("extdata/tool1", package = "nemo")
   path2 <- file.path(path, "v1.2.3", "sampleA.tool1.table1.tsv")
   x <- Tool1$new(path)$tidy(keep_raw = TRUE)
-  ind <- which(x$tbls$path == path2)
+  ind <- which(x$get_tbls()$path == path2)
   stopifnot(length(ind) == 1)
-  (v <- get_tbl_version_attr(x$tbls$raw[[ind]]))
+  (v <- get_tbl_version_attr(x$get_tbls()$raw[[ind]]))
   
   expect_equal(v, "v1.2.3")
 })
 
 
-test_that("Function set_tbl_version_attr() @ L79", {
+test_that("Function set_tbl_version_attr() @ L75", {
   
   d <- tibble::tibble(a = 1:3, b = letters[1:3])
   v <- "v1.2.3"
@@ -34,24 +34,23 @@ test_that("Function set_tbl_version_attr() @ L79", {
 })
 
 
-test_that("Function empty_tbl() @ L100", {
+test_that("Function empty_tbl() @ L96", {
   
   (x <- empty_tbl(cnames = c("a", "b", "c")))
   expect_equal(nrow(x), 0)
 })
 
 
-test_that("Function nemoverse_wf_dispatch() @ L154", {
+test_that("Function nemoverse_wf_dispatch() @ L136", {
   
   wf <- "basemean"
   (fun <- nemoverse_wf_dispatch(wf))
   expect_equal(fun, base::mean)
   expect_error(nemoverse_wf_dispatch("foo"))
-  expect_error(nemoverse_wf_dispatch("dummy1"))
 })
 
 
-test_that("Function pkg_found() @ L193", {
+test_that("Function pkg_found() @ L170", {
   
   pkg_found("base")
   pkg_found("somefakepackagename")

@@ -2,27 +2,19 @@
 
 # File R/write.R: @testexamples
 
-test_that("Function nemo_write() @ L34", {
+test_that("Function nemo_write() @ L37", {
   
   d <- tibble::tibble(name = "foo", data = 123)
   fpfix <- file.path(tempdir(), "data_test1")
   format <- "csv"
   nemo_write(d = d, fpfix = fpfix, format = format)
   (res <- readr::read_csv(glue::glue("{fpfix}.csv.gz"), show_col_types = FALSE))
+  
   expect_equal(nrow(res), 1)
 })
 
 
-test_that("Function valid_out_fmt() @ L78", {
-  
-  valid_out_fmt("tsv")
-  expect_true(valid_out_fmt("tsv"))
-  expect_error(valid_out_fmt("foo"))
-  expect_error(valid_out_fmt(c("tsv", "csv")))
-})
-
-
-test_that("Function nemo_osfx() @ L110", {
+test_that("Function nemo_osfx() @ L92", {
   
   fpfix <- "path/to/foo"
   format <- "tsv"

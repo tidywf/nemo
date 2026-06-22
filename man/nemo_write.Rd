@@ -23,6 +23,10 @@ Database connection object (see \code{DBI::dbConnect}). Used only when format is
 \item{dbtab}{(\code{character(1)})\cr
 Database table name (see \code{DBI::dbWriteTable}). Used only when format is db.}
 }
+\value{
+(\code{character(1)})\cr
+The output file path (invisibly). \code{NA_character_} when format is \code{"db"}.
+}
 \description{
 Writes tabular data in the given format.
 }
@@ -32,13 +36,13 @@ fpfix <- file.path(tempdir(), "data_test1")
 format <- "csv"
 nemo_write(d = d, fpfix = fpfix, format = format)
 (res <- readr::read_csv(glue::glue("{fpfix}.csv.gz"), show_col_types = FALSE))
-\dontshow{if (RPostgres::postgresHasDefault()) withAutoprint(\{ # examplesIf}
-# for database writing
-con <- DBI::dbConnect(RPostgres::Postgres())
+\dontrun{
+# for database writing — supply a DBI driver from e.g. RPostgres or duckdb
+con <- DBI::dbConnect(RPostgres::Postgres(), dbname = "mydb", user = "me")
 tbl_nm <- "awesome_tbl"
 nemo_write(d = d, fpfix = basename(fpfix), format = "db", dbconn = con, dbtab = tbl_nm)
 DBI::dbListTables(con)
 DBI::dbReadTable(con, tbl_nm)
 DBI::dbDisconnect(con)
-\dontshow{\}) # examplesIf}
+}
 }

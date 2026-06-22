@@ -1,0 +1,20 @@
+```{r}
+#| label: installation-conda
+#| results: asis
+#| echo: false
+glue(
+  "
+  [![conda-version] ![conda-latest]]({conda$url})
+
+  [conda-version]: <{conda$url}/badges/version.svg> \"Conda package version\"
+  [conda-latest]: <{conda$url}/badges/latest_release_date.svg> \"Conda package latest release date\"
+
+  The conda package is available from the {org_nm} channel at <{conda$url}>.
+
+  ```bash
+  conda create -n {conda$env} -c {org_nm} -c conda-forge {conda$pkg}=={ver}
+  conda activate {conda$env}
+  ",
+  "```"
+)
+```

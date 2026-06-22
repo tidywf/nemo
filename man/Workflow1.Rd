@@ -4,15 +4,15 @@
 \alias{Workflow1}
 \title{Workflow1 Object}
 \description{
-Workflow1 file parsing and manipulation.
+Pre-configured \code{Workflow} bundling \code{Tool1}.
 }
 \examples{
 path <- system.file("extdata/tool1", package = "nemo")
-odir <- tempdir()
-id <- "workflow1_run1"
-w <- Workflow1$new(path)
-x <- w$nemofy(diro = odir, format = "parquet", input_id = id)
-(lf <- list.files(odir, pattern = "tool1.*parquet", full.names = FALSE))
+wf <- Workflow1$new(path)
+(lf_all <- wf$list_files())
+dir1 <- tempdir()
+wf$run(output_dir = dir1, format = "parquet", input_id = "run1")
+(lf <- list.files(dir1, pattern = "tool1.*parquet", full.names = TRUE))
 }
 \section{Super class}{
 \code{\link[nemo:Workflow]{nemo::Workflow}} -> \code{Workflow1}
@@ -21,7 +21,6 @@ x <- w$nemofy(diro = odir, format = "parquet", input_id = id)
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-Workflow1-new}{\code{Workflow1$new()}}
-\item \href{#method-Workflow1-clone}{\code{Workflow1$clone()}}
 }
 }
 \if{html}{\out{
@@ -29,12 +28,13 @@ x <- w$nemofy(diro = odir, format = "parquet", input_id = id)
 <ul>
 <li><span class="pkg-link" data-pkg="nemo" data-topic="Workflow" data-id="filter_files"><a href='../../nemo/html/Workflow.html#method-Workflow-filter_files'><code>nemo::Workflow$filter_files()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="nemo" data-topic="Workflow" data-id="get_metadata"><a href='../../nemo/html/Workflow.html#method-Workflow-get_metadata'><code>nemo::Workflow$get_metadata()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="nemo" data-topic="Workflow" data-id="get_raw_schemas_all"><a href='../../nemo/html/Workflow.html#method-Workflow-get_raw_schemas_all'><code>nemo::Workflow$get_raw_schemas_all()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="nemo" data-topic="Workflow" data-id="get_schemas_raw"><a href='../../nemo/html/Workflow.html#method-Workflow-get_schemas_raw'><code>nemo::Workflow$get_schemas_raw()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="nemo" data-topic="Workflow" data-id="get_schemas_tidy"><a href='../../nemo/html/Workflow.html#method-Workflow-get_schemas_tidy'><code>nemo::Workflow$get_schemas_tidy()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="nemo" data-topic="Workflow" data-id="get_tbls"><a href='../../nemo/html/Workflow.html#method-Workflow-get_tbls'><code>nemo::Workflow$get_tbls()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="nemo" data-topic="Workflow" data-id="get_tidy_schemas_all"><a href='../../nemo/html/Workflow.html#method-Workflow-get_tidy_schemas_all'><code>nemo::Workflow$get_tidy_schemas_all()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="nemo" data-topic="Workflow" data-id="get_tools"><a href='../../nemo/html/Workflow.html#method-Workflow-get_tools'><code>nemo::Workflow$get_tools()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="nemo" data-topic="Workflow" data-id="list_files"><a href='../../nemo/html/Workflow.html#method-Workflow-list_files'><code>nemo::Workflow$list_files()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="nemo" data-topic="Workflow" data-id="nemofy"><a href='../../nemo/html/Workflow.html#method-Workflow-nemofy'><code>nemo::Workflow$nemofy()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="nemo" data-topic="Workflow" data-id="print"><a href='../../nemo/html/Workflow.html#method-Workflow-print'><code>nemo::Workflow$print()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="nemo" data-topic="Workflow" data-id="run"><a href='../../nemo/html/Workflow.html#method-Workflow-run'><code>nemo::Workflow$run()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="nemo" data-topic="Workflow" data-id="tidy"><a href='../../nemo/html/Workflow.html#method-Workflow-tidy'><code>nemo::Workflow$tidy()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="nemo" data-topic="Workflow" data-id="write"><a href='../../nemo/html/Workflow.html#method-Workflow-write'><code>nemo::Workflow$write()</code></a></span></li>
 </ul>
@@ -46,7 +46,7 @@ x <- w$nemofy(diro = odir, format = "parquet", input_id = id)
 \subsection{Method \code{new()}}{
 Create a new Workflow1 object.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Workflow1$new(path = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Workflow1$new(path)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -57,22 +57,9 @@ Path(s) to Workflow1 results.}
 }
 \if{html}{\out{</div>}}
 }
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Workflow1-clone"></a>}}
-\if{latex}{\out{\hypertarget{method-Workflow1-clone}{}}}
-\subsection{Method \code{clone()}}{
-The objects of this class are cloneable with this method.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Workflow1$clone(deep = FALSE)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{deep}}{Whether to make a deep clone.}
-}
-\if{html}{\out{</div>}}
+\subsection{Returns}{
+(\code{R6::R6Class()})\cr
+R6 object.
 }
 }
 }

@@ -4,34 +4,52 @@
 \alias{Tool}
 \title{Tool Object}
 \description{
-Base class for all nemo tools.
+Base R6 class for all nemo tools. Subclasses implement parsers for specific
+bioinformatic tool outputs by optionally overriding \verb{parse_\{table_name\}()} and
+\verb{tidy_\{table_name\}()} methods for custom parse or tidy logic per table.
+
+A Tool object:
+\itemize{
+\item has a name (\code{name});
+\item has a path to a directory with its outputs (\code{path});
+\item has a schema configuration \code{Config} object (\code{config});
+\item exposes matched files via \code{list_files()};
+\item exposes parsed and tidied tables via \code{get_tbls()};
+}
+
+The typical workflow is: optionally filter files with \code{filter_files()}, parse
+and tidy with \code{tidy()}, then write outputs with \code{write()}. \code{run()} chains
+all three steps.
 }
 \examples{
-\dontrun{
-path <- here::here("inst/extdata/tool1")
-# demo filter + tidy
-x <- Tool1$new(path = path)$
-  filter_files(exclude = "alignments_dupfreq")$
-  tidy(keep_raw = TRUE)
-x$tbls
-x$files
-x$list_files()
-lx <- Linx$new(path)
-dbconn <- DBI::dbConnect(
-  drv = RPostgres::Postgres(),
-  dbname = "nemo",
-  user = "orcabus"
-)
-lx$nemofy(
-    diro = "nogit/test_data",
-    format = "db", # "parquet",
-    id = "run2",
-    dbconn = dbconn,
-    include = NULL,
-    exclude = NULL
-)
-DBI::dbDisconnect(dbconn)
-}
+fs::path(tempdir(), letters[1:5]) |>
+  fs::file_temp_push() |>
+  fs::dir_create()
+name <- "tool1"; pkg <- "nemo";
+path <- system.file("extdata/tool1", package = "nemo")
+toolA <- Tool$new(name = name, pkg = pkg, path = path)
+toolA$list_files()
+toolA$filter_files(exclude = "tool1_table3"); toolA$list_files() # note the exclusion this time
+
+toolB <- Tool$new(name = name, pkg = pkg, path = path)$
+  filter_files(include = "tool1_table1")
+toolB$list_files()
+# tidy + write
+toolC <- Tool$new(name = name, pkg = pkg, path = path)$
+  filter_files(exclude = "tool1_table5")$
+  tidy()
+toolC$list_files()
+toolC$get_tbls() # note the tidy column
+dir1 <- fs::file_temp(); dir2 <- fs::file_temp()
+toolC$write(output_dir = dir1, format = "parquet", input_id = "run1")
+(lfC <- list.files(dir1, full.names = TRUE))
+
+# run
+toolD <- Tool$new(name = name, pkg = pkg, path = path)$
+  filter_files(exclude = "tool1_table5")$
+  run(output_dir = dir2, format = "parquet", input_id = "run2")
+(lfD <- list.files(dir2, full.names = TRUE))
+
 
 }
 \section{Public fields}{
@@ -40,32 +58,17 @@ DBI::dbDisconnect(dbconn)
 \item{\code{name}}{(\code{character(1)})\cr
 Name of tool.}
 
+\item{\code{pkg}}{(\code{character(1)})\cr
+Package name tool belongs to (for config lookup).}
+
 \item{\code{path}}{(\code{character(1)})\cr
 Output directory of tool.}
 
 \item{\code{config}}{(\code{Config()})\cr
 Config of tool.}
 
-\item{\code{files}}{(\code{tibble()})\cr
-Tibble of files matching available Tool patterns.}
-
-\item{\code{tbls}}{(\code{tibble()})\cr
-Tibble of tidy tibbles.}
-
-\item{\code{raw_schemas_all}}{(\code{tibble()})\cr
-All raw schemas for tool.}
-
-\item{\code{tidy_schemas_all}}{(\code{tibble()})\cr
-All tidy schemas for tool.}
-
-\item{\code{get_tidy_schema}}{(\verb{function()})\cr
-Get specific tidy schema.}
-
-\item{\code{get_raw_schema}}{(\verb{function()})\cr
-Get specific raw schema.}
-
-\item{\code{files_tbl}}{(\code{tibble(n)})\cr
-Tibble of files from \code{\link[=list_files_dir]{list_files_dir()}}.}
+\item{\code{written_files}}{(\code{tibble()})\cr
+Tibble of files written from \code{self$write()}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -74,17 +77,13 @@ Tibble of files from \code{\link[=list_files_dir]{list_files_dir()}}.}
 \itemize{
 \item \href{#method-Tool-new}{\code{Tool$new()}}
 \item \href{#method-Tool-print}{\code{Tool$print()}}
-\item \href{#method-Tool-filter_files}{\code{Tool$filter_files()}}
 \item \href{#method-Tool-list_files}{\code{Tool$list_files()}}
-\item \href{#method-Tool-.parse_file}{\code{Tool$.parse_file()}}
-\item \href{#method-Tool-.tidy_file}{\code{Tool$.tidy_file()}}
-\item \href{#method-Tool-.parse_file_keyvalue}{\code{Tool$.parse_file_keyvalue()}}
-\item \href{#method-Tool-.parse_file_nohead}{\code{Tool$.parse_file_nohead()}}
-\item \href{#method-Tool-.eval_func}{\code{Tool$.eval_func()}}
+\item \href{#method-Tool-get_tbls}{\code{Tool$get_tbls()}}
+\item \href{#method-Tool-filter_files}{\code{Tool$filter_files()}}
 \item \href{#method-Tool-tidy}{\code{Tool$tidy()}}
 \item \href{#method-Tool-write}{\code{Tool$write()}}
-\item \href{#method-Tool-nemofy}{\code{Tool$nemofy()}}
-\item \href{#method-Tool-clone}{\code{Tool$clone()}}
+\item \href{#method-Tool-get_metadata}{\code{Tool$get_metadata()}}
+\item \href{#method-Tool-run}{\code{Tool$run()}}
 }
 }
 \if{html}{\out{<hr>}}
@@ -93,7 +92,7 @@ Tibble of files from \code{\link[=list_files_dir]{list_files_dir()}}.}
 \subsection{Method \code{new()}}{
 Create a new Tool object.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Tool$new(name = NULL, pkg = NULL, path = NULL, files_tbl = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Tool$new(name, pkg, path = NULL, files_tbl = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -106,13 +105,16 @@ Name of tool.}
 Package name tool belongs to (for config lookup).}
 
 \item{\code{path}}{(\code{character(1)})\cr
-Output directory of tool. If \code{files_tbl} is supplied, this basically gets
-ignored.}
+Output directory of tool. If \code{files_tbl} is supplied, this is ignored.}
 
 \item{\code{files_tbl}}{(\code{tibble(n)})\cr
 Tibble of files from \code{\link[=list_files_dir]{list_files_dir()}}.}
 }
 \if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+(\code{R6::R6Class()})\cr
+R6 object.
 }
 }
 \if{html}{\out{<hr>}}
@@ -132,14 +134,47 @@ Print details about the Tool.
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-self invisibly.
+(\code{R6::R6Class()})\cr
+R6 object invisibly.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Tool-list_files"></a>}}
+\if{latex}{\out{\hypertarget{method-Tool-list_files}{}}}
+\subsection{Method \code{list_files()}}{
+List files matching this tool's patterns.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Tool$list_files()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+(\code{tibble()})\cr
+The \code{files} tibble of matched files. Always a tibble (possibly zero-row),
+never \code{NULL}.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Tool-get_tbls"></a>}}
+\if{latex}{\out{\hypertarget{method-Tool-get_tbls}{}}}
+\subsection{Method \code{get_tbls()}}{
+Get tidy tibbles after parsing and tidying.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Tool$get_tbls()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+(\code{tibble()} or \code{NULL})\cr
+The \code{tbls} tibble, or \code{NULL} if \code{tidy()} has not been called or if
+\code{tidy()} found no matching files. When \code{tidy(keep_raw = TRUE)} was used,
+the tibble also contains a \code{raw} list-column of the unparsed tibbles.
 }
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Tool-filter_files"></a>}}
 \if{latex}{\out{\hypertarget{method-Tool-filter_files}{}}}
 \subsection{Method \code{filter_files()}}{
-Filter files in given tool directory.
+Filter files in given tool directory based on inclusion or
+exclusion tool_parser names. The result is reflected in the \code{files} field.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Tool$filter_files(include = NULL, exclude = NULL)}\if{html}{\out{</div>}}
 }
@@ -148,201 +183,38 @@ Filter files in given tool directory.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{include}}{(\code{character(n)})\cr
-Files to include.}
+tool_parser names to include (e.g. \code{"tool1_table1"}).}
 
 \item{\code{exclude}}{(\code{character(n)})\cr
-Files to exclude.}
+tool_parser names to exclude (e.g. \code{"tool1_table3"}).}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-The tibble of files with potentially removed rows.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Tool-list_files"></a>}}
-\if{latex}{\out{\hypertarget{method-Tool-list_files}{}}}
-\subsection{Method \code{list_files()}}{
-List files in given tool directory.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Tool$list_files(type = "file")}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{type}}{(\code{character(1)})\cr
-File type(s) to return (e.g. any, file, directory, symlink).
-See \code{fs::dir_info}.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-A tibble of file paths.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Tool-.parse_file"></a>}}
-\if{latex}{\out{\hypertarget{method-Tool-.parse_file}{}}}
-\subsection{Method \code{.parse_file()}}{
-Parse file.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Tool$.parse_file(x, name, delim = "\\t", ...)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{x}}{(\code{character(1)})\cr
-File path.}
-
-\item{\code{name}}{(\code{character(1)})\cr
-Parser name (e.g. "breakends" - see docs).}
-
-\item{\code{delim}}{(\code{character(1)})\cr
-File delimiter.}
-
-\item{\code{...}}{Passed on to \code{readr::read_delim}.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-A tibble with the parsed data.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Tool-.tidy_file"></a>}}
-\if{latex}{\out{\hypertarget{method-Tool-.tidy_file}{}}}
-\subsection{Method \code{.tidy_file()}}{
-Tidy file.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Tool$.tidy_file(x, name, convert_types = FALSE)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{x}}{(\code{character(1)} or \code{tibble()})\cr
-File path or already parsed raw tibble.}
-
-\item{\code{name}}{(\code{character(1)})\cr
-Parser name (e.g. "breakends" - see docs).}
-
-\item{\code{convert_types}}{(\code{logical(1)})\cr
-Convert field types based on schema.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-A tibble with the tidy data enframed.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Tool-.parse_file_keyvalue"></a>}}
-\if{latex}{\out{\hypertarget{method-Tool-.parse_file_keyvalue}{}}}
-\subsection{Method \code{.parse_file_keyvalue()}}{
-Parse files with no header and two columns representing
-key-value pairs.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Tool$.parse_file_keyvalue(x, name, delim = "\\t", ...)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{x}}{(\code{character(1)})\cr
-File path.}
-
-\item{\code{name}}{(\code{character(1)})\cr
-Parser name (e.g. "qc" - see docs).}
-
-\item{\code{delim}}{(\code{character(1)})\cr
-File delimiter.}
-
-\item{\code{...}}{Passed on to \code{readr::read_delim}.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-A tibble with the parsed data.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Tool-.parse_file_nohead"></a>}}
-\if{latex}{\out{\hypertarget{method-Tool-.parse_file_nohead}{}}}
-\subsection{Method \code{.parse_file_nohead()}}{
-Parse headless file.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Tool$.parse_file_nohead(x, pname, delim = "\\t", ...)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{x}}{(\code{character(1)})\cr
-File path.}
-
-\item{\code{pname}}{(\code{character(1)})\cr
-Parser name (e.g. "breakends" - see docs).}
-
-\item{\code{delim}}{(\code{character(1)})\cr
-File delimiter.}
-
-\item{\code{...}}{Passed on to \code{readr::read_delim}.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-A tibble with the parsed data.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Tool-.eval_func"></a>}}
-\if{latex}{\out{\hypertarget{method-Tool-.eval_func}{}}}
-\subsection{Method \code{.eval_func()}}{
-Evaluate function in the context of the Tool's
-environment.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Tool$.eval_func(fun, envir = self)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{fun}}{(\code{character(1)})\cr
-Function from Tool to evaluate.}
-
-\item{\code{envir}}{(\code{environment()})\cr
-Environment to evaluate the function within.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-The evaluated function.
+(\code{R6::R6Class()})\cr
+R6 object invisibly.
 }
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Tool-tidy"></a>}}
 \if{latex}{\out{\hypertarget{method-Tool-tidy}{}}}
 \subsection{Method \code{tidy()}}{
-Tidy a list of files.
+Tidy a list of files. The result is reflected in the \code{tbls} field.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Tool$tidy(tidy = TRUE, keep_raw = FALSE)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Tool$tidy(keep_raw = FALSE)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{tidy}}{(\code{logical(1)})\cr
-Should the raw parsed tibbles get tidied?}
-
 \item{\code{keep_raw}}{(\code{logical(1)})\cr
 Should the raw parsed tibbles be kept in the final output?}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-self invisibly.
+(\code{R6::R6Class()})\cr
+R6 object invisibly.
 }
 }
 \if{html}{\out{<hr>}}
@@ -352,18 +224,20 @@ self invisibly.
 Write tidy tibbles.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Tool$write(
-  diro = ".",
+  output_dir = ".",
   format = "tsv",
   input_id = NULL,
-  output_id = ulid::ulid(),
-  dbconn = NULL
+  output_id = NULL,
+  prefix_include = FALSE,
+  dbconn = NULL,
+  write_metadata = TRUE
 )}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{diro}}{(\code{character(1)})\cr
+\item{\code{output_dir}}{(\code{character(1)})\cr
 Directory path to output tidy files. Ignored if format is db.}
 
 \item{\code{format}}{(\code{character(1)})\cr
@@ -373,29 +247,73 @@ Format of output.}
 Input ID to use for the dataset (e.g. \code{run123}).}
 
 \item{\code{output_id}}{(\code{character(1)})\cr
-Output ID to use for the dataset (e.g. \code{run123}).}
+Output ID to use for the dataset (e.g. \code{out1}).}
+
+\item{\code{prefix_include}}{(\code{logical(1)})\cr
+If \code{TRUE}, prepend an \code{input_prefix} column to each tidy table.}
 
 \item{\code{dbconn}}{(\code{DBIConnection})\cr
 Database connection object (see \code{DBI::dbConnect}).}
+
+\item{\code{write_metadata}}{(\code{logical(1)})\cr
+If \code{TRUE} (default), write a \verb{metadata_<tool>.parquet} file alongside
+the tidy outputs. Set to \code{FALSE} when a \code{Workflow} is orchestrating the
+write and will emit its own workflow-level metadata instead.}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-A tibble with the tidy data and their output location prefix.
+(\code{R6::R6Class()})\cr
+R6 object invisibly. Results stored in \code{self$written_files}
+(\code{NULL} if no files were found).
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Tool-nemofy"></a>}}
-\if{latex}{\out{\hypertarget{method-Tool-nemofy}{}}}
-\subsection{Method \code{nemofy()}}{
-Parse, filter, tidy and write files.
+\if{html}{\out{<a id="method-Tool-get_metadata"></a>}}
+\if{latex}{\out{\hypertarget{method-Tool-get_metadata}{}}}
+\subsection{Method \code{get_metadata()}}{
+Get metadata for the tool run.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Tool$nemofy(
-  diro = ".",
+\if{html}{\out{<div class="r">}}\preformatted{Tool$get_metadata(input_id, output_id, output_dir, pkgs = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{input_id}}{(\code{character(1)})\cr
+Input ID to use for the dataset (e.g. \code{run123}).}
+
+\item{\code{output_id}}{(\code{character(1)})\cr
+Output ID to use for the dataset (e.g. \code{out1}).}
+
+\item{\code{output_dir}}{(\code{character(1)})\cr
+Output directory.}
+
+\item{\code{pkgs}}{(\code{character(n)})\cr
+Which R packages to extract versions for.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+(\code{tibble()})\cr
+Single-row tibble with columns \code{input_id}, \code{output_id}, \code{input_dirs},
+\code{output_dir}, \code{pkg_versions}, and \code{files}.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Tool-run"></a>}}
+\if{latex}{\out{\hypertarget{method-Tool-run}{}}}
+\subsection{Method \code{run()}}{
+Filter, tidy, and write files in one step.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Tool$run(
+  output_dir = ".",
   format = "tsv",
   input_id = NULL,
-  output_id = ulid::ulid(),
+  output_id = NULL,
+  prefix_include = FALSE,
   dbconn = NULL,
+  write_metadata = TRUE,
   include = NULL,
   exclude = NULL
 )}\if{html}{\out{</div>}}
@@ -404,7 +322,7 @@ Parse, filter, tidy and write files.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{diro}}{(\code{character(1)})\cr
+\item{\code{output_dir}}{(\code{character(1)})\cr
 Directory path to output tidy files.}
 
 \item{\code{format}}{(\code{character(1)})\cr
@@ -414,38 +332,29 @@ Format of output.}
 Input ID to use for the dataset (e.g. \code{run123}).}
 
 \item{\code{output_id}}{(\code{character(1)})\cr
-Output ID to use for the dataset (e.g. \code{run123}).}
+Output ID to use for the dataset (e.g. \code{out1}).}
+
+\item{\code{prefix_include}}{(\code{logical(1)})\cr
+If \code{TRUE}, prepend an \code{input_prefix} column to each tidy table.}
 
 \item{\code{dbconn}}{(\code{DBIConnection})\cr
 Database connection object (see \code{DBI::dbConnect}).}
 
+\item{\code{write_metadata}}{(\code{logical(1)})\cr
+If \code{TRUE} (default), write a \verb{metadata_<tool>.parquet} file alongside
+the tidy outputs. Set to \code{FALSE} to suppress.}
+
 \item{\code{include}}{(\code{character(n)})\cr
-Files to include.}
+tool_parser names to include (e.g. \code{"tool1_table1"}).}
 
 \item{\code{exclude}}{(\code{character(n)})\cr
-Files to exclude.}
+tool_parser names to exclude (e.g. \code{"tool1_table5"}).}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
-A tibble with the tidy data and their output location prefix.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Tool-clone"></a>}}
-\if{latex}{\out{\hypertarget{method-Tool-clone}{}}}
-\subsection{Method \code{clone()}}{
-The objects of this class are cloneable with this method.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Tool$clone(deep = FALSE)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{deep}}{Whether to make a deep clone.}
-}
-\if{html}{\out{</div>}}
+(\code{R6::R6Class()})\cr
+R6 object invisibly. Results stored in \code{self$written_files}.
 }
 }
 }

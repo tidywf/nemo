@@ -25,11 +25,14 @@ File delimiter.}
 Parses files with no header and two columns representing key-value pairs.
 }
 \examples{
-dir1 <- system.file("extdata/tool1", package = "nemo")
-fpath <- file.path(dir1, "latest", "sampleA.tool1.table3.tsv")
-x <- Tool1$new(dir1)
-schemas_all <- x$raw_schemas_all
+path <- system.file("extdata/tool1", package = "nemo")
+x <- Tool1$new(path)
+schemas_all <- x$config$get_schemas_raw()
 pname <- "table3"
-(d <- parse_file_keyvalue(fpath, pname, schemas_all))
+f <- function(ver) file.path(path, ver, "sampleA.tool1.table3.tsv")
+# v1.0.0: 3 key-value pairs (SampleID, QCStatus, TotalReads)
+(d3_v1  <- parse_file_keyvalue(f("v1.0.0"), pname, schemas_all))
+# latest: 5 key-value pairs
+(d3_lat <- parse_file_keyvalue(f("latest"), pname, schemas_all))
 
 }

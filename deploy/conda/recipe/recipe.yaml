@@ -1,6 +1,6 @@
 context:
   name: r-nemo
-  version: 0.0.3 # bump
+  version: 0.0.3.9022 # bump
 
 package:
   name: ${{ name|lower }}
@@ -23,17 +23,19 @@ requirements:
     - r-dplyr
     - r-fs
     - r-glue
-    - r-jsonlite
+    - r-htmltools
     - r-knitr
     - r-log4r
     - r-purrr
     - r-r6
+    - r-reactable
     - r-readr
     - r-rlang
-    - r-rpostgres
+    - r-stringr
     - r-tibble
     - r-tidyr
     - r-ulid
+    - r-withr
     - r-yaml
   run:
     - r-base
@@ -44,16 +46,19 @@ requirements:
     - r-dplyr
     - r-fs
     - r-glue
+    - r-htmltools
     - r-knitr
     - r-log4r
     - r-purrr
     - r-r6
+    - r-reactable
     - r-readr
     - r-rlang
-    - r-rpostgres
+    - r-stringr
     - r-tibble
     - r-tidyr
     - r-ulid
+    - r-withr
     - r-yaml
 
 tests:
@@ -61,16 +66,16 @@ tests:
       libraries:
         - nemo
   - script:
-    - nemo.R --version
+      - nemo.R --version
 
 about:
-  homepage: https://github.com/umccr/nemo
+  homepage: https://github.com/tidywf/nemo
   summary: Tidy and explore outputs from bioinformatic pipelines
   description: Provides the building blocks for tidying and exploring outputs from bioinformatic pipelines.
   license: MIT
   license_file: LICENSE
-  repository: https://github.com/umccr/nemo
-  documentation: https://umccr.github.io/nemo
+  repository: https://github.com/tidywf/nemo
+  documentation: https://tidywf.github.io/nemo
 
 extra:
   recipe-maintainers:

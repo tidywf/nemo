@@ -1,21 +1,17 @@
 ---
 title: "Notes"
-vignette: >
-  %\VignetteIndexEntry{Notes}
-  %\VignetteEngine{quarto::html}
-  %\VignetteEncoding{UTF-8}
 knitr:
   opts_chunk:
     collapse: true
     comment: '#>'
 ---
 
-Just a dump of random notes!
+Reference notes on SQL, AWS (RDS and CDK), and Pixi for use in the tidywf ecosystem.
 
 ```{r}
 #| label: vars
 #| echo: false
-dir1 <- system.file("documentation", "notes", package = "nemo")
+dir1 <- system.file("doc-templates", "notes", package = "nemo")
 ```
 
 ## SQL

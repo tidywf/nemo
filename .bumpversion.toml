@@ -1,12 +1,12 @@
 [tool.bumpversion]
-current_version = "0.0.3"
+current_version = "0.0.3.9022"
 search = "{current_version}"
 replace = "{new_version}"
 message = "Bump version: {current_version} => {new_version}"
 regex = false
 ignore_missing_version = false
 ignore_missing_files = false
-commit = false
+commit = true
 parse = """(?x)
     (?P<major>0|[1-9]\\d*)\\.
     (?P<minor>0|[1-9]\\d*)\\.
@@ -25,11 +25,6 @@ search = "Version: {current_version}"
 replace = "Version: {new_version}"
 
 [[tool.bumpversion.files]]
-filename = ".github/workflows/deploy.yaml"
-search = "VERSION: '{current_version}'"
-replace = "VERSION: '{new_version}'"
-
-[[tool.bumpversion.files]]
 filename = "deploy/conda/recipe/recipe.yaml"
 search = "version: {current_version}"
 replace = "version: {new_version}"
@@ -44,17 +39,3 @@ filename = "deploy/conda/env/yaml/pkgdown.yaml"
 search = "r-nemo =={current_version}"
 replace = "r-nemo =={new_version}"
 
-[[tool.bumpversion.files]]
-filename = "inst/documentation/installation/_conda.qmd"
-search = "r-nemo=={current_version}"
-replace = "r-nemo=={new_version}"
-
-[[tool.bumpversion.files]]
-filename = "inst/documentation/installation/_r.qmd"
-search = "nemo@v{current_version}"
-replace = "nemo@v{new_version}"
-
-[[tool.bumpversion.files]]
-filename = "inst/documentation/installation/_pixi.qmd"
-search = "r-nemo=={current_version}"
-replace = "r-nemo=={new_version}"

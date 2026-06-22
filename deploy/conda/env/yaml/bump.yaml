@@ -1,0 +1,10 @@
+name: bump_env
+channels:
+  - tidywf/label/dev
+  - tidywf
+  - conda-forge
+dependencies:
+  - r-nemo
+  - r-quarto
+  - quarto
+  - bump-my-version
