@@ -30,7 +30,7 @@
 
     <a class="navbar-brand me-2" href="index.html">nemo</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.0.3.9022</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.0.3.9023</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -74,7 +74,20 @@
 </h1>
 </div>
 <p><a href="https://anaconda.org/tidywf/r-nemo" class="external-link"><img src="https://anaconda.org/tidywf/r-nemo/badges/latest_release_date.svg" title="Conda Latest Release" alt="conda-latest1"></a> <a href="https://github.com/tidywf/nemo/actions/workflows/deploy.yaml" class="external-link"><img src="https://github.com/tidywf/nemo/actions/workflows/deploy.yaml/badge.svg" title="GitHub Actions" alt="gha"></a></p>
-<p>📚 Docs: <a href="https://tidywf.github.io/nemo/articles/installation">Installation</a> | <a href="https://tidywf.github.io/nemo/articles/schema_table">Files supported</a> | <a href="https://tidywf.github.io/nemo/articles/NEWS">Changelog</a> | <a href="https://tidywf.github.io/nemo/articles/structure">R6 structure</a> | <a href="https://tidywf.github.io/nemo/articles/uml">UML</a> | <a href="https://tidywf.github.io/nemo/articles/cicd">CI/CD</a></p>
+<div class="section level2">
+<h2 id="contents">Contents<a class="anchor" aria-label="anchor" href="#contents"></a>
+</h2>
+<ul>
+<li><a href="#nemo">nemo</a></li>
+<li><a href="#documentation">Documentation</a></li>
+<li><a href="#quickstart">Quickstart</a></li>
+<li><a href="#installation">Installation</a></li>
+<li><a href="#cli">CLI</a></li>
+</ul>
+</div>
+<div class="section level2">
+<h2 id="nemo">nemo<a class="anchor" aria-label="anchor" href="#nemo"></a>
+</h2>
 <p>Bioinformatic pipelines produce a lot of output files, but consuming them downstream is harder than it should be:</p>
 <ul>
 <li>Format variety: tools write TSV, CSV and various other proprietary formats, often mixed within the same pipeline</li>
@@ -86,58 +99,89 @@
 <p>nemo is an R package that attempts to address these issues by providing a schema-driven parsing and tidying layer that turns raw pipeline outputs into consistently structured, versioned, analysis-ready tables.</p>
 <p>Its R6 classes (<code>Tool</code>, <code>Workflow</code>, <code>Config</code>) form the base layer: given a directory of bioinformatic results, they identify files by YAML-defined schemas, reshape and rename columns to a consistent tidy form, and write to a specified format (Apache Parquet, TSV, CSV, RDS, or PostgreSQL). Each run also produces a <code>metadata.parquet</code> file alongside the tidy tables, capturing IDs, paths, and package versions.</p>
 <p>Downstream packages extend these base classes by supplying tool-specific schemas and parsers. <a href="https://github.com/tidywf/tidywigits" title="tidywigits" class="external-link">tidywigits</a> and <a href="https://github.com/tidywf/tidydragen" title="tidydragen" class="external-link">tidydragen</a> are example R packages that target the large number of outputs from the established bioinformatic pipelines WiGiTS/hmftools and Illumina DRAGEN, respectively.</p>
+</div>
+<div class="section level2">
+<h2 id="documentation">Documentation<a class="anchor" aria-label="anchor" href="#documentation"></a>
+</h2>
+<ul>
+<li>Installation: <a href="https://tidywf.github.io/nemo/articles/installation" class="uri">https://tidywf.github.io/nemo/articles/installation</a>
+</li>
+<li>Files supported: <a href="https://tidywf.github.io/nemo/articles/schema_table" class="uri">https://tidywf.github.io/nemo/articles/schema_table</a>
+</li>
+<li>Changelog: <a href="https://tidywf.github.io/nemo/articles/NEWS" class="uri">https://tidywf.github.io/nemo/articles/NEWS</a>
+</li>
+<li>R6 structure: <a href="https://tidywf.github.io/nemo/articles/structure" class="uri">https://tidywf.github.io/nemo/articles/structure</a>
+</li>
+<li>UML: <a href="https://tidywf.github.io/nemo/articles/uml" class="uri">https://tidywf.github.io/nemo/articles/uml</a>
+</li>
+<li>CI/CD: <a href="https://tidywf.github.io/nemo/articles/cicd" class="uri">https://tidywf.github.io/nemo/articles/cicd</a>
+</li>
+</ul>
+</div>
 <div class="section level2">
 <h2 id="quickstart">Quickstart<a class="anchor" aria-label="anchor" href="#quickstart"></a>
 </h2>
 <p>Raw pipeline outputs often have non-standard layouts. For example, this file stores QC metrics as key-value rows rather than columns:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(nemo)</span>
-<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a></span>
-<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a>path <span class="ot">&lt;-</span> <span class="fu">system.file</span>(<span class="st">"extdata/tool1/latest"</span>, <span class="at">package =</span> <span class="st">"nemo"</span>)</span>
-<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a><span class="fu">writeLines</span>(<span class="fu">readLines</span>(<span class="fu">file.path</span>(path, <span class="st">"sampleA.tool1.table3.tsv"</span>)))</span>
-<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a>SampleID    sampleA</span>
-<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a>QCStatus    Pass</span>
-<span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a>TotalReads  <span class="dv">10000</span></span>
-<span id="cb1-8"><a href="#cb1-8" tabindex="-1"></a>MappedReads <span class="dv">9500</span></span>
-<span id="cb1-9"><a href="#cb1-9" tabindex="-1"></a>UnmappedReads   <span class="dv">500</span></span></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/tidywf/nemo" class="external-link">nemo</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata/tool1/latest"</span>, package <span class="op">=</span> <span class="st">"nemo"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/writeLines.html" class="external-link">writeLines</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/readLines.html" class="external-link">readLines</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">path</span>, <span class="st">"sampleA.tool1.table3.tsv"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; SampleID sampleA</span></span>
+<span><span class="co">#&gt; QCStatus Pass</span></span>
+<span><span class="co">#&gt; TotalReads   10000</span></span>
+<span><span class="co">#&gt; MappedReads  9500</span></span>
+<span><span class="co">#&gt; UnmappedReads    500</span></span></code></pre></div>
 <p>The <code>run()</code> method is able to filter, tidy, and write all tables of interest in one call (<code>Workflow1</code> is nemo’s built-in example workflow):</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a>outdir <span class="ot">&lt;-</span> <span class="fu">file.path</span>(<span class="fu">tempdir</span>(), <span class="st">"quickstart"</span>)</span>
-<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a></span>
-<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>Workflow1<span class="sc">$</span><span class="fu">new</span>(<span class="at">path =</span> path)<span class="sc">$</span><span class="fu">run</span>(</span>
-<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>  <span class="at">output_dir      =</span> outdir,</span>
-<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>  <span class="at">format       =</span> <span class="st">"parquet"</span>,</span>
-<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a>  <span class="at">input_id     =</span> <span class="st">"run1"</span>,</span>
-<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a>  <span class="at">output_id    =</span> <span class="st">"out1"</span>,</span>
-<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a>  <span class="at">prefix_include =</span> <span class="cn">TRUE</span></span>
-<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a>)</span>
-<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a></span>
-<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a><span class="fu">list.files</span>(outdir, <span class="at">pattern =</span> <span class="st">"</span><span class="sc">\\</span><span class="st">.parquet$"</span>)</span>
-<span id="cb2-12"><a href="#cb2-12" tabindex="-1"></a>[<span class="dv">1</span>] <span class="st">"metadata.parquet"</span>             <span class="st">"sampleA_tool1_table1.parquet"</span> <span class="st">"sampleA_tool1_table2.parquet"</span></span>
-<span id="cb2-13"><a href="#cb2-13" tabindex="-1"></a>[<span class="dv">4</span>] <span class="st">"sampleA_tool1_table3.parquet"</span> <span class="st">"sampleA_tool1_table4.parquet"</span> <span class="st">"sampleA_tool1_table5.parquet"</span></span>
-<span id="cb2-14"><a href="#cb2-14" tabindex="-1"></a>[<span class="dv">7</span>] <span class="st">"sampleA_tool1_table6.parquet"</span></span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">outdir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"quickstart"</span><span class="op">)</span></span>
+<span><span class="va">wf1</span> <span class="op">&lt;-</span> <span class="va"><a href="reference/Workflow1.html">Workflow1</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span>path <span class="op">=</span> <span class="va">path</span><span class="op">)</span></span>
+<span><span class="va">wf1</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span></span>
+<span>  output_dir     <span class="op">=</span> <span class="va">outdir</span>,</span>
+<span>  format         <span class="op">=</span> <span class="st">"parquet"</span>,</span>
+<span>  input_id       <span class="op">=</span> <span class="st">"run1"</span>,</span>
+<span>  output_id      <span class="op">=</span> <span class="st">"out1"</span>,</span>
+<span>  prefix_include <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="va">outdir</span>, pattern <span class="op">=</span> <span class="st">"\\.parquet$"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "metadata.parquet"             "sampleA_tool1_table1.parquet" "sampleA_tool1_table2.parquet"</span></span>
+<span><span class="co">#&gt; [4] "sampleA_tool1_table3.parquet" "sampleA_tool1_table4.parquet" "sampleA_tool1_table5.parquet"</span></span>
+<span><span class="co">#&gt; [7] "sampleA_tool1_table6.parquet"</span></span></code></pre></div>
 <p>Read back the tidied table:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>arrow<span class="sc">::</span><span class="fu">read_parquet</span>(<span class="fu">file.path</span>(outdir, <span class="st">"sampleA_tool1_table3.parquet"</span>))</span>
-<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="co"># A tibble: 1 × 8</span></span>
-<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>  input_id input_prefix output_id sample_id qcstatus reads_total reads_map reads_unmap</span>
-<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="sc">*</span> <span class="er">&lt;</span>chr<span class="sc">&gt;</span>    <span class="er">&lt;</span>chr<span class="sc">&gt;</span>        <span class="er">&lt;</span>chr<span class="sc">&gt;</span>     <span class="er">&lt;</span>chr<span class="sc">&gt;</span>     <span class="er">&lt;</span>chr<span class="sc">&gt;</span>          <span class="er">&lt;</span>dbl<span class="sc">&gt;</span>     <span class="er">&lt;</span>dbl<span class="sc">&gt;</span>       <span class="er">&lt;</span>dbl<span class="sc">&gt;</span></span>
-<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a><span class="dv">1</span> run1     sampleA      out1      sampleA   Pass           <span class="dv">10000</span>      <span class="dv">9500</span>         <span class="dv">500</span></span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">arrow</span><span class="fu">::</span><span class="fu"><a href="https://arrow.apache.org/docs/r/reference/read_parquet.html" class="external-link">read_parquet</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">outdir</span>, <span class="st">"sampleA_tool1_table3.parquet"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 1 × 8</span></span>
+<span><span class="co">#&gt;   input_id input_prefix output_id sample_id qcstatus reads_total reads_map reads_unmap</span></span>
+<span><span class="co">#&gt; * &lt;chr&gt;    &lt;chr&gt;        &lt;chr&gt;     &lt;chr&gt;     &lt;chr&gt;          &lt;dbl&gt;     &lt;dbl&gt;       &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt; 1 run1     sampleA      out1      sampleA   Pass           10000      9500         500</span></span></code></pre></div>
 <p>Three optional columns can be prepended to every written table to support downstream tracing and joining. All are opt-in and off by default, but highly recommended for any multi-sample or multi-run pipeline:</p>
 <table class="table">
+<colgroup>
+<col width="33%">
+<col width="33%">
+<col width="33%">
+</colgroup>
 <thead><tr>
 <th>Column</th>
 <th>Purpose</th>
+<th>User-supplied or auto-generated?</th>
 </tr></thead>
 <tbody>
 <tr>
 <td><code>input_id</code></td>
 <td>identifies the sample or input run</td>
+<td>user</td>
 </tr>
 <tr>
 <td><code>output_id</code></td>
-<td>identifies the processing run</td>
+<td>identifies the tidywigits processing run</td>
+<td>user or auto (ULID)</td>
 </tr>
 <tr>
 <td><code>input_prefix</code></td>
 <td>filename prefix (e.g. sample name)</td>
+<td>auto</td>
 </tr>
 </tbody>
 </table>
@@ -149,7 +193,7 @@
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"remotes"</span><span class="op">)</span></span>
 <span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"tidywf/nemo"</span><span class="op">)</span> <span class="co"># latest main commit</span></span>
-<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"tidywf/nemo@v0.0.3.9022"</span><span class="op">)</span> <span class="co"># specific version</span></span></code></pre></div>
+<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"tidywf/nemo@v0.0.3.9023"</span><span class="op">)</span> <span class="co"># specific version</span></span></code></pre></div>
 <p>Alternatively:</p>
 <ul>
 <li>conda package: <a href="https://anaconda.org/tidywf/r-nemo" class="external-link uri">https://anaconda.org/tidywf/r-nemo</a>
@@ -168,7 +212,7 @@
 <div class="sourceCode" id="cb5"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="va">nemo_cli</span><span class="op">=</span><span class="va">$(</span><span class="ex">Rscript</span> <span class="at">-e</span> <span class="st">'x = system.file("cli", package = "nemo"); cat(x, "\n")'</span> <span class="kw">|</span> <span class="fu">xargs</span><span class="va">)</span></span>
 <span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a><span class="bu">export</span> <span class="va">PATH</span><span class="op">=</span><span class="st">"</span><span class="va">${nemo_cli}</span><span class="st">:</span><span class="va">${PATH}</span><span class="st">"</span></span></code></pre></div>
 <div class="sourceCode" id="cb6"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="sc">$</span> nemo.R <span class="sc">--</span>version</span>
-<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>nemo <span class="dv">0</span>.<span class="dv">0</span>.<span class="fl">3.9022</span></span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>nemo <span class="dv">0</span>.<span class="dv">0</span>.<span class="fl">3.9023</span></span>
 <span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a></span>
 <span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a><span class="co">#-----------------------------------#</span></span>
 <span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a><span class="sc">$</span> nemo.R <span class="sc">--</span>help</span>

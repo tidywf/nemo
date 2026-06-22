@@ -28,7 +28,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">nemo</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.0.3.9022</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.0.3.9023</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -71,7 +71,7 @@
 
 
 
-      <small class="dont-index">Source: <a href="https://github.com/tidywf/nemo/blob/dev/vignettes/NEWS.qmd" class="external-link"><code>vignettes/NEWS.qmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/tidywf/nemo/blob/main/vignettes/NEWS.qmd" class="external-link"><code>vignettes/NEWS.qmd</code></a></small>
       <div class="d-none name"><code></code></div>
     </div>
 
@@ -80,32 +80,70 @@
 
 
 
-    <section class="level2"><h2 id="v0-1-0-2026-06-04">v0.1.0 (2026-06-04)<a class="anchor" aria-label="anchor" href="#v0-1-0-2026-06-04"></a>
+    <section class="level2"><h2 id="v0-1-0-2026-06-22">v0.1.0 (2026-06-22)<a class="anchor" aria-label="anchor" href="#v0-1-0-2026-06-22"></a>
 </h2>
+<p>Major refactor.</p>
 <section class="level3"><h3 id="breaking-changes">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes"></a>
 </h3>
+<p><strong>Unified schema format</strong> (<a href="https://github.com/tidywf/nemo/pull/68" class="external-link">pr68</a>)</p>
 <ul>
-<li>Unified schema format: <code>schema.yaml</code> replaces separate <code>raw.yaml</code> + <code>tidy.yaml</code> per tool. Each column now carries its raw name, tidy name, type, description, and applicable versions in one place</li>
-<li>CLI: <code>--out_dir</code> → <code>--output_dir</code>; <code>--pfix_include</code> → <code>--prefix_include</code>; output column <code>input_pfix</code> → <code>input_prefix</code>
+<li>
+<code>schema.yaml</code> replaces the separate <code>raw.yaml</code> + <code>tidy.yaml</code> pair per tool. Each column now carries <code>raw</code>, <code>tidy</code>, <code>type</code>, <code>description</code>, and <code>versions</code> in one place under a flat <code>tables:</code> map. Child packages must migrate their per-tool configs to this format.</li>
+</ul>
+<p><strong>Config / Tool / Workflow API overhaul</strong> (<a href="https://github.com/tidywf/nemo/pull/64" class="external-link">pr64</a>, <a href="https://github.com/tidywf/nemo/pull/65" class="external-link">pr65</a>, <a href="https://github.com/tidywf/nemo/pull/66" class="external-link">pr66</a>)</p>
+<ul>
+<li>
+<code>Config</code>: <code>get_raw_*</code> / <code>get_tidy_*</code> methods renamed (e.g. <code>get_raw_patterns()</code> → <code>get_patterns()</code>, <code>get_raw_schemas_all()</code> → <code>get_schemas_raw()</code>); <code>are_raw_schemas_valid()</code> removed (validation now in <code>initialize()</code>); <code>config</code>, <code>raw_schemas_all</code>, <code>tidy_schemas_all</code> fields moved to private; <code>pkg</code> added as a public field; <code>cloneable = FALSE</code>
 </li>
 <li>
-<code>Config</code>, <code>Tool</code>, and <code>Workflow</code> APIs overhauled — methods and fields renamed for consistency across the package</li>
+<code>Tool</code>: <code>$files</code>, <code>$tbls</code>, <code>$files_tbl</code> moved to private — use <code>list_files()</code> / <code>get_tbls()</code> instead; schema delegate fields (<code>get_raw_schema</code>, <code>get_tidy_schema</code>) removed — use <code>tool$config$get_schema_raw()</code> / <code>tool$config$get_schema_tidy()</code>; <code>nemofy(diro = ...)</code> → <code>run(output_dir = ...)</code>; column <code>group</code> → <code>prefix_suffix</code>; <code>cloneable = FALSE</code>
+</li>
+<li>
+<code>Workflow</code>: <code>$tools</code>, <code>$files_tbl</code> moved to private — use <code>get_tools()</code>; <code>nemofy(diro = ...)</code> → <code>run(output_dir = ...)</code>; <code>list_files(type = ...)</code> — <code>type</code> arg removed; gains <code>metapkg</code> constructor argument; path existence validated at construction; <code>filter_files()</code> now validates names against known <code>tool_parser</code> values; <code>cloneable = FALSE</code>
+</li>
+</ul>
+<p><strong>CLI renames</strong></p>
+<ul>
+<li>
+<code>--out_dir</code> → <code>--output_dir</code>; <code>--pfix_include</code> → <code>--prefix_include</code>; output column <code>input_pfix</code> → <code>input_prefix</code>; <code>--prefix_include</code> is now opt-in (no longer added by default)</li>
+</ul>
+<p><strong>Other</strong></p>
+<ul>
+<li>
+<code><a href="../reference/nemo_metadata.html">nemo_metadata()</a></code>: parameter <code>input_dir</code> =&gt; <code>input_dirs</code>; return value changed from a named list to a single-row tibble with list-columns</li>
+<li>
+<code>RPostgres</code> dropped as a hard dependency - callers now supply <code>dbdrv</code> explicitly</li>
 </ul></section><section class="level3"><h3 id="new-features">New features<a class="anchor" aria-label="anchor" href="#new-features"></a>
 </h3>
 <ul>
-<li>
-<code>tidy</code>: add <code>--output_id</code> / <code>--ulid</code> for tagging outputs with a run identifier (<code>--ulid</code> auto-generates one)</li>
-<li>
-<code>tidy</code>: <code>--prefix_include</code> is now opt-in — <code>input_prefix</code> is no longer added to outputs by default</li>
-<li>New file types supported by <code>Tool</code>: <code>txt-nohead</code>, <code>csv-nohead-long</code>, <code>csv</code>
-</li>
-<li>Metadata exported to <code>metadata.parquet</code> per run (<a href="https://github.com/tidywf/nemo/pull/62" class="external-link">pr62</a>, <a href="https://github.com/tidywf/nemo/issues/61" class="external-link">iss61</a>)</li>
+<li>New assertion module: <code><a href="../reference/nemo_stop.html">nemo_stop()</a></code>, <code><a href="../reference/nemo_assert_scalar_chr.html">nemo_assert_scalar_chr()</a></code>, <code><a href="../reference/nemo_assert_chr.html">nemo_assert_chr()</a></code>, <code><a href="../reference/nemo_assert_not_null.html">nemo_assert_not_null()</a></code>, <code><a href="../reference/nemo_assert_out_fmt.html">nemo_assert_out_fmt()</a></code> replacing <code>assertthat</code> calls</li>
+<li>Schema scaffold helpers: <code><a href="../reference/config_prep_raw_schema.html">config_prep_raw_schema()</a></code>, <code><a href="../reference/config_prep_raw.html">config_prep_raw()</a></code>, <code><a href="../reference/config_prep_multi.html">config_prep_multi()</a></code>, <code><a href="../reference/config_prep_write.html">config_prep_write()</a></code> — bootstrap a <code>schema.yaml</code> from example raw files</li>
 <li>
 <code><a href="../reference/nemo_gha_mermaid.html">nemo_gha_mermaid()</a></code>: generates a Mermaid flowchart of the full CI/CD pipeline (<a href="https://github.com/tidywf/nemo/pull/52" class="external-link">pr52</a>)</li>
+<li>
+<code><a href="../reference/nemo_uml.html">nemo_uml()</a></code>: generates a PlantUML SVG from R6 class names</li>
+<li>
+<code><a href="../reference/nemo_schema_reactable.html">nemo_schema_reactable()</a></code> / <code><a href="../reference/nemo_schemavis_data.html">nemo_schemavis_data()</a></code>: interactive schema explorer</li>
+<li>New file types: <code>txt-nohead</code>, <code>txt-keyvalue</code>, <code>csv</code>, <code>csv-nohead-long</code>
+</li>
+<li>
+<code>tidy</code>: <code>--output_id</code> / <code>--ulid</code> flags for tagging outputs with a run identifier; <code>--max</code> flag on <code>list</code> subcommand</li>
+<li>Metadata exported to <code>metadata.parquet</code> per run (<a href="https://github.com/tidywf/nemo/pull/62" class="external-link">pr62</a>, <a href="https://github.com/tidywf/nemo/issues/61" class="external-link">iss61</a>)</li>
+<li>
+<code>Tool</code> and <code>Workflow</code> now both support <code>write_metadata</code> boolean</li>
 </ul></section><section class="level3"><h3 id="performance">Performance<a class="anchor" aria-label="anchor" href="#performance"></a>
 </h3>
 <ul>
-<li>File discovery ~20× faster on large directories — benchmarked at 1.9 s → 0.1 s on 43k files × 15 patterns</li>
+<li>File discovery ~20× faster on large directories — benchmarked at 1.9s =&gt; 0.1 s on 43k files x 15 patterns</li>
+</ul></section><section class="level3"><h3 id="infrastructure">Infrastructure<a class="anchor" aria-label="anchor" href="#infrastructure"></a>
+</h3>
+<ul>
+<li>CI/CD: <code>deploy.yaml</code> refactored from a 136-line monolith to reusable workflows via <code>tidywf/actions</code>; now also triggers on <code>dev</code> branch pushes</li>
+<li>
+<code>@claude</code> GHA restricted to repo owners, collaborators, and members</li>
+<li>
+<code>dependabot.yml</code> added for automated GHA dependency updates</li>
+<li>conda: aarch64 lock file added; dedicated <code>bump.yaml</code> env added</li>
 </ul></section></section><section class="level2"><h2 id="v0-0-3-2026-02-09">v0.0.3 (2026-02-09)<a class="anchor" aria-label="anchor" href="#v0-0-3-2026-02-09"></a>
 </h2>
 <ul>
