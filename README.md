@@ -17,8 +17,6 @@
 - [Installation](#installation)
 - [CLI](#cli)
 
-------------------------------------------------------------------------
-
 ## nemo
 
 Bioinformatic pipelines produce a lot of output files, but consuming
@@ -58,8 +56,6 @@ example R packages that target the large number of outputs from the
 established bioinformatic pipelines WiGiTS/hmftools and Illumina DRAGEN,
 respectively.
 
-------------------------------------------------------------------------
-
 ## Documentation
 
 - Installation: <https://tidywf.github.io/nemo/articles/installation>
@@ -68,8 +64,6 @@ respectively.
 - R6 structure: <https://tidywf.github.io/nemo/articles/structure>
 - UML: <https://tidywf.github.io/nemo/articles/uml>
 - CI/CD: <https://tidywf.github.io/nemo/articles/cicd>
-
-------------------------------------------------------------------------
 
 ## Quickstart
 
@@ -129,8 +123,6 @@ pipeline:
 | `output_id` | identifies the tidywigits processing run | user or auto (ULID) |
 | `input_prefix` | filename prefix (e.g. sample name) | auto |
 
-------------------------------------------------------------------------
-
 ## Installation
 
 Using {remotes} directly from GitHub:
@@ -147,8 +139,6 @@ Alternatively:
 
 For more details see:
 <https://tidywf.github.io/nemo/articles/installation>
-
-------------------------------------------------------------------------
 
 ## CLI
 

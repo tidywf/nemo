@@ -52,8 +52,6 @@ options(width = 100)
 - [Installation](#installation)
 - [CLI](#cli)
 
----
-
 ## nemo
 
 Bioinformatic pipelines produce a lot of output files, but consuming them
@@ -92,8 +90,6 @@ bioinformatic pipelines WiGiTS/hmftools and Illumina DRAGEN, respectively.
 [WiGiTS/hmftools]: <https://github.com/hartwigmedical/hmftools> "hmftools"
 [Illumina DRAGEN]: <https://help.dragen.illumina.com/> "Illumina DRAGEN"
 
----
-
 ## Documentation
 
 ```{r}
@@ -110,8 +106,6 @@ glue(
 - CI/CD: <{base}/articles/cicd>"
 )
 ```
-
----
 
 ## Quickstart
 
@@ -162,8 +156,6 @@ recommended for any multi-sample or multi-run pipeline:
 | `output_id`    | identifies the tidywigits processing run | user or auto (ULID)              |
 | `input_prefix` | filename prefix (e.g. sample name)       | auto                             |
 
----
-
 ## Installation
 
 ```{r child=file.path(dir_nemo, "_r.qmd")}
@@ -175,8 +167,6 @@ Alternatively:
 - conda package: <https://anaconda.org/tidywf/r-nemo>
 
 For more details see: <https://tidywf.github.io/nemo/articles/installation>
-
----
 
 ## CLI
 

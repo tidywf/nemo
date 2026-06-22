@@ -47,33 +47,77 @@ pr <- function(n) {
 }
 ```
 
-## v0.1.0 (2026-06-04)
+## v0.1.0 (2026-06-22)
+
+Major refactor.
 
 ### Breaking changes
 
-- Unified schema format: `schema.yaml` replaces separate `raw.yaml` + `tidy.yaml`
-  per tool. Each column now carries its raw name, tidy name, type, description,
-  and applicable versions in one place
-- CLI: `--out_dir` → `--output_dir`; `--pfix_include` → `--prefix_include`;
-  output column `input_pfix` → `input_prefix`
-- `Config`, `Tool`, and `Workflow` APIs overhauled — methods and fields renamed
-  for consistency across the package
+**Unified schema format** (`r pr(68)`)
+
+- `schema.yaml` replaces the separate `raw.yaml` + `tidy.yaml` pair per tool.
+  Each column now carries `raw`, `tidy`, `type`, `description`, and `versions` in
+  one place under a flat `tables:` map. Child packages must migrate their per-tool
+  configs to this format.
+
+**Config / Tool / Workflow API overhaul** (`r pr(64)`, `r pr(65)`, `r pr(66)`)
+
+- `Config`: `get_raw_*` / `get_tidy_*` methods renamed (e.g. `get_raw_patterns()`
+  → `get_patterns()`, `get_raw_schemas_all()` → `get_schemas_raw()`);
+  `are_raw_schemas_valid()` removed (validation now in `initialize()`);
+  `config`, `raw_schemas_all`, `tidy_schemas_all` fields moved to private;
+  `pkg` added as a public field; `cloneable = FALSE`
+- `Tool`: `$files`, `$tbls`, `$files_tbl` moved to private — use `list_files()` /
+  `get_tbls()` instead; schema delegate fields (`get_raw_schema`, `get_tidy_schema`)
+  removed — use `tool$config$get_schema_raw()` / `tool$config$get_schema_tidy()`;
+  `nemofy(diro = ...)` → `run(output_dir = ...)`;
+  column `group` → `prefix_suffix`; `cloneable = FALSE`
+- `Workflow`: `$tools`, `$files_tbl` moved to private — use `get_tools()`;
+  `nemofy(diro = ...)` → `run(output_dir = ...)`; `list_files(type = ...)` — `type`
+  arg removed; gains `metapkg` constructor argument; path existence validated at
+  construction; `filter_files()` now validates names against known `tool_parser` values;
+  `cloneable = FALSE`
+
+**CLI renames**
+
+- `--out_dir` → `--output_dir`; `--pfix_include` → `--prefix_include`;
+  output column `input_pfix` → `input_prefix`; `--prefix_include` is now opt-in
+  (no longer added by default)
+
+**Other**
+
+- `nemo_metadata()`: parameter `input_dir` => `input_dirs`; return value changed
+  from a named list to a single-row tibble with list-columns
+- `RPostgres` dropped as a hard dependency - callers now supply `dbdrv` explicitly
 
 ### New features
 
-- `tidy`: add `--output_id` / `--ulid` for tagging outputs with a run identifier
-  (`--ulid` auto-generates one)
-- `tidy`: `--prefix_include` is now opt-in — `input_prefix` is no longer added
-  to outputs by default
-- New file types supported by `Tool`: `txt-nohead`, `csv-nohead-long`, `csv`
+- New assertion module: `nemo_stop()`, `nemo_assert_scalar_chr()`, `nemo_assert_chr()`,
+  `nemo_assert_not_null()`, `nemo_assert_out_fmt()` replacing `assertthat` calls
+- Schema scaffold helpers: `config_prep_raw_schema()`, `config_prep_raw()`,
+  `config_prep_multi()`, `config_prep_write()` — bootstrap a `schema.yaml` from
+  example raw files
+- `nemo_gha_mermaid()`: generates a Mermaid flowchart of the full CI/CD pipeline (`r pr(52)`)
+- `nemo_uml()`: generates a PlantUML SVG from R6 class names
+- `nemo_schema_reactable()` / `nemo_schemavis_data()`: interactive schema explorer
+- New file types: `txt-nohead`, `txt-keyvalue`, `csv`, `csv-nohead-long`
+- `tidy`: `--output_id` / `--ulid` flags for tagging outputs with a run identifier;
+  `--max` flag on `list` subcommand
 - Metadata exported to `metadata.parquet` per run (`r pr(62)`, `r iss(61)`)
-- `nemo_gha_mermaid()`: generates a Mermaid flowchart of the full CI/CD pipeline
-  (`r pr(52)`)
+- `Tool` and `Workflow` now both support `write_metadata` boolean
 
 ### Performance
 
-- File discovery ~20× faster on large directories — benchmarked at 1.9 s → 0.1 s
-  on 43k files × 15 patterns
+- File discovery ~20× faster on large directories — benchmarked at 1.9s => 0.1 s
+  on 43k files x 15 patterns
+
+### Infrastructure
+
+- CI/CD: `deploy.yaml` refactored from a 136-line monolith to reusable workflows
+  via `tidywf/actions`; now also triggers on `dev` branch pushes
+- `@claude` GHA restricted to repo owners, collaborators, and members
+- `dependabot.yml` added for automated GHA dependency updates
+- conda: aarch64 lock file added; dedicated `bump.yaml` env added
 
 ## v0.0.3 (2026-02-09)
 
