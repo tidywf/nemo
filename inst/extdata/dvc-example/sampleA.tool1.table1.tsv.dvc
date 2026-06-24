@@ -1,0 +1,5 @@
+outs:
+- md5: df4021245c33f4a75d1c29a17388608c
+  size: 133
+  hash: md5
+  path: sampleA.tool1.table1.tsv
