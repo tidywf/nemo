@@ -46,7 +46,10 @@ dvc_download_file <- function(
   }
   fs::dir_create(output_dir)
   url <- paste0(base_url, "/", substr(md5, 1, 2), "/", substr(md5, 3, nchar(md5)))
-  utils::download.file(url, out_file, quiet = TRUE)
+  status <- utils::download.file(url, out_file, quiet = TRUE)
+  if (status != 0L) {
+    stop(sprintf("Download failed (status %d): %s", status, url))
+  }
   out_file
 }
 
@@ -67,21 +70,20 @@ dvc_download_file <- function(
 #'
 #' @examples
 #' \dontrun{
-#' input_dir <- system.file("extdata", package = "nemo")
+#' input_dir <- system.file("extdata/dvc-example", package = "nemo")
 #' output_dir <- file.path(tempdir(), "dvc_dl_test")
 #' result <- dvc_download_all(input_dir, output_dir)
 #' result_cached <- dvc_download_all(input_dir, output_dir)
 #' }
 #' @export
 dvc_download_all <- function(input_dir, output_dir, overwrite = FALSE, pkg_nm = "nemo") {
-  dvc_files <- list.files(input_dir, pattern = "\\.dvc$", recursive = TRUE, full.names = TRUE)
+  dvc_files <- fs::dir_ls(input_dir, regexp = "\\.dvc$", recurse = TRUE)
   downloaded <- character(0)
   for (dvc_file in dvc_files) {
-    # TODO: fix when specifying full path to dvc_file parent directory
-    rel_subdir <- sub(input_dir, "", dirname(dvc_file))
+    rel_subdir <- fs::path_rel(dirname(dvc_file), input_dir)
     result <- dvc_download_file(
       dvc_file,
-      file.path(output_dir, rel_subdir),
+      output_dir = file.path(output_dir, rel_subdir),
       overwrite = overwrite,
       pkg_nm = pkg_nm
     )

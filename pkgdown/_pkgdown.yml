@@ -86,6 +86,10 @@ reference:
       - nemo_assert_scalar_chr
       - nemo_assert_out_fmt
       - nemo_stop
+  - title: "DVC"
+    contents:
+      - dvc_download_file
+      - dvc_download_all
   - title: "Other"
     contents:
       - empty_tbl
