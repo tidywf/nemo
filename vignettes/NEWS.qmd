@@ -47,6 +47,10 @@ pr <- function(n) {
 }
 ```
 
+## dev
+
+- Add [DVC](https://dvc.org/) support, mostly for child packages
+
 ## v0.1.0 (2026-06-22)
 
 Major refactor.
