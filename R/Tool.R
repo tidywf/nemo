@@ -58,6 +58,7 @@ Tool <- R6::R6Class(
     files_tbl = NULL,
     # Typed empty tibble for compute_files; kept as a method so the column spec
     # is in one place and easy to update if the schema changes.
+    post_process_files = function(files) files,
     empty_files_tbl = function() {
       tibble::tibble(
         tool_parser = character(),
@@ -157,11 +158,14 @@ Tool <- R6::R6Class(
     # in the subclass, otherwise falls back to tidy_file().
     # x may be a file path (character) or an already-parsed tibble — dispatch
     # is called with a path when keep_raw = FALSE (the default) and with a tibble
-    # when keep_raw = TRUE. Both tidy_file() and any custom tidy_{name}() in a
-    # subclass must handle both forms by checking is_tibble(x) before parsing.
+    # when keep_raw = TRUE. Custom tidy_{name}() methods always receive a tibble;
+    # the path-to-tibble conversion is handled here before dispatch.
     dispatch_tidy = function(x, table_name) {
       fun <- glue("tidy_{table_name}")
       if (is.function(self[[fun]])) {
+        if (!tibble::is_tibble(x)) {
+          x <- private$dispatch_parse(x, table_name)
+        }
         self[[fun]](x)
       } else {
         private$tidy_file(x, table_name)
@@ -176,6 +180,7 @@ Tool <- R6::R6Class(
         "csv" = private$parse_file(x, table_name, delim = ","),
         "txt-nohead" = private$parse_file_nohead(x, table_name),
         "txt-keyvalue" = private$parse_file_keyvalue(x, table_name),
+        "txt-keyvalue-eq" = private$parse_file_keyvalue(x, table_name, delim = "="),
         nemo_stop(glue(
           "No default parser for ftype '{ftype}' (table '{table_name}'). ",
           "Define parse_{table_name}() in the subclass."
@@ -286,7 +291,7 @@ Tool <- R6::R6Class(
       self$path <- if (!is.null(path)) normalizePath(path) else NULL
       self$config <- Config$new(self$name, pkg = self$pkg)
       private$files_tbl <- files_tbl
-      private$files <- private$compute_files()
+      private$files <- private$post_process_files(private$compute_files())
     },
     #' @description Print details about the Tool.
     #' @param ... (ignored).
