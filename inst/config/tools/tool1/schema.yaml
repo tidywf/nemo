@@ -2,7 +2,7 @@ tables:
   table1:
     description: 'Table1 for tool1 (txt: header present, tab-delimited).'
     pattern: "\\.tool1\\.table1\\.tsv$"
-    ftype: 'txt'
+    ftype: 'tsv'
     columns:
       - raw: 'SampleID'
         tidy: 'sample_id'
@@ -42,7 +42,7 @@ tables:
   table2:
     description: 'Table2 for tool1 (txt: header present, tab-delimited).'
     pattern: "\\.tool1\\.table2\\.tsv$"
-    ftype: 'txt'
+    ftype: 'tsv'
     columns:
       - raw: 'SampleID'
         tidy: 'sample_id'
@@ -62,7 +62,7 @@ tables:
   table3:
     description: 'Table3 for tool1 (txt-keyvalue: no header, 2 cols, col1=key col2=value).'
     pattern: "\\.tool1\\.table3\\.tsv$"
-    ftype: 'txt-keyvalue'
+    ftype: 'tsv-keyvalue'
     columns:
       - raw: 'SampleID'
         tidy: 'sample_id'
@@ -92,7 +92,7 @@ tables:
   table4:
     description: 'Table4 for tool1 (txt-nohead: no header, positional cols X1..XN).'
     pattern: "\\.tool1\\.table4\\.tsv$"
-    ftype: 'txt-nohead'
+    ftype: 'tsv-nohead'
     columns:
       - raw: 'X1'
         tidy: 'sample_id'

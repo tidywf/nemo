@@ -48,6 +48,19 @@ Two-tier approach:
   auto-generated into `tests/testthat/test-roxytest-testexamples-<file>.R` by
   `devtools::document()`. Never edit those generated files directly.
 
+## ftypes (`schema.yaml` → `parse_by_ftype`)
+
+Built-in ftypes handled by `Tool$parse_by_ftype()`:
+
+| ftype | parser | delimiter |
+|-------|--------|-----------|
+| `tsv` | `parse_file` | `\t` |
+| `csv` | `parse_file` | `,` |
+| `tsv-nohead` | `parse_file_nohead` | `\t` |
+| `tsv-keyvalue` | `parse_file_keyvalue` | `\t` |
+
+Child packages add pkg-specific ftypes by overriding `private$extra_ftypes()` — return a named list of `ftype -> function(x, table_name)`. Checked before the switch; unknown ftypes fall through to `nemo_stop`.
+
 ## Critical gotchas
 
 - TODO tracked in `.claude/TODO.md`

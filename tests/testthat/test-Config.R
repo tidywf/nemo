@@ -8,7 +8,7 @@ test_that("Config pattern and ftype methods", {
   expect_equal(nrow(conf$get_patterns()), 6)
   expect_equal(conf$get_pattern("table1"), "\\.tool1\\.table1\\.tsv$")
   expect_equal(dplyr::distinct(conf$get_ftypes(), .data$ftype) |> nrow(), 5)
-  expect_equal(conf$get_ftype("table1"), "txt")
+  expect_equal(conf$get_ftype("table1"), "tsv")
 })
 
 test_that("Config description methods", {

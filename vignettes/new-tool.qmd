@@ -32,7 +32,7 @@ d1 <- here(glue("inst/extdata/{tool}/latest"))
 
 x <- tribble(
   ~name     , ~descr                 , ~pat                        , ~type  , ~path                                       ,
-  "table1"  , "table1 description."  , "\\.mytool\\.table1\\.tsv$" , "txt"  , file.path(d1, "sampleA.mytool.table1.tsv")  ,
+  "table1"  , "table1 description."  , "\\.mytool\\.table1\\.tsv$" , "tsv"  , file.path(d1, "sampleA.mytool.table1.tsv")  ,
   "table2"  , "table2 description."  , "\\.mytool\\.table2\\.csv$" , "csv"  , file.path(d1, "sampleA.mytool.table2.csv")  ,
 )
 
