@@ -3,14 +3,16 @@ title: "Notes"
 knitr:
   opts_chunk:
     collapse: true
-    comment: '#>'
+    comment: "#>"
 ---
 
-Reference notes on SQL, AWS (RDS and CDK), and Pixi for use in the tidywf ecosystem.
+Reference notes on SQL, AWS (RDS and CDK), and Pixi for use in the tidywf
+ecosystem.
 
 ```{r}
 #| label: vars
 #| echo: false
+
 dir1 <- system.file("doc-templates", "notes", package = "nemo")
 ```
 
@@ -25,7 +27,6 @@ dir1 <- system.file("doc-templates", "notes", package = "nemo")
 ```{asis, file=file.path(dir1, "rds.md")}
 #| label: child-rds
 ```
-
 
 ## AWS CDK
 

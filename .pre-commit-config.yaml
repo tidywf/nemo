@@ -1,7 +1,14 @@
 # All available hooks: https://pre-commit.com/hooks.html
 repos:
+- repo: https://github.com/jolars/panache-pre-commit
+  rev: v2.60.0
+  hooks:
+    # Format Markdown, Quarto, and RMarkdown files
+    - id: panache-format
+    # Lint files and auto-fix issues
+    - id: panache-lint
 - repo: https://github.com/posit-dev/air-pre-commit
-  rev: 0.9.0
+  rev: 0.10.0
   hooks:
     - id: air-format
 - repo: https://github.com/pre-commit/pre-commit-hooks

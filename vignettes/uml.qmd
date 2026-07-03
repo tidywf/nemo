@@ -3,18 +3,20 @@ title: "UML"
 knitr:
   opts_chunk:
     collapse: true
-    comment: '#>'
+    comment: "#>"
     echo: false
 ---
 
 ```{r}
 #| label: pkgs
 #| echo: false
+
 use("nemo", "nemo_uml")
 ```
 
 ```{r}
 #| label: uml
+
 # hand it over directly to knitr for rendering, cat somehow doesn't work any more
 knitr::asis_output(nemo_uml(
   classes = c("Config", "Tool", "Tool1", "Workflow", "Workflow1"),

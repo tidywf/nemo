@@ -1,0 +1,11 @@
+flavor = "quarto"
+
+[format]
+wrap = "reflow"
+line-width = 80
+line-ending = "auto"
+table-indent = 0
+
+[formatters]
+r = "air"
+yaml = "yamlfmt"
