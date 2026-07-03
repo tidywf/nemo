@@ -103,13 +103,15 @@ tables:
 
 The `ftype` field signals how the file is parsed:
 
-| `ftype`           | Description                                        | `raw:` names                            | Parser                   |
-|-------------------|----------------------------------------------------|-----------------------------------------|--------------------------|
-| `txt`             | Header present; tab-delimited                      | actual column names                     | `parse_file`             |
-| `csv`             | Header present; comma-delimited                    | actual column names                     | `parse_file` (delim=`,`) |
-| `txt-nohead`      | No header; positional columns                      | `X1, X2, …, XN`                        | `parse_file_nohead`      |
-| `txt-keyvalue`    | No header; 2 cols (key, value); pivoted wide       | actual key values                       | `parse_file_keyvalue`    |
-| `csv-nohead-long` | No header; long format; custom pivot               | metric names (values in the key column) | custom `tidy_*` method   |
+| `ftype`           | Description                                        | `raw:` names                            | Parser                      |
+|-------------------|----------------------------------------------------|-----------------------------------------|-----------------------------|
+| `tsv`             | Header present; tab-delimited                      | actual column names                     | `parse_file`                |
+| `csv`             | Header present; comma-delimited                    | actual column names                     | `parse_file` (delim=`,`)    |
+| `tsv-nohead`      | No header; positional columns                      | `X1, X2, …, XN`                        | `parse_file_nohead`         |
+| `tsv-keyvalue`    | No header; 2 cols (key, value); pivoted wide       | actual key values                       | `parse_file_keyvalue`       |
+| `csv-nohead-long` | No header; long format; custom pivot               | metric names (values in the key column) | custom `tidy_*` method      |
+
+Child packages can register additional ftypes by overriding `private$extra_ftypes()` — return a named list of `ftype -> function(x, table_name)`. These are checked before the built-in switch.
 
 The `versions` array on each column lists every tool version that column appears
 in, giving a full picture of additions and removals:

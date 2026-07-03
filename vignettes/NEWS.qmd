@@ -104,7 +104,7 @@ Major refactor.
 - `nemo_gha_mermaid()`: generates a Mermaid flowchart of the full CI/CD pipeline (`r pr(52)`)
 - `nemo_uml()`: generates a PlantUML SVG from R6 class names
 - `nemo_schema_reactable()` / `nemo_schemavis_data()`: interactive schema explorer
-- New file types: `txt-nohead`, `txt-keyvalue`, `csv`, `csv-nohead-long`
+- New file types: `tsv-nohead`, `tsv-keyvalue`, `csv`, `csv-nohead-long`
 - `tidy`: `--output_id` / `--ulid` flags for tagging outputs with a run identifier;
   `--max` flag on `list` subcommand
 - Metadata exported to `metadata.parquet` per run (`r pr(62)`, `r iss(61)`)

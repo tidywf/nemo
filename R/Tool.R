@@ -171,19 +171,25 @@ Tool <- R6::R6Class(
         private$tidy_file(x, table_name)
       }
     },
+    # Hook for subclasses to register pkg-specific ftype parsers without
+    # overriding parse_by_ftype. Return a named list of ftype -> function(x, table_name).
+    extra_ftypes = function() list(),
     # Parse a file by looking up its ftype from the config.
     parse_by_ftype = function(x, table_name) {
       ftype <- self$config$get_ftype(table_name)
+      extras <- private$extra_ftypes()
+      if (ftype %in% names(extras)) {
+        return(extras[[ftype]](x, table_name))
+      }
       switch(
         ftype,
-        "txt" = private$parse_file(x, table_name),
+        "tsv" = private$parse_file(x, table_name),
         "csv" = private$parse_file(x, table_name, delim = ","),
-        "txt-nohead" = private$parse_file_nohead(x, table_name),
-        "txt-keyvalue" = private$parse_file_keyvalue(x, table_name),
-        "txt-keyvalue-eq" = private$parse_file_keyvalue(x, table_name, delim = "="),
+        "tsv-nohead" = private$parse_file_nohead(x, table_name),
+        "tsv-keyvalue" = private$parse_file_keyvalue(x, table_name),
         nemo_stop(glue(
           "No default parser for ftype '{ftype}' (table '{table_name}'). ",
-          "Define parse_{table_name}() in the subclass."
+          "Define parse_{table_name}() in the subclass or register it via extra_ftypes()."
         ))
       )
     },
