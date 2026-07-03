@@ -3,18 +3,20 @@ title: "Installation"
 knitr:
   opts_chunk:
     collapse: true
-    comment: '#>'
+    comment: "#>"
     echo: false
 ---
 
 ```{r}
 #| label: pkgs
+
 use("tibble", "lst")
 use("glue", "glue")
 ```
 
 ```{r}
 #| label: setup
+
 pkg_nm <- "nemo"
 org_nm <- "tidywf"
 ver <- as.character(utils::packageVersion(pkg_nm))
@@ -30,18 +32,18 @@ There are several ways to install {`r pkg_nm`}:
 
 ### R
 
-```{r child=file.path(dir1, "_r.qmd")}
+```{r, child=file.path(dir1, "_r.qmd")}
 #| label: child-r
 ```
 
 ### Conda
 
-```{r child=file.path(dir1, "_conda.qmd")}
+```{r, child=file.path(dir1, "_conda.qmd")}
 #| label: child-conda
 ```
 
 ### Pixi
 
-```{r child=file.path(dir1, "_pixi.qmd")}
+```{r, child=file.path(dir1, "_pixi.qmd")}
 #| label: child-pixi
 ```

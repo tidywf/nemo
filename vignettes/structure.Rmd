@@ -4,7 +4,7 @@ output: rmarkdown::html_document
 knitr:
   opts_chunk:
     collapse: true
-    comment: '#>'
+    comment: "#>"
 params:
   tool: "Tool1"
   workflow: "Workflow1"
@@ -26,7 +26,11 @@ Correct flex boxes from sizing based upon the largest in tabset
 }
 ```
 
-```{r params_eval, echo=FALSE, eval=FALSE}
+```{r}
+#| label: params_eval
+#| echo: false
+#| eval: false
+
 params <- list(
   tool = "Tool1",
   workflow = "Workflow1",
@@ -34,7 +38,12 @@ params <- list(
 )
 ```
 
-```{r pkgs, message=FALSE, warning=FALSE, echo=FALSE}
+```{r}
+#| label: pkgs
+#| message: false
+#| warning: false
+#| echo: false
+
 {
   use(params$pkg)
   use("dplyr")
@@ -52,35 +61,36 @@ params <- list(
 ```{r}
 #| label: opts
 #| echo: false
+
 options(width = 100)
 ```
 
 nemo is built on top of R's [R6] encapsulated object-oriented programming
 implementation, which helps with code organisation. It consists of several base
-classes (`Config`, `Tool`, and `Workflow`) which we describe below.
-Each R6 class can contain public and private functions and non-functions (fields).
+classes (`Config`, `Tool`, and `Workflow`) which we describe below. Each R6
+class can contain public and private functions and non-functions (fields).
 
-Other R packages like [tidywigits] and [tidydragen] can create their
-own `Tool` and `Workflow` children classes that inherit (or override) functions from
-the nemo parent classes. This allows for custom parsers and tidiers for specific
+Other R packages like [tidywigits] and [tidydragen] can create their own `Tool`
+and `Workflow` children classes that inherit (or override) functions from the
+nemo parent classes. This allows for custom parsers and tidiers for specific
 bioinformatic tools and workflows.
 
 [R6]: <https://github.com/r-lib/R6> "R6 package repo"
 [tidywigits]: <https://github.com/tidywf/tidywigits> "tidywigits"
 [tidydragen]: <https://github.com/tidywf/tidydragen> "tidydragen"
 
-Here we use the `Tool1` and `Workflow1` nemo classes as examples to illustrate the
-structure of the package.
+Here we use the `Tool1` and `Workflow1` nemo classes as examples to illustrate
+the structure of the package.
 
 ## Config {.tabset .tabset-pills}
 
-A `Config` object reads a single `schema.yaml` file from `inst/config/tools/<tool>/`.
-Each table entry defines its file pattern, file type, description, and a list of
-columns — each column carrying both its raw name (as produced by the tool) and its
-tidy name (snake_case), type, description, and the `versions` array listing every
-tool version the column appears in.
-`Config` derives versioned raw and tidy views from this unified source on demand.
-See `?Config`.
+A `Config` object reads a single `schema.yaml` file from
+`inst/config/tools/<tool>/`. Each table entry defines its file pattern, file
+type, description, and a list of columns --- each column carrying both its raw
+name (as produced by the tool) and its tidy name (snake_case), type,
+description, and the `versions` array listing every tool version the column
+appears in. `Config` derives versioned raw and tidy views from this unified
+source on demand. See `?Config`.
 
 ### format
 
@@ -103,15 +113,18 @@ tables:
 
 The `ftype` field signals how the file is parsed:
 
-| `ftype`           | Description                                        | `raw:` names                            | Parser                      |
-|-------------------|----------------------------------------------------|-----------------------------------------|-----------------------------|
-| `tsv`             | Header present; tab-delimited                      | actual column names                     | `parse_file`                |
-| `csv`             | Header present; comma-delimited                    | actual column names                     | `parse_file` (delim=`,`)    |
-| `tsv-nohead`      | No header; positional columns                      | `X1, X2, …, XN`                        | `parse_file_nohead`         |
-| `tsv-keyvalue`    | No header; 2 cols (key, value); pivoted wide       | actual key values                       | `parse_file_keyvalue`       |
-| `csv-nohead-long` | No header; long format; custom pivot               | metric names (values in the key column) | custom `tidy_*` method      |
+| `ftype`           | Description                                  | `raw:` names                            | Parser                   |
+| ----------------- | -------------------------------------------- | --------------------------------------- | ------------------------ |
+| `tsv`             | Header present; tab-delimited                | actual column names                     | `parse_file`             |
+| `csv`             | Header present; comma-delimited              | actual column names                     | `parse_file` (delim=`,`) |
+| `tsv-nohead`      | No header; positional columns                | `X1, X2, …, XN`                         | `parse_file_nohead`      |
+| `tsv-keyvalue`    | No header; 2 cols (key, value); pivoted wide | actual key values                       | `parse_file_keyvalue`    |
+| `csv-nohead-long` | No header; long format; custom pivot         | metric names (values in the key column) | custom `tidy_*` method   |
 
-Child packages can register additional ftypes by overriding `private$extra_ftypes()` — return a named list of `ftype -> function(x, table_name)`. These are checked before the built-in switch.
+Child packages can register additional ftypes by overriding
+`private$extra_ftypes()` --- return a named list of
+`ftype -> function(x, table_name)`. These are checked before the built-in
+switch.
 
 The `versions` array on each column lists every tool version that column appears
 in, giving a full picture of additions and removals:
@@ -123,13 +136,15 @@ metricX:    versions: ['v1.2.3']                        # dropped in v4.5.6
 metricY:    versions: ['latest']                        # added in latest
 ```
 
-The effective schema for version `V` is all columns whose `versions` array contains
-`V`. `schema_guess` uses this to automatically match a file's columns against the
-correct versioned snapshot.
+The effective schema for version `V` is all columns whose `versions` array
+contains `V`. `schema_guess` uses this to automatically match a file's columns
+against the correct versioned snapshot.
 
 ### intro
 
-```{r config_intro}
+```{r}
+#| label: config_intro
+
 tool <- params$tool
 workflow <- params$workflow
 conf <- nemo::Config$new(tool, pkg = "nemo")
@@ -138,17 +153,21 @@ conf
 
 ### tables
 
-Table-level metadata — patterns, file types, and descriptions for all tables:
+Table-level metadata --- patterns, file types, and descriptions for all tables:
 
-```{r config_tables_all}
-conf$get_patterns()     |> knitr::kable(caption = glue("{tool} patterns."))
-conf$get_ftypes()       |> knitr::kable(caption = glue("{tool} file types."))
+```{r}
+#| label: config_tables_all
+
+conf$get_patterns() |> knitr::kable(caption = glue("{tool} patterns."))
+conf$get_ftypes() |> knitr::kable(caption = glue("{tool} file types."))
 conf$get_descriptions() |> knitr::kable(caption = glue("{tool} descriptions."))
 ```
 
 Per-table lookups:
 
-```{r config_tables_one}
+```{r}
+#| label: config_tables_one
+
 conf$get_pattern("table1")
 conf$get_ftype("table1")
 conf$get_description("table1")
@@ -158,33 +177,39 @@ conf$get_description("table1")
 
 All versioned raw and tidy schemas:
 
-```{r config_schemas_all}
-conf$get_schemas_raw()  |> dplyr::select("name", "version", "schema")
+```{r}
+#| label: config_schemas_all
+
+conf$get_schemas_raw() |> dplyr::select("name", "version", "schema")
 conf$get_schemas_tidy() |> dplyr::select("name", "version", "schema")
 conf$get_schemas_both()
 ```
 
 Per-table, per-version:
 
-```{r config_schemas_one}
+```{r}
+#| label: config_schemas_one
+
 conf$get_schema_raw("table1", version = "v1.2.3")
 conf$get_schema_tidy("table1", version = "v1.2.3")
 ```
 
-For `csv-nohead-long` tables, `get_col_map()` returns the raw-to-tidy metric-name
-mapping used inside the tool's `tidy_*` method:
+For `csv-nohead-long` tables, `get_col_map()` returns the raw-to-tidy
+metric-name mapping used inside the tool's `tidy_*` method:
 
-```{r config_col_map}
+```{r}
+#| label: config_col_map
+
 conf$get_col_map("table5")
 ```
 
 ## Tool {.tabset .tabset-pills}
 
-`Tool` is the main organisation class for all file parsers and tidiers.
-It contains functions for parsing and tidying typical CSV/TSV files (with
-column names), and TXT files where the column names are missing. Currently it
-utilises the very simple `readr::read_delim` function from the [readr] package
-that reads all the data into memory. See `?Tool`.
+`Tool` is the main organisation class for all file parsers and tidiers. It
+contains functions for parsing and tidying typical CSV/TSV files (with column
+names), and TXT files where the column names are missing. Currently it utilises
+the very simple `readr::read_delim` function from the [readr] package that reads
+all the data into memory. See `?Tool`.
 
 These simple parsers are used in 80-90% of cases, so in the future we can
 optimise the parsing if needed with faster packages such as [data.table],
@@ -198,13 +223,15 @@ optimise the parsing if needed with faster packages such as [data.table],
 
 ### initialise
 
-We can have different `Tool` children classes that inherit (or override) functions
-and fields from the `Tool` parent class.
-For example, we can create a `Tool` object for `Tool1` as follows:
+We can have different `Tool` children classes that inherit (or override)
+functions and fields from the `Tool` parent class. For example, we can create a
+`Tool` object for `Tool1` as follows:
 
 - Initialise a `Tool1` object:
 
-```{r tool_tool1}
+```{r}
+#| label: tool_tool1
+
 tool1_path <- system.file("extdata/tool1", package = "nemo")
 t1 <- nemo::Tool1$new(path = tool1_path)
 # each class comes with a print function
@@ -213,10 +240,12 @@ t1
 
 ### config
 
-- Its `Config` object is also constructed based on the `name` supplied - this
-is used internally to find files of interest and infer their schemas:
+- Its `Config` object is also constructed based on the `name` supplied - this is
+  used internally to find files of interest and infer their schemas:
 
-```{r tool1_conf}
+```{r}
+#| label: tool1_conf
+
 t1$config
 t1$config$get_patterns()
 t1$config$get_schema_raw("table1", version = "v1.2.3")
@@ -229,17 +258,21 @@ t1$config$get_schema_tidy("table1", version = "v1.2.3")
 
 We can list files that can be parsed with `list_files()`:
 
-```{r tool1_list}
+```{r}
+#| label: tool1_list
+
 lf <- t1$list_files()
 lf |> dplyr::slice(1) |> str()
 ```
 
 ### tidy
 
-We can parse and tidy files of interest using the `tidy` function. Note
-that this function is called on the object and not assigned anywhere:
+We can parse and tidy files of interest using the `tidy` function. Note that
+this function is called on the object and not assigned anywhere:
 
-```{r tool1_tidy}
+```{r}
+#| label: tool1_tidy
+
 # this will create a new field tbls containing the tidy data (and optionally
 # the 'raw' parsed data)
 t1$tidy(keep_raw = TRUE)
@@ -252,11 +285,13 @@ tbls$tidy[[1]][["data"]][[1]] |> dplyr::glimpse()
 
 ### filter
 
-We can also focus on a subset of files to tidy using the `filter_files()` function.
-The `include` and `exclude` arguments can specify which `tool_parser`s to include or
-exclude in the analysis:
+We can also focus on a subset of files to tidy using the `filter_files()`
+function. The `include` and `exclude` arguments can specify which `tool_parser`s
+to include or exclude in the analysis:
 
-```{r tool1_filter}
+```{r}
+#| label: tool1_filter
+
 # create new Tool1 object
 t2 <- nemo::Tool1$new(path = tool1_path)
 t2$list_files()
@@ -267,15 +302,17 @@ t2$list_files()
 ### write
 
 After tidying the data of interest, we can write the tidy tibbles to various
-formats, like Apache Parquet, PostgreSQL, CSV/TSV and R's RDS.
-Below we can see that the (optional) `input_id` specified is added to the written
-files in an additional `input_id` column. This can be used e.g. to distinguish results
-from different samples in a data pipeline. An optional `output_id` column can also
-be added (e.g. to distinguish between runs for the same input sample). An
+formats, like Apache Parquet, PostgreSQL, CSV/TSV and R's RDS. Below we can see
+that the (optional) `input_id` specified is added to the written files in an
+additional `input_id` column. This can be used e.g. to distinguish results from
+different samples in a data pipeline. An optional `output_id` column can also be
+added (e.g. to distinguish between runs for the same input sample). An
 `input_prefix` column can be included via `prefix_include = TRUE`, which would
 use the prefix of the file basename.
 
-```{r tool1_write}
+```{r}
+#| label: tool1_write
+
 t2$tidy() # first need to tidy
 outdir1 <- file.path(tempdir(), "tool1_write")
 fmt <- "csv"
@@ -297,7 +334,9 @@ wfiles
 The `run` function is a convenient wrapper for the process of filtering,
 tidying, and writing.
 
-```{r run1}
+```{r}
+#| label: run1
+
 t3 <- nemo::Tool1$new(path = tool1_path)
 outdir2 <- file.path(tempdir(), "t3")
 t3$list_files()
@@ -327,10 +366,12 @@ tidy tables from a variety of bioinformatic tools. See `?Workflow`.
 
 For example, nemo contains a `Workflow1` class as a `Workflow` child (containing
 only a single `Tool1` for simplicity). Similarly to `Tool`, a `Workflow` object
-contains functions such as `filter_files`, `list_files`, `tidy`, `write`,
-`run`, and `get_tools()` (to access the instantiated `Tool` objects):
+contains functions such as `filter_files`, `list_files`, `tidy`, `write`, `run`,
+and `get_tools()` (to access the instantiated `Tool` objects):
 
-```{r w1_init}
+```{r}
+#| label: w1_init
+
 w <- system.file("extdata/tool1", package = "nemo") |>
   nemo::Workflow1$new()
 outdir3 <- file.path(tempdir(), "w1")
@@ -352,23 +393,28 @@ wfiles3 |>
 
 ## Metadata
 
-After each `Workflow$write()` or `Workflow$run()` call (for non-`db` formats),
-a `metadata.parquet` file is written directly to the output directory alongside
-the tidy tables.
-It is a single-row tibble capturing the run context: IDs, input/output paths,
-package versions, and the list of files written.
+After each `Workflow$write()` or `Workflow$run()` call (for non-`db` formats), a
+`metadata.parquet` file is written directly to the output directory alongside
+the tidy tables. It is a single-row tibble capturing the run context: IDs,
+input/output paths, package versions, and the list of files written.
 
-```{r metadata_read}
+```{r}
+#| label: metadata_read
+
 meta <- arrow::read_parquet(file.path(outdir3, "metadata.parquet"))
 meta |> dplyr::glimpse()
 ```
 
 The nested list columns can be unpacked with `tidyr::unnest()`:
 
-```{r metadata_pkgs}
+```{r}
+#| label: metadata_pkgs
+
 meta |> dplyr::select("pkg_versions") |> tidyr::unnest("pkg_versions")
 ```
 
-```{r metadata_files}
+```{r}
+#| label: metadata_files
+
 meta |> dplyr::select("files") |> tidyr::unnest("files")
 ```

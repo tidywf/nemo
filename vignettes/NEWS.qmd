@@ -3,7 +3,7 @@ title: "NEWS"
 knitr:
   opts_chunk:
     collapse: true
-    comment: '#>'
+    comment: "#>"
     echo: false
 ---
 
@@ -11,6 +11,7 @@ knitr:
 #| label: pkgs
 #| message: false
 #| warning: false
+
 {
   use("htmltools", "a")
   use("glue", "glue")
@@ -19,6 +20,7 @@ knitr:
 
 ```{r}
 #| label: setup
+
 repo <- "https://github.com/tidywf/nemo"
 vdiff <- function(new, old) {
   stopifnot(utils::compareVersion(new, old) == 1)
@@ -60,60 +62,65 @@ Major refactor.
 **Unified schema format** (`r pr(68)`)
 
 - `schema.yaml` replaces the separate `raw.yaml` + `tidy.yaml` pair per tool.
-  Each column now carries `raw`, `tidy`, `type`, `description`, and `versions` in
-  one place under a flat `tables:` map. Child packages must migrate their per-tool
-  configs to this format.
+  Each column now carries `raw`, `tidy`, `type`, `description`, and `versions`
+  in one place under a flat `tables:` map. Child packages must migrate their
+  per-tool configs to this format.
 
 **Config / Tool / Workflow API overhaul** (`r pr(64)`, `r pr(65)`, `r pr(66)`)
 
-- `Config`: `get_raw_*` / `get_tidy_*` methods renamed (e.g. `get_raw_patterns()`
-  → `get_patterns()`, `get_raw_schemas_all()` → `get_schemas_raw()`);
-  `are_raw_schemas_valid()` removed (validation now in `initialize()`);
-  `config`, `raw_schemas_all`, `tidy_schemas_all` fields moved to private;
-  `pkg` added as a public field; `cloneable = FALSE`
-- `Tool`: `$files`, `$tbls`, `$files_tbl` moved to private — use `list_files()` /
-  `get_tbls()` instead; schema delegate fields (`get_raw_schema`, `get_tidy_schema`)
-  removed — use `tool$config$get_schema_raw()` / `tool$config$get_schema_tidy()`;
-  `nemofy(diro = ...)` → `run(output_dir = ...)`;
-  column `group` → `prefix_suffix`; `cloneable = FALSE`
-- `Workflow`: `$tools`, `$files_tbl` moved to private — use `get_tools()`;
-  `nemofy(diro = ...)` → `run(output_dir = ...)`; `list_files(type = ...)` — `type`
-  arg removed; gains `metapkg` constructor argument; path existence validated at
-  construction; `filter_files()` now validates names against known `tool_parser` values;
-  `cloneable = FALSE`
+- `Config`: `get_raw_*` / `get_tidy_*` methods renamed (e.g.
+  `get_raw_patterns()` → `get_patterns()`, `get_raw_schemas_all()` →
+  `get_schemas_raw()`); `are_raw_schemas_valid()` removed (validation now in
+  `initialize()`); `config`, `raw_schemas_all`, `tidy_schemas_all` fields moved
+  to private; `pkg` added as a public field; `cloneable = FALSE`
+- `Tool`: `$files`, `$tbls`, `$files_tbl` moved to private --- use
+  `list_files()` / `get_tbls()` instead; schema delegate fields
+  (`get_raw_schema`, `get_tidy_schema`) removed --- use
+  `tool$config$get_schema_raw()` / `tool$config$get_schema_tidy()`;
+  `nemofy(diro = ...)` → `run(output_dir = ...)`; column `group` →
+  `prefix_suffix`; `cloneable = FALSE`
+- `Workflow`: `$tools`, `$files_tbl` moved to private --- use `get_tools()`;
+  `nemofy(diro = ...)` → `run(output_dir = ...)`; `list_files(type = ...)` ---
+  `type` arg removed; gains `metapkg` constructor argument; path existence
+  validated at construction; `filter_files()` now validates names against known
+  `tool_parser` values; `cloneable = FALSE`
 
 **CLI renames**
 
-- `--out_dir` → `--output_dir`; `--pfix_include` → `--prefix_include`;
-  output column `input_pfix` → `input_prefix`; `--prefix_include` is now opt-in
-  (no longer added by default)
+- `--out_dir` → `--output_dir`; `--pfix_include` → `--prefix_include`; output
+  column `input_pfix` → `input_prefix`; `--prefix_include` is now opt-in (no
+  longer added by default)
 
 **Other**
 
 - `nemo_metadata()`: parameter `input_dir` => `input_dirs`; return value changed
   from a named list to a single-row tibble with list-columns
-- `RPostgres` dropped as a hard dependency - callers now supply `dbdrv` explicitly
+- `RPostgres` dropped as a hard dependency - callers now supply `dbdrv`
+  explicitly
 
 ### New features
 
-- New assertion module: `nemo_stop()`, `nemo_assert_scalar_chr()`, `nemo_assert_chr()`,
-  `nemo_assert_not_null()`, `nemo_assert_out_fmt()` replacing `assertthat` calls
+- New assertion module: `nemo_stop()`, `nemo_assert_scalar_chr()`,
+  `nemo_assert_chr()`, `nemo_assert_not_null()`, `nemo_assert_out_fmt()`
+  replacing `assertthat` calls
 - Schema scaffold helpers: `config_prep_raw_schema()`, `config_prep_raw()`,
-  `config_prep_multi()`, `config_prep_write()` — bootstrap a `schema.yaml` from
-  example raw files
-- `nemo_gha_mermaid()`: generates a Mermaid flowchart of the full CI/CD pipeline (`r pr(52)`)
+  `config_prep_multi()`, `config_prep_write()` --- bootstrap a `schema.yaml`
+  from example raw files
+- `nemo_gha_mermaid()`: generates a Mermaid flowchart of the full CI/CD pipeline
+  (`r pr(52)`)
 - `nemo_uml()`: generates a PlantUML SVG from R6 class names
-- `nemo_schema_reactable()` / `nemo_schemavis_data()`: interactive schema explorer
+- `nemo_schema_reactable()` / `nemo_schemavis_data()`: interactive schema
+  explorer
 - New file types: `tsv-nohead`, `tsv-keyvalue`, `csv`, `csv-nohead-long`
-- `tidy`: `--output_id` / `--ulid` flags for tagging outputs with a run identifier;
-  `--max` flag on `list` subcommand
+- `tidy`: `--output_id` / `--ulid` flags for tagging outputs with a run
+  identifier; `--max` flag on `list` subcommand
 - Metadata exported to `metadata.parquet` per run (`r pr(62)`, `r iss(61)`)
 - `Tool` and `Workflow` now both support `write_metadata` boolean
 
 ### Performance
 
-- File discovery ~20× faster on large directories — benchmarked at 1.9s => 0.1 s
-  on 43k files x 15 patterns
+- File discovery \~20× faster on large directories --- benchmarked at 1.9s =>
+  0.1 s on 43k files x 15 patterns
 
 ### Infrastructure
 
@@ -131,14 +138,16 @@ Major refactor.
 
 - Add key-value parser (`r pr(12)`, `r iss(11)`)
 - Export config writer (`r pr(13)`)
-- Add table description to schema getters, contribution docs, pkgdown fixes (`r pr(19)`)
+- Add table description to schema getters, contribution docs, pkgdown fixes
+  (`r pr(19)`)
 - Add `nemo_id` + `nemo_pfix` in class writer (`r pr(21)`, `r iss(18)`)
   - changed odir to diro arg in nemofy
 - list_files: `str_remove` offers more flexibility (`r pr(24)`, `r iss(23)`)
 - Add metadata export functionality (`r pr(25)`, `r iss(17)`)
   - rename `nemo_id` + `nemo_pfix` to `input_id` + `input_pfix`, respectively
   - add `output_id`
-- Bugfix: use `I()` for vroom literal data in `empty_tbl` (`r iss(27)`, `r pr(28)`)
+- Bugfix: use `I()` for vroom literal data in `empty_tbl` (`r iss(27)`,
+  `r pr(28)`)
 
 ## v0.0.1 (2025-09-07)
 

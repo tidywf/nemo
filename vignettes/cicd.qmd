@@ -9,13 +9,14 @@ format:
 knitr:
   opts_chunk:
     collapse: true
-    comment: '#>'
+    comment: "#>"
     echo: false
 ---
 
 ```{r}
 #| label: pkgs
 #| include: false
+
 use("nemo", "nemo_gha_mermaid")
 use("here", "here")
 ```
@@ -23,6 +24,7 @@ use("here", "here")
 ```{r}
 #| label: mermaid_diagram
 #| include: false
+
 repo <- "https://raw.githubusercontent.com/tidywf/actions/"
 actions_url <- paste0(repo, "refs/heads/main/.github/workflows")
 diagram <- nemo_gha_mermaid(
@@ -31,8 +33,9 @@ diagram <- nemo_gha_mermaid(
 )
 ```
 
-```{r}
+````{r}
 #| label: mermaid_diagram_cat
 #| output: asis
+
 cat("```{mermaid}\n", diagram, "\n```\n", sep = "")
-```
+````
