@@ -98,18 +98,20 @@ Built with `argparse` via `nemo_cli()`. Two subcommands:
 | `list`     | `-d IN_DIR -f FORMAT`            | Lists parsable files; output as `pretty` or `tsv` |
 | `tidy`     | `-d IN_DIR -o OUT_DIR -f FORMAT` | Runs `run()` and writes tidy outputs              |
 
-Both accept `-w WORKFLOW` and `-q` (quiet). `tidy` also accepts: - `--input_id`
---- adds an `input_id` column to all output tables - `--output_id` / `--ulid`
---- adds an `output_id` column (mutually exclusive; `--ulid` generates one
-automatically) - `--prefix_include` --- adds an `input_prefix` column derived
-from the input filename prefix - `--include`/`--exclude` --- filter tool parsers
-(comma-separated) - `--dbname`/`--dbuser` --- required when `--format db`
+Both accept `-w WORKFLOW` and `-q` (quiet). `tidy` also accepts:
+
+- `--input_id` — adds an `input_id` column to all output tables
+- `--output_id` / `--ulid` — adds an `output_id` column (mutually exclusive; `--ulid` generates one automatically)
+- `--prefix_include` — adds an `input_prefix` column derived from the input filename prefix
+- `--include`/`--exclude` — filter tool parsers (comma-separated)
+- `--dbname`/`--dbuser` — required when `--format db`
 
 ## Logging (`R/log.R`)
 
-`log4r`-based, initialised in `.onLoad`. Env vars: - `NEMO_LOG_ENABLE` ---
-`"FALSE"` to disable (default `"TRUE"`) - `NEMO_LOG_LEVEL` --- `"DEBUG"`,
-`"INFO"` (default), `"WARN"`, `"ERROR"`, `"FATAL"`
+`log4r`-based, initialised in `.onLoad`. Env vars:
+
+- `NEMO_LOG_ENABLE` — "FALSE" to disable (default "TRUE")
+- `NEMO_LOG_LEVEL` — "DEBUG", "INFO" (default), "WARN", "ERROR", "FATAL"
 
 Public API: `nemo_log(level, msg, ...)` (sprintf-style), `nemo_log_date()`.
 
