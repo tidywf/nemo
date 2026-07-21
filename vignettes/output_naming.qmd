@@ -1,0 +1,27 @@
+---
+title: "Output Naming"
+knitr:
+  opts_chunk:
+    collapse: true
+    comment: "#>"
+---
+
+```{r}
+#| label: pkgs
+#| include: false
+
+use("nemo")
+use("fs")
+use("arrow", "read_parquet")
+use("purrr", "map")
+use("dplyr")
+
+child1 <- system.file(
+  "doc-templates/vignettes/_output_naming.qmd",
+  package = "nemo"
+)
+```
+
+```{r, child=child1}
+#| label: child-output-naming
+```

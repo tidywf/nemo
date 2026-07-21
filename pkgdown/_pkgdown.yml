@@ -28,6 +28,8 @@ navbar:
           href: articles/installation.html
         - text: Structure
           href: articles/structure.html
+        - text: Output Naming
+          href: articles/output_naming.html
         - text: Schema Table
           href: articles/schema_table.html
         - text: New Tool

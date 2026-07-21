@@ -7,7 +7,7 @@ readme:
 	@quarto render README.qmd
 
 pkgdown:
-	@R -e "pkgdown::build_site()" --quiet --no-restore --no-save && mv docs nogit/pkgdown_site/ && open nogit/pkgdown_site/docs/dev/index.html
+	@R -e "pkgdown::build_site()" --quiet --no-restore --no-save
 
 readme-pkgdown: readme pkgdown
 

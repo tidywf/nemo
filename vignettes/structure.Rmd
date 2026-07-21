@@ -308,7 +308,8 @@ additional `input_id` column. This can be used e.g. to distinguish results from
 different samples in a data pipeline. An optional `output_id` column can also be
 added (e.g. to distinguish between runs for the same input sample). An
 `input_prefix` column can be included via `prefix_include = TRUE`, which would
-use the prefix of the file basename.
+use the prefix of the file basename. For more details about output naming
+conventions, see the [output naming](output_naming.html) vignette.
 
 ```{r}
 #| label: tool1_write
