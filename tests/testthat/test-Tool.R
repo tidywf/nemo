@@ -231,3 +231,70 @@ test_that("Tool run chains filter + tidy + write and records written_files", {
   expect_false(any(grepl("table5", basename(list.files(out)))))
   expect_true(any(grepl("table1", basename(list.files(out)))))
 })
+
+test_that("refine_files default is a no-op", {
+  # base Tool1 does not override refine_files: prefixes are the plain sample name
+  tool <- Tool$new(name = name, pkg = pkg, path = file.path(path, "latest"))
+  expect_true(all(tool$list_files()$prefix == "sampleA"))
+})
+
+test_that("refine_files is applied before the disambiguation passes", {
+  # Two files under the same parser (table1) but different samples, so their
+  # prefixes (sampleA / sampleB) do not collide on their own.
+  d <- withr::local_tempdir()
+  src <- file.path(path, "latest", "sampleA.tool1.table1.tsv")
+  file.copy(src, file.path(d, "sampleA.tool1.table1.tsv"))
+  file.copy(src, file.path(d, "sampleB.tool1.table1.tsv"))
+
+  # Subclass that collapses every prefix to a single constant. This only makes
+  # the two files collide *if* refine_files runs before the (tool_parser, prefix)
+  # disambiguation pass. If it ran afterwards (the old post_process_files timing),
+  # both would end up as "x" and silently overwrite each other on write.
+  ToolConst <- R6::R6Class(
+    "ToolConst",
+    inherit = Tool1,
+    cloneable = FALSE,
+    private = list(
+      refine_files = function(files) dplyr::mutate(files, prefix = "x")
+    )
+  )
+  lf <- ToolConst$new(path = d)$list_files()
+
+  # collapsed to "x", then disambiguated -> distinct prefixes, nothing clobbered
+  expect_setequal(lf$prefix, c("x", "x_2"))
+  expect_equal(length(unique(lf$prefix)), 2L)
+})
+
+test_that("refine_files can split a prefix collision to avoid a spurious _2", {
+  # Two files under the same parser whose prefixes the generic pass would collapse
+  # to the same value (both "shared"), so it appends a positional _2. A refine
+  # that instead tags each with its sample keeps them apart with no _2.
+  d <- withr::local_tempdir()
+  src <- file.path(path, "latest", "sampleA.tool1.table1.tsv")
+  file.copy(src, file.path(d, "sampleA.tool1.table1.tsv"))
+  file.copy(src, file.path(d, "sampleB.tool1.table1.tsv"))
+
+  Collapse <- R6::R6Class(
+    "Collapse",
+    inherit = Tool1,
+    cloneable = FALSE,
+    private = list(refine_files = function(files) dplyr::mutate(files, prefix = "shared"))
+  )
+  # collapsed -> positional _2 (unavoidable once they share a prefix)
+  expect_setequal(Collapse$new(path = d)$list_files()$prefix, c("shared", "shared_2"))
+
+  Split <- R6::R6Class(
+    "Split",
+    inherit = Tool1,
+    cloneable = FALSE,
+    private = list(
+      refine_files = function(files) {
+        dplyr::mutate(files, prefix = paste0("shared_", sub("\\..*$", "", .data$bname)))
+      }
+    )
+  )
+  # tagged apart before disambiguation -> no _2 suffix anywhere
+  lf <- Split$new(path = d)$list_files()
+  expect_setequal(lf$prefix, c("shared_sampleA", "shared_sampleB"))
+  expect_false(any(grepl("_2$", lf$prefix)))
+})

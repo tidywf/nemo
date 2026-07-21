@@ -51,7 +51,15 @@ pr <- function(n) {
 
 ## dev
 
-- Add [DVC](https://dvc.org/) support, mostly for child packages
+- Add [DVC](https://dvc.org/) support, mostly for child packages (`r pr(69)`)
+- Tool: rename txt ftypes to tsv, add extra_ftypes hook (`r pr(70)`, `r pr(71)`)
+- Tool: rename `post_process_files` hook to `refine_files`, now applied to the
+  base prefix *before* the disambiguation passes so subclasses can fold a
+  semantic distinction (e.g. germline/somatic) into the prefix and avoid a
+  spurious `_2`/`_3` suffix
+- New `Output Naming` vignette, shared with child packages via
+  `inst/doc-templates/vignettes/_output_naming.qmd`
+- Panache format vignettes (`r pr(72)`)
 
 ## v0.1.0 (2026-06-22)
 

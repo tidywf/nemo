@@ -58,7 +58,10 @@ Tool <- R6::R6Class(
     files_tbl = NULL,
     # Typed empty tibble for compute_files; kept as a method so the column spec
     # is in one place and easy to update if the schema changes.
-    post_process_files = function(files) files,
+    # Subclass hook to adjust the matched-files tibble before disambiguation.
+    # Receives columns parser/bname/size/lastmodified/path/pattern/prefix/
+    # tool_parser; typically rewrites `prefix`. Default is a no-op.
+    refine_files = function(files) files,
     empty_files_tbl = function() {
       tibble::tibble(
         tool_parser = character(),
@@ -91,13 +94,18 @@ Tool <- R6::R6Class(
         return(private$empty_files_tbl())
       }
       res <- res |>
-        dplyr::select("parser", "bname", "size", "lastmodified", "path", "pattern")
-      res |>
+        dplyr::select("parser", "bname", "size", "lastmodified", "path", "pattern") |>
         dplyr::mutate(
           prefix = stringr::str_remove(.data$bname, .data$pattern),
           prefix = dplyr::if_else(.data$prefix == "", .data$parser, .data$prefix),
           tool_parser = paste0(self$name, "_", .data$parser)
-        ) |>
+        )
+      # Subclass hook, applied to the base prefix *before* the disambiguation
+      # passes below. Running it here (rather than on the final tibble) lets a
+      # subclass fold a semantic distinction (e.g. germline vs somatic) into the
+      # prefix so those files no longer collide, avoiding a spurious _2/_3.
+      res <- private$refine_files(res)
+      res |>
         dplyr::mutate(prefix_suffix = dplyr::row_number(), .by = "bname") |>
         dplyr::mutate(
           prefix_suffix = dplyr::if_else(
@@ -297,7 +305,7 @@ Tool <- R6::R6Class(
       self$path <- if (!is.null(path)) normalizePath(path) else NULL
       self$config <- Config$new(self$name, pkg = self$pkg)
       private$files_tbl <- files_tbl
-      private$files <- private$post_process_files(private$compute_files())
+      private$files <- private$compute_files()
     },
     #' @description Print details about the Tool.
     #' @param ... (ignored).
