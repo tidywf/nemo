@@ -6,6 +6,7 @@
 ^TODO\.md$
 ^\.DS_Store$
 ^\.Rproj\.user$
+^\.air\.toml$
 ^\.bumpversion\.toml$
 ^\.claude$
 ^\.dockerignore$
@@ -13,11 +14,11 @@
 ^\.dvcignore$
 ^\.github$
 ^\.lintr$
+^\.panache\.toml$
 ^\.pre-commit-config\.yaml$
 ^\.vscode$
 ^_pkgdown\.yaml$
 ^_pkgdown\.yml$
-^air\.toml$
 ^data-raw$
 ^deploy$
 ^docs$

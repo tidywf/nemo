@@ -104,6 +104,7 @@ base <- glue("https://{org_nm}.github.io/{pkg_nm}")
 glue(
   "- Installation: <{base}/articles/installation>
 - Files supported: <{base}/articles/schema_table>
+- Output naming: <{base}/articles/output_naming>
 - Changelog: <{base}/articles/NEWS>
 - R6 structure: <{base}/articles/structure>
 - UML: <{base}/articles/uml>
