@@ -9,6 +9,7 @@
 <url><loc>https://tidywf.github.io/nemo/dev/articles/installation.html</loc></url>
 <url><loc>https://tidywf.github.io/nemo/dev/articles/new-tool.html</loc></url>
 <url><loc>https://tidywf.github.io/nemo/dev/articles/notes.html</loc></url>
+<url><loc>https://tidywf.github.io/nemo/dev/articles/output_naming.html</loc></url>
 <url><loc>https://tidywf.github.io/nemo/dev/articles/schema_table.html</loc></url>
 <url><loc>https://tidywf.github.io/nemo/dev/articles/structure.html</loc></url>
 <url><loc>https://tidywf.github.io/nemo/dev/articles/uml.html</loc></url>
@@ -30,6 +31,8 @@
 <url><loc>https://tidywf.github.io/nemo/dev/reference/config_prep_raw_schema.html</loc></url>
 <url><loc>https://tidywf.github.io/nemo/dev/reference/config_prep_write.html</loc></url>
 <url><loc>https://tidywf.github.io/nemo/dev/reference/config_sort_versions.html</loc></url>
+<url><loc>https://tidywf.github.io/nemo/dev/reference/dvc_download_all.html</loc></url>
+<url><loc>https://tidywf.github.io/nemo/dev/reference/dvc_download_file.html</loc></url>
 <url><loc>https://tidywf.github.io/nemo/dev/reference/empty_tbl.html</loc></url>
 <url><loc>https://tidywf.github.io/nemo/dev/reference/file_hdr.html</loc></url>
 <url><loc>https://tidywf.github.io/nemo/dev/reference/get_python.html</loc></url>

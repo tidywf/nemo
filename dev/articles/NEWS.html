@@ -28,7 +28,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">nemo</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.0.3.9023</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.0.3.9024</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -43,6 +43,7 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/installation.html">Installation</a></li>
     <li><a class="dropdown-item" href="../articles/structure.html">Structure</a></li>
+    <li><a class="dropdown-item" href="../articles/output_naming.html">Output Naming</a></li>
     <li><a class="dropdown-item" href="../articles/schema_table.html">Schema Table</a></li>
     <li><a class="dropdown-item" href="../articles/new-tool.html">New Tool</a></li>
     <li><a class="dropdown-item" href="../articles/uml.html">UML Diagram</a></li>
@@ -80,7 +81,16 @@
 
 
 
-    <section class="level2"><h2 id="v0-1-0-2026-06-22">v0.1.0 (2026-06-22)<a class="anchor" aria-label="anchor" href="#v0-1-0-2026-06-22"></a>
+    <section class="level2"><h2 id="dev">dev<a class="anchor" aria-label="anchor" href="#dev"></a>
+</h2>
+<ul>
+<li>Add <a href="https://dvc.org/" class="external-link">DVC</a> support, mostly for child packages (<a href="https://github.com/tidywf/nemo/pull/69" class="external-link">pr69</a>)</li>
+<li>Tool: rename txt ftypes to tsv, add extra_ftypes hook (<a href="https://github.com/tidywf/nemo/pull/70" class="external-link">pr70</a>, <a href="https://github.com/tidywf/nemo/pull/71" class="external-link">pr71</a>)</li>
+<li>Tool: rename <code>post_process_files</code> hook to <code>refine_files</code>, now applied to the base prefix <em>before</em> the disambiguation passes so subclasses can fold a semantic distinction (e.g. germline/somatic) into the prefix and avoid a spurious <code>_2</code>/<code>_3</code> suffix</li>
+<li>New <code>Output Naming</code> vignette, shared with child packages via <code>inst/doc-templates/vignettes/_output_naming.qmd</code>
+</li>
+<li>Panache format vignettes (<a href="https://github.com/tidywf/nemo/pull/72" class="external-link">pr72</a>)</li>
+</ul></section><section class="level2"><h2 id="v0-1-0-2026-06-22">v0.1.0 (2026-06-22)<a class="anchor" aria-label="anchor" href="#v0-1-0-2026-06-22"></a>
 </h2>
 <p>Major refactor.</p>
 <section class="level3"><h3 id="breaking-changes">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes"></a>
@@ -93,7 +103,7 @@
 <p><strong>Config / Tool / Workflow API overhaul</strong> (<a href="https://github.com/tidywf/nemo/pull/64" class="external-link">pr64</a>, <a href="https://github.com/tidywf/nemo/pull/65" class="external-link">pr65</a>, <a href="https://github.com/tidywf/nemo/pull/66" class="external-link">pr66</a>)</p>
 <ul>
 <li>
-<code>Config</code>: <code>get_raw_*</code> / <code>get_tidy_*</code> methods renamed (e.g. <code>get_raw_patterns()</code> → <code>get_patterns()</code>, <code>get_raw_schemas_all()</code> → <code>get_schemas_raw()</code>); <code>are_raw_schemas_valid()</code> removed (validation now in <code>initialize()</code>); <code>config</code>, <code>raw_schemas_all</code>, <code>tidy_schemas_all</code> fields moved to private; <code>pkg</code> added as a public field; <code>cloneable = FALSE</code>
+<code>Config</code>: <code>get_raw_*</code> / <code>get_tidy_*</code> methods renamed (e.g. <code>get_raw_patterns()</code> → <code>get_patterns()</code>, <code>get_raw_schemas_all()</code> → <code>get_schemas_raw()</code>); <code>are_raw_schemas_valid()</code> removed (validation now in <code>initialize()</code>); <code>config</code>, <code>raw_schemas_all</code>, <code>tidy_schemas_all</code> fields moved to private; <code>pkg</code> added as a public field; <code>cloneable = FALSE</code>
 </li>
 <li>
 <code>Tool</code>: <code>$files</code>, <code>$tbls</code>, <code>$files_tbl</code> moved to private — use <code>list_files()</code> / <code>get_tbls()</code> instead; schema delegate fields (<code>get_raw_schema</code>, <code>get_tidy_schema</code>) removed — use <code>tool$config$get_schema_raw()</code> / <code>tool$config$get_schema_tidy()</code>; <code>nemofy(diro = ...)</code> → <code>run(output_dir = ...)</code>; column <code>group</code> → <code>prefix_suffix</code>; <code>cloneable = FALSE</code>
@@ -124,7 +134,7 @@
 <code><a href="../reference/nemo_uml.html">nemo_uml()</a></code>: generates a PlantUML SVG from R6 class names</li>
 <li>
 <code><a href="../reference/nemo_schema_reactable.html">nemo_schema_reactable()</a></code> / <code><a href="../reference/nemo_schemavis_data.html">nemo_schemavis_data()</a></code>: interactive schema explorer</li>
-<li>New file types: <code>txt-nohead</code>, <code>txt-keyvalue</code>, <code>csv</code>, <code>csv-nohead-long</code>
+<li>New file types: <code>tsv-nohead</code>, <code>tsv-keyvalue</code>, <code>csv</code>, <code>csv-nohead-long</code>
 </li>
 <li>
 <code>tidy</code>: <code>--output_id</code> / <code>--ulid</code> flags for tagging outputs with a run identifier; <code>--max</code> flag on <code>list</code> subcommand</li>
@@ -273,7 +283,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer>

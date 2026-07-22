@@ -31,7 +31,7 @@ caches all tidy schemas as a flat tibble (schemas_tidy)
 
     <a class="navbar-brand me-2" href="../index.html">nemo</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.0.3.9023</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.0.3.9024</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -44,6 +44,7 @@ caches all tidy schemas as a flat tibble (schemas_tidy)
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/installation.html">Installation</a></li>
     <li><a class="dropdown-item" href="../articles/structure.html">Structure</a></li>
+    <li><a class="dropdown-item" href="../articles/output_naming.html">Output Naming</a></li>
     <li><a class="dropdown-item" href="../articles/schema_table.html">Schema Table</a></li>
     <li><a class="dropdown-item" href="../articles/new-tool.html">New Tool</a></li>
     <li><a class="dropdown-item" href="../articles/uml.html">UML Diagram</a></li>
@@ -436,16 +437,16 @@ Tibble with columns <code>raw</code>, <code>tidy</code>, <code>type</code>, <cod
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 6 × 2</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   name   ftype          </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> table1 txt            </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> table2 txt            </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> table3 txt-keyvalue   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> table4 txt-nohead     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> table1 tsv            </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> table2 tsv            </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> table3 tsv-keyvalue   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> table4 tsv-nohead     </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span> table6 csv            </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span> table5 csv-nohead-long</span>
 <span class="r-in"><span><span class="op">(</span><span class="va">pat1</span> <span class="op">&lt;-</span> <span class="va">conf</span><span class="op">$</span><span class="fu">get_pattern</span><span class="op">(</span><span class="st">"table1"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "\\.tool1\\.table1\\.tsv$"</span>
 <span class="r-in"><span><span class="op">(</span><span class="va">ftype1</span> <span class="op">&lt;-</span> <span class="va">conf</span><span class="op">$</span><span class="fu">get_ftype</span><span class="op">(</span><span class="st">"table1"</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "txt"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "tsv"</span>
 <span class="r-in"><span><span class="op">(</span><span class="va">descr1</span> <span class="op">&lt;-</span> <span class="va">conf</span><span class="op">$</span><span class="fu">get_description</span><span class="op">(</span><span class="st">"table1"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Table1 for tool1 (txt: header present, tab-delimited)."</span>
 <span class="r-in"><span><span class="op">(</span><span class="va">descr</span> <span class="op">&lt;-</span> <span class="va">conf</span><span class="op">$</span><span class="fu">get_descriptions</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></span>
@@ -557,7 +558,7 @@ Tibble with columns <code>raw</code>, <code>tidy</code>, <code>type</code>, <cod
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer></div>
