@@ -1,10 +1,11 @@
 When the same sample is processed more than once (e.g. repeat runs of a tool
 over different dates), you end up with several sets of raw outputs that share
-**identical file names** but live under **different parent folders**. Here we
-show: (a) how tidy outputs are named so that repeated runs avoid overwriting
-each other, and (b) how to carry a run identifier *into the data* so the runs
-are still distinguishable once the files have been merged into a parquet dataset
-or database.
+identical file names but live under different parent folders. Here we show:
+
+- how tidy outputs are named so that repeated runs avoid overwriting each other
+- how to carry a run identifier into the data so the runs are still
+  distinguishable once the files have been merged into a merged parquet dataset
+  or database.
 
 ## Anatomy of a tidy filename
 
@@ -14,13 +15,20 @@ Every tidy file is named:
 {output_dir}/{prefix}_{tool}_{parser}.{ext}
 ```
 
+```{r}
+#| label: out-fmt
+#| echo: false
+
+fmts <- nemo::nemo_out_formats() |>
+  glue::glue_collapse(sep = ", ", last = " or ")
+```
+
 - `{output_dir}`: the directory to output the tidy files in a flat structure.
 - `{prefix}`: the input file's basename with the table's schema `pattern`
   stripped off. For `sampleA.tool1.table1.tsv` the `table1` pattern
   (`\.tool1\.table1\.tsv$`) is removed, leaving `sampleA`.
 - `{tool}_{parser}`: the tool name and the matched table (e.g. `tool1_table1`).
-- `{ext}`: driven by `format`
-  (`r nemo::nemo_out_formats() |> glue::glue_collapse(sep = ", ", last = " or ")`).
+- `{ext}`: driven by `format` (`r fmts`).
 
 So `sampleA.tool1.table1.tsv` tidied in parquet format becomes
 `sampleA_tool1_table1.parquet`.
@@ -128,9 +136,9 @@ fs::dir_ls(dir_outB, recurse = TRUE, glob = "*tool1_table1.parquet") |>
 ```
 
 For a globally-unique key with no coordination between runs, use
-`output_id = "<your id>"` with e.g. an auto-generated ULID (done automatically
-via the CLI's `--ulid` flag), which would generate an `output_id` column
-alongside `input_id`.
+`output_id = "<your id>"` with e.g. an auto-generated [ULID][ulid] (done
+automatically with the CLI's `--ulid` flag via the [ulid][ulid-r] R package),
+which would generate an `output_id` column alongside `input_id`.
 
 ## Rule of thumb
 
@@ -142,3 +150,6 @@ alongside `input_id`.
 - Use `prefix_include` when one recursive tidy is enough
 - Use `input_id` / `output_id` when each run is better described by an
   explicitly specified name you can control.
+
+[ulid]: https://wiki.tcl-lang.org/page/ULID "What is ULID"
+[ulid-r]: https://github.com/eddelbuettel/ulid "ULID in R"
