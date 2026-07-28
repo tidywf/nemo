@@ -11,13 +11,13 @@
 <link rel="icon" sizes="any" href="../favicon.ico">
 <link rel="manifest" href="../site.webmanifest">
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><script src="NEWS_files/libs/quarto-html/popper.min.js"></script><script src="NEWS_files/libs/quarto-html/tippy.umd.min.js"></script><link href="NEWS_files/libs/quarto-html/tippy.css" rel="stylesheet">
 <link href="NEWS_files/libs/quarto-html/light-border.css" rel="stylesheet">
 <!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="NEWS">
-<meta property="og:image" content="https://umccr.github.io/nemo/logo.png">
+<meta property="og:image" content="https://tidywf.github.io/nemo/logo.png">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -27,7 +27,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">nemo</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -42,9 +42,12 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/installation.html">Installation</a></li>
     <li><a class="dropdown-item" href="../articles/structure.html">Structure</a></li>
-    <li><a class="dropdown-item" href="../articles/contribute.html">Contribute</a></li>
+    <li><a class="dropdown-item" href="../articles/output_naming.html">Output Naming</a></li>
+    <li><a class="dropdown-item" href="../articles/schema_table.html">Schema Table</a></li>
+    <li><a class="dropdown-item" href="../articles/new-tool.html">New Tool</a></li>
+    <li><a class="dropdown-item" href="../articles/uml.html">UML Diagram</a></li>
+    <li><a class="dropdown-item" href="../articles/cicd.html">CI/CD Workflow</a></li>
     <li><a class="dropdown-item" href="../articles/devnotes.html">Devnotes</a></li>
-    <li><a class="dropdown-item" href="../articles/uml.html">UML</a></li>
   </ul>
 </li>
 <li class="active nav-item"><a class="nav-link" href="../articles/NEWS.html">NEWS</a></li>
@@ -54,7 +57,7 @@
 <li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json">
 </form></li>
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/umccr/nemo/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/tidywf/nemo/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul>
 </div>
 
@@ -68,7 +71,7 @@
 
 
 
-      <small class="dont-index">Source: <a href="https://github.com/umccr/nemo/blob/main/vignettes/NEWS.qmd" class="external-link"><code>vignettes/NEWS.qmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/tidywf/nemo/blob/main/vignettes/NEWS.qmd" class="external-link"><code>vignettes/NEWS.qmd</code></a></small>
       <div class="d-none name"><code></code></div>
     </div>
 
@@ -77,7 +80,78 @@
 
 
 
-    <section class="level2"><h2 id="v0-0-3-2026-02-09">v0.0.3 (2026-02-09)<a class="anchor" aria-label="anchor" href="#v0-0-3-2026-02-09"></a>
+    <section class="level2"><h2 id="v0-1-0-2026-07-28">v0.1.0 (2026-07-28)<a class="anchor" aria-label="anchor" href="#v0-1-0-2026-07-28"></a>
+</h2>
+<p>Major refactor.</p>
+<section class="level3"><h3 id="breaking-changes">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes"></a>
+</h3>
+<p><strong>Unified schema format</strong> (<a href="https://github.com/tidywf/nemo/pull/48" class="external-link">pr48</a>)</p>
+<ul>
+<li>
+<code>schema.yaml</code> replaces the separate <code>raw.yaml</code> + <code>tidy.yaml</code> pair per tool. Each column now carries <code>raw</code>, <code>tidy</code>, <code>type</code>, <code>description</code>, and <code>versions</code> in one place under a flat <code>tables:</code> map. Child packages must migrate their per-tool configs to this format.</li>
+</ul>
+<p><strong>Config / Tool / Workflow API overhaul</strong> (<a href="https://github.com/tidywf/nemo/pull/64" class="external-link">pr64</a>, <a href="https://github.com/tidywf/nemo/pull/65" class="external-link">pr65</a>, <a href="https://github.com/tidywf/nemo/pull/66" class="external-link">pr66</a>)</p>
+<ul>
+<li>
+<code>Config</code>: <code>get_raw_*</code> / <code>get_tidy_*</code> methods renamed (e.g. <code>get_raw_patterns()</code> → <code>get_patterns()</code>, <code>get_raw_schemas_all()</code> → <code>get_schemas_raw()</code>); <code>are_raw_schemas_valid()</code> removed (validation now in <code>initialize()</code>); <code>config</code>, <code>raw_schemas_all</code>, <code>tidy_schemas_all</code> fields moved to private; <code>pkg</code> added as a public field; <code>cloneable = FALSE</code>
+</li>
+<li>
+<code>Tool</code>: <code>$files</code>, <code>$tbls</code>, <code>$files_tbl</code> moved to private — use <code>list_files()</code> / <code>get_tbls()</code> instead; schema delegate fields (<code>get_raw_schema</code>, <code>get_tidy_schema</code>) removed — use <code>tool$config$get_schema_raw()</code> / <code>tool$config$get_schema_tidy()</code>; <code>nemofy(diro = ...)</code> → <code>run(output_dir = ...)</code>; column <code>group</code> → <code>prefix_suffix</code>; <code>post_process_files</code> hook renamed to <code>refine_files</code>, now applied to the base prefix <em>before</em> the disambiguation passes so subclasses can fold a semantic distinction (e.g. germline/somatic) into the prefix and avoid a spurious <code>_2</code>/<code>_3</code> suffix; <code>cloneable = FALSE</code>
+</li>
+<li>
+<code>Workflow</code>: <code>$tools</code>, <code>$files_tbl</code> moved to private — use <code>get_tools()</code>; <code>nemofy(diro = ...)</code> → <code>run(output_dir = ...)</code>; <code>list_files(type = ...)</code> — <code>type</code> arg removed; gains <code>metapkg</code> constructor argument; path existence validated at construction; <code>filter_files()</code> now validates names against known <code>tool_parser</code> values; <code>cloneable = FALSE</code>
+</li>
+</ul>
+<p><strong>CLI renames</strong></p>
+<ul>
+<li>
+<code>--out_dir</code> → <code>--output_dir</code>; <code>--pfix_include</code> → <code>--prefix_include</code>; output column <code>input_pfix</code> → <code>input_prefix</code>; <code>--prefix_include</code> is now opt-in (no longer added by default)</li>
+</ul>
+<p><strong>Other</strong></p>
+<ul>
+<li>
+<code><a href="../reference/nemo_metadata.html">nemo_metadata()</a></code>: parameter <code>input_dir</code> =&gt; <code>input_dirs</code>; return value changed from a named list to a single-row tibble with list-columns</li>
+<li>
+<code>RPostgres</code> dropped as a hard dependency - callers now supply <code>dbdrv</code> explicitly</li>
+<li>
+<code>txt</code> ftypes renamed to <code>tsv</code> (<a href="https://github.com/tidywf/nemo/pull/70" class="external-link">pr70</a>, <a href="https://github.com/tidywf/nemo/pull/71" class="external-link">pr71</a>)</li>
+</ul></section><section class="level3"><h3 id="new-features">New features<a class="anchor" aria-label="anchor" href="#new-features"></a>
+</h3>
+<ul>
+<li>New assertion module: <code><a href="../reference/nemo_stop.html">nemo_stop()</a></code>, <code><a href="../reference/nemo_assert_scalar_chr.html">nemo_assert_scalar_chr()</a></code>, <code><a href="../reference/nemo_assert_chr.html">nemo_assert_chr()</a></code>, <code><a href="../reference/nemo_assert_not_null.html">nemo_assert_not_null()</a></code>, <code><a href="../reference/nemo_assert_out_fmt.html">nemo_assert_out_fmt()</a></code> replacing <code>assertthat</code> calls</li>
+<li>Schema scaffold helpers: <code><a href="../reference/config_prep_raw_schema.html">config_prep_raw_schema()</a></code>, <code><a href="../reference/config_prep_raw.html">config_prep_raw()</a></code>, <code><a href="../reference/config_prep_multi.html">config_prep_multi()</a></code>, <code><a href="../reference/config_prep_write.html">config_prep_write()</a></code> — bootstrap a <code>schema.yaml</code> from example raw files</li>
+<li>
+<code><a href="../reference/nemo_gha_mermaid.html">nemo_gha_mermaid()</a></code>: generates a Mermaid flowchart of the full CI/CD pipeline (<a href="https://github.com/tidywf/nemo/pull/52" class="external-link">pr52</a>)</li>
+<li>
+<code><a href="../reference/nemo_uml.html">nemo_uml()</a></code>: generates a PlantUML SVG from R6 class names</li>
+<li>
+<code><a href="../reference/nemo_schema_reactable.html">nemo_schema_reactable()</a></code> / <code><a href="../reference/nemo_schemavis_data.html">nemo_schemavis_data()</a></code>: interactive schema explorer</li>
+<li>New file types: <code>tsv-nohead</code>, <code>tsv-keyvalue</code>, <code>csv</code>, <code>csv-nohead-long</code>
+</li>
+<li>
+<code>tidy</code>: <code>--output_id</code> / <code>--ulid</code> flags for tagging outputs with a run identifier; <code>--max</code> flag on <code>list</code> subcommand</li>
+<li>Metadata exported to <code>metadata.parquet</code> per run (<a href="https://github.com/tidywf/nemo/pull/62" class="external-link">pr62</a>, <a href="https://github.com/tidywf/nemo/issues/61" class="external-link">iss61</a>)</li>
+<li>
+<code>Tool</code> and <code>Workflow</code> now both support <code>write_metadata</code> boolean</li>
+<li>
+<code>extra_ftypes()</code> subclass hook for registering pkg-specific ftype parsers (<a href="https://github.com/tidywf/nemo/pull/70" class="external-link">pr70</a>, <a href="https://github.com/tidywf/nemo/pull/71" class="external-link">pr71</a>)</li>
+<li>Add <a href="https://dvc.org/" class="external-link">DVC</a> support, mostly for child packages (<a href="https://github.com/tidywf/nemo/pull/69" class="external-link">pr69</a>)</li>
+<li>New <code>Output Naming</code> vignette, shared with child packages via <code>inst/doc-templates/vignettes/_output_naming.qmd</code> (<a href="https://github.com/tidywf/nemo/pull/73" class="external-link">pr73</a>)</li>
+</ul></section><section class="level3"><h3 id="performance">Performance<a class="anchor" aria-label="anchor" href="#performance"></a>
+</h3>
+<ul>
+<li>File discovery ~20× faster on large directories — benchmarked at 1.9s =&gt; 0.1 s on 43k files x 15 patterns</li>
+</ul></section><section class="level3"><h3 id="infrastructure">Infrastructure<a class="anchor" aria-label="anchor" href="#infrastructure"></a>
+</h3>
+<ul>
+<li>CI/CD: <code>deploy.yaml</code> refactored from a 136-line monolith to reusable workflows via <code>tidywf/actions</code>; now also triggers on <code>dev</code> branch pushes</li>
+<li>
+<code>@claude</code> GHA restricted to repo owners, collaborators, and members</li>
+<li>
+<code>dependabot.yml</code> added for automated GHA dependency updates</li>
+<li>conda: aarch64 lock file added; dedicated <code>bump.yaml</code> env added</li>
+<li>Panache format vignettes (<a href="https://github.com/tidywf/nemo/pull/72" class="external-link">pr72</a>)</li>
+</ul></section></section><section class="level2"><h2 id="v0-0-3-2026-02-09">v0.0.3 (2026-02-09)<a class="anchor" aria-label="anchor" href="#v0-0-3-2026-02-09"></a>
 </h2>
 <ul>
 <li>
@@ -85,26 +159,26 @@
 </ul></section><section class="level2"><h2 id="v0-0-2-2026-02-04">v0.0.2 (2026-02-04)<a class="anchor" aria-label="anchor" href="#v0-0-2-2026-02-04"></a>
 </h2>
 <ul>
-<li>Add key-value parser (<a href="https://github.com/umccr/nemo/pull/12" class="external-link">pr12</a>, <a href="https://github.com/umccr/nemo/issues/11" class="external-link">iss11</a>)</li>
-<li>Export config writer (<a href="https://github.com/umccr/nemo/pull/13" class="external-link">pr13</a>)</li>
-<li>Add table description to schema getters, contribution docs, pkgdown fixes (<a href="https://github.com/umccr/nemo/pull/19" class="external-link">pr19</a>)</li>
-<li>Add <code>nemo_id</code> + <code>nemo_pfix</code> in class writer (<a href="https://github.com/umccr/nemo/pull/21" class="external-link">pr21</a>, <a href="https://github.com/umccr/nemo/issues/18" class="external-link">iss18</a>)
+<li>Add key-value parser (<a href="https://github.com/tidywf/nemo/pull/12" class="external-link">pr12</a>, <a href="https://github.com/tidywf/nemo/issues/11" class="external-link">iss11</a>)</li>
+<li>Export config writer (<a href="https://github.com/tidywf/nemo/pull/13" class="external-link">pr13</a>)</li>
+<li>Add table description to schema getters, contribution docs, pkgdown fixes (<a href="https://github.com/tidywf/nemo/pull/19" class="external-link">pr19</a>)</li>
+<li>Add <code>nemo_id</code> + <code>nemo_pfix</code> in class writer (<a href="https://github.com/tidywf/nemo/pull/21" class="external-link">pr21</a>, <a href="https://github.com/tidywf/nemo/issues/18" class="external-link">iss18</a>)
 <ul>
 <li>changed odir to diro arg in nemofy</li>
 </ul>
 </li>
-<li>list_files: <code>str_remove</code> offers more flexibility (<a href="https://github.com/umccr/nemo/pull/24" class="external-link">pr24</a>, <a href="https://github.com/umccr/nemo/issues/23" class="external-link">iss23</a>)</li>
-<li>Add metadata export functionality (<a href="https://github.com/umccr/nemo/pull/25" class="external-link">pr25</a>, <a href="https://github.com/umccr/nemo/issues/17" class="external-link">iss17</a>)
+<li>list_files: <code>str_remove</code> offers more flexibility (<a href="https://github.com/tidywf/nemo/pull/24" class="external-link">pr24</a>, <a href="https://github.com/tidywf/nemo/issues/23" class="external-link">iss23</a>)</li>
+<li>Add metadata export functionality (<a href="https://github.com/tidywf/nemo/pull/25" class="external-link">pr25</a>, <a href="https://github.com/tidywf/nemo/issues/17" class="external-link">iss17</a>)
 <ul>
 <li>rename <code>nemo_id</code> + <code>nemo_pfix</code> to <code>input_id</code> + <code>input_pfix</code>, respectively</li>
 <li>add <code>output_id</code>
 </li>
 </ul>
 </li>
-<li>Bugfix: use <code><a href="https://rdrr.io/r/base/AsIs.html" class="external-link">I()</a></code> for vroom literal data in <code>empty_tbl</code> (<a href="https://github.com/umccr/nemo/issues/27" class="external-link">iss27</a>, <a href="https://github.com/umccr/nemo/pull/28" class="external-link">pr28</a>)</li>
+<li>Bugfix: use <code><a href="https://rdrr.io/r/base/AsIs.html" class="external-link">I()</a></code> for vroom literal data in <code>empty_tbl</code> (<a href="https://github.com/tidywf/nemo/issues/27" class="external-link">iss27</a>, <a href="https://github.com/tidywf/nemo/pull/28" class="external-link">pr28</a>)</li>
 </ul></section><section class="level2"><h2 id="v0-0-1-2025-09-07">v0.0.1 (2025-09-07)<a class="anchor" aria-label="anchor" href="#v0-0-1-2025-09-07"></a>
 </h2>
-<p>Initial release of nemo (<a href="https://github.com/umccr/nemo/pull/5" class="external-link">pr5</a>)</p>
+<p>Initial release of nemo (<a href="https://github.com/tidywf/nemo/pull/5" class="external-link">pr5</a>)</p>
 <ul>
 <li>R pkg skeleton</li>
 <li>Documentation via pkgdown</li>
@@ -112,7 +186,7 @@
 <li>Logger</li>
 <li>GitHub Actions CI/CD</li>
 </ul>
-<p>Fixing issues <a href="https://github.com/umccr/nemo/issues/2" class="external-link">iss2</a>, <a href="https://github.com/umccr/nemo/issues/3" class="external-link">iss3</a> and <a href="https://github.com/umccr/nemo/issues/4" class="external-link">iss4</a></p>
+<p>Fixing issues <a href="https://github.com/tidywf/nemo/issues/2" class="external-link">iss2</a>, <a href="https://github.com/tidywf/nemo/issues/3" class="external-link">iss3</a> and <a href="https://github.com/tidywf/nemo/issues/4" class="external-link">iss4</a></p>
 </section><script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {
       var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
@@ -206,7 +280,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer>

@@ -11,15 +11,15 @@
 <link rel="icon" sizes="any" href="favicon.ico">
 <link rel="manifest" href="site.webmanifest">
 <script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
+<script src="deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Tidy Bioinformatic Pipeline Outputs">
-<meta name="description" content="A tidyverse R6 approach for working with bioinformatic pipeline outputs.
+<meta name="description" content="Tidy and explore outputs from bioinformatic pipelines.
 ">
-<meta property="og:description" content="A tidyverse R6 approach for working with bioinformatic pipeline outputs.
+<meta property="og:description" content="Tidy and explore outputs from bioinformatic pipelines.
 ">
-<meta property="og:image" content="https://umccr.github.io/nemo/logo.png">
+<meta property="og:image" content="https://tidywf.github.io/nemo/logo.png">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -29,7 +29,7 @@
 
     <a class="navbar-brand me-2" href="index.html">nemo</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -44,9 +44,12 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="articles/installation.html">Installation</a></li>
     <li><a class="dropdown-item" href="articles/structure.html">Structure</a></li>
-    <li><a class="dropdown-item" href="articles/contribute.html">Contribute</a></li>
+    <li><a class="dropdown-item" href="articles/output_naming.html">Output Naming</a></li>
+    <li><a class="dropdown-item" href="articles/schema_table.html">Schema Table</a></li>
+    <li><a class="dropdown-item" href="articles/new-tool.html">New Tool</a></li>
+    <li><a class="dropdown-item" href="articles/uml.html">UML Diagram</a></li>
+    <li><a class="dropdown-item" href="articles/cicd.html">CI/CD Workflow</a></li>
     <li><a class="dropdown-item" href="articles/devnotes.html">Devnotes</a></li>
-    <li><a class="dropdown-item" href="articles/uml.html">UML</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="articles/NEWS.html">NEWS</a></li>
@@ -56,7 +59,7 @@
 <li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="search.json">
 </form></li>
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/umccr/nemo/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/tidywf/nemo/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul>
 </div>
 
@@ -67,114 +70,214 @@
   <main id="main" class="col-md-9">
 <div class="section level1">
 <div class="page-header">
-<img src="logo.png" class="logo" alt=""><h1 id="turtle-tidy-and-explore-bioinformatic-pipeline-outputs">🐢 Tidy and Explore Bioinformatic Pipeline Outputs<a class="anchor" aria-label="anchor" href="#turtle-tidy-and-explore-bioinformatic-pipeline-outputs"></a>
+<img src="logo.png" class="logo" alt=""><h1 id="tidy-and-explore-bioinformatic-pipeline-outputs">Tidy and Explore Bioinformatic Pipeline Outputs<a class="anchor" aria-label="anchor" href="#tidy-and-explore-bioinformatic-pipeline-outputs"></a>
 </h1>
 </div>
-<p><a href="https://anaconda.org/umccr/r-nemo" class="external-link"><img src="https://anaconda.org/umccr/r-nemo/badges/latest_release_date.svg" title="Conda Latest Release" alt="conda-latest1"></a> <a href="https://github.com/umccr/nemo/actions/workflows/deploy.yaml" class="external-link"><img src="https://github.com/umccr/nemo/actions/workflows/deploy.yaml/badge.svg" title="GitHub Actions" alt="gha"></a></p>
-<ul>
-<li>📚 Docs: <a href="https://umccr.github.io/nemo" class="uri">https://umccr.github.io/nemo</a>
-<ul>
-<li><a href="https://umccr.github.io/nemo/articles/installation">Installation</a></li>
-<li><a href="https://umccr.github.io/nemo/articles/structure">R6 structure</a></li>
-<li><a href="https://umccr.github.io/nemo/articles/NEWS">Changelog</a></li>
-</ul>
-</li>
-</ul>
+<p><a href="https://anaconda.org/tidywf/r-nemo" class="external-link"><img src="https://anaconda.org/tidywf/r-nemo/badges/latest_release_date.svg" title="Conda Latest Release" alt="conda-latest1"></a> <a href="https://github.com/tidywf/nemo/actions/workflows/deploy.yaml" class="external-link"><img src="https://github.com/tidywf/nemo/actions/workflows/deploy.yaml/badge.svg" title="GitHub Actions" alt="gha"></a></p>
 <div class="section level2">
-<h2 id="overview">Overview<a class="anchor" aria-label="anchor" href="#overview"></a>
+<h2 id="contents">Contents<a class="anchor" aria-label="anchor" href="#contents"></a>
 </h2>
-<p>{nemo} is an R package that contains the building blocks for parsing, tidying, and writing bioinformatic pipeline results in a more consistent structure.</p>
-<p>In short, it traverses through a directory containing results from one or more runs of certain bioinformatic tools, parses any files it recognises, tidies them up (which includes data reshaping, normalisation, column name cleanup etc.), and writes them to the output format of choice e.g. Apache Parquet, PostgreSQL, TSV, RDS.</p>
-<p>The specific tools it can handle are controlled by configuration files written in YAML that are part of ‘child’ {nemo} packages, like {<a href="https://github.com/umccr/tidywigits" title="tidywigits" class="external-link">tidywigits</a>} and {<a href="https://github.com/umccr/dracarys" title="dracarys" class="external-link">dracarys</a>}. These configuration files (under <code>inst/config</code> in those respective packages) specify the schemas, types, patterns and field descriptions for the <em>raw</em> input <em>files</em> and <em>tidy</em> output <em>tbls</em>.</p>
+<ul>
+<li><a href="#nemo">nemo</a></li>
+<li><a href="#documentation">Documentation</a></li>
+<li><a href="#quickstart">Quickstart</a></li>
+<li><a href="#installation">Installation</a></li>
+<li><a href="#cli">CLI</a></li>
+</ul>
 </div>
 <div class="section level2">
-<h2 id="pizza-installation">🍕 Installation<a class="anchor" aria-label="anchor" href="#pizza-installation"></a>
+<h2 id="nemo">nemo<a class="anchor" aria-label="anchor" href="#nemo"></a>
+</h2>
+<p>Bioinformatic pipelines produce a lot of output files, but consuming them downstream is harder than it should be:</p>
+<ul>
+<li>Format variety: tools write TSV, CSV and various other proprietary formats, often mixed within the same pipeline</li>
+<li>Non-standard structure: files may be transposed, headerless, or embed section labels alongside data, requiring custom parsing logic for each tool</li>
+<li>Messy column names: raw names are frequently uppercase, space-separated, dot-delimited, or otherwise non-standard; joining across tools requires manual renaming</li>
+<li>Schema drift: column names and file layouts change silently between tool versions, breaking downstream code with no clear signal of what changed</li>
+<li>No run-level provenance: it is hard to tell which output file came from which sample or processing run once files are collected into a shared directory</li>
+</ul>
+<p>nemo is an R package that attempts to address these issues by providing a schema-driven parsing and tidying layer that turns raw pipeline outputs into consistently structured, versioned, analysis-ready tables.</p>
+<p>Its R6 classes (<code>Tool</code>, <code>Workflow</code>, <code>Config</code>) form the base layer: given a directory of bioinformatic results, they identify files by YAML-defined schemas, reshape and rename columns to a consistent tidy form, and write to a specified format (Apache Parquet, TSV, CSV, RDS, or PostgreSQL). Each run also produces a <code>metadata.parquet</code> file alongside the tidy tables, capturing IDs, paths, and package versions.</p>
+<p>Downstream packages extend these base classes by supplying tool-specific schemas and parsers. <a href="https://github.com/tidywf/tidywigits" title="tidywigits" class="external-link">tidywigits</a> and <a href="https://github.com/tidywf/tidydragen" title="tidydragen" class="external-link">tidydragen</a> are example R packages that target the large number of outputs from the established bioinformatic pipelines <a href="https://github.com/hartwigmedical/hmftools" title="hmftools" class="external-link">WiGiTS/hmftools</a> and <a href="https://help.dragen.illumina.com/" title="Illumina DRAGEN" class="external-link">Illumina DRAGEN</a>, respectively.</p>
+</div>
+<div class="section level2">
+<h2 id="documentation">Documentation<a class="anchor" aria-label="anchor" href="#documentation"></a>
+</h2>
+<ul>
+<li>Installation: <a href="https://tidywf.github.io/nemo/articles/installation" class="uri">https://tidywf.github.io/nemo/articles/installation</a>
+</li>
+<li>Files supported: <a href="https://tidywf.github.io/nemo/articles/schema_table" class="uri">https://tidywf.github.io/nemo/articles/schema_table</a>
+</li>
+<li>Output naming: <a href="https://tidywf.github.io/nemo/articles/output_naming" class="uri">https://tidywf.github.io/nemo/articles/output_naming</a>
+</li>
+<li>Changelog: <a href="https://tidywf.github.io/nemo/articles/NEWS" class="uri">https://tidywf.github.io/nemo/articles/NEWS</a>
+</li>
+<li>R6 structure: <a href="https://tidywf.github.io/nemo/articles/structure" class="uri">https://tidywf.github.io/nemo/articles/structure</a>
+</li>
+<li>UML: <a href="https://tidywf.github.io/nemo/articles/uml" class="uri">https://tidywf.github.io/nemo/articles/uml</a>
+</li>
+<li>CI/CD: <a href="https://tidywf.github.io/nemo/articles/cicd" class="uri">https://tidywf.github.io/nemo/articles/cicd</a>
+</li>
+</ul>
+</div>
+<div class="section level2">
+<h2 id="quickstart">Quickstart<a class="anchor" aria-label="anchor" href="#quickstart"></a>
+</h2>
+<p>Raw pipeline outputs often have non-standard layouts. For example, this file stores QC metrics as key-value rows rather than columns:</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/tidywf/nemo" class="external-link">nemo</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata/tool1/latest"</span>, package <span class="op">=</span> <span class="st">"nemo"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/writeLines.html" class="external-link">writeLines</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/readLines.html" class="external-link">readLines</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">path</span>, <span class="st">"sampleA.tool1.table3.tsv"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; SampleID sampleA</span></span>
+<span><span class="co">#&gt; QCStatus Pass</span></span>
+<span><span class="co">#&gt; TotalReads   10000</span></span>
+<span><span class="co">#&gt; MappedReads  9500</span></span>
+<span><span class="co">#&gt; UnmappedReads    500</span></span></code></pre></div>
+<p>The <code>run()</code> method is able to filter, tidy, and write all tables of interest in one call (<code>Workflow1</code> is nemo’s built-in example workflow):</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">outdir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"quickstart"</span><span class="op">)</span></span>
+<span><span class="va">wf1</span> <span class="op">&lt;-</span> <span class="va"><a href="reference/Workflow1.html">Workflow1</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span>path <span class="op">=</span> <span class="va">path</span><span class="op">)</span></span>
+<span><span class="va">wf1</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span></span>
+<span>  output_dir <span class="op">=</span> <span class="va">outdir</span>,</span>
+<span>  format <span class="op">=</span> <span class="st">"parquet"</span>,</span>
+<span>  input_id <span class="op">=</span> <span class="st">"run1"</span>,</span>
+<span>  output_id <span class="op">=</span> <span class="st">"out1"</span>,</span>
+<span>  prefix_include <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="va">outdir</span>, pattern <span class="op">=</span> <span class="st">"\\.parquet$"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "metadata.parquet"             "sampleA_tool1_table1.parquet" "sampleA_tool1_table2.parquet"</span></span>
+<span><span class="co">#&gt; [4] "sampleA_tool1_table3.parquet" "sampleA_tool1_table4.parquet" "sampleA_tool1_table5.parquet"</span></span>
+<span><span class="co">#&gt; [7] "sampleA_tool1_table6.parquet"</span></span></code></pre></div>
+<p>Read back the tidied table:</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">arrow</span><span class="fu">::</span><span class="fu"><a href="https://arrow.apache.org/docs/r/reference/read_parquet.html" class="external-link">read_parquet</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="va">outdir</span>, <span class="st">"sampleA_tool1_table3.parquet"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 1 × 8</span></span>
+<span><span class="co">#&gt;   input_id input_prefix output_id sample_id qcstatus reads_total reads_map reads_unmap</span></span>
+<span><span class="co">#&gt; * &lt;chr&gt;    &lt;chr&gt;        &lt;chr&gt;     &lt;chr&gt;     &lt;chr&gt;          &lt;dbl&gt;     &lt;dbl&gt;       &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt; 1 run1     sampleA      out1      sampleA   Pass           10000      9500         500</span></span></code></pre></div>
+<p>Three optional columns can be prepended to every written table to support downstream tracing and joining. All are opt-in and off by default, but highly recommended for any multi-sample or multi-run pipeline:</p>
+<table class="table">
+<colgroup>
+<col width="33%">
+<col width="33%">
+<col width="33%">
+</colgroup>
+<thead><tr>
+<th>Column</th>
+<th>Purpose</th>
+<th>User-supplied or auto-generated?</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>input_id</code></td>
+<td>identifies the sample or input run</td>
+<td>user</td>
+</tr>
+<tr>
+<td><code>output_id</code></td>
+<td>identifies the tidywigits processing run</td>
+<td>user or auto (ULID)</td>
+</tr>
+<tr>
+<td><code>input_prefix</code></td>
+<td>filename prefix (e.g. sample name)</td>
+<td>auto</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section level2">
+<h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
 <p>Using {remotes} directly from GitHub:</p>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"remotes"</span><span class="op">)</span></span>
-<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"umccr/nemo"</span><span class="op">)</span> <span class="co"># latest main commit</span></span>
-<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"umccr/nemo@v0.0.3"</span><span class="op">)</span> <span class="co"># released version</span></span></code></pre></div>
+<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"tidywf/nemo"</span><span class="op">)</span> <span class="co"># latest main commit</span></span>
+<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"tidywf/nemo@v0.1.0"</span><span class="op">)</span> <span class="co"># specific version</span></span></code></pre></div>
 <p>Alternatively:</p>
 <ul>
-<li>conda package: <a href="https://anaconda.org/umccr/r-nemo" class="external-link uri">https://anaconda.org/umccr/r-nemo</a>
+<li>conda package: <a href="https://anaconda.org/tidywf/r-nemo" class="external-link uri">https://anaconda.org/tidywf/r-nemo</a>
 </li>
 </ul>
-<p>For more details see: <a href="https://umccr.github.io/nemo/articles/installation" class="uri">https://umccr.github.io/nemo/articles/installation</a></p>
+<p>For more details see: <a href="https://tidywf.github.io/nemo/articles/installation" class="uri">https://tidywf.github.io/nemo/articles/installation</a></p>
 </div>
 <div class="section level2">
-<h2 id="cyclone-cli">🌀 CLI<a class="anchor" aria-label="anchor" href="#cyclone-cli"></a>
+<h2 id="cli">CLI<a class="anchor" aria-label="anchor" href="#cli"></a>
 </h2>
 <p>A <code>nemo.R</code> command line interface is available for convenience.</p>
 <ul>
 <li>If you’re using the conda package, the <code>nemo.R</code> command will already be available inside the activated conda environment.</li>
 <li>If you’re <em>not</em> using the conda package, you need to export the <code>nemo/inst/cli/</code> directory to your <code>PATH</code> in order to use <code>nemo.R</code>.</li>
 </ul>
-<div class="sourceCode" id="cb2"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="va">nemo_cli</span><span class="op">=</span><span class="va">$(</span><span class="ex">Rscript</span> <span class="at">-e</span> <span class="st">'x = system.file("cli", package = "nemo"); cat(x, "\n")'</span> <span class="kw">|</span> <span class="fu">xargs</span><span class="va">)</span></span>
-<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="bu">export</span> <span class="va">PATH</span><span class="op">=</span><span class="st">"</span><span class="va">${nemo_cli}</span><span class="st">:</span><span class="va">${PATH}</span><span class="st">"</span></span></code></pre></div>
-<div class="sourceCode" id="cb3"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="sc">$</span> nemo.R <span class="sc">--</span>version</span>
-<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>nemo <span class="dv">0</span>.<span class="fl">0.3</span></span>
-<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a></span>
-<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="co">#-----------------------------------#</span></span>
-<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a><span class="sc">$</span> nemo.R <span class="sc">--</span>help</span>
-<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a>usage<span class="sc">:</span> nemo.R [<span class="sc">-</span>h] [<span class="sc">-</span>v] {tidy,list} ...</span>
-<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a></span>
-<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a>Tidy Bioinformatic Workflows</span>
-<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a></span>
-<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a>positional arguments<span class="sc">:</span></span>
-<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a>  {tidy,list}    sub<span class="sc">-</span>command help</span>
-<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a>    tidy         Tidy Workflow Outputs</span>
-<span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a>    list         List Parsable Workflow Outputs</span>
-<span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a></span>
-<span id="cb3-15"><a href="#cb3-15" tabindex="-1"></a>options<span class="sc">:</span></span>
-<span id="cb3-16"><a href="#cb3-16" tabindex="-1"></a>  <span class="sc">-</span>h, <span class="sc">--</span>help     show this help message and exit</span>
-<span id="cb3-17"><a href="#cb3-17" tabindex="-1"></a>  <span class="sc">-</span>v, <span class="sc">--</span>version  show program<span class="st">'s version number and exit</span></span>
-<span id="cb3-18"><a href="#cb3-18" tabindex="-1"></a><span class="st">'</span></span>
-<span id="cb3-19"><a href="#cb3-19" tabindex="-1"></a><span class="co">#-----------------------------------#</span></span>
-<span id="cb3-20"><a href="#cb3-20" tabindex="-1"></a><span class="sc">$</span> nemo.R tidy <span class="sc">--</span>help</span>
-<span id="cb3-21"><a href="#cb3-21" tabindex="-1"></a>usage<span class="sc">:</span> nemo.R tidy [<span class="sc">-</span>h] <span class="sc">-</span>w WORKFLOW <span class="sc">-</span>d IN_DIR [<span class="sc">-</span>o OUT_DIR] [<span class="sc">-</span>f FORMAT] <span class="sc">-</span>i ID</span>
-<span id="cb3-22"><a href="#cb3-22" tabindex="-1"></a>                   [<span class="sc">--</span>dbname DBNAME] [<span class="sc">--</span>dbuser DBUSER] [<span class="sc">--</span>include INCLUDE]</span>
-<span id="cb3-23"><a href="#cb3-23" tabindex="-1"></a>                   [<span class="sc">--</span>exclude EXCLUDE] [<span class="sc">-</span>q]</span>
-<span id="cb3-24"><a href="#cb3-24" tabindex="-1"></a></span>
-<span id="cb3-25"><a href="#cb3-25" tabindex="-1"></a>options<span class="sc">:</span></span>
-<span id="cb3-26"><a href="#cb3-26" tabindex="-1"></a>  <span class="sc">-</span>h, <span class="sc">--</span>help            show this help message and exit</span>
-<span id="cb3-27"><a href="#cb3-27" tabindex="-1"></a>  <span class="sc">-</span>w WORKFLOW, <span class="sc">--</span>workflow WORKFLOW</span>
-<span id="cb3-28"><a href="#cb3-28" tabindex="-1"></a>                        Workflow name.</span>
-<span id="cb3-29"><a href="#cb3-29" tabindex="-1"></a>  <span class="sc">-</span>d IN_DIR, <span class="sc">--</span>in_dir IN_DIR</span>
-<span id="cb3-30"><a href="#cb3-30" tabindex="-1"></a>                        Input directory.</span>
-<span id="cb3-31"><a href="#cb3-31" tabindex="-1"></a>  <span class="sc">-</span>o OUT_DIR, <span class="sc">--</span>out_dir OUT_DIR</span>
-<span id="cb3-32"><a href="#cb3-32" tabindex="-1"></a>                        Output directory.</span>
-<span id="cb3-33"><a href="#cb3-33" tabindex="-1"></a>  <span class="sc">-</span>f FORMAT, <span class="sc">--</span>format FORMAT</span>
-<span id="cb3-34"><a href="#cb3-34" tabindex="-1"></a>                        Format of output [def<span class="sc">:</span> parquet] (parquet, db, tsv,</span>
-<span id="cb3-35"><a href="#cb3-35" tabindex="-1"></a>                        csv, rds)</span>
-<span id="cb3-36"><a href="#cb3-36" tabindex="-1"></a>  <span class="sc">-</span>i ID, <span class="sc">--</span>id ID        ID to use <span class="cf">for</span> this run.</span>
-<span id="cb3-37"><a href="#cb3-37" tabindex="-1"></a>  <span class="sc">--</span>dbname DBNAME       Database name.</span>
-<span id="cb3-38"><a href="#cb3-38" tabindex="-1"></a>  <span class="sc">--</span>dbuser DBUSER       Database user.</span>
-<span id="cb3-39"><a href="#cb3-39" tabindex="-1"></a>  <span class="sc">--</span>include INCLUDE     Include only these <span class="fu">files</span> (comma,sep).</span>
-<span id="cb3-40"><a href="#cb3-40" tabindex="-1"></a>  <span class="sc">--</span>exclude EXCLUDE     Exclude these <span class="fu">files</span> (comma,sep).</span>
-<span id="cb3-41"><a href="#cb3-41" tabindex="-1"></a>  <span class="sc">-</span>q, <span class="sc">--</span>quiet           Shush all the logs.</span>
-<span id="cb3-42"><a href="#cb3-42" tabindex="-1"></a></span>
-<span id="cb3-43"><a href="#cb3-43" tabindex="-1"></a><span class="co">#-----------------------------------#</span></span>
-<span id="cb3-44"><a href="#cb3-44" tabindex="-1"></a><span class="sc">$</span> nemo.R list <span class="sc">--</span>help</span>
-<span id="cb3-45"><a href="#cb3-45" tabindex="-1"></a>usage<span class="sc">:</span> nemo.R list [<span class="sc">-</span>h] <span class="sc">-</span>w WORKFLOW <span class="sc">-</span>d IN_DIR [<span class="sc">-</span>f FORMAT] [<span class="sc">-</span>q]</span>
-<span id="cb3-46"><a href="#cb3-46" tabindex="-1"></a></span>
-<span id="cb3-47"><a href="#cb3-47" tabindex="-1"></a>options<span class="sc">:</span></span>
-<span id="cb3-48"><a href="#cb3-48" tabindex="-1"></a>  <span class="sc">-</span>h, <span class="sc">--</span>help            show this help message and exit</span>
-<span id="cb3-49"><a href="#cb3-49" tabindex="-1"></a>  <span class="sc">-</span>w WORKFLOW, <span class="sc">--</span>workflow WORKFLOW</span>
-<span id="cb3-50"><a href="#cb3-50" tabindex="-1"></a>                        Workflow name.</span>
-<span id="cb3-51"><a href="#cb3-51" tabindex="-1"></a>  <span class="sc">-</span>d IN_DIR, <span class="sc">--</span>in_dir IN_DIR</span>
-<span id="cb3-52"><a href="#cb3-52" tabindex="-1"></a>                        Input directory.</span>
-<span id="cb3-53"><a href="#cb3-53" tabindex="-1"></a>  <span class="sc">-</span>f FORMAT, <span class="sc">--</span>format FORMAT</span>
-<span id="cb3-54"><a href="#cb3-54" tabindex="-1"></a>                        Format of list output [def<span class="sc">:</span> pretty] (tsv, pretty)</span>
-<span id="cb3-55"><a href="#cb3-55" tabindex="-1"></a>  <span class="sc">-</span>q, <span class="sc">--</span>quiet           Shush all the logs.</span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="va">nemo_cli</span><span class="op">=</span><span class="va">$(</span><span class="ex">Rscript</span> <span class="at">-e</span> <span class="st">'x = system.file("cli", package = "nemo"); cat(x, "\n")'</span> <span class="kw">|</span> <span class="fu">xargs</span><span class="va">)</span></span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a><span class="bu">export</span> <span class="va">PATH</span><span class="op">=</span><span class="st">"</span><span class="va">${nemo_cli}</span><span class="st">:</span><span class="va">${PATH}</span><span class="st">"</span></span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="sc">$</span> nemo.R <span class="sc">--</span>version</span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>nemo <span class="dv">0</span>.<span class="fl">1.0</span></span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a><span class="co">#-----------------------------------#</span></span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a><span class="sc">$</span> nemo.R <span class="sc">--</span>help</span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a>usage<span class="sc">:</span> nemo.R [<span class="sc">-</span>h] [<span class="sc">-</span>v] {tidy,list} ...</span>
+<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a></span>
+<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a>Tidy Bioinformatic Workflows</span>
+<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a></span>
+<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a>positional arguments<span class="sc">:</span></span>
+<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a>  {tidy,list}    sub<span class="sc">-</span>command help</span>
+<span id="cb6-12"><a href="#cb6-12" tabindex="-1"></a>    tidy         Tidy Workflow Outputs</span>
+<span id="cb6-13"><a href="#cb6-13" tabindex="-1"></a>    list         List Parsable Workflow Outputs</span>
+<span id="cb6-14"><a href="#cb6-14" tabindex="-1"></a></span>
+<span id="cb6-15"><a href="#cb6-15" tabindex="-1"></a>options<span class="sc">:</span></span>
+<span id="cb6-16"><a href="#cb6-16" tabindex="-1"></a>  <span class="sc">-</span>h, <span class="sc">--</span>help     show this help message and exit</span>
+<span id="cb6-17"><a href="#cb6-17" tabindex="-1"></a>  <span class="sc">-</span>v, <span class="sc">--</span>version  show program<span class="st">'s version number and exit</span></span>
+<span id="cb6-18"><a href="#cb6-18" tabindex="-1"></a><span class="st">'</span></span>
+<span id="cb6-19"><a href="#cb6-19" tabindex="-1"></a><span class="co">#-----------------------------------#</span></span>
+<span id="cb6-20"><a href="#cb6-20" tabindex="-1"></a><span class="sc">$</span> nemo.R tidy <span class="sc">--</span>help</span>
+<span id="cb6-21"><a href="#cb6-21" tabindex="-1"></a>usage<span class="sc">:</span> nemo.R tidy [<span class="sc">-</span>h] <span class="sc">-</span>w WORKFLOW <span class="sc">-</span>d IN_DIR [<span class="sc">-</span>o OUTPUT_DIR] [<span class="sc">-</span>f FORMAT]</span>
+<span id="cb6-22"><a href="#cb6-22" tabindex="-1"></a>                   [<span class="sc">--</span>input_id INPUT_ID] [<span class="sc">--</span>output_id OUTPUT_ID <span class="sc">|</span> <span class="sc">--</span>ulid]</span>
+<span id="cb6-23"><a href="#cb6-23" tabindex="-1"></a>                   [<span class="sc">--</span>dbname DBNAME] [<span class="sc">--</span>dbuser DBUSER] [<span class="sc">--</span>include INCLUDE]</span>
+<span id="cb6-24"><a href="#cb6-24" tabindex="-1"></a>                   [<span class="sc">--</span>exclude EXCLUDE] [<span class="sc">--</span>prefix_include] [<span class="sc">-</span>q]</span>
+<span id="cb6-25"><a href="#cb6-25" tabindex="-1"></a></span>
+<span id="cb6-26"><a href="#cb6-26" tabindex="-1"></a>options<span class="sc">:</span></span>
+<span id="cb6-27"><a href="#cb6-27" tabindex="-1"></a>  <span class="sc">-</span>h, <span class="sc">--</span>help            show this help message and exit</span>
+<span id="cb6-28"><a href="#cb6-28" tabindex="-1"></a>  <span class="sc">-</span>w, <span class="sc">--</span>workflow WORKFLOW</span>
+<span id="cb6-29"><a href="#cb6-29" tabindex="-1"></a>                        Workflow name.</span>
+<span id="cb6-30"><a href="#cb6-30" tabindex="-1"></a>  <span class="sc">-</span>d, <span class="sc">--</span>in_dir IN_DIR   Input directory.</span>
+<span id="cb6-31"><a href="#cb6-31" tabindex="-1"></a>  <span class="sc">-</span>o, <span class="sc">--</span>output_dir OUTPUT_DIR</span>
+<span id="cb6-32"><a href="#cb6-32" tabindex="-1"></a>                        Output directory.</span>
+<span id="cb6-33"><a href="#cb6-33" tabindex="-1"></a>  <span class="sc">-</span>f, <span class="sc">--</span>format FORMAT   Format of output [def<span class="sc">:</span> parquet] (parquet, db, tsv,</span>
+<span id="cb6-34"><a href="#cb6-34" tabindex="-1"></a>                        csv, rds)</span>
+<span id="cb6-35"><a href="#cb6-35" tabindex="-1"></a>  <span class="sc">--</span>input_id INPUT_ID   Input ID <span class="cf">for</span> this run.</span>
+<span id="cb6-36"><a href="#cb6-36" tabindex="-1"></a>  <span class="sc">--</span>output_id OUTPUT_ID</span>
+<span id="cb6-37"><a href="#cb6-37" tabindex="-1"></a>                        Output ID <span class="cf">for</span> this run.</span>
+<span id="cb6-38"><a href="#cb6-38" tabindex="-1"></a>  <span class="sc">--</span>ulid                Generate a ULID as output ID.</span>
+<span id="cb6-39"><a href="#cb6-39" tabindex="-1"></a>  <span class="sc">--</span>dbname DBNAME       Database name.</span>
+<span id="cb6-40"><a href="#cb6-40" tabindex="-1"></a>  <span class="sc">--</span>dbuser DBUSER       Database user.</span>
+<span id="cb6-41"><a href="#cb6-41" tabindex="-1"></a>  <span class="sc">--</span>include INCLUDE     Include only these <span class="fu">files</span> (comma sep tool_parsers).</span>
+<span id="cb6-42"><a href="#cb6-42" tabindex="-1"></a>  <span class="sc">--</span>exclude EXCLUDE     Exclude only these <span class="fu">files</span> (comma sep tool_parsers).</span>
+<span id="cb6-43"><a href="#cb6-43" tabindex="-1"></a>  <span class="sc">--</span>prefix_include      Include input prefix column <span class="cf">in</span> output tables.</span>
+<span id="cb6-44"><a href="#cb6-44" tabindex="-1"></a>  <span class="sc">-</span>q, <span class="sc">--</span>quiet           Shush all the logs.</span>
+<span id="cb6-45"><a href="#cb6-45" tabindex="-1"></a></span>
+<span id="cb6-46"><a href="#cb6-46" tabindex="-1"></a><span class="co">#-----------------------------------#</span></span>
+<span id="cb6-47"><a href="#cb6-47" tabindex="-1"></a><span class="sc">$</span> nemo.R list <span class="sc">--</span>help</span>
+<span id="cb6-48"><a href="#cb6-48" tabindex="-1"></a>usage<span class="sc">:</span> nemo.R list [<span class="sc">-</span>h] <span class="sc">-</span>w WORKFLOW <span class="sc">-</span>d IN_DIR [<span class="sc">-</span>f FORMAT] [<span class="sc">-</span>m MAX] [<span class="sc">-</span>q]</span>
+<span id="cb6-49"><a href="#cb6-49" tabindex="-1"></a></span>
+<span id="cb6-50"><a href="#cb6-50" tabindex="-1"></a>options<span class="sc">:</span></span>
+<span id="cb6-51"><a href="#cb6-51" tabindex="-1"></a>  <span class="sc">-</span>h, <span class="sc">--</span>help            show this help message and exit</span>
+<span id="cb6-52"><a href="#cb6-52" tabindex="-1"></a>  <span class="sc">-</span>w, <span class="sc">--</span>workflow WORKFLOW</span>
+<span id="cb6-53"><a href="#cb6-53" tabindex="-1"></a>                        Workflow name.</span>
+<span id="cb6-54"><a href="#cb6-54" tabindex="-1"></a>  <span class="sc">-</span>d, <span class="sc">--</span>in_dir IN_DIR   Input directory.</span>
+<span id="cb6-55"><a href="#cb6-55" tabindex="-1"></a>  <span class="sc">-</span>f, <span class="sc">--</span>format FORMAT   Format of list output [def<span class="sc">:</span> pretty] (tsv, pretty)</span>
+<span id="cb6-56"><a href="#cb6-56" tabindex="-1"></a>  <span class="sc">-</span>m, <span class="sc">--</span>max MAX         Max rows to show.</span>
+<span id="cb6-57"><a href="#cb6-57" tabindex="-1"></a>  <span class="sc">-</span>q, <span class="sc">--</span>quiet           Shush all the logs.</span></code></pre></div>
 </div>
 </div>
 
   </main><aside class="col-md-3"><div class="links">
 <h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">
-<li><a href="https://github.com/umccr/nemo/" class="external-link">Browse source code</a></li>
-<li><a href="https://github.com/umccr/nemo/issues" class="external-link">Report a bug</a></li>
+<li><a href="https://github.com/tidywf/nemo/" class="external-link">Browse source code</a></li>
+<li><a href="https://github.com/tidywf/nemo/issues" class="external-link">Report a bug</a></li>
 </ul>
 </div>
 
@@ -208,12 +311,7 @@
 </ul>
 </div>
 
-<div class="dev-status">
-<h2 data-toc-skip>Dev status</h2>
-<ul class="list-unstyled">
-<li><a href="https://umccr.github.io/nemo"><img src="reference/figures/logo.png" alt="logo" align="left" height="100"></a></li>
-</ul>
-</div>
+
 
   </aside>
 </div>
@@ -224,7 +322,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer>
