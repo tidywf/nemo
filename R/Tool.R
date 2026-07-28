@@ -466,7 +466,7 @@ Tool <- R6::R6Class(
           tbl_name = dplyr::if_else(
             .data$parser == .data$tidy_name,
             .data$tool_parser,
-            paste(.data$tool_parser, .data$tidy_name, sep = "_")
+            paste0(.data$tool_parser, .data$tidy_name)
           ),
           fpfix = paste(file.path(output_dir, .data$prefix), .data$tbl_name, sep = "_"),
           tidy_data = purrr::pmap(
