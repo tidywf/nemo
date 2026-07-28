@@ -53,13 +53,17 @@ schemas and parsers.
 [tidywigits](https://github.com/tidywf/tidywigits "tidywigits") and
 [tidydragen](https://github.com/tidywf/tidydragen "tidydragen") are
 example R packages that target the large number of outputs from the
-established bioinformatic pipelines WiGiTS/hmftools and Illumina DRAGEN,
+established bioinformatic pipelines
+[WiGiTS/hmftools](https://github.com/hartwigmedical/hmftools "hmftools")
+and [Illumina
+DRAGEN](https://help.dragen.illumina.com/ "Illumina DRAGEN"),
 respectively.
 
 ## Documentation
 
 - Installation: <https://tidywf.github.io/nemo/articles/installation>
 - Files supported: <https://tidywf.github.io/nemo/articles/schema_table>
+- Output naming: <https://tidywf.github.io/nemo/articles/output_naming>
 - Changelog: <https://tidywf.github.io/nemo/articles/NEWS>
 - R6 structure: <https://tidywf.github.io/nemo/articles/structure>
 - UML: <https://tidywf.github.io/nemo/articles/uml>
@@ -89,10 +93,10 @@ interest in one call (`Workflow1` is nemo’s built-in example workflow):
 outdir <- file.path(tempdir(), "quickstart")
 wf1 <- Workflow1$new(path = path)
 wf1$run(
-  output_dir     = outdir,
-  format         = "parquet",
-  input_id       = "run1",
-  output_id      = "out1",
+  output_dir = outdir,
+  format = "parquet",
+  input_id = "run1",
+  output_id = "out1",
   prefix_include = TRUE
 )
 
@@ -130,7 +134,7 @@ Using {remotes} directly from GitHub:
 ``` r
 install.packages("remotes")
 remotes::install_github("tidywf/nemo") # latest main commit
-remotes::install_github("tidywf/nemo@v0.0.3.9023") # specific version
+remotes::install_github("tidywf/nemo@v0.0.3.9025") # specific version
 ```
 
 Alternatively:
@@ -155,7 +159,7 @@ export PATH="${nemo_cli}:${PATH}"
 ```
 
     $ nemo.R --version
-    nemo 0.0.3.9023
+    nemo 0.0.3.9025
 
     #-----------------------------------#
     $ nemo.R --help

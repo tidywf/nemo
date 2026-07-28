@@ -49,25 +49,13 @@ pr <- function(n) {
 }
 ```
 
-## dev
-
-- Add [DVC](https://dvc.org/) support, mostly for child packages (`r pr(69)`)
-- Tool: rename txt ftypes to tsv, add extra_ftypes hook (`r pr(70)`, `r pr(71)`)
-- Tool: rename `post_process_files` hook to `refine_files`, now applied to the
-  base prefix *before* the disambiguation passes so subclasses can fold a
-  semantic distinction (e.g. germline/somatic) into the prefix and avoid a
-  spurious `_2`/`_3` suffix
-- New `Output Naming` vignette, shared with child packages via
-  `inst/doc-templates/vignettes/_output_naming.qmd`
-- Panache format vignettes (`r pr(72)`)
-
-## v0.1.0 (2026-06-22)
+## v0.1.0 (2026-07-28)
 
 Major refactor.
 
 ### Breaking changes
 
-**Unified schema format** (`r pr(68)`)
+**Unified schema format** (`r pr(48)`)
 
 - `schema.yaml` replaces the separate `raw.yaml` + `tidy.yaml` pair per tool.
   Each column now carries `raw`, `tidy`, `type`, `description`, and `versions`
@@ -86,7 +74,10 @@ Major refactor.
   (`get_raw_schema`, `get_tidy_schema`) removed --- use
   `tool$config$get_schema_raw()` / `tool$config$get_schema_tidy()`;
   `nemofy(diro = ...)` → `run(output_dir = ...)`; column `group` →
-  `prefix_suffix`; `cloneable = FALSE`
+  `prefix_suffix`; `post_process_files` hook renamed to `refine_files`, now
+  applied to the base prefix *before* the disambiguation passes so subclasses
+  can fold a semantic distinction (e.g. germline/somatic) into the prefix and
+  avoid a spurious `_2`/`_3` suffix; `cloneable = FALSE`
 - `Workflow`: `$tools`, `$files_tbl` moved to private --- use `get_tools()`;
   `nemofy(diro = ...)` → `run(output_dir = ...)`; `list_files(type = ...)` ---
   `type` arg removed; gains `metapkg` constructor argument; path existence
@@ -105,6 +96,7 @@ Major refactor.
   from a named list to a single-row tibble with list-columns
 - `RPostgres` dropped as a hard dependency - callers now supply `dbdrv`
   explicitly
+- `txt` ftypes renamed to `tsv` (`r pr(70)`, `r pr(71)`)
 
 ### New features
 
@@ -124,6 +116,11 @@ Major refactor.
   identifier; `--max` flag on `list` subcommand
 - Metadata exported to `metadata.parquet` per run (`r pr(62)`, `r iss(61)`)
 - `Tool` and `Workflow` now both support `write_metadata` boolean
+- `extra_ftypes()` subclass hook for registering pkg-specific ftype parsers
+  (`r pr(70)`, `r pr(71)`)
+- Add [DVC](https://dvc.org/) support, mostly for child packages (`r pr(69)`)
+- New `Output Naming` vignette, shared with child packages via
+  `inst/doc-templates/vignettes/_output_naming.qmd` (`r pr(73)`)
 
 ### Performance
 
@@ -137,6 +134,7 @@ Major refactor.
 - `@claude` GHA restricted to repo owners, collaborators, and members
 - `dependabot.yml` added for automated GHA dependency updates
 - conda: aarch64 lock file added; dedicated `bump.yaml` env added
+- Panache format vignettes (`r pr(72)`)
 
 ## v0.0.3 (2026-02-09)
 
