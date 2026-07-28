@@ -29,7 +29,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">nemo</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.0.3.9024</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.0.3.9025</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -73,7 +73,7 @@
 
 
 
-      <small class="dont-index">Source: <a href="https://github.com/tidywf/nemo/blob/main/vignettes/cicd.qmd" class="external-link"><code>vignettes/cicd.qmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/tidywf/nemo/blob/dev/vignettes/cicd.qmd" class="external-link"><code>vignettes/cicd.qmd</code></a></small>
       <div class="d-none name"><code></code></div>
     </div>
 
@@ -129,9 +129,11 @@
         subgraph pkgdownise ["🌐 Pkgdownise"]
         J4S1["👾 Miniforge setup"]
         J4S2["📦 Install from source"]
-        J4S3["🌐 Website publish"]
+        J4S3["🌐 Website build"]
+        J4S4["🚀 Website publish"]
         J4S1 --&gt; J4S2
         J4S2 --&gt; J4S3
+        J4S3 --&gt; J4S4
         end
 
         version --&gt; condarise

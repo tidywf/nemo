@@ -30,7 +30,7 @@
 
     <a class="navbar-brand me-2" href="index.html">nemo</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.0.3.9024</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.0.3.9025</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -99,7 +99,7 @@
 </ul>
 <p>nemo is an R package that attempts to address these issues by providing a schema-driven parsing and tidying layer that turns raw pipeline outputs into consistently structured, versioned, analysis-ready tables.</p>
 <p>Its R6 classes (<code>Tool</code>, <code>Workflow</code>, <code>Config</code>) form the base layer: given a directory of bioinformatic results, they identify files by YAML-defined schemas, reshape and rename columns to a consistent tidy form, and write to a specified format (Apache Parquet, TSV, CSV, RDS, or PostgreSQL). Each run also produces a <code>metadata.parquet</code> file alongside the tidy tables, capturing IDs, paths, and package versions.</p>
-<p>Downstream packages extend these base classes by supplying tool-specific schemas and parsers. <a href="https://github.com/tidywf/tidywigits" title="tidywigits" class="external-link">tidywigits</a> and <a href="https://github.com/tidywf/tidydragen" title="tidydragen" class="external-link">tidydragen</a> are example R packages that target the large number of outputs from the established bioinformatic pipelines WiGiTS/hmftools and Illumina DRAGEN, respectively.</p>
+<p>Downstream packages extend these base classes by supplying tool-specific schemas and parsers. <a href="https://github.com/tidywf/tidywigits" title="tidywigits" class="external-link">tidywigits</a> and <a href="https://github.com/tidywf/tidydragen" title="tidydragen" class="external-link">tidydragen</a> are example R packages that target the large number of outputs from the established bioinformatic pipelines <a href="https://github.com/hartwigmedical/hmftools" title="hmftools" class="external-link">WiGiTS/hmftools</a> and <a href="https://help.dragen.illumina.com/" title="Illumina DRAGEN" class="external-link">Illumina DRAGEN</a>, respectively.</p>
 </div>
 <div class="section level2">
 <h2 id="documentation">Documentation<a class="anchor" aria-label="anchor" href="#documentation"></a>
@@ -108,6 +108,8 @@
 <li>Installation: <a href="https://tidywf.github.io/nemo/articles/installation" class="uri">https://tidywf.github.io/nemo/articles/installation</a>
 </li>
 <li>Files supported: <a href="https://tidywf.github.io/nemo/articles/schema_table" class="uri">https://tidywf.github.io/nemo/articles/schema_table</a>
+</li>
+<li>Output naming: <a href="https://tidywf.github.io/nemo/articles/output_naming" class="uri">https://tidywf.github.io/nemo/articles/output_naming</a>
 </li>
 <li>Changelog: <a href="https://tidywf.github.io/nemo/articles/NEWS" class="uri">https://tidywf.github.io/nemo/articles/NEWS</a>
 </li>
@@ -138,10 +140,10 @@
 <code class="sourceCode R"><span><span class="va">outdir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"quickstart"</span><span class="op">)</span></span>
 <span><span class="va">wf1</span> <span class="op">&lt;-</span> <span class="va"><a href="reference/Workflow1.html">Workflow1</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span>path <span class="op">=</span> <span class="va">path</span><span class="op">)</span></span>
 <span><span class="va">wf1</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span></span>
-<span>  output_dir     <span class="op">=</span> <span class="va">outdir</span>,</span>
-<span>  format         <span class="op">=</span> <span class="st">"parquet"</span>,</span>
-<span>  input_id       <span class="op">=</span> <span class="st">"run1"</span>,</span>
-<span>  output_id      <span class="op">=</span> <span class="st">"out1"</span>,</span>
+<span>  output_dir <span class="op">=</span> <span class="va">outdir</span>,</span>
+<span>  format <span class="op">=</span> <span class="st">"parquet"</span>,</span>
+<span>  input_id <span class="op">=</span> <span class="st">"run1"</span>,</span>
+<span>  output_id <span class="op">=</span> <span class="st">"out1"</span>,</span>
 <span>  prefix_include <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
 <span></span>
@@ -194,7 +196,7 @@
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"remotes"</span><span class="op">)</span></span>
 <span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"tidywf/nemo"</span><span class="op">)</span> <span class="co"># latest main commit</span></span>
-<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"tidywf/nemo@v0.0.3.9023"</span><span class="op">)</span> <span class="co"># specific version</span></span></code></pre></div>
+<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"tidywf/nemo@v0.0.3.9025"</span><span class="op">)</span> <span class="co"># specific version</span></span></code></pre></div>
 <p>Alternatively:</p>
 <ul>
 <li>conda package: <a href="https://anaconda.org/tidywf/r-nemo" class="external-link uri">https://anaconda.org/tidywf/r-nemo</a>
@@ -213,7 +215,7 @@
 <div class="sourceCode" id="cb5"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="va">nemo_cli</span><span class="op">=</span><span class="va">$(</span><span class="ex">Rscript</span> <span class="at">-e</span> <span class="st">'x = system.file("cli", package = "nemo"); cat(x, "\n")'</span> <span class="kw">|</span> <span class="fu">xargs</span><span class="va">)</span></span>
 <span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a><span class="bu">export</span> <span class="va">PATH</span><span class="op">=</span><span class="st">"</span><span class="va">${nemo_cli}</span><span class="st">:</span><span class="va">${PATH}</span><span class="st">"</span></span></code></pre></div>
 <div class="sourceCode" id="cb6"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="sc">$</span> nemo.R <span class="sc">--</span>version</span>
-<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>nemo <span class="dv">0</span>.<span class="dv">0</span>.<span class="fl">3.9023</span></span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>nemo <span class="dv">0</span>.<span class="dv">0</span>.<span class="fl">3.9025</span></span>
 <span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a></span>
 <span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a><span class="co">#-----------------------------------#</span></span>
 <span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a><span class="sc">$</span> nemo.R <span class="sc">--</span>help</span>
