@@ -2,44 +2,37 @@ name: conda-docs
 
 on:
   push:
-    branches:
-      - main
-      - dev
+    tags:
+      - "v*"
 
 jobs:
-  version:
-    name: 📋 Get version
-    if: "startsWith(github.event.head_commit.message, 'Bump version:')"
-    uses: tidywf/actions/.github/workflows/version.yaml@main
+  prep:
+    name: 📋 Version
+    runs-on: ubuntu-latest
+    outputs:
+      pkg_version: ${{ steps.v.outputs.pkg_version }}
+    steps:
+      - id: v
+        run: echo "pkg_version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
 
   condarise:
     name: 🐍 Condarise
-    needs: [version]
+    needs: [prep]
     uses: tidywf/actions/.github/workflows/condarise.yaml@main
     permissions:
       contents: write
     with:
       pkg_name: nemo
-      pkg_version: ${{ needs.version.outputs.pkg_version }}
-    secrets: inherit
-
-  tag:
-    name: 🔖 Tag
-    needs: [condarise, version]
-    uses: tidywf/actions/.github/workflows/tag.yaml@main
-    permissions:
-      contents: write
-    with:
-      pkg_version: ${{ needs.version.outputs.pkg_version }}
+      pkg_version: ${{ needs.prep.outputs.pkg_version }}
     secrets: inherit
 
   pkgdownise:
     name: 🌐 Pkgdownise
-    needs: [tag, version]
+    needs: [prep, condarise]
     uses: tidywf/actions/.github/workflows/pkgdownise.yaml@main
     permissions:
       contents: write
     with:
       pkg_name: nemo
-      pkg_version: ${{ needs.version.outputs.pkg_version }}
+      pkg_version: ${{ needs.prep.outputs.pkg_version }}
     secrets: inherit
