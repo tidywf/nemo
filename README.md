@@ -134,7 +134,7 @@ Using {remotes} directly from GitHub:
 ``` r
 install.packages("remotes")
 remotes::install_github("tidywf/nemo") # latest main commit
-remotes::install_github("tidywf/nemo@v0.1.0.9000") # specific version
+remotes::install_github("tidywf/nemo@v0.1.0.9001") # specific version
 ```
 
 Alternatively:
@@ -159,7 +159,7 @@ export PATH="${nemo_cli}:${PATH}"
 ```
 
     $ nemo.R --version
-    nemo 0.1.0.9000
+    nemo 0.1.0.9001
 
     #-----------------------------------#
     $ nemo.R --help
