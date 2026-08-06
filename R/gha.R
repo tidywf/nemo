@@ -43,14 +43,19 @@ nemo_gha_mermaid <- function(actions_url, deploy_yaml) {
       nm <- jobs[[j]][["name"]]
       if (is.null(nm) || is.na(nm)) j else as.character(nm)
     })
-  job_wf_files <- job_names |>
-    purrr::map_chr(\(j) {
-      uses <- jobs[[j]][["uses"]] %||% paste0(j, ".yaml")
-      basename(sub("@.*$", "", uses))
-    })
   wf_url <- function(x) paste0(actions_url, "/", x)
   bump_steps <- .gha_read_steps(wf_url("bump.yaml"))
-  deploy_steps <- purrr::map(job_wf_files, \(f) .gha_read_steps(wf_url(f))) |>
+  # A job either calls a reusable workflow (`uses:`) whose steps we fetch
+  # remotely, or defines its steps inline (`steps:`) in the deploy file itself.
+  deploy_steps <- job_names |>
+    purrr::map(\(j) {
+      uses <- jobs[[j]][["uses"]]
+      if (!is.null(uses)) {
+        .gha_read_steps(wf_url(basename(sub("@.*$", "", uses))))
+      } else {
+        .gha_step_names(jobs[[j]][["steps"]])
+      }
+    }) |>
     rlang::set_names(job_names)
   i1 <- "    "
   i2 <- "        "
@@ -60,7 +65,13 @@ nemo_gha_mermaid <- function(actions_url, deploy_yaml) {
   for (i in seq_along(job_names)) {
     j <- job_names[i]
     prefix <- paste0("J", i, "S")
-    m <- .gha_render_steps(deploy_steps[[j]], prefix, i2)
+    # jobs with no named steps (e.g. an inline version-tag check) still get a
+    # single node so the subgraph isn't empty and edges have a target.
+    steps_j <- deploy_steps[[j]]
+    if (length(steps_j) == 0) {
+      steps_j <- job_labs[i]
+    }
+    m <- .gha_render_steps(steps_j, prefix, i2)
     deploy_ms[[j]] <- m
     deploy_subgraph_lines <- c(
       deploy_subgraph_lines,
@@ -123,19 +134,28 @@ nemo_gha_mermaid <- function(actions_url, deploy_yaml) {
   grepl(paste(.gha_skip_patterns, collapse = "|"), tolower(name))
 }
 
+.gha_step_names <- function(steps) {
+  if (length(steps) == 0) {
+    return(character(0))
+  }
+  nms <- steps |> purrr::map_chr("name", .default = "")
+  nms[nzchar(nms) & !purrr::map_lgl(nms, .gha_ignore_steps)]
+}
+
 .gha_read_steps <- function(path) {
   if (!file.exists(path) && !grepl("^https://", path)) {
     return(character(0))
   }
-  y <- yaml::read_yaml(path)
+  # a missing/unreachable reusable workflow (e.g. a 404 on the remote actions
+  # repo) should degrade to no steps rather than abort the whole diagram.
+  y <- tryCatch(yaml::read_yaml(path), error = function(e) NULL)
+  if (is.null(y)) {
+    return(character(0))
+  }
   all_steps <- purrr::map(y$jobs, "steps") |>
     purrr::compact() |>
     purrr::list_flatten()
-  if (length(all_steps) == 0) {
-    return(character(0))
-  }
-  nms <- all_steps |> purrr::map_chr("name", .default = "")
-  nms[nzchar(nms) & !purrr::map_lgl(nms, .gha_ignore_steps)]
+  .gha_step_names(all_steps)
 }
 
 .gha_render_steps <- function(steps, prefix, indent) {
