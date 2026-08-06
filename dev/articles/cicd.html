@@ -29,7 +29,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">nemo</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.0.3.9025</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.1.0.9002</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -73,7 +73,7 @@
 
 
 
-      <small class="dont-index">Source: <a href="https://github.com/tidywf/nemo/blob/dev/vignettes/cicd.qmd" class="external-link"><code>vignettes/cicd.qmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/tidywf/nemo/blob/v0.1.0.9002/vignettes/cicd.qmd" class="external-link"><code>vignettes/cicd.qmd</code></a></small>
       <div class="d-none name"><code></code></div>
     </div>
 
@@ -96,17 +96,20 @@
     B3["📦 Install from source"]
     B4["📖 Render README"]
     B5["💾 Commit and push"]
+    B6["🔖 Create and push tag"]
     B1 --&gt; B2
     B2 --&gt; B3
     B3 --&gt; B4
     B4 --&gt; B5
+    B5 --&gt; B6
     end
 
-    BUMP --&gt; DEPLOY
+    B6 --&gt; J1S1
 
     subgraph DEPLOY ["🔧 Deploy"]
         direction TB
-        subgraph version ["📋 Get version"]
+        subgraph prep ["📋 Version"]
+        J1S1["📋 Version"]
         end
         subgraph condarise ["🐍 Condarise"]
         J2S1["🏷️ Set dev flags"]
@@ -114,31 +117,25 @@
         J2S3["🐍 Conda pkg build"]
         J2S4["🐍 Conda pkg upload"]
         J2S5["🔒 Conda lock"]
-        J2S6["💾 Commit lockfiles"]
+        J2S6["📦 Publish lockfiles to release"]
         J2S1 --&gt; J2S2
         J2S2 --&gt; J2S3
         J2S3 --&gt; J2S4
         J2S4 --&gt; J2S5
         J2S5 --&gt; J2S6
         end
-        subgraph tag ["🔖 Tag"]
-        J3S1["📥 Pull latest commits"]
-        J3S2["🔖 Create tag"]
-        J3S1 --&gt; J3S2
-        end
         subgraph pkgdownise ["🌐 Pkgdownise"]
-        J4S1["👾 Miniforge setup"]
-        J4S2["📦 Install from source"]
-        J4S3["🌐 Website build"]
-        J4S4["🚀 Website publish"]
-        J4S1 --&gt; J4S2
-        J4S2 --&gt; J4S3
-        J4S3 --&gt; J4S4
+        J3S1["👾 Miniforge setup"]
+        J3S2["📦 Install from source"]
+        J3S3["🌐 Website build"]
+        J3S4["🚀 Website publish"]
+        J3S1 --&gt; J3S2
+        J3S2 --&gt; J3S3
+        J3S3 --&gt; J3S4
         end
 
-        version --&gt; condarise
+        J1S1 --&gt; J2S1
         J2S6 --&gt; J3S1
-        J3S2 --&gt; J4S1
     end
 </pre>
 </div>
