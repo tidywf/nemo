@@ -1,0 +1,65 @@
+<!--
+Shared NEWS helpers for nemo child packages.
+
+Included from a package's vignettes/NEWS.qmd as a knitr child chunk. In an
+`#| include: false` chunk the parent sets `repo` to its GitHub URL and points
+`child1` at this file via system.file("doc-templates/vignettes/_news.qmd",
+package = "nemo"), then a `{r, child=child1}` chunk pulls in the helpers below.
+See any child package's NEWS.qmd for the exact wiring.
+
+The parent MUST define `repo` (the package's GitHub URL) before the child
+runs; the helpers below close over it. They build links to compares, PRs,
+issues, and users: pr(48), iss(11), vdiff("0.1.0", "0.0.3"), user("reisingerf").
+-->
+
+```{r}
+#| label: news-pkgs
+#| message: false
+#| warning: false
+#| echo: false
+
+{
+  use("htmltools", "a")
+  use("glue", "glue")
+}
+```
+
+```{r}
+#| label: news-funcs
+#| echo: false
+
+stopifnot(exists("repo"), is.character(repo), nzchar(repo))
+
+vdiff <- function(new, old) {
+  stopifnot(utils::compareVersion(new, old) == 1)
+  htmltools::a(
+    href = glue::glue("{repo}/compare/v{old}...v{new}"),
+    glue::glue("v{new} - v{old} diff")
+  )
+}
+
+pr_or_issue <- function(n, type) {
+  x <- c(iss = "issues", pr = "pull")
+  stopifnot(is.numeric(n), n > 0, type %in% names(x))
+  type2 <- x[type]
+  htmltools::a(
+    href = glue::glue("{repo}/{type2}/{n}"),
+    glue::glue("{type}{n}")
+  )
+}
+
+iss <- function(n) {
+  pr_or_issue(n, "iss")
+}
+
+pr <- function(n) {
+  pr_or_issue(n, "pr")
+}
+
+user <- function(x) {
+  htmltools::a(
+    href = glue::glue("https://github.com/{x}"),
+    glue::glue("@{x}")
+  )
+}
+```

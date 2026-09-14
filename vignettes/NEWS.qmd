@@ -9,44 +9,17 @@ knitr:
 
 ```{r}
 #| label: pkgs
-#| message: false
-#| warning: false
-
-{
-  use("htmltools", "a")
-  use("glue", "glue")
-}
-```
-
-```{r}
-#| label: setup
+#| include: false
 
 repo <- "https://github.com/tidywf/nemo"
-vdiff <- function(new, old) {
-  stopifnot(utils::compareVersion(new, old) == 1)
-  htmltools::a(
-    href = glue::glue("{repo}/compare/v{old}...v{new}"),
-    glue::glue("v{new} - v{old} diff")
-  )
-}
+child1 <- system.file(
+  "doc-templates/vignettes/_news.qmd",
+  package = "nemo"
+)
+```
 
-pr_or_issue <- function(n, type) {
-  x <- c(iss = "issues", pr = "pull")
-  stopifnot(is.numeric(n), n > 0, type %in% names(x))
-  type2 <- x[type]
-  htmltools::a(
-    href = glue::glue("{repo}/{type2}/{n}"),
-    glue::glue("{type}{n}")
-  )
-}
-
-iss <- function(n) {
-  pr_or_issue(n, "iss")
-}
-
-pr <- function(n) {
-  pr_or_issue(n, "pr")
-}
+```{r, child=child1}
+#| label: child-news
 ```
 
 ## v0.1.1 (unreleased)

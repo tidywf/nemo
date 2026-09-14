@@ -3,6 +3,10 @@
 #| results: asis
 #| echo: false
 
+# `cf` holds a literal code-fence so no *source* line here is a bare ``` ---
+# a bare fence line would be picked up by knitr's chunk partitioner as the
+# chunk close and truncate this R code mid-string.
+cf <- "```"
 glue(
   "
   [![ghcr-latest] ![ghcr-size]](https://github.com/{org_nm}/{pkg_nm}/pkgs/container/{pkg_nm})
@@ -13,9 +17,31 @@ glue(
   The Docker image is available from the GitHub Container Registry at
   <https://github.com/{org_nm}/{pkg_nm}/pkgs/container/{pkg_nm}>.
 
-  ```bash
+  {cf}bash
   docker pull --platform linux/amd64 ghcr.io/{org_nm}/{pkg_nm}:{ver}
-  ",
-  "```"
+  {cf}
+
+  ## Docker Compose
+
+  The repo ships a `docker-compose.yaml` that wraps the CLI: it mounts a local
+  input directory (`./in`, read-only) and output directory (`./out`), then
+  tidies the input to parquet. Place a pipeline output directory under `./in`
+  and run:
+
+  {cf}bash
+  mkdir -p in out
+  docker compose run --rm {pkg_nm}
+  {cf}
+
+  Override defaults with environment variables (or a `.env` file):
+  `IMAGE_TAG` (image tag, defaults to the pinned package version), `IN_DIR`,
+  `OUT_DIR`, and `FORMAT` (`parquet` | `tsv` | `csv` | `rds`). The image's
+  `ENTRYPOINT` is `{pkg_nm}.R`, so any flags after the service name append to
+  it:
+
+  {cf}bash
+  IN_DIR=/path/to/samples docker compose run --rm {pkg_nm} tidy -d /data/in -o /data/out -f tsv
+  {cf}
+  "
 )
 ```
