@@ -50,7 +50,7 @@ test_that("Function nemoverse_wf_dispatch() @ L136", {
 })
 
 
-test_that("Function pkg_found() @ L170", {
+test_that("Function pkg_found() @ L171", {
   
   pkg_found("base")
   pkg_found("somefakepackagename")

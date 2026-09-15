@@ -33,11 +33,17 @@ child1 <- system.file(
   behaviour for every tool; `write()` errors if the dropped parser token would
   let two outputs collide to the same name.
 
+- `nemoverse_wf_dispatch()` now includes `tidydragen`.
+
 ### Breaking changes
 
 - Removed the `csv-nohead-long` ftype and the associated `table5` fixture from
   the `tool1` example. Child packages needing DRAGEN-style long-metrics parsing
   should implement their own custom `parse_*`/`tidy_*` (see `tidydragen`).
+
+### Infrastructure
+
+- Added a NEWS entry template and docker-compose documentation.
 
 ## v0.1.0 (2026-07-28)
 

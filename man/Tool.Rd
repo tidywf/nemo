@@ -72,13 +72,15 @@ Tibble of files written from \code{self$write()}.}
 
 \item{\code{flat_tidy_names}}{(\code{logical(1)})\cr
 Controls how a fanned-out (one-file-to-many-tables) output is named. When
-\code{FALSE} (default), a sub-table's name is the parser table name concatenated
+\code{FALSE}, a sub-table's name is the parser table name concatenated
 with its \code{tidy_name} (e.g. parser \code{ploidy} + \code{stats} -> \code{ploidystats}),
 preserving the existing behaviour for every tool. When \code{TRUE}, the parser
 token is dropped and the output is named \verb{<tool>_<tidy_name>} directly (e.g.
 \code{dragenfastqc_posbasecontent}), giving flat, self-sufficient sub-table names.
 Only enable this when a tool's \code{tidy_name}s are unique across all its outputs
-— \code{write()} errors if two outputs collide to the same name.}
+\itemize{
+\item \code{write()} errors if two outputs collide to the same name.
+}}
 }
 \if{html}{\out{</div>}}
 }
