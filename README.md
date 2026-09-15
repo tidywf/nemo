@@ -102,8 +102,7 @@ wf1$run(
 
 list.files(outdir, pattern = "\\.parquet$")
 #> [1] "metadata.parquet"             "sampleA_tool1_table1.parquet" "sampleA_tool1_table2.parquet"
-#> [4] "sampleA_tool1_table3.parquet" "sampleA_tool1_table4.parquet" "sampleA_tool1_table5.parquet"
-#> [7] "sampleA_tool1_table6.parquet"
+#> [4] "sampleA_tool1_table3.parquet" "sampleA_tool1_table4.parquet" "sampleA_tool1_table6.parquet"
 ```
 
 Read back the tidied table:
@@ -134,7 +133,7 @@ Using {remotes} directly from GitHub:
 ``` r
 install.packages("remotes")
 remotes::install_github("tidywf/nemo") # latest main commit
-remotes::install_github("tidywf/nemo@v0.1.0.9002") # specific version
+remotes::install_github("tidywf/nemo@v0.1.0.9003") # specific version
 ```
 
 Alternatively:
@@ -159,7 +158,7 @@ export PATH="${nemo_cli}:${PATH}"
 ```
 
     $ nemo.R --version
-    nemo 0.1.0.9002
+    nemo 0.1.0.9003
 
     #-----------------------------------#
     $ nemo.R --help
