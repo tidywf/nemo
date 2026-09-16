@@ -485,7 +485,16 @@ Tool <- R6::R6Class(
               paste0(.data$tool_parser, .data$tidy_name)
             )
           },
-          fpfix = paste(file.path(output_dir, .data$prefix), .data$tbl_name, sep = "_"),
+          # Run-scoped tools (e.g. DragenBcl) fold no sample id into `prefix`, so
+          # `refine_files()` leaves it blank; the within-run disambiguator then
+          # makes it "" / "_2" / "_3". For those, append the disambiguator to the
+          # end so names read `<tool>_<table>[_N]` with no leading underscore,
+          # rather than the sample-prefixed `<prefix>_<tool>_<table>`.
+          fpfix = dplyr::if_else(
+            !nzchar(.data$prefix) | grepl("^_[0-9]+$", .data$prefix),
+            file.path(output_dir, paste0(.data$tbl_name, .data$prefix)),
+            paste(file.path(output_dir, .data$prefix), .data$tbl_name, sep = "_")
+          ),
           tidy_data = purrr::pmap(
             list(.data$tidy_data, .data$tidy_name, .data$prefix),
             \(d, nm, pfx) private$prepend_id_cols(d, nm, pfx, input_id, output_id, prefix_include)

@@ -110,3 +110,4 @@ reference:
       - nemo_log_date
       - nemoverse_wf_dispatch
       - pkg_found
+      - s3sync
