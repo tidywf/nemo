@@ -278,7 +278,7 @@ Return both raw and tidy schemas for all tables.
 \subsection{Returns}{
 (\code{tibble()})\cr
 Table \code{name}, \code{tbl_description}, \code{version}, and \code{schema}
-(list-col of tibble(raw, tidy, type)).
+(list-col of tibble(raw, tidy, type, description)).
 }
 }
 \if{html}{\out{<hr>}}

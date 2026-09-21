@@ -29,7 +29,8 @@ name <- "tool1"; pkg <- "nemo";
 path <- system.file("extdata/tool1", package = "nemo")
 toolA <- Tool$new(name = name, pkg = pkg, path = path)
 toolA$list_files()
-toolA$filter_files(exclude = "tool1_table3"); toolA$list_files() # note the exclusion this time
+toolA$filter_files(exclude = "tool1_table3")
+toolA$list_files() # note the exclusion this time
 
 toolB <- Tool$new(name = name, pkg = pkg, path = path)$
   filter_files(include = "tool1_table1")

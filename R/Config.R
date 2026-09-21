@@ -136,7 +136,7 @@ Config <- R6::R6Class(
     #' @description Return both raw and tidy schemas for all tables.
     #' @return (`tibble()`)\cr
     #' Table `name`, `tbl_description`, `version`, and `schema`
-    #' (list-col of tibble(raw, tidy, type)).
+    #' (list-col of tibble(raw, tidy, type, description)).
     get_schemas_both = function() private$schemas_both,
 
     #' @description Get raw schema for a specific table and optional version.

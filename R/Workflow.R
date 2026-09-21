@@ -232,12 +232,7 @@ Workflow <- R6::R6Class(
       self$written_files <- if (has_output) res else NULL
       private$is_written <- TRUE
       if (write_metadata && format != "db" && has_output) {
-        meta <- self$get_metadata(
-          input_id = input_id,
-          output_id = output_id,
-          output_dir = output_dir
-        )
-        arrow::write_parquet(meta, file.path(output_dir, "metadata.parquet"))
+        private$write_metadata_file(input_id, output_id, output_dir)
       }
       return(invisible(self))
     },
@@ -304,12 +299,7 @@ Workflow <- R6::R6Class(
       private$is_tidied <- TRUE
       private$is_written <- TRUE
       if (write_metadata && format != "db" && has_output) {
-        meta <- self$get_metadata(
-          input_id = input_id,
-          output_id = output_id,
-          output_dir = output_dir
-        )
-        arrow::write_parquet(meta, file.path(output_dir, "metadata.parquet"))
+        private$write_metadata_file(input_id, output_id, output_dir)
       }
       return(invisible(self))
     },
@@ -398,6 +388,15 @@ Workflow <- R6::R6Class(
       if (!all(purrr::map_lgl(x, wf_is_tool_subclass))) {
         nemo_stop("All elements of `tools` must inherit from Tool.")
       }
+    },
+    # Shared by write()/run(): computes and writes metadata.parquet.
+    write_metadata_file = function(input_id, output_id, output_dir) {
+      meta <- self$get_metadata(
+        input_id = input_id,
+        output_id = output_id,
+        output_dir = output_dir
+      )
+      arrow::write_parquet(meta, file.path(output_dir, "metadata.parquet"))
     },
     is_tidied = FALSE,
     is_written = FALSE,

@@ -57,11 +57,11 @@ Tool <- R6::R6Class(
     files = NULL,
     tbls = NULL,
     files_tbl = NULL,
-    # Empty-tibble schema for compute_files, kept as a method for easy updates.
     # Subclass hook to tweak the matched-files tibble before disambiguation.
     # Receives parser/bname/size/lastmodified/path/pattern/prefix/tool_parser;
     # typically rewrites `prefix`. Default: no-op.
     refine_files = function(files) files,
+    # Empty-tibble schema for compute_files, kept as a method for easy updates.
     empty_files_tbl = function() {
       tibble::tibble(
         tool_parser = character(),
@@ -319,6 +319,35 @@ Tool <- R6::R6Class(
       d_write |>
         dplyr::mutate(outpath = outpaths) |>
         dplyr::select("raw_path", "tool_parser", "prefix", "tbl_name", "outpath")
+    },
+    # Shared by write()/run(): validates write_metadata/output_dir combo and
+    # returns the (possibly normalised) output_dir.
+    validate_write_setup = function(format, output_dir, write_metadata) {
+      if (write_metadata && format != "db" && is.null(self$path)) {
+        nemo_stop(
+          "Cannot write metadata: Tool was initialised with 'files_tbl' and has no 'path'. ",
+          "Set write_metadata = FALSE to suppress metadata writing."
+        )
+      }
+      if (format == "db") {
+        return(output_dir)
+      }
+      if (is.null(output_dir)) {
+        nemo_stop("Output directory must be specified when format is not 'db'.")
+      }
+      normalizePath(output_dir, mustWork = FALSE)
+    },
+    # Shared by write()/run(): computes and writes metadata_<tool>.parquet.
+    write_metadata_file = function(input_id, output_id, output_dir) {
+      meta <- self$get_metadata(
+        input_id = input_id,
+        output_id = output_id,
+        output_dir = output_dir
+      )
+      arrow::write_parquet(
+        meta,
+        file.path(output_dir, paste0("metadata_", self$name, ".parquet"))
+      )
     }
   ),
   public = list(
@@ -508,18 +537,7 @@ Tool <- R6::R6Class(
       if (!private$is_tidied) {
         nemo_stop("Did you forget to tidy?")
       }
-      if (write_metadata && format != "db" && is.null(self$path)) {
-        nemo_stop(
-          "Cannot write metadata: Tool was initialised with 'files_tbl' and has no 'path'. ",
-          "Set write_metadata = FALSE to suppress metadata writing."
-        )
-      }
-      if (format != "db") {
-        if (is.null(output_dir)) {
-          nemo_stop("Output directory must be specified when format is not 'db'.")
-        }
-        output_dir <- normalizePath(output_dir, mustWork = FALSE)
-      }
+      output_dir <- private$validate_write_setup(format, output_dir, write_metadata)
       if (is.null(private$tbls)) {
         self$written_files <- NULL
         private$is_written <- TRUE
@@ -539,15 +557,7 @@ Tool <- R6::R6Class(
       self$written_files <- private$write_d_write(d_write, format, dbconn)
       private$is_written <- TRUE
       if (write_metadata && format != "db") {
-        meta <- self$get_metadata(
-          input_id = input_id,
-          output_id = output_id,
-          output_dir = output_dir
-        )
-        arrow::write_parquet(
-          meta,
-          file.path(output_dir, paste0("metadata_", self$name, ".parquet"))
-        )
+        private$write_metadata_file(input_id, output_id, output_dir)
       }
       return(invisible(self))
     },
@@ -617,18 +627,7 @@ Tool <- R6::R6Class(
       # fail-fast before parsing
       nemo_assert_out_fmt(format)
       self$filter_files(include = include, exclude = exclude)
-      if (write_metadata && format != "db" && is.null(self$path)) {
-        nemo_stop(
-          "Cannot write metadata: Tool was initialised with 'files_tbl' and has no 'path'. ",
-          "Set write_metadata = FALSE to suppress metadata writing."
-        )
-      }
-      if (format != "db") {
-        if (is.null(output_dir)) {
-          nemo_stop("Output directory must be specified when format is not 'db'.")
-        }
-        output_dir <- normalizePath(output_dir, mustWork = FALSE)
-      }
+      output_dir <- private$validate_write_setup(format, output_dir, write_metadata)
       if (nrow(private$files) == 0) {
         private$tbls <- NULL
         private$is_tidied <- TRUE
@@ -655,15 +654,7 @@ Tool <- R6::R6Class(
       private$is_tidied <- TRUE
       private$is_written <- TRUE
       if (write_metadata && format != "db") {
-        meta <- self$get_metadata(
-          input_id = input_id,
-          output_id = output_id,
-          output_dir = output_dir
-        )
-        arrow::write_parquet(
-          meta,
-          file.path(output_dir, paste0("metadata_", self$name, ".parquet"))
-        )
+        private$write_metadata_file(input_id, output_id, output_dir)
       }
       return(invisible(self))
     }

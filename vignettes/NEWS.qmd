@@ -35,6 +35,13 @@ child1 <- system.file(
 
 - `nemoverse_wf_dispatch()` now includes `tidydragen`.
 
+### Performance
+
+- `Tool$run()` / `Workflow$run()` now stream: each file is parsed, tidied, and
+  written before moving to the next, instead of accumulating every tidy tibble
+  into memory before writing starts. Memory now scales with a single file rather
+  than the whole run. `tidy()` + `get_tbls()` are unchanged for interactive use.
+
 ### Breaking changes
 
 - Removed the `csv-nohead-long` ftype and the associated `table5` fixture from
