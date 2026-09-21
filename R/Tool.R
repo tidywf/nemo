@@ -24,7 +24,8 @@
 #' path <- system.file("extdata/tool1", package = "nemo")
 #' toolA <- Tool$new(name = name, pkg = pkg, path = path)
 #' toolA$list_files()
-#' toolA$filter_files(exclude = "tool1_table3"); toolA$list_files() # note the exclusion this time
+#' toolA$filter_files(exclude = "tool1_table3")
+#' toolA$list_files() # note the exclusion this time
 #'
 #' toolB <- Tool$new(name = name, pkg = pkg, path = path)$
 #'   filter_files(include = "tool1_table1")
@@ -56,11 +57,10 @@ Tool <- R6::R6Class(
     files = NULL,
     tbls = NULL,
     files_tbl = NULL,
-    # Typed empty tibble for compute_files; kept as a method so the column spec
-    # is in one place and easy to update if the schema changes.
-    # Subclass hook to adjust the matched-files tibble before disambiguation.
-    # Receives columns parser/bname/size/lastmodified/path/pattern/prefix/
-    # tool_parser; typically rewrites `prefix`. Default is a no-op.
+    # Empty-tibble schema for compute_files, kept as a method for easy updates.
+    # Subclass hook to tweak the matched-files tibble before disambiguation.
+    # Receives parser/bname/size/lastmodified/path/pattern/prefix/tool_parser;
+    # typically rewrites `prefix`. Default: no-op.
     refine_files = function(files) files,
     empty_files_tbl = function() {
       tibble::tibble(
@@ -100,10 +100,8 @@ Tool <- R6::R6Class(
           prefix = dplyr::if_else(.data$prefix == "", .data$parser, .data$prefix),
           tool_parser = paste0(self$name, "_", .data$parser)
         )
-      # Subclass hook, applied to the base prefix *before* the disambiguation
-      # passes below. Running it here (rather than on the final tibble) lets a
-      # subclass fold a semantic distinction (e.g. germline vs somatic) into the
-      # prefix so those files no longer collide, avoiding a spurious _2/_3.
+      # Runs before disambiguation so a subclass can fold e.g. germline/somatic
+      # into `prefix`, avoiding spurious _2/_3 suffixes.
       res <- private$refine_files(res)
       res |>
         dplyr::mutate(prefix_suffix = dplyr::row_number(), .by = "bname") |>
@@ -115,10 +113,8 @@ Tool <- R6::R6Class(
           ),
           prefix = paste0(.data$prefix, .data$prefix_suffix)
         ) |>
-        # two files with different basenames can reduce to the same prefix when
-        # matched by different patterns for the same table (e.g. *.flagstat and
-        # *.flag_counts.tsv both stripping to "sample1"). Append _2, _3, ... to
-        # disambiguate so outputs don't overwrite each other.
+        # Different basenames can reduce to the same prefix (e.g. *.flagstat and
+        # *.flag_counts.tsv both -> "sample1"). Append _2, _3... to disambiguate.
         dplyr::mutate(grp2 = dplyr::row_number(), .by = c("tool_parser", "prefix")) |>
         dplyr::mutate(
           prefix = dplyr::if_else(
@@ -152,8 +148,7 @@ Tool <- R6::R6Class(
         .before = 1
       )
     },
-    # Dispatch parse for a table: calls custom parse_{table_name}() if defined
-    # in the subclass, otherwise falls back to parse_by_ftype().
+    # Calls custom parse_{table_name}() if defined, else parse_by_ftype().
     dispatch_parse = function(x, table_name) {
       fun <- glue("parse_{table_name}")
       if (is.function(self[[fun]])) {
@@ -162,12 +157,9 @@ Tool <- R6::R6Class(
         private$parse_by_ftype(x, table_name)
       }
     },
-    # Dispatch tidy for a table: calls custom tidy_{table_name}() if defined
-    # in the subclass, otherwise falls back to tidy_file().
-    # x may be a file path (character) or an already-parsed tibble — dispatch
-    # is called with a path when keep_raw = FALSE (the default) and with a tibble
-    # when keep_raw = TRUE. Custom tidy_{name}() methods always receive a tibble;
-    # the path-to-tibble conversion is handled here before dispatch.
+    # Calls custom tidy_{table_name}() if defined, else tidy_file(). `x` is a
+    # path (keep_raw = FALSE) or an already-parsed tibble (keep_raw = TRUE);
+    # converted to a tibble here before dispatch either way.
     dispatch_tidy = function(x, table_name) {
       fun <- glue("tidy_{table_name}")
       if (is.function(self[[fun]])) {
@@ -179,8 +171,8 @@ Tool <- R6::R6Class(
         private$tidy_file(x, table_name)
       }
     },
-    # Hook for subclasses to register pkg-specific ftype parsers without
-    # overriding parse_by_ftype. Return a named list of ftype -> function(x, table_name).
+    # Subclass hook: register pkg-specific ftype parsers, e.g.
+    # list(ftype = function(x, table_name)), without overriding parse_by_ftype.
     extra_ftypes = function() list(),
     # Parse a file by looking up its ftype from the config.
     parse_by_ftype = function(x, table_name) {
@@ -257,6 +249,76 @@ Tool <- R6::R6Class(
         delim = delim,
         ...
       )
+    },
+    # Shared by write() (bulk) and run()'s streaming path (per file): unnests
+    # `tidy`, computes tbl_name/fpfix, prepends id cols. `tbls_with_tidy` needs
+    # cols tool_parser/parser/prefix/path/tidy.
+    build_d_write = function(tbls_with_tidy, output_dir, input_id, output_id, prefix_include) {
+      tbls_with_tidy |>
+        dplyr::rename(raw_path = "path") |>
+        dplyr::select("raw_path", "tool_parser", "parser", "prefix", "tidy") |>
+        tidyr::unnest("tidy", names_sep = "_") |>
+        dplyr::mutate(
+          # flat_tidy_names: <tool>_<tidy_name> directly; else the concatenated
+          # <tool>_<parser><tidy_name> form (parser == tidy_name -> tool_parser).
+          tbl_name = if (isTRUE(self$flat_tidy_names)) {
+            paste0(self$name, "_", .data$tidy_name)
+          } else {
+            dplyr::if_else(
+              .data$parser == .data$tidy_name,
+              .data$tool_parser,
+              paste0(.data$tool_parser, .data$tidy_name)
+            )
+          },
+          # Run-scoped tools (e.g. DragenBcl) leave `prefix` as ""/_2/_3 (no
+          # sample id). For those, append the suffix at the end -> `<tool>_<table>[_N]`
+          # instead of the usual sample-prefixed `<prefix>_<tool>_<table>`.
+          fpfix = dplyr::if_else(
+            !nzchar(.data$prefix) | grepl("^_[0-9]+$", .data$prefix),
+            file.path(output_dir, paste0(.data$tbl_name, .data$prefix)),
+            paste(file.path(output_dir, .data$prefix), .data$tbl_name, sep = "_")
+          ),
+          tidy_data = purrr::pmap(
+            list(.data$tidy_data, .data$tidy_name, .data$prefix),
+            \(d, nm, pfx) private$prepend_id_cols(d, nm, pfx, input_id, output_id, prefix_include)
+          )
+        )
+    },
+    # Guard against flat_tidy_names collisions: two outputs must not reduce to
+    # the same table name. `fpfixes` accumulates across calls in the streaming
+    # path so cross-file collisions are still caught.
+    assert_no_dup_fpfix = function(fpfixes) {
+      if (!isTRUE(self$flat_tidy_names)) {
+        return(invisible(NULL))
+      }
+      dup <- unique(fpfixes[duplicated(fpfixes)])
+      if (length(dup) > 0) {
+        nemo_stop(glue(
+          "flat_tidy_names = TRUE produced duplicate output name(s): ",
+          "{glue::glue_collapse(basename(dup), sep = '; ')}. ",
+          "Sub-table tidy_names must be unique across the tool's outputs."
+        ))
+      }
+      invisible(NULL)
+    },
+    # Writes a prepped d_write tibble; returns only the small outpath tibble
+    # (no table data retained).
+    write_d_write = function(d_write, format, dbconn) {
+      outpaths <- purrr::pmap_chr(
+        list(d_write$tidy_data, d_write$fpfix, d_write$tbl_name),
+        \(d, fp, tn) {
+          nemo_write(
+            d = d,
+            fpfix = fp,
+            format = format,
+            dbconn = dbconn,
+            dbtab = if (format == "db") tn else NULL
+          )
+        }
+      )
+      d_write |>
+        dplyr::mutate(outpath = outpaths) |>
+        dplyr::select("raw_path", "tool_parser", "prefix", "tbl_name", "outpath")
     }
   ),
   public = list(
@@ -438,8 +500,7 @@ Tool <- R6::R6Class(
       dbconn = NULL,
       write_metadata = TRUE
     ) {
-      # nemo_assert_out_fmt is also called in Workflow$write() and nemo_osfx(); each layer
-      # keeps its own check so callers don't need to worry about ordering.
+      # Also checked in Workflow$write()/nemo_osfx(); each layer stays self-contained.
       nemo_assert_out_fmt(format)
       if (private$is_written) {
         return(invisible(self))
@@ -467,69 +528,15 @@ Tool <- R6::R6Class(
       if (format != "db") {
         fs::dir_create(output_dir)
       }
-      # Pure data preparation: unnest, compute names/paths, prepend ID cols
-      d_write <- private$tbls |>
-        dplyr::rename(raw_path = "path") |>
-        dplyr::select("raw_path", "tool_parser", "parser", "prefix", "tidy") |>
-        tidyr::unnest("tidy", names_sep = "_") |>
-        dplyr::mutate(
-          # flat_tidy_names drops the parser token so a fanned-out sub-table is
-          # named <tool>_<tidy_name> directly; otherwise keep the concatenated
-          # <tool>_<parser><tidy_name> form (parser == tidy_name -> just tool_parser).
-          tbl_name = if (isTRUE(self$flat_tidy_names)) {
-            paste0(self$name, "_", .data$tidy_name)
-          } else {
-            dplyr::if_else(
-              .data$parser == .data$tidy_name,
-              .data$tool_parser,
-              paste0(.data$tool_parser, .data$tidy_name)
-            )
-          },
-          # Run-scoped tools (e.g. DragenBcl) fold no sample id into `prefix`, so
-          # `refine_files()` leaves it blank; the within-run disambiguator then
-          # makes it "" / "_2" / "_3". For those, append the disambiguator to the
-          # end so names read `<tool>_<table>[_N]` with no leading underscore,
-          # rather than the sample-prefixed `<prefix>_<tool>_<table>`.
-          fpfix = dplyr::if_else(
-            !nzchar(.data$prefix) | grepl("^_[0-9]+$", .data$prefix),
-            file.path(output_dir, paste0(.data$tbl_name, .data$prefix)),
-            paste(file.path(output_dir, .data$prefix), .data$tbl_name, sep = "_")
-          ),
-          tidy_data = purrr::pmap(
-            list(.data$tidy_data, .data$tidy_name, .data$prefix),
-            \(d, nm, pfx) private$prepend_id_cols(d, nm, pfx, input_id, output_id, prefix_include)
-          )
-        )
-      # Guard against flat_tidy_names silently overwriting: two outputs sharing a
-      # prefix must not reduce to the same table name (the parser token that would
-      # normally disambiguate them has been dropped).
-      if (isTRUE(self$flat_tidy_names)) {
-        dup <- unique(d_write$fpfix[duplicated(d_write$fpfix)])
-        if (length(dup) > 0) {
-          nemo_stop(glue(
-            "flat_tidy_names = TRUE produced duplicate output name(s): ",
-            "{glue::glue_collapse(basename(dup), sep = '; ')}. ",
-            "Sub-table tidy_names must be unique across the tool's outputs."
-          ))
-        }
-      }
-      # Write files (side effects kept separate from pure prep above)
-      outpaths <- purrr::pmap_chr(
-        list(d_write$tidy_data, d_write$fpfix, d_write$tbl_name),
-        \(d, fp, tn) {
-          nemo_write(
-            d = d,
-            fpfix = fp,
-            format = format,
-            dbconn = dbconn,
-            dbtab = if (format == "db") tn else NULL
-          )
-        }
+      d_write <- private$build_d_write(
+        private$tbls,
+        output_dir,
+        input_id,
+        output_id,
+        prefix_include
       )
-      d_write <- d_write |>
-        dplyr::mutate(outpath = outpaths) |>
-        dplyr::select("raw_path", "tool_parser", "prefix", "tbl_name", "outpath")
-      self$written_files <- d_write
+      private$assert_no_dup_fpfix(d_write$fpfix)
+      self$written_files <- private$write_d_write(d_write, format, dbconn)
       private$is_written <- TRUE
       if (write_metadata && format != "db") {
         meta <- self$get_metadata(
@@ -607,21 +614,58 @@ Tool <- R6::R6Class(
       include = NULL,
       exclude = NULL
     ) {
-      # fail-fast before tidy(); write() re-checks but tidy can be slow
+      # fail-fast before parsing
       nemo_assert_out_fmt(format)
-      # fmt: skip
-      self$
-        filter_files(include = include, exclude = exclude)$
-        tidy()$
-        write(
-          output_dir = output_dir,
-          format = format,
+      self$filter_files(include = include, exclude = exclude)
+      if (write_metadata && format != "db" && is.null(self$path)) {
+        nemo_stop(
+          "Cannot write metadata: Tool was initialised with 'files_tbl' and has no 'path'. ",
+          "Set write_metadata = FALSE to suppress metadata writing."
+        )
+      }
+      if (format != "db") {
+        if (is.null(output_dir)) {
+          nemo_stop("Output directory must be specified when format is not 'db'.")
+        }
+        output_dir <- normalizePath(output_dir, mustWork = FALSE)
+      }
+      if (nrow(private$files) == 0) {
+        private$tbls <- NULL
+        private$is_tidied <- TRUE
+        self$written_files <- NULL
+        private$is_written <- TRUE
+        return(invisible(self))
+      }
+      if (format != "db") {
+        fs::dir_create(output_dir)
+      }
+      # Stream: parse -> tidy -> write one file at a time (memory O(1 file), not
+      # O(run size)). private$tbls stays empty; tidy()/get_tbls() are unaffected.
+      seen_fpfix <- character()
+      written <- purrr::map(seq_len(nrow(private$files)), \(i) {
+        row <- private$files[i, ]
+        row$tidy <- list(private$dispatch_tidy(row$path, row$parser))
+        d_write <- private$build_d_write(row, output_dir, input_id, output_id, prefix_include)
+        seen_fpfix <<- c(seen_fpfix, d_write$fpfix)
+        private$assert_no_dup_fpfix(seen_fpfix)
+        private$write_d_write(d_write, format, dbconn)
+      }) |>
+        dplyr::bind_rows()
+      self$written_files <- written
+      private$is_tidied <- TRUE
+      private$is_written <- TRUE
+      if (write_metadata && format != "db") {
+        meta <- self$get_metadata(
           input_id = input_id,
           output_id = output_id,
-          prefix_include = prefix_include,
-          dbconn = dbconn,
-          write_metadata = write_metadata
-      )
+          output_dir = output_dir
+        )
+        arrow::write_parquet(
+          meta,
+          file.path(output_dir, paste0("metadata_", self$name, ".parquet"))
+        )
+      }
+      return(invisible(self))
     }
   ) # public end
 )

@@ -33,6 +33,39 @@ knitr:
 | `pkgdown::build_articles(quiet = FALSE)` | builds vignettes in debug mode |
 | `pkgdown::build_article("foo")`          | builds foo vignette only       |
 
+### Debugging R6 private methods
+
+`debugonce()` doesn't take an object like `tool$tidy()` for private methods -
+reach into `.__enclos_env__$private` first. This flags the function on that one
+instance only (each `$new()` gets its own private env/closure copy).
+
+```r
+devtools::load_all()
+path <- system.file("extdata/tool1", package = "nemo")
+t <- Tool$new(name = "tool1", pkg = "nemo", path = path)
+
+debugonce(t$.__enclos_env__$private$build_d_write)
+t$run(output_dir = tempdir(), format = "parquet") # breaks on first call
+```
+
+Inside the browser, `self$` and `private$` both resolve normally. Step with `n`,
+inspect args (e.g. `d_write`, `output_dir`).
+
+Private methods can also be called standalone, without going through
+`run()`/`tidy()`:
+
+```r
+row <- t$list_files()[1, ]
+row$tidy <- list(t$.__enclos_env__$private$dispatch_tidy(row$path, row$parser))
+d_write <- t$.__enclos_env__$private$build_d_write(
+  row,
+  tempdir(),
+  NULL,
+  NULL,
+  FALSE
+)
+```
+
 ### Data Version Control
 
 Instead of committing big data files into `git`, we can store the files remotely

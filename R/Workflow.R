@@ -273,20 +273,45 @@ Workflow <- R6::R6Class(
       include = NULL,
       exclude = NULL
     ) {
-      # fail-fast before tidy(); write() re-checks but tidy can be slow
+      # fail-fast before parsing
       nemo_assert_out_fmt(format)
-      # fmt: skip
-      self$filter_files(include = include, exclude = exclude)$
-        tidy()$
-        write(
-          output_dir = output_dir,
-          format = format,
+      self$filter_files(include = include, exclude = exclude)
+      if (format != "db") {
+        # normalise once here so all tools receive a canonical path; Tool$run()
+        # repeats the normalisation but that is idempotent.
+        output_dir <- normalizePath(output_dir, mustWork = FALSE)
+      }
+      # Delegate to each Tool's own streaming run() (parse -> tidy -> write per
+      # file) rather than this Workflow's tidy()/write(), so no tool accumulates
+      # its full run in memory. Per-tool metadata is suppressed; a single
+      # workflow-level metadata.parquet is written below instead.
+      res <- private$tools |>
+        purrr::map(\(x) {
+          x$run(
+            output_dir = output_dir,
+            format = format,
+            input_id = input_id,
+            output_id = output_id,
+            prefix_include = prefix_include,
+            dbconn = dbconn,
+            write_metadata = FALSE
+          )
+          x$written_files
+        }) |>
+        dplyr::bind_rows()
+      has_output <- nrow(res) > 0
+      self$written_files <- if (has_output) res else NULL
+      private$is_tidied <- TRUE
+      private$is_written <- TRUE
+      if (write_metadata && format != "db" && has_output) {
+        meta <- self$get_metadata(
           input_id = input_id,
           output_id = output_id,
-          prefix_include = prefix_include,
-          dbconn = dbconn,
-          write_metadata = write_metadata
-      )
+          output_dir = output_dir
+        )
+        arrow::write_parquet(meta, file.path(output_dir, "metadata.parquet"))
+      }
+      return(invisible(self))
     },
     #' @description Get raw schemas for all Tools.
     #' @return (`tibble()`)\cr
