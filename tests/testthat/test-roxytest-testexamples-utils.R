@@ -50,7 +50,16 @@ test_that("Function nemoverse_wf_dispatch() @ L136", {
 })
 
 
-test_that("Function pkg_found() @ L171", {
+test_that("Function read_parquet_grep() @ L185", {
+  
+  tmp <- tempfile(fileext = ".parquet")
+  arrow::write_parquet(data.frame(x = 1L), tmp)
+  (x <- read_parquet_grep(dirname(tmp), basename(tmp), basename(tmp)))
+  expect_equal(x$x, 1L)
+})
+
+
+test_that("Function pkg_found() @ L206", {
   
   pkg_found("base")
   pkg_found("somefakepackagename")

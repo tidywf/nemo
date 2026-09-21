@@ -155,6 +155,41 @@ nemoverse_wf_dispatch <- function(wf) {
   getExportedValue(x[["pkg"]], x[["wf"]])
 }
 
+#' Read Parquet File Matched By Pattern
+#'
+#' Dev/test helper for `@testexamples` blocks: matches `pattern` against `lf`
+#' (basenames from `list.files(odir, ...)`) and reads the one matching parquet
+#' file from `odir`. Saves repeating
+#' `arrow::read_parquet(file.path(odir, grep(pattern, lf, value = TRUE)))` in
+#' every per-table check. Errors (via `arrow::read_parquet`) if `pattern`
+#' matches zero or more than one file, unless `first = TRUE`.
+#'
+#' @param odir (`character(1)`)\cr
+#' Directory the files live in.
+#' @param lf (`character(n)`)\cr
+#' Basenames to match `pattern` against.
+#' @param pattern (`character(1)`)\cr
+#' Regex passed to `grep()`.
+#' @param first (`logical(1)`)\cr
+#' If `pattern` matches more than one file, read the first match instead of
+#' erroring.
+#'
+#' @return (`tibble`) Parsed parquet file.
+#' @examples
+#' tmp <- tempfile(fileext = ".parquet")
+#' arrow::write_parquet(data.frame(x = 1L), tmp)
+#' (x <- read_parquet_grep(dirname(tmp), basename(tmp), basename(tmp)))
+#' @testexamples
+#' expect_equal(x$x, 1L)
+#' @export
+read_parquet_grep <- function(odir, lf, pattern, first = FALSE) {
+  m <- grep(pattern, lf, value = TRUE)
+  if (first) {
+    m <- m[1]
+  }
+  arrow::read_parquet(file.path(odir, m))
+}
+
 #' Check if Package is Installed
 #'
 #' Check if an R package is installed.
