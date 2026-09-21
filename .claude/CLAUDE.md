@@ -1,12 +1,11 @@
 # CLAUDE.md --- nemo
 
-## What this is
-
 Base R package providing R6 classes (`Tool`, `Workflow`, `Config`) inherited by
 all tidywf parsing R packages. For deep context use the routing table in
-`tidywf/CLAUDE.md` --- auto-loaded by Claude Code from the parent directory.
+`tidywf/.claude/CLAUDE.md` --- auto-loaded by Claude Code from the parent
+directory.
 
-## Repo layout
+## Structure
 
 ```
 nemo
@@ -39,18 +38,6 @@ nemo
 examples --- follow these when creating new tools or workflows. They demonstrate
 the full pattern: schema config, file discovery, raw parsing, and tidy output.
 
-## Testing
-
-Two-tier approach:
-
-- **R6 classes** (`Tool`, `Tool1`, `Workflow`, `Workflow1`, `Config`) ---
-  standalone files in `tests/testthat/test-<ClassName>.R`, written manually with
-  proper `test_that` blocks.
-- **Pure helper functions** (everything else) --- `@testexamples` blocks in the
-  source file, auto-generated into
-  `tests/testthat/test-roxytest-testexamples-<file>.R` by
-  `devtools::document()`. Never edit those generated files directly.
-
 ## ftypes (`schema.yaml` → `parse_by_ftype`)
 
 Built-in ftypes handled by `Tool$parse_by_ftype()`:
@@ -62,9 +49,9 @@ Built-in ftypes handled by `Tool$parse_by_ftype()`:
 | `tsv-nohead`   | `parse_file_nohead`   | `\t`      |
 | `tsv-keyvalue` | `parse_file_keyvalue` | `\t`      |
 
-Child packages add pkg-specific ftypes by overriding `private$extra_ftypes()`
---- return a named list of `ftype -> function(x, table_name)`. Checked before
-the switch; unknown ftypes fall through to `nemo_stop`.
+Child packages add pkg-specific ftypes by overriding `private$extra_ftypes()` ---
+return a named list of `ftype -> function(x, table_name)`. Checked before the
+switch; unknown ftypes fall through to `nemo_stop`.
 
 ## Subclass hooks
 
@@ -89,32 +76,6 @@ Extension points a `Tool` subclass may override in `private`:
 - Use accessor methods, not direct field access: `list_files()` not `$files`,
   `get_tbls()` not `$tbls`.
 
-## CLI (`R/cli.R`, `inst/cli/nemo.R`)
-
-Built with `argparse` via `nemo_cli()`. Two subcommands:
-
-| Subcommand | Key args                         | What it does                                      |
-| ---------- | -------------------------------- | ------------------------------------------------- |
-| `list`     | `-d IN_DIR -f FORMAT`            | Lists parsable files; output as `pretty` or `tsv` |
-| `tidy`     | `-d IN_DIR -o OUT_DIR -f FORMAT` | Runs `run()` and writes tidy outputs              |
-
-Both accept `-w WORKFLOW` and `-q` (quiet). `tidy` also accepts:
-
-- `--input_id` — adds an `input_id` column to all output tables
-- `--output_id` / `--ulid` — adds an `output_id` column (mutually exclusive; `--ulid` generates one automatically)
-- `--prefix_include` — adds an `input_prefix` column derived from the input filename prefix
-- `--include`/`--exclude` — filter tool parsers (comma-separated)
-- `--dbname`/`--dbuser` — required when `--format db`
-
-## Logging (`R/log.R`)
-
-`log4r`-based, initialised in `.onLoad`. Env vars:
-
-- `NEMO_LOG_ENABLE` — "FALSE" to disable (default "TRUE")
-- `NEMO_LOG_LEVEL` — "DEBUG", "INFO" (default), "WARN", "ERROR", "FATAL"
-
-Public API: `nemo_log(level, msg, ...)` (sprintf-style), `nemo_log_date()`.
-
 ## Key API (`R/`)
 
 | Function                                      | File           | Purpose                                                                           |
@@ -128,13 +89,49 @@ Public API: `nemo_log(level, msg, ...)` (sprintf-style), `nemo_log_date()`.
 | `nemo_gha_mermaid(actions_url, deploy_yaml)`  | `gha.R`        | Builds Mermaid CI/CD flowchart from local + remote YAML                           |
 | `nemo_uml()`                                  | `uml.R`        | Generates PlantUML SVG from R6 class names                                        |
 
+## CLI (`R/cli.R`, `inst/cli/nemo.R`)
+
+Built with `argparse` via `nemo_cli()`. Two subcommands:
+
+| Subcommand | Key args                         | What it does                                      |
+| ---------- | -------------------------------- | ------------------------------------------------- |
+| `list`     | `-d IN_DIR -f FORMAT`            | Lists parsable files; output as `pretty` or `tsv` |
+| `tidy`     | `-d IN_DIR -o OUT_DIR -f FORMAT` | Runs `run()` and writes tidy outputs              |
+
+Both accept `-w WORKFLOW` and `-q` (quiet). `tidy` also accepts:
+
+- `--input_id` --- adds an `input_id` column to all output tables
+- `--output_id` / `--ulid` --- adds an `output_id` column (mutually exclusive;
+  `--ulid` generates one automatically)
+- `--prefix_include` --- adds an `input_prefix` column derived from the input
+  filename prefix
+- `--include`/`--exclude` --- filter tool parsers (comma-separated)
+- `--dbname`/`--dbuser` --- required when `--format db`
+
+## Logging (`R/log.R`)
+
+`log4r`-based, initialised in `.onLoad`. Env vars:
+
+- `NEMO_LOG_ENABLE` --- "FALSE" to disable (default "TRUE")
+- `NEMO_LOG_LEVEL` --- "DEBUG", "INFO" (default), "WARN", "ERROR", "FATAL"
+
+Public API: `nemo_log(level, msg, ...)` (sprintf-style), `nemo_log_date()`.
+
+## Testing
+
+See `tidywf/docs/r-pkg/testing.md` for the two-tier convention (manual R6 tests
+vs roxytest-generated). Manually-tested classes here: `Tool`, `Tool1`,
+`Workflow`, `Workflow1`, `Config`.
+
 ## Dev commands
+
+Full Makefile target list (shared with tidywigits/tidydragen):
+`tidywf/docs/r-pkg/dev-commands.md`.
+
+`devtools::load_all()` (no make equivalent) to load package interactively:
 
 ```r
 devtools::load_all()
-devtools::test()
-devtools::document() # also regenerates roxytest test files
-devtools::check()
 
 path <- system.file("extdata/tool1", package = "nemo")
 wf <- Workflow$new(name = "test_wf", path = path, tools = list(tool1 = Tool1))

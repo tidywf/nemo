@@ -35,6 +35,17 @@ child1 <- system.file(
 
 - `nemoverse_wf_dispatch()` now includes `tidydragen`.
 
+- `s3sync()`: new exported function wrapping `aws s3 sync`, with a `dryrun`
+  option and shell-quoted arguments.
+
+- `read_parquet_grep()`: dev/test helper that reads the one parquet file in a
+  directory whose basename matches a pattern.
+
+### Bug fixes
+
+- `Tool`: run-scoped tools with no sample prefix (e.g. `DragenBcl`) no longer
+  get a spurious leading `_` in their output filenames.
+
 ### Performance
 
 - `Tool$run()` / `Workflow$run()` now stream: each file is parsed, tidied, and
@@ -77,10 +88,11 @@ Major refactor.
   (`get_raw_schema`, `get_tidy_schema`) removed --- use
   `tool$config$get_schema_raw()` / `tool$config$get_schema_tidy()`;
   `nemofy(diro = ...)` → `run(output_dir = ...)`; column `group` →
-  `prefix_suffix`; `post_process_files` hook renamed to `refine_files`, now
-  applied to the base prefix *before* the disambiguation passes so subclasses
-  can fold a semantic distinction (e.g. germline/somatic) into the prefix and
-  avoid a spurious `_2`/`_3` suffix; `cloneable = FALSE`
+  `prefix_suffix`; `post_process_files` hook (`r pr(70)`) renamed to
+  `refine_files` (`r pr(73)`), now applied to the base prefix *before* the
+  disambiguation passes so subclasses can fold a semantic distinction (e.g.
+  germline/somatic) into the prefix and avoid a spurious `_2`/`_3` suffix;
+  `cloneable = FALSE`
 - `Workflow`: `$tools`, `$files_tbl` moved to private --- use `get_tools()`;
   `nemofy(diro = ...)` → `run(output_dir = ...)`; `list_files(type = ...)` ---
   `type` arg removed; gains `metapkg` constructor argument; path existence
