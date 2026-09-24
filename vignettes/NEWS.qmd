@@ -36,7 +36,32 @@ child1 <- system.file(
 - `nemoverse_wf_dispatch()` now includes `tidydragen`.
 
 - `s3sync()`: new exported function wrapping `aws s3 sync`, with a `dryrun`
-  option and shell-quoted arguments.
+  option and shell-quoted arguments. It also takes a `workflow` argument, which
+  fills `pats` from that workflow's schema-derived patterns.
+
+- Schema-declared S3 sync patterns. Each `schema.yaml` table gains a `glob`
+  field listing its `aws s3 sync --include` patterns (derived tables, which have
+  no file of their own, carry none). `Config$get_globs()` / `Tool$get_globs()` /
+  `Workflow$get_globs()` expose them, and `Workflow$get_sync_patterns()` /
+  `wf_sync_patterns()` assemble the full include/exclude tibble. This makes each
+  tool's `schema.yaml` the single source of truth for "which files does this
+  workflow need?", replacing the hand-maintained lists in `tidywigits::s3sync()`
+  and `tidydragen::s3sync()`. A `Workflow` subclass can append trailing excludes
+  via the new `sync_exclude` field.
+
+- `schema_glob_check()`: guards `glob` against drifting from `pattern`. For
+  every table, each test-fixture file the `pattern` matches must also be matched
+  by one of its globs; a too-narrow glob would silently stop a file syncing.
+  `glob_to_regex()` does the glob → regex conversion it needs. Both child
+  packages assert `nrow(schema_glob_check(pkg)) == 0` in their test suites.
+
+- `inst/scripts/schema_seed_globs.R`: dev-time helper that suggests `glob`
+  values from a table's `pattern`. Not part of the package --- the yaml is
+  authoritative.
+
+- `nemo.R sync`: new CLI subcommand (`cli_nemo_sync()`) that syncs a workflow's
+  parse-relevant outputs from S3 using those patterns. `--show_patterns` prints
+  the include/exclude list instead of syncing.
 
 - `read_parquet_grep()`: dev/test helper that reads the one parquet file in a
   directory whose basename matches a pattern.

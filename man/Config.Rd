@@ -24,6 +24,7 @@ tool <- "tool1"
 pkg <- "nemo"
 conf <- Config$new(tool, pkg)
 (patterns <- conf$get_patterns())
+(globs <- conf$get_globs())
 (ftypes <- conf$get_ftypes())
 (pat1 <- conf$get_pattern("table1"))
 (ftype1 <- conf$get_ftype("table1"))
@@ -54,6 +55,7 @@ Package name tool belongs to (for config lookup).}
 \item \href{#method-Config-new}{\code{Config$new()}}
 \item \href{#method-Config-print}{\code{Config$print()}}
 \item \href{#method-Config-get_patterns}{\code{Config$get_patterns()}}
+\item \href{#method-Config-get_globs}{\code{Config$get_globs()}}
 \item \href{#method-Config-get_ftypes}{\code{Config$get_ftypes()}}
 \item \href{#method-Config-get_descriptions}{\code{Config$get_descriptions()}}
 \item \href{#method-Config-get_pattern}{\code{Config$get_pattern()}}
@@ -126,6 +128,22 @@ Return all output file patterns.
 \subsection{Returns}{
 (\code{tibble()})\cr
 Table \code{name} and its \code{pattern}.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Config-get_globs"></a>}}
+\if{latex}{\out{\hypertarget{method-Config-get_globs}{}}}
+\subsection{Method \code{get_globs()}}{
+Return all output file globs.
+Tables with no \code{glob} (derived tables,
+which have no file of their own) contribute no rows.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Config$get_globs()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+(\code{tibble()})\cr
+Table \code{name} and its \code{glob}.
 }
 }
 \if{html}{\out{<hr>}}

@@ -22,6 +22,8 @@
 #' tools <- list(tool1 = Tool1)
 #' wf <- Workflow$new(name = "wf1", path = path, tools = tools)
 #' (lf_all <- wf$list_files())
+#' (globs <- wf$get_globs())
+#' (sync_pats <- wf$get_sync_patterns())
 #' wf$filter_files(exclude = "tool1_table6")
 #' wf$tidy()
 #' (tbls <- wf$get_tbls())
@@ -50,6 +52,12 @@ Workflow <- R6::R6Class(
     #' @field written_files (`tibble(n)`)\cr
     #' Tibble of files written from `self$write()`.
     written_files = NULL,
+    #' @field sync_exclude (`character(n)`)\cr
+    #' Globs appended as trailing `--exclude` patterns by
+    #' `get_sync_patterns()`, to carve files back out of the schema-derived
+    #' includes (e.g. duplicate copies of the same output under a different
+    #' directory). Subclasses override this.
+    sync_exclude = character(),
 
     #' @description Create a new Workflow object.
     #' @param name (`character(1)`)\cr
@@ -103,6 +111,29 @@ Workflow <- R6::R6Class(
     #' @return (`list(n)`)\cr
     #' Named list of instantiated Tool objects.
     get_tools = function() private$tools,
+    #' @description Get S3 sync globs for all Tools, derived from their schema
+    #' patterns.
+    #' @return (`tibble()`)\cr
+    #' Bound `get_globs()` tibbles from all Tools (`tool`, `name`, `glob`).
+    get_globs = function() {
+      private$tools |>
+        purrr::map(\(x) x$get_globs()) |>
+        dplyr::bind_rows()
+    },
+    #' @description Build the `aws s3 sync` include/exclude patterns for this
+    #' Workflow: exclude everything, then include every schema-derived glob,
+    #' then apply `sync_exclude`. `aws s3 sync` filters are ordered and
+    #' last-match wins, so the trailing excludes carve back out of the includes.
+    #' @return (`tibble()`)\cr
+    #' Tibble with `inex` (`"in"`/`"ex"`) and `pat` columns, as expected by
+    #' [s3sync()].
+    get_sync_patterns = function() {
+      dplyr::bind_rows(
+        tibble::tibble(inex = "ex", pat = "*"),
+        tibble::tibble(inex = "in", pat = unique(self$get_globs()[["glob"]])),
+        tibble::tibble(inex = "ex", pat = self$sync_exclude)
+      )
+    },
     #' @description Filter files in given workflow directory.
     #' @param include (`character(n)`)\cr
     #' tool_parser names to include (e.g. `"tool1_table1"`).

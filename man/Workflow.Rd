@@ -27,6 +27,8 @@ path <- system.file("extdata/tool1", package = "nemo")
 tools <- list(tool1 = Tool1)
 wf <- Workflow$new(name = "wf1", path = path, tools = tools)
 (lf_all <- wf$list_files())
+(globs <- wf$get_globs())
+(sync_pats <- wf$get_sync_patterns())
 wf$filter_files(exclude = "tool1_table6")
 wf$tidy()
 (tbls <- wf$get_tbls())
@@ -53,6 +55,12 @@ Package name(s) used for metadata version reporting.}
 
 \item{\code{written_files}}{(\code{tibble(n)})\cr
 Tibble of files written from \code{self$write()}.}
+
+\item{\code{sync_exclude}}{(\code{character(n)})\cr
+Globs appended as trailing \code{--exclude} patterns by
+\code{get_sync_patterns()}, to carve files back out of the schema-derived
+includes (e.g. duplicate copies of the same output under a different
+directory). Subclasses override this.}
 }
 \if{html}{\out{</div>}}
 }
@@ -62,6 +70,8 @@ Tibble of files written from \code{self$write()}.}
 \item \href{#method-Workflow-new}{\code{Workflow$new()}}
 \item \href{#method-Workflow-print}{\code{Workflow$print()}}
 \item \href{#method-Workflow-get_tools}{\code{Workflow$get_tools()}}
+\item \href{#method-Workflow-get_globs}{\code{Workflow$get_globs()}}
+\item \href{#method-Workflow-get_sync_patterns}{\code{Workflow$get_sync_patterns()}}
 \item \href{#method-Workflow-filter_files}{\code{Workflow$filter_files()}}
 \item \href{#method-Workflow-list_files}{\code{Workflow$list_files()}}
 \item \href{#method-Workflow-tidy}{\code{Workflow$tidy()}}
@@ -138,6 +148,39 @@ Get the list of Tool objects in this Workflow.
 \subsection{Returns}{
 (\code{list(n)})\cr
 Named list of instantiated Tool objects.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Workflow-get_globs"></a>}}
+\if{latex}{\out{\hypertarget{method-Workflow-get_globs}{}}}
+\subsection{Method \code{get_globs()}}{
+Get S3 sync globs for all Tools, derived from their schema
+patterns.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Workflow$get_globs()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+(\code{tibble()})\cr
+Bound \code{get_globs()} tibbles from all Tools (\code{tool}, \code{name}, \code{glob}).
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Workflow-get_sync_patterns"></a>}}
+\if{latex}{\out{\hypertarget{method-Workflow-get_sync_patterns}{}}}
+\subsection{Method \code{get_sync_patterns()}}{
+Build the \verb{aws s3 sync} include/exclude patterns for this
+Workflow: exclude everything, then include every schema-derived glob,
+then apply \code{sync_exclude}. \verb{aws s3 sync} filters are ordered and
+last-match wins, so the trailing excludes carve back out of the includes.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Workflow$get_sync_patterns()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+(\code{tibble()})\cr
+Tibble with \code{inex} (\code{"in"}/\code{"ex"}) and \code{pat} columns, as expected by
+\code{\link[=s3sync]{s3sync()}}.
 }
 }
 \if{html}{\out{<hr>}}

@@ -18,6 +18,7 @@
 #' pkg <- "nemo"
 #' conf <- Config$new(tool, pkg)
 #' (patterns <- conf$get_patterns())
+#' (globs <- conf$get_globs())
 #' (ftypes <- conf$get_ftypes())
 #' (pat1 <- conf$get_pattern("table1"))
 #' (ftype1 <- conf$get_ftype("table1"))
@@ -84,6 +85,27 @@ Config <- R6::R6Class(
     #' @return (`tibble()`)\cr
     #' Table `name` and its `pattern`.
     get_patterns = function() private$get_field_for_all_tables("pattern"),
+
+    #' @description Return all output file globs.
+    #' Tables with no `glob` (derived tables,
+    #' which have no file of their own) contribute no rows.
+    #' @return (`tibble()`)\cr
+    #' Table `name` and its `glob`.
+    get_globs = function() {
+      empty <- tibble::tibble(name = character(), glob = character())
+      private$tables |>
+        purrr::imap(\(tab, tab_name) {
+          globs <- as.character(tab[["glob"]] %||% character())
+          if (length(globs) == 0) {
+            return(NULL)
+          }
+          tibble::tibble(name = tab_name, glob = globs)
+        }) |>
+        purrr::compact() |>
+        # bind_rows() on an all-derived tool yields a 0x0 tibble, so fall back
+        # to a typed empty one to keep the $glob column addressable
+        (\(x) if (length(x) == 0) empty else dplyr::distinct(dplyr::bind_rows(x)))()
+    },
 
     #' @description Return all output file types.
     #' @return (`tibble()`)\cr

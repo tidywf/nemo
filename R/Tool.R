@@ -430,6 +430,12 @@ Tool <- R6::R6Class(
     #' The `files` tibble of matched files. Always a tibble (possibly zero-row),
     #' never `NULL`.
     list_files = function() private$files,
+    #' @description Get this tool's S3 sync globs.
+    #' @return (`tibble()`)\cr
+    #' `tool`, table `name` and its `glob`.
+    get_globs = function() {
+      dplyr::mutate(self$config$get_globs(), tool = self$name, .before = 1)
+    },
     #' @description Get tidy tibbles after parsing and tidying.
     #' @return (`tibble()` or `NULL`)\cr
     #' The `tbls` tibble, or `NULL` if `tidy()` has not been called or if
