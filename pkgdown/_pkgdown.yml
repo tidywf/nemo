@@ -75,6 +75,9 @@ reference:
       - cli_list_add_args
       - cli_list_parse_args
       - cli_nemo_list
+      - cli_sync_add_args
+      - cli_sync_parse_args
+      - cli_nemo_sync
   - title: "Schema Visualisation"
     contents:
       - nemo_schemavis_data
@@ -102,6 +105,7 @@ reference:
       - nemo_out_formats
       - nemo_write
       - nemo_enframe
+      - read_parquet_grep
       - set_tbl_version_attr
       - get_python
       - nemo_gha_mermaid
@@ -111,3 +115,6 @@ reference:
       - nemoverse_wf_dispatch
       - pkg_found
       - s3sync
+      - glob_to_regex
+      - schema_glob_check
+      - wf_sync_patterns

@@ -2,7 +2,7 @@
 
 # File R/Config.R: @testexamples
 
-test_that("Function config_sort_versions() @ L356", {
+test_that("Function config_sort_versions() @ L378", {
   
   config_sort_versions(c("v2.0.0", "v1.0.0", "latest"))
   config_sort_versions(c("latest", "v1.2.3"))

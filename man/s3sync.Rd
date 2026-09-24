@@ -4,7 +4,7 @@
 \alias{s3sync}
 \title{AWS S3 Sync Helper}
 \usage{
-s3sync(src, dest, pats = NULL, dryrun = FALSE)
+s3sync(src, dest, pats = NULL, workflow = NULL, dryrun = FALSE)
 }
 \arguments{
 \item{src}{(\code{character(1)})\cr
@@ -14,7 +14,14 @@ S3 source path.}
 Local destination path.}
 
 \item{pats}{(\code{tibble()})\cr
-Patterns tibble with \code{inex} ("in" or "ex") and \code{pat} (pattern) columns.}
+Patterns tibble with \code{inex} ("in" or "ex") and \code{pat} (pattern) columns.
+If \code{NULL} and \code{workflow} is given, the workflow's schema-derived patterns
+are used (see \code{\link[=wf_sync_patterns]{wf_sync_patterns()}}); if both are \code{NULL}, everything is
+excluded.}
+
+\item{workflow}{(\code{character(1)})\cr
+Workflow name (e.g. \code{"wigits"}, \code{"dragen"}) whose schema-derived sync
+patterns to use. Ignored when \code{pats} is supplied.}
 
 \item{dryrun}{(\code{logical(1)})\cr
 If \code{TRUE}, passes \code{--dryrun} to \verb{aws s3 sync} so operations are displayed
@@ -33,5 +40,8 @@ pats <- tibble::tribble(
   "in", "*foo.csv"
 )
 s3sync(src, dest, pats)
+
+# let the workflow's schemas decide what to pull down
+s3sync(src, dest, workflow = "wigits")
 }
 }

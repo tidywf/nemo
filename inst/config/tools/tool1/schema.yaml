@@ -2,6 +2,7 @@ tables:
   table1:
     description: 'Table1 for tool1 (tsv: header present, tab-delimited).'
     pattern: "\\.tool1\\.table1\\.tsv$"
+    glob: ["*.tool1.table1.tsv"]
     ftype: 'tsv'
     columns:
       - raw: 'SampleID'
@@ -42,6 +43,7 @@ tables:
   table2:
     description: 'Table2 for tool1 (tsv: header present, tab-delimited).'
     pattern: "\\.tool1\\.table2\\.tsv$"
+    glob: ["*.tool1.table2.tsv"]
     ftype: 'tsv'
     columns:
       - raw: 'SampleID'
@@ -62,6 +64,7 @@ tables:
   table3:
     description: 'Table3 for tool1 (tsv-keyvalue: no header, 2 cols, col1=key col2=value).'
     pattern: "\\.tool1\\.table3\\.tsv$"
+    glob: ["*.tool1.table3.tsv"]
     ftype: 'tsv-keyvalue'
     columns:
       - raw: 'SampleID'
@@ -92,6 +95,7 @@ tables:
   table4:
     description: 'Table4 for tool1 (tsv-nohead: no header, positional cols X1..XN).'
     pattern: "\\.tool1\\.table4\\.tsv$"
+    glob: ["*.tool1.table4.tsv"]
     ftype: 'tsv-nohead'
     columns:
       - raw: 'X1'
@@ -122,6 +126,7 @@ tables:
   table6:
     description: 'Table6 for tool1 (csv: header present, comma-delimited).'
     pattern: "\\.tool1\\.table6\\.csv$"
+    glob: ["*.tool1.table6.csv"]
     ftype: 'csv'
     columns:
       - raw: 'GeneId'

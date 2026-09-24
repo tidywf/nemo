@@ -91,6 +91,7 @@ Only enable this when a tool's \code{tidy_name}s are unique across all its outpu
 \item \href{#method-Tool-new}{\code{Tool$new()}}
 \item \href{#method-Tool-print}{\code{Tool$print()}}
 \item \href{#method-Tool-list_files}{\code{Tool$list_files()}}
+\item \href{#method-Tool-get_globs}{\code{Tool$get_globs()}}
 \item \href{#method-Tool-get_tbls}{\code{Tool$get_tbls()}}
 \item \href{#method-Tool-filter_files}{\code{Tool$filter_files()}}
 \item \href{#method-Tool-tidy}{\code{Tool$tidy()}}
@@ -164,6 +165,20 @@ List files matching this tool's patterns.
 (\code{tibble()})\cr
 The \code{files} tibble of matched files. Always a tibble (possibly zero-row),
 never \code{NULL}.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Tool-get_globs"></a>}}
+\if{latex}{\out{\hypertarget{method-Tool-get_globs}{}}}
+\subsection{Method \code{get_globs()}}{
+Get this tool's S3 sync globs.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Tool$get_globs()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+(\code{tibble()})\cr
+\code{tool}, table \code{name} and its \code{glob}.
 }
 }
 \if{html}{\out{<hr>}}
