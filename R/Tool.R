@@ -57,11 +57,9 @@ Tool <- R6::R6Class(
     files = NULL,
     tbls = NULL,
     files_tbl = NULL,
-    # Subclass hook to tweak the matched-files tibble before disambiguation.
-    # Receives parser/bname/size/lastmodified/path/pattern/prefix/tool_parser;
-    # typically rewrites `prefix`. Default: no-op.
+    # Subclass hook: adjust matched files (usually `prefix`) before
+    # disambiguation, e.g. to fold germline/somatic in and avoid _2/_3 suffixes.
     refine_files = function(files) files,
-    # Empty-tibble schema for compute_files, kept as a method for easy updates.
     empty_files_tbl = function() {
       tibble::tibble(
         tool_parser = character(),
@@ -100,8 +98,6 @@ Tool <- R6::R6Class(
           prefix = dplyr::if_else(.data$prefix == "", .data$parser, .data$prefix),
           tool_parser = paste0(self$name, "_", .data$parser)
         )
-      # Runs before disambiguation so a subclass can fold e.g. germline/somatic
-      # into `prefix`, avoiding spurious _2/_3 suffixes.
       res <- private$refine_files(res)
       res |>
         dplyr::mutate(prefix_suffix = dplyr::row_number(), .by = "bname") |>
@@ -113,8 +109,7 @@ Tool <- R6::R6Class(
           ),
           prefix = paste0(.data$prefix, .data$prefix_suffix)
         ) |>
-        # Different basenames can reduce to the same prefix (e.g. *.flagstat and
-        # *.flag_counts.tsv both -> "sample1"). Append _2, _3... to disambiguate.
+        # different basenames can reduce to the same prefix: append _2, _3...
         dplyr::mutate(grp2 = dplyr::row_number(), .by = c("tool_parser", "prefix")) |>
         dplyr::mutate(
           prefix = dplyr::if_else(
@@ -157,9 +152,8 @@ Tool <- R6::R6Class(
         private$parse_by_ftype(x, table_name)
       }
     },
-    # Calls custom tidy_{table_name}() if defined, else tidy_file(). `x` is a
-    # path (keep_raw = FALSE) or an already-parsed tibble (keep_raw = TRUE);
-    # converted to a tibble here before dispatch either way.
+    # Calls custom tidy_{table_name}() if defined, else tidy_file().
+    # `x` is a path or an already-parsed tibble (keep_raw = TRUE).
     dispatch_tidy = function(x, table_name) {
       fun <- glue("tidy_{table_name}")
       if (is.function(self[[fun]])) {
@@ -171,8 +165,8 @@ Tool <- R6::R6Class(
         private$tidy_file(x, table_name)
       }
     },
-    # Subclass hook: register pkg-specific ftype parsers, e.g.
-    # list(ftype = function(x, table_name)), without overriding parse_by_ftype.
+    # Subclass hook: named list of pkg-specific ftype parsers,
+    # `ftype = function(x, table_name)`.
     extra_ftypes = function() list(),
     # Parse a file by looking up its ftype from the config.
     parse_by_ftype = function(x, table_name) {
@@ -250,17 +244,15 @@ Tool <- R6::R6Class(
         ...
       )
     },
-    # Shared by write() (bulk) and run()'s streaming path (per file): unnests
-    # `tidy`, computes tbl_name/fpfix, prepends id cols. `tbls_with_tidy` needs
-    # cols tool_parser/parser/prefix/path/tidy.
+    # Unnests `tidy`, computes tbl_name/fpfix and prepends id cols.
+    # Used by write() (all files) and run() (one file at a time).
     build_d_write = function(tbls_with_tidy, output_dir, input_id, output_id, prefix_include) {
       tbls_with_tidy |>
         dplyr::rename(raw_path = "path") |>
         dplyr::select("raw_path", "tool_parser", "parser", "prefix", "tidy") |>
         tidyr::unnest("tidy", names_sep = "_") |>
         dplyr::mutate(
-          # flat_tidy_names: <tool>_<tidy_name> directly; else the concatenated
-          # <tool>_<parser><tidy_name> form (parser == tidy_name -> tool_parser).
+          # flat: <tool>_<tidy_name>; else <tool>_<parser><tidy_name>
           tbl_name = if (isTRUE(self$flat_tidy_names)) {
             paste0(self$name, "_", .data$tidy_name)
           } else {
@@ -270,9 +262,7 @@ Tool <- R6::R6Class(
               paste0(.data$tool_parser, .data$tidy_name)
             )
           },
-          # Run-scoped tools (e.g. DragenBcl) leave `prefix` as ""/_2/_3 (no
-          # sample id). For those, append the suffix at the end -> `<tool>_<table>[_N]`
-          # instead of the usual sample-prefixed `<prefix>_<tool>_<table>`.
+          # run-scoped tools (no sample prefix, just ""/_2/_3) -> <tool>_<table>[_N]
           fpfix = dplyr::if_else(
             !nzchar(.data$prefix) | grepl("^_[0-9]+$", .data$prefix),
             file.path(output_dir, paste0(.data$tbl_name, .data$prefix)),
@@ -284,9 +274,7 @@ Tool <- R6::R6Class(
           )
         )
     },
-    # Guard against flat_tidy_names collisions: two outputs must not reduce to
-    # the same table name. `fpfixes` accumulates across calls in the streaming
-    # path so cross-file collisions are still caught.
+    # With flat_tidy_names, two outputs must not collide on the same name.
     assert_no_dup_fpfix = function(fpfixes) {
       if (!isTRUE(self$flat_tidy_names)) {
         return(invisible(NULL))
@@ -301,8 +289,7 @@ Tool <- R6::R6Class(
       }
       invisible(NULL)
     },
-    # Writes a prepped d_write tibble; returns only the small outpath tibble
-    # (no table data retained).
+    # Returns only the outpath tibble, not the table data.
     write_d_write = function(d_write, format, dbconn) {
       outpaths <- purrr::pmap_chr(
         list(d_write$tidy_data, d_write$fpfix, d_write$tbl_name),
@@ -320,8 +307,7 @@ Tool <- R6::R6Class(
         dplyr::mutate(outpath = outpaths) |>
         dplyr::select("raw_path", "tool_parser", "prefix", "tbl_name", "outpath")
     },
-    # Shared by write()/run(): validates write_metadata/output_dir combo and
-    # returns the (possibly normalised) output_dir.
+    # Returns the normalised output_dir.
     validate_write_setup = function(format, output_dir, write_metadata) {
       if (write_metadata && format != "db" && is.null(self$path)) {
         nemo_stop(
@@ -337,7 +323,7 @@ Tool <- R6::R6Class(
       }
       normalizePath(output_dir, mustWork = FALSE)
     },
-    # Shared by write()/run(): computes and writes metadata_<tool>.parquet.
+    # Writes metadata_<tool>.parquet.
     write_metadata_file = function(input_id, output_id, output_dir) {
       meta <- self$get_metadata(
         input_id = input_id,
@@ -369,12 +355,12 @@ Tool <- R6::R6Class(
     #' @field flat_tidy_names (`logical(1)`)\cr
     #' Controls how a fanned-out (one-file-to-many-tables) output is named. When
     #' `FALSE`, a sub-table's name is the parser table name concatenated
-    #' with its `tidy_name` (e.g. parser `ploidy` + `stats` -> `ploidystats`),
-    #' preserving the existing behaviour for every tool. When `TRUE`, the parser
-    #' token is dropped and the output is named `<tool>_<tidy_name>` directly (e.g.
-    #' `dragenfastqc_posbasecontent`), giving flat, self-sufficient sub-table names.
-    #' Only enable this when a tool's `tidy_name`s are unique across all its outputs
-    #' - `write()` errors if two outputs collide to the same name.
+    #' with its `tidy_name` (e.g. parser `gcmed` + `sample` -> `gcmedsample`).
+    #' When `TRUE`, the output is named `<tool>_<tidy_name>` directly (e.g.
+    #' `dragenfqc_posbasecontent`). Fan-out tools in the child packages set
+    #' `TRUE`; tools that never fan out keep the `FALSE` default. `tidy_name`s
+    #' must then be unique across the tool's outputs - `write()` errors on
+    #' collisions.
     flat_tidy_names = FALSE,
     #' @description Create a new Tool object.
     #' @param name (`character(1)`)\cr
@@ -438,8 +424,8 @@ Tool <- R6::R6Class(
     },
     #' @description Get tidy tibbles after parsing and tidying.
     #' @return (`tibble()` or `NULL`)\cr
-    #' The `tbls` tibble, or `NULL` if `tidy()` has not been called or if
-    #' `tidy()` found no matching files. When `tidy(keep_raw = TRUE)` was used,
+    #' The `tbls` tibble, or `NULL` if `tidy()` has not been called, found no
+    #' matching files, or `run()` was used (it streams and keeps nothing). When `tidy(keep_raw = TRUE)` was used,
     #' the tibble also contains a `raw` list-column of the unparsed tibbles.
     get_tbls = function() private$tbls,
     #' @description Filter files in given tool directory based on inclusion or
@@ -535,7 +521,6 @@ Tool <- R6::R6Class(
       dbconn = NULL,
       write_metadata = TRUE
     ) {
-      # Also checked in Workflow$write()/nemo_osfx(); each layer stays self-contained.
       nemo_assert_out_fmt(format)
       if (private$is_written) {
         return(invisible(self))
@@ -644,8 +629,8 @@ Tool <- R6::R6Class(
       if (format != "db") {
         fs::dir_create(output_dir)
       }
-      # Stream: parse -> tidy -> write one file at a time (memory O(1 file), not
-      # O(run size)). private$tbls stays empty; tidy()/get_tbls() are unaffected.
+      # Stream parse -> tidy -> write one file at a time to bound memory.
+      # private$tbls stays NULL, so get_tbls() returns NULL afterwards.
       seen_fpfix <- character()
       written <- purrr::map(seq_len(nrow(private$files)), \(i) {
         row <- private$files[i, ]

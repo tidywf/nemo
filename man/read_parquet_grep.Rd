@@ -24,12 +24,9 @@ erroring.}
 (\code{tibble}) Parsed parquet file.
 }
 \description{
-Dev/test helper for \verb{@testexamples} blocks: matches \code{pattern} against \code{lf}
-(basenames from \code{list.files(odir, ...)}) and reads the one matching parquet
-file from \code{odir}. Saves repeating
-\code{arrow::read_parquet(file.path(odir, grep(pattern, lf, value = TRUE)))} in
-every per-table check. Errors (via \code{arrow::read_parquet}) if \code{pattern}
-matches zero or more than one file, unless \code{first = TRUE}.
+Test helper: reads the single parquet file in \code{odir} whose basename (from
+\code{lf}) matches \code{pattern}. Errors on zero or multiple matches unless
+\code{first = TRUE}.
 }
 \examples{
 tmp <- tempfile(fileext = ".parquet")

@@ -51,7 +51,7 @@ test_that("Function parse_file_nohead() @ L108", {
 })
 
 
-test_that("Function file_hdr() @ L157", {
+test_that("Function file_hdr() @ L155", {
   
   dir1 <- system.file("extdata/tool1", package = "nemo")
   fpath <- file.path(dir1, "latest", "sampleA.tool1.table1.tsv")
@@ -61,7 +61,7 @@ test_that("Function file_hdr() @ L157", {
 })
 
 
-test_that("Function schema_guess() @ L198", {
+test_that("Function schema_guess() @ L196", {
   
   dir1 <- system.file("extdata/tool1", package = "nemo")
   fpath1 <- file.path(dir1, "latest", "sampleA.tool1.table1.tsv")
@@ -80,7 +80,7 @@ test_that("Function schema_guess() @ L198", {
 })
 
 
-test_that("Function parse_file_keyvalue() @ L260", {
+test_that("Function parse_file_keyvalue() @ L261", {
   
   path <- system.file("extdata/tool1", package = "nemo")
   x <- Tool1$new(path)
@@ -96,5 +96,7 @@ test_that("Function parse_file_keyvalue() @ L260", {
   expect_equal(attr(d3_lat, "file_version"), "latest")
   expect_equal(names(d3_v1),  c("SampleID", "QCStatus", "TotalReads"))
   expect_equal(names(d3_lat), c("SampleID", "QCStatus", "TotalReads", "MappedReads", "UnmappedReads"))
+  expect_type(d3_v1$SampleID, "character")
+  expect_type(d3_v1$TotalReads, "double")
 })
 

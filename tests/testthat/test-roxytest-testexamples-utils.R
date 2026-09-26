@@ -41,16 +41,15 @@ test_that("Function empty_tbl() @ L96", {
 })
 
 
-test_that("Function nemoverse_wf_dispatch() @ L136", {
+test_that("Function nemoverse_wf_dispatch() @ L135", {
   
-  wf <- "basemean"
-  (fun <- nemoverse_wf_dispatch(wf))
-  expect_equal(fun, base::mean)
+  (fun <- nemoverse_wf_dispatch("workflow1"))
+  expect_identical(fun, Workflow1)
   expect_error(nemoverse_wf_dispatch("foo"))
 })
 
 
-test_that("Function read_parquet_grep() @ L185", {
+test_that("Function read_parquet_grep() @ L179", {
   
   tmp <- tempfile(fileext = ".parquet")
   arrow::write_parquet(data.frame(x = 1L), tmp)
@@ -59,7 +58,7 @@ test_that("Function read_parquet_grep() @ L185", {
 })
 
 
-test_that("Function pkg_found() @ L206", {
+test_that("Function pkg_found() @ L200", {
   
   pkg_found("base")
   pkg_found("somefakepackagename")

@@ -106,8 +106,6 @@ parse_file <- function(fpath, pname, schemas_all, delim = "\t", ...) {
 #' expect_equal(attr(d_v1, "file_version"), "v1.0.0")
 #' @export
 parse_file_nohead <- function(fpath, pname, schemas_all, delim = "\t", ...) {
-  # count_file_cols reads with col_names = FALSE so the first data row is treated
-  # as data, not a header — file_hdr() would be semantically wrong here.
   ncols <- count_file_cols(fpath, delim, ...)
   schema <- schemas_all |>
     dplyr::filter(.data$name == pname) |>
@@ -228,7 +226,8 @@ schema_guess <- function(pname, cnames, schemas_all) {
 #' Parse Key-Value file
 #'
 #' @description
-#' Parses files with no header and two columns representing key-value pairs.
+#' Parses files with no header and two columns representing key-value pairs,
+#' pivoted wide and typed per the matching raw schema.
 #'
 #' @param fpath (`character(1)`)\cr
 #' File path.
@@ -256,6 +255,8 @@ schema_guess <- function(pname, cnames, schemas_all) {
 #' expect_equal(attr(d3_lat, "file_version"), "latest")
 #' expect_equal(names(d3_v1),  c("SampleID", "QCStatus", "TotalReads"))
 #' expect_equal(names(d3_lat), c("SampleID", "QCStatus", "TotalReads", "MappedReads", "UnmappedReads"))
+#' expect_type(d3_v1$SampleID, "character")
+#' expect_type(d3_v1$TotalReads, "double")
 #' @export
 parse_file_keyvalue <- function(fpath, pname, schemas_all, delim = "\t", ...) {
   ncols <- count_file_cols(fpath, delim, ...)
@@ -276,8 +277,8 @@ parse_file_keyvalue <- function(fpath, pname, schemas_all, delim = "\t", ...) {
     cnames = colnames(d_wide),
     schemas_all = schemas_all
   )
-  # schema is used only for version detection; column types are not applied because
-  # key-value files are inherently all-character after the pivot.
+  ctypes <- rlang::exec(readr::cols, !!!tibble::deframe(schema[["schema"]]))
+  d_wide <- readr::type_convert(d_wide, col_types = ctypes)
   attr(d_wide, "file_version") <- schema[["version"]]
   d_wide[]
 }

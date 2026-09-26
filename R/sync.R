@@ -33,17 +33,15 @@ NEMO_NO_FILE_MATCH <- "__no_file_match__"
 #' @export
 wf_sync_patterns <- function(workflow) {
   fun <- nemoverse_wf_dispatch(workflow)
-  # Workflow$new can just take a tmp dir to access patterns
+  # patterns come from config, so an empty dir suffices
   tmp <- fs::file_temp()
   fs::dir_create(tmp)
   on.exit(fs::dir_delete(tmp), add = TRUE)
   fun$new(tmp)$get_sync_patterns()
 }
 
-# Resolve a package resource directory in both installed and dev contexts.
-# pkgload::load_all() points system.file() at the package *source* root, where
-# resources still live under inst/, so a plain system.file("extdata") comes back
-# empty unless the repo happens to carry a top-level symlink for it.
+# Resolve a package resource dir when installed or under load_all(), where
+# system.file() points at the source root and resources live under inst/.
 pkg_res_dir <- function(pkg, sub) {
   p <- system.file(sub, package = pkg)
   if (nzchar(p) && dir.exists(p)) {

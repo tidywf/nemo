@@ -392,9 +392,7 @@ Get tidy tibbles for all Tools.
 (\code{tibble()})\cr
 Bound \code{tbls} tibbles from all Tools, with a leading \code{tool} column.
 When \code{tidy(keep_raw = TRUE)} was used, each tool's tibble also contains
-a \code{raw} list-column. Note: \code{get_tbls()} checks \code{is.null()} (not \code{nrow()})
-because \code{Tool$get_tbls()} returns \code{NULL} when nothing was tidied, whereas
-\code{Tool$list_files()} always returns a zero-row tibble (never \code{NULL}).
+a \code{raw} list-column.
 }
 }
 \if{html}{\out{<hr>}}

@@ -90,8 +90,6 @@ nemo_out_formats <- function() {
 #'
 #' @export
 nemo_osfx <- function(fpfix, format) {
-  # already validated upstream by Tool$write() / Workflow$write(); kept so nemo_osfx()
-  # is safe to call standalone without a prior validation step.
   nemo_assert_out_fmt(format)
   if (format == "db") {
     nemo_stop("nemo_osfx() is not applicable for format 'db'.")

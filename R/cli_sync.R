@@ -102,7 +102,11 @@ cli_nemo_sync <- function(
     readr::write_tsv(pats, stdout(), col_names = FALSE)
     return(invisible(pats))
   }
-  nemo_log("INFO", paste0("Syncing ", nrow(pats), " patterns from ", src, " to ", dest))
+  nemo_log("INFO", "Syncing %d patterns from %s to %s", nrow(pats), src, dest)
   fs::dir_create(dest)
-  s3sync(src = src, dest = dest, pats = pats, dryrun = dryrun)
+  status <- s3sync(src = src, dest = dest, pats = pats, dryrun = dryrun)
+  if (status != 0L) {
+    nemo_stop(glue("aws s3 sync failed (exit {status})."))
+  }
+  invisible(status)
 }

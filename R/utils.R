@@ -127,10 +127,9 @@ get_python <- function() {
 #' @param wf Workflow name.
 #' @return The nemo workflow class to initiate.
 #' @examples
-#' wf <- "basemean"
-#' (fun <- nemoverse_wf_dispatch(wf))
+#' (fun <- nemoverse_wf_dispatch("workflow1"))
 #' @testexamples
-#' expect_equal(fun, base::mean)
+#' expect_identical(fun, Workflow1)
 #' expect_error(nemoverse_wf_dispatch("foo"))
 #' @export
 nemoverse_wf_dispatch <- function(wf) {
@@ -138,9 +137,7 @@ nemoverse_wf_dispatch <- function(wf) {
   wfs <- list(
     wigits = list(pkg = "tidywigits", wf = "Wigits", repo = "https://github.com/tidywf/tidywigits"),
     dragen = list(pkg = "tidydragen", wf = "Dragen", repo = "https://github.com/tidywf/tidydragen"),
-    workflow1 = list(pkg = "nemo", wf = "Workflow1", repo = "https://github.com/tidywf/nemo"),
-    # basemean is a test/example entry only — not a real workflow
-    basemean = list(pkg = "base", wf = "mean", repo = "CRAN")
+    workflow1 = list(pkg = "nemo", wf = "Workflow1", repo = "https://github.com/tidywf/nemo")
   )
   all_wfs <- names(wfs)
   if (!wf %in% all_wfs) {
@@ -157,12 +154,9 @@ nemoverse_wf_dispatch <- function(wf) {
 
 #' Read Parquet File Matched By Pattern
 #'
-#' Dev/test helper for `@testexamples` blocks: matches `pattern` against `lf`
-#' (basenames from `list.files(odir, ...)`) and reads the one matching parquet
-#' file from `odir`. Saves repeating
-#' `arrow::read_parquet(file.path(odir, grep(pattern, lf, value = TRUE)))` in
-#' every per-table check. Errors (via `arrow::read_parquet`) if `pattern`
-#' matches zero or more than one file, unless `first = TRUE`.
+#' Test helper: reads the single parquet file in `odir` whose basename (from
+#' `lf`) matches `pattern`. Errors on zero or multiple matches unless
+#' `first = TRUE`.
 #'
 #' @param odir (`character(1)`)\cr
 #' Directory the files live in.

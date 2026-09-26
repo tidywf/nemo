@@ -74,14 +74,12 @@ Tibble of files written from \code{self$write()}.}
 \item{\code{flat_tidy_names}}{(\code{logical(1)})\cr
 Controls how a fanned-out (one-file-to-many-tables) output is named. When
 \code{FALSE}, a sub-table's name is the parser table name concatenated
-with its \code{tidy_name} (e.g. parser \code{ploidy} + \code{stats} -> \code{ploidystats}),
-preserving the existing behaviour for every tool. When \code{TRUE}, the parser
-token is dropped and the output is named \verb{<tool>_<tidy_name>} directly (e.g.
-\code{dragenfastqc_posbasecontent}), giving flat, self-sufficient sub-table names.
-Only enable this when a tool's \code{tidy_name}s are unique across all its outputs
-\itemize{
-\item \code{write()} errors if two outputs collide to the same name.
-}}
+with its \code{tidy_name} (e.g. parser \code{gcmed} + \code{sample} -> \code{gcmedsample}).
+When \code{TRUE}, the output is named \verb{<tool>_<tidy_name>} directly (e.g.
+\code{dragenfqc_posbasecontent}). Fan-out tools in the child packages set
+\code{TRUE}; tools that never fan out keep the \code{FALSE} default. \code{tidy_name}s
+must then be unique across the tool's outputs - \code{write()} errors on
+collisions.}
 }
 \if{html}{\out{</div>}}
 }
@@ -192,8 +190,8 @@ Get tidy tibbles after parsing and tidying.
 
 \subsection{Returns}{
 (\code{tibble()} or \code{NULL})\cr
-The \code{tbls} tibble, or \code{NULL} if \code{tidy()} has not been called or if
-\code{tidy()} found no matching files. When \code{tidy(keep_raw = TRUE)} was used,
+The \code{tbls} tibble, or \code{NULL} if \code{tidy()} has not been called, found no
+matching files, or \code{run()} was used (it streams and keeps nothing). When \code{tidy(keep_raw = TRUE)} was used,
 the tibble also contains a \code{raw} list-column of the unparsed tibbles.
 }
 }
