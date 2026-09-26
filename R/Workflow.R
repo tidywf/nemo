@@ -162,8 +162,7 @@ Workflow <- R6::R6Class(
       }
       purrr::walk(private$tools, \(x) {
         tool_parsers <- unique(x$list_files()$tool_parser)
-        # Use if/else rather than character(0) args: an empty intersection means
-        # "no include parsers match this tool" so we explicitly exclude all it has.
+        # no include match for this tool -> exclude all its parsers
         if (!is.null(include)) {
           matched <- include[include %in% tool_parsers]
           if (length(matched) > 0) {
@@ -231,8 +230,6 @@ Workflow <- R6::R6Class(
       dbconn = NULL,
       write_metadata = TRUE
     ) {
-      # nemo_assert_out_fmt is also checked in Tool$write() and nemo_osfx(); each layer
-      # keeps its own check so callers don't need to worry about ordering.
       nemo_assert_out_fmt(format)
       if (private$is_written) {
         return(invisible(self))
@@ -240,11 +237,7 @@ Workflow <- R6::R6Class(
       if (!private$is_tidied) {
         nemo_stop("Did you forget to tidy?")
       }
-      if (format != "db") {
-        # normalise once here so all tools receive a canonical path; Tool$write()
-        # repeats the normalisation but that is idempotent.
-        output_dir <- normalizePath(output_dir, mustWork = FALSE)
-      }
+      output_dir <- private$validate_output_dir(format, output_dir)
       res <- private$tools |>
         purrr::map(\(x) {
           x$write(
@@ -302,15 +295,9 @@ Workflow <- R6::R6Class(
       # fail-fast before parsing
       nemo_assert_out_fmt(format)
       self$filter_files(include = include, exclude = exclude)
-      if (format != "db") {
-        # normalise once here so all tools receive a canonical path; Tool$run()
-        # repeats the normalisation but that is idempotent.
-        output_dir <- normalizePath(output_dir, mustWork = FALSE)
-      }
-      # Delegate to each Tool's own streaming run() (parse -> tidy -> write per
-      # file) rather than this Workflow's tidy()/write(), so no tool accumulates
-      # its full run in memory. Per-tool metadata is suppressed; a single
-      # workflow-level metadata.parquet is written below instead.
+      output_dir <- private$validate_output_dir(format, output_dir)
+      # Delegate to each Tool's streaming run() to bound memory; a single
+      # workflow-level metadata.parquet replaces per-tool metadata.
       res <- private$tools |>
         purrr::map(\(x) {
           x$run(
@@ -338,8 +325,6 @@ Workflow <- R6::R6Class(
     #' @return (`tibble()`)\cr
     #' Bound `schemas_raw` tibbles from all Tools, with a leading `tool` column.
     get_schemas_raw = function() {
-      # get_schemas_raw and get_schemas_tidy are symmetric (same pattern, different Config method).
-      # The repetition is intentional — extraction was tried and reversed; they're simple enough to read in full.
       private$tools |>
         purrr::map(\(x) dplyr::mutate(x$config$get_schemas_raw(), tool = x$name, .before = 1)) |>
         dplyr::bind_rows()
@@ -356,9 +341,7 @@ Workflow <- R6::R6Class(
     #' @return (`tibble()`)\cr
     #' Bound `tbls` tibbles from all Tools, with a leading `tool` column.
     #' When `tidy(keep_raw = TRUE)` was used, each tool's tibble also contains
-    #' a `raw` list-column. Note: `get_tbls()` checks `is.null()` (not `nrow()`)
-    #' because `Tool$get_tbls()` returns `NULL` when nothing was tidied, whereas
-    #' `Tool$list_files()` always returns a zero-row tibble (never `NULL`).
+    #' a `raw` list-column.
     get_tbls = function() {
       private$tools |>
         purrr::map(\(x) {
@@ -420,7 +403,16 @@ Workflow <- R6::R6Class(
         nemo_stop("All elements of `tools` must inherit from Tool.")
       }
     },
-    # Shared by write()/run(): computes and writes metadata.parquet.
+    # Normalised once so every Tool gets the same path.
+    validate_output_dir = function(format, output_dir) {
+      if (format == "db") {
+        return(output_dir)
+      }
+      if (is.null(output_dir)) {
+        nemo_stop("Output directory must be specified when format is not 'db'.")
+      }
+      normalizePath(output_dir, mustWork = FALSE)
+    },
     write_metadata_file = function(input_id, output_id, output_dir) {
       meta <- self$get_metadata(
         input_id = input_id,
@@ -436,12 +428,9 @@ Workflow <- R6::R6Class(
   ) # private end
 )
 
-# Check whether an R6 class inherits from Tool anywhere in its ancestry.
-# cls$inherit stores a symbol (the parent class name), not the class object
-# itself — get() is required to resolve it. Resolution uses cls$parent_env (the
-# namespace where the subclass was defined) rather than parent.env(.GlobalEnv)
-# (the search path), so the lookup works under R CMD check where nemo is only
-# imported into the downstream package namespace, not attached to the search path.
+# Does an R6 class inherit from Tool anywhere in its ancestry?
+# `cls$inherit` is a symbol, resolved in `cls$parent_env` (the defining
+# namespace) so this works when nemo is imported but not attached.
 wf_is_tool_subclass <- function(cls) {
   parent <- cls$inherit
   env <- cls$parent_env

@@ -199,8 +199,9 @@ cli_nemo_tidy <- function(
       dbname = dbname,
       user = dbuser
     )
+    on.exit(DBI::dbDisconnect(dbconn), add = TRUE)
   }
-  nemo_log("INFO", paste("Tidying dir:", in_dir))
+  nemo_log("INFO", "Tidying dir: %s", in_dir)
   obj <- fun$new(in_dir)
   res <- obj$run(
     output_dir = output_dir,
@@ -213,9 +214,9 @@ cli_nemo_tidy <- function(
     exclude = exclude
   )
   if (out_format == "db") {
-    nemo_log("INFO", paste("Tidy results written to db:", dbname))
+    nemo_log("INFO", "Tidy results written to db: %s", dbname)
   } else {
-    nemo_log("INFO", paste("Tidy results written to dir:", output_dir))
+    nemo_log("INFO", "Tidy results written to dir: %s", output_dir)
   }
   invisible(res)
 }

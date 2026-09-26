@@ -134,9 +134,8 @@ Table \code{name} and its \code{pattern}.
 \if{html}{\out{<a id="method-Config-get_globs"></a>}}
 \if{latex}{\out{\hypertarget{method-Config-get_globs}{}}}
 \subsection{Method \code{get_globs()}}{
-Return all output file globs.
-Tables with no \code{glob} (derived tables,
-which have no file of their own) contribute no rows.
+Return all output file globs. Derived tables (no file of
+their own, hence no \code{glob}) contribute no rows.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Config$get_globs()}\if{html}{\out{</div>}}
 }
@@ -315,8 +314,8 @@ Get raw schema for a specific table and optional version.
 Table name.}
 
 \item{\code{version}}{(\code{character(1)})\cr
-Version string. If \code{NULL}, \strong{all} versions are returned (one row per version).
-This differs from \code{get_col_map(version = NULL)}, which resolves to a single version.}
+Version string. If \code{NULL}, \strong{all} versions are returned (unlike
+\code{get_col_map()}).}
 }
 \if{html}{\out{</div>}}
 }
@@ -341,8 +340,8 @@ Get tidy schema for a specific table and optional version.
 Table name.}
 
 \item{\code{version}}{(\code{character(1)})\cr
-Version string. If \code{NULL}, \strong{all} versions are returned (one row per version).
-This differs from \code{get_col_map(version = NULL)}, which resolves to a single version.}
+Version string. If \code{NULL}, \strong{all} versions are returned (unlike
+\code{get_col_map()}).}
 }
 \if{html}{\out{</div>}}
 }
@@ -355,13 +354,8 @@ Table \code{version}, \code{field} and \code{type}.
 \if{html}{\out{<a id="method-Config-get_col_map"></a>}}
 \if{latex}{\out{\hypertarget{method-Config-get_col_map}{}}}
 \subsection{Method \code{get_col_map()}}{
-Get column mapping (raw -> tidy) for a table.
-Useful inside custom parse/tidy logic that needs the raw-to-tidy mapping.
-
-\strong{\code{version = NULL} resolves to a single version here}, unlike
-\code{get_schema_raw()}/\code{get_schema_tidy()} which return \emph{all} versions when
-\code{version = NULL}. Use an explicit version string if you need a specific version
-from either family of methods.
+Get column mapping (raw -> tidy) for a table, e.g. for
+custom parse/tidy logic.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Config$get_col_map(x, version = NULL)}\if{html}{\out{</div>}}
 }
@@ -373,8 +367,8 @@ from either family of methods.
 Table name.}
 
 \item{\code{version}}{(\code{character(1)})\cr
-Version string. If \code{NULL}, resolves to the highest semver version present,
-or \code{"latest"} if defined.}
+Version string. If \code{NULL}, resolves to a single version: \code{"latest"} if
+defined, else the highest semver.}
 }
 \if{html}{\out{</div>}}
 }

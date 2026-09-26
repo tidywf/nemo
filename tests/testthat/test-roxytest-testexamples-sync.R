@@ -13,7 +13,7 @@ test_that("Function wf_sync_patterns() @ L34", {
 })
 
 
-test_that("Function glob_to_regex() @ L84", {
+test_that("Function glob_to_regex() @ L81", {
   
   (r1 <- glob_to_regex("*.purple.qc"))
   (r2 <- glob_to_regex("*purple/*.purple.qc"))
@@ -26,7 +26,7 @@ test_that("Function glob_to_regex() @ L84", {
 })
 
 
-test_that("Function schema_glob_check() @ L125", {
+test_that("Function schema_glob_check() @ L122", {
   
   (bad <- schema_glob_check("nemo"))
   expect_equal(nrow(bad), 0)

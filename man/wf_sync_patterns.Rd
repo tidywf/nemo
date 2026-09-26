@@ -18,10 +18,10 @@ Tibble with \code{inex} (\code{"in"}/\code{"ex"}) and \code{pat} columns, suitab
 }
 \description{
 Builds the \verb{aws s3 sync} include/exclude pattern tibble for a workflow,
-from the \code{glob} fields its tools' \code{schema.yaml} files declare. This is the single source of
-truth for "which files does this workflow need?" — downstream callers
-(\code{tidywigits::s3sync()}, \code{tidydragen::s3sync()}, the nemo Lambda) should use
-it rather than maintaining their own copies.
+from the \code{glob} fields declared by each of its tool's \code{schema.yaml}.
+This is the single source of truth for "which files does this workflow need?"
+Downstream callers (\code{tidywigits::s3sync()}, \code{tidydragen::s3sync()}, the nemo
+Lambda) should use it rather than maintaining their own copies.
 }
 \examples{
 (pats <- wf_sync_patterns("workflow1"))

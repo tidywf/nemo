@@ -48,7 +48,7 @@ dvc_download_file <- function(
   url <- paste0(base_url, "/", substr(md5, 1, 2), "/", substr(md5, 3, nchar(md5)))
   status <- utils::download.file(url, out_file, quiet = TRUE)
   if (status != 0L) {
-    stop(sprintf("Download failed (status %d): %s", status, url))
+    nemo_stop(glue("Download failed (status {status}): {url}"))
   }
   out_file
 }

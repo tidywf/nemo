@@ -86,9 +86,8 @@ Config <- R6::R6Class(
     #' Table `name` and its `pattern`.
     get_patterns = function() private$get_field_for_all_tables("pattern"),
 
-    #' @description Return all output file globs.
-    #' Tables with no `glob` (derived tables,
-    #' which have no file of their own) contribute no rows.
+    #' @description Return all output file globs. Derived tables (no file of
+    #' their own, hence no `glob`) contribute no rows.
     #' @return (`tibble()`)\cr
     #' Table `name` and its `glob`.
     get_globs = function() {
@@ -102,8 +101,7 @@ Config <- R6::R6Class(
           tibble::tibble(name = tab_name, glob = globs)
         }) |>
         purrr::compact() |>
-        # bind_rows() on an all-derived tool yields a 0x0 tibble, so fall back
-        # to a typed empty one to keep the $glob column addressable
+        # typed empty fallback: bind_rows() of nothing gives a 0x0 tibble
         (\(x) if (length(x) == 0) empty else dplyr::distinct(dplyr::bind_rows(x)))()
     },
 
@@ -165,8 +163,8 @@ Config <- R6::R6Class(
     #' @param x (`character(1)`)\cr
     #' Table name.
     #' @param version (`character(1)`)\cr
-    #' Version string. If `NULL`, **all** versions are returned (one row per version).
-    #' This differs from `get_col_map(version = NULL)`, which resolves to a single version.
+    #' Version string. If `NULL`, **all** versions are returned (unlike
+    #' `get_col_map()`).
     #' @return (`tibble()`)\cr
     #' Table `version`, `field` and `type`.
     get_schema_raw = function(x, version = NULL) {
@@ -176,25 +174,20 @@ Config <- R6::R6Class(
     #' @param x (`character(1)`)\cr
     #' Table name.
     #' @param version (`character(1)`)\cr
-    #' Version string. If `NULL`, **all** versions are returned (one row per version).
-    #' This differs from `get_col_map(version = NULL)`, which resolves to a single version.
+    #' Version string. If `NULL`, **all** versions are returned (unlike
+    #' `get_col_map()`).
     #' @return (`tibble()`)\cr
     #' Table `version`, `field` and `type`.
     get_schema_tidy = function(x, version = NULL) {
       private$get_schema(x, version, private$schemas_tidy)
     },
-    #' @description Get column mapping (raw -> tidy) for a table.
-    #' Useful inside custom parse/tidy logic that needs the raw-to-tidy mapping.
-    #'
-    #' **`version = NULL` resolves to a single version here**, unlike
-    #' `get_schema_raw()`/`get_schema_tidy()` which return *all* versions when
-    #' `version = NULL`. Use an explicit version string if you need a specific version
-    #' from either family of methods.
+    #' @description Get column mapping (raw -> tidy) for a table, e.g. for
+    #' custom parse/tidy logic.
     #' @param x (`character(1)`)\cr
     #' Table name.
     #' @param version (`character(1)`)\cr
-    #' Version string. If `NULL`, resolves to the highest semver version present,
-    #' or `"latest"` if defined.
+    #' Version string. If `NULL`, resolves to a single version: `"latest"` if
+    #' defined, else the highest semver.
     #' @return (`tibble()`)\cr
     #' Tibble with columns `raw`, `tidy`, `type`, `description`.
     get_col_map = function(x, version = NULL) {
@@ -306,9 +299,7 @@ Config <- R6::R6Class(
         dplyr::bind_rows()
     },
     derive_schema = function(cache, side) {
-      # schema list-cols carry only field + type (no description) because they are
-      # consumed directly by tibble::deframe() → readr col-type specs, which require
-      # exactly a two-column tibble. Descriptions are available via get_col_map().
+      # field + type only: deframe()d straight into readr col specs
       cache |>
         dplyr::mutate(
           schema = purrr::map(
