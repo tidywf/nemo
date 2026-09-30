@@ -80,7 +80,7 @@ test_that("Function schema_guess() @ L196", {
 })
 
 
-test_that("Function parse_file_keyvalue() @ L261", {
+test_that("Function parse_file_keyvalue() @ L264", {
   
   path <- system.file("extdata/tool1", package = "nemo")
   x <- Tool1$new(path)
@@ -98,5 +98,8 @@ test_that("Function parse_file_keyvalue() @ L261", {
   expect_equal(names(d3_lat), c("SampleID", "QCStatus", "TotalReads", "MappedReads", "UnmappedReads"))
   expect_type(d3_v1$SampleID, "character")
   expect_type(d3_v1$TotalReads, "double")
+  fdup <- tempfile()
+  writeLines(c("SampleID\tA", "SampleID\tB"), fdup)
+  expect_error(parse_file_keyvalue(fdup, pname, schemas_all), "Duplicate key")
 })
 

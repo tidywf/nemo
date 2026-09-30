@@ -11,7 +11,9 @@ dvc_download_file(x, output_dir, overwrite = FALSE, pkg_nm = "nemo")
 
 \item{output_dir}{Directory to write the downloaded file into.}
 
-\item{overwrite}{Logical. If \code{FALSE}, skip if the file already exists.}
+\item{overwrite}{Logical. If \code{FALSE}, skip if the file already exists with
+the expected md5. An existing file with a mismatching md5 (e.g. from an
+interrupted download) is always re-downloaded.}
 
 \item{pkg_nm}{Package name, used to point to the Cloudflare R2 bucket of
 interest.}
@@ -28,5 +30,8 @@ x <- system.file("extdata/dvc-example/sampleA.tool1.table1.tsv.dvc", package = "
 output_dir <- file.path(tempdir(), "dvc_single_test")
 result <- dvc_download_file(x, output_dir)
 result_cached <- dvc_download_file(x, output_dir, overwrite = FALSE)
+# a corrupted local copy gets replaced
+writeLines("truncated", result)
+result_fixed <- suppressWarnings(dvc_download_file(x, output_dir, overwrite = FALSE))
 
 }

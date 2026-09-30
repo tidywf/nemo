@@ -142,6 +142,9 @@ Workflow <- R6::R6Class(
     #' @return (`R6::R6Class()`)\cr
     #' R6 object invisibly.
     filter_files = function(include = NULL, exclude = NULL) {
+      if (is.null(include) && is.null(exclude)) {
+        return(invisible(self))
+      }
       assert_include_exclude(include, exclude)
       if (private$is_tidied) {
         nemo_stop("Cannot filter files after tidy() has been called.")
@@ -260,7 +263,9 @@ Workflow <- R6::R6Class(
       }
       return(invisible(self))
     },
-    #' @description Filter, tidy, and write files in one step.
+    #' @description Filter, tidy, and write files in one step. A no-op if
+    #' already written; if already tidied, writes the in-memory tables via
+    #' `write()` instead of re-parsing.
     #' @param output_dir (`character(1)`)\cr
     #' Directory path to output tidy files.
     #' @param format (`character(1)`)\cr
@@ -294,7 +299,22 @@ Workflow <- R6::R6Class(
     ) {
       # fail-fast before parsing
       nemo_assert_out_fmt(format)
+      if (private$is_written) {
+        return(invisible(self))
+      }
       self$filter_files(include = include, exclude = exclude)
+      # already tidied in memory: write those tables instead of re-parsing
+      if (private$is_tidied) {
+        return(self$write(
+          output_dir = output_dir,
+          format = format,
+          input_id = input_id,
+          output_id = output_id,
+          prefix_include = prefix_include,
+          dbconn = dbconn,
+          write_metadata = write_metadata
+        ))
+      }
       output_dir <- private$validate_output_dir(format, output_dir)
       # Delegate to each Tool's streaming run() to bound memory; a single
       # workflow-level metadata.parquet replaces per-tool metadata.
@@ -371,7 +391,8 @@ Workflow <- R6::R6Class(
       if (!is.null(self$written_files)) {
         files <- meta_files_from_written(self$written_files)
       } else {
-        files <- private$files_tbl |>
+        # matched files only, consistent with Tool$get_metadata()
+        files <- self$list_files() |>
           dplyr::select(fin = "path", "size") |>
           dplyr::mutate(size = as.numeric(.data$size))
       }

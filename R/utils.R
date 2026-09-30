@@ -7,20 +7,40 @@
 #' @param max_files (`integer(1)`)\cr
 #' Max files returned.
 #' @param type (`character(n)`)\cr
-#' File type(s) to return (e.g. any, file, directory, symlink). See `fs::dir_info`.
+#' File type(s) to return (e.g. any, file, directory). See `fs::dir_info`.
+#' Symlinks are followed and classified by their target, so a symlink to a
+#' file counts as a `file` (with the target's size and modification time);
+#' broken symlinks are dropped.
 #'
 #' @return A tibble with file basename, size, last modification timestamp
 #' and full path.
 #' @examples
 #' d <- system.file("R", package = "nemo")
 #' x <- list_files_dir(d)
+#' # symlinked files are included
+#' d2 <- fs::dir_create(tempfile())
+#' f <- fs::file_create(file.path(d2, "real.tsv"))
+#' fs::link_create(f, file.path(d2, "link.tsv"))
+#' x2 <- list_files_dir(d2)
 #' @testexamples
 #' expect_equal(names(x), c("bname", "size", "lastmodified", "path"))
+#' expect_setequal(x2$bname, c("real.tsv", "link.tsv"))
 #' @export
 list_files_dir <- function(path, max_files = NULL, type = "file") {
-  d <- fs::dir_info(path = path, recurse = TRUE, type = type) |>
+  # normalise the roots, not each file: that would resolve symlinks to their
+  # targets and replace the basename we match patterns against
+  paths <- fs::dir_ls(path = normalizePath(path), recurse = TRUE, type = "any")
+  d <- fs::file_info(paths, follow = TRUE)
+  # follow = TRUE also rewrites `path` to the target; keep the link's path
+  d$path <- paths
+  if (!"any" %in% type) {
+    keep <- type
+    # NA type = broken symlink
+    d <- dplyr::filter(d, !is.na(.data$type), .data$type %in% keep)
+  }
+  d <- d |>
     dplyr::mutate(
-      path = normalizePath(.data$path),
+      path = as.character(.data$path),
       bname = basename(.data$path),
       lastmodified = .data$modification_time
     ) |>
@@ -170,18 +190,31 @@ nemoverse_wf_dispatch <- function(wf) {
 #'
 #' @return (`tibble`) Parsed parquet file.
 #' @examples
-#' tmp <- tempfile(fileext = ".parquet")
-#' arrow::write_parquet(data.frame(x = 1L), tmp)
-#' (x <- read_parquet_grep(dirname(tmp), basename(tmp), basename(tmp)))
+#' odir <- fs::dir_create(tempfile())
+#' arrow::write_parquet(data.frame(x = 1L), file.path(odir, "a_1.parquet"))
+#' arrow::write_parquet(data.frame(x = 2L), file.path(odir, "a_2.parquet"))
+#' lf <- list.files(odir)
+#' (x <- read_parquet_grep(odir, lf, "a_1"))
+#' (y <- read_parquet_grep(odir, lf, "^a_", first = TRUE))
 #' @testexamples
 #' expect_equal(x$x, 1L)
+#' expect_equal(y$x, 1L)
+#' expect_error(read_parquet_grep(odir, lf, "^a_"), "2 files match")
+#' expect_error(read_parquet_grep(odir, lf, "nomatch"), "No file matches")
+#' expect_error(read_parquet_grep(odir, lf, "nomatch", first = TRUE), "No file matches")
 #' @export
 read_parquet_grep <- function(odir, lf, pattern, first = FALSE) {
   m <- grep(pattern, lf, value = TRUE)
-  if (first) {
-    m <- m[1]
+  if (length(m) == 0) {
+    nemo_stop(glue("No file matches '{pattern}'."))
   }
-  arrow::read_parquet(file.path(odir, m))
+  if (length(m) > 1 && !first) {
+    nemo_stop(glue(
+      "{length(m)} files match '{pattern}': {glue::glue_collapse(m, sep = ', ')}. ",
+      "Tighten the pattern or set first = TRUE."
+    ))
+  }
+  arrow::read_parquet(file.path(odir, m[1]))
 }
 
 #' Check if Package is Installed

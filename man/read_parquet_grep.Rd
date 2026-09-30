@@ -29,7 +29,10 @@ Test helper: reads the single parquet file in \code{odir} whose basename (from
 \code{first = TRUE}.
 }
 \examples{
-tmp <- tempfile(fileext = ".parquet")
-arrow::write_parquet(data.frame(x = 1L), tmp)
-(x <- read_parquet_grep(dirname(tmp), basename(tmp), basename(tmp)))
+odir <- fs::dir_create(tempfile())
+arrow::write_parquet(data.frame(x = 1L), file.path(odir, "a_1.parquet"))
+arrow::write_parquet(data.frame(x = 2L), file.path(odir, "a_2.parquet"))
+lf <- list.files(odir)
+(x <- read_parquet_grep(odir, lf, "a_1"))
+(y <- read_parquet_grep(odir, lf, "^a_", first = TRUE))
 }

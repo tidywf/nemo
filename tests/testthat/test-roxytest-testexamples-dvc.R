@@ -2,14 +2,19 @@
 
 # File R/dvc.R: @testexamples
 
-test_that("Function dvc_download_file() @ L24", {
+test_that("Function dvc_download_file() @ L31", {
   
   x <- system.file("extdata/dvc-example/sampleA.tool1.table1.tsv.dvc", package = "nemo")
   output_dir <- file.path(tempdir(), "dvc_single_test")
   result <- dvc_download_file(x, output_dir)
   result_cached <- dvc_download_file(x, output_dir, overwrite = FALSE)
+  # a corrupted local copy gets replaced
+  writeLines("truncated", result)
+  result_fixed <- suppressWarnings(dvc_download_file(x, output_dir, overwrite = FALSE))
   
   expect_true(file.exists(result))
   expect_null(result_cached)
+  expect_equal(result_fixed, result)
+  expect_equal(unname(tools::md5sum(result_fixed)), "df4021245c33f4a75d1c29a17388608c")
 })
 

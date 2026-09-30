@@ -299,7 +299,9 @@ R6 object invisibly.
 \if{html}{\out{<a id="method-Workflow-run"></a>}}
 \if{latex}{\out{\hypertarget{method-Workflow-run}{}}}
 \subsection{Method \code{run()}}{
-Filter, tidy, and write files in one step.
+Filter, tidy, and write files in one step. A no-op if
+already written; if already tidied, writes the in-memory tables via
+\code{write()} instead of re-parsing.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Workflow$run(
   output_dir = ".",

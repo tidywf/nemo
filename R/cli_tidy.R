@@ -203,16 +203,21 @@ cli_nemo_tidy <- function(
   }
   nemo_log("INFO", "Tidying dir: %s", in_dir)
   obj <- fun$new(in_dir)
-  res <- obj$run(
-    output_dir = output_dir,
-    format = out_format,
-    input_id = input_id,
-    output_id = output_id,
-    prefix_include = prefix_include,
-    dbconn = dbconn,
-    include = include,
-    exclude = exclude
-  )
+  run_wf <- function() {
+    obj$run(
+      output_dir = output_dir,
+      format = out_format,
+      input_id = input_id,
+      output_id = output_id,
+      prefix_include = prefix_include,
+      dbconn = dbconn,
+      include = include,
+      exclude = exclude
+    )
+  }
+  # one transaction: a mid-run failure rolls back every table's appends, so a
+  # rerun doesn't leave partial or duplicated rows
+  res <- if (out_format == "db") DBI::dbWithTransaction(dbconn, run_wf()) else run_wf()
   if (out_format == "db") {
     nemo_log("INFO", "Tidy results written to db: %s", dbname)
   } else {

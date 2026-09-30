@@ -87,3 +87,23 @@ test_that("Workflow run writes all parsers", {
       sub(".*_(tool1_table\\d).*", "\\1", basename(lf))
   ))
 })
+
+test_that("Workflow run after tidy writes, and repeated run is a no-op", {
+  out <- withr::local_tempdir()
+  wf <- Workflow$new(name = "wf3", path = path, tools = tools)
+  wf$tidy()
+  expect_no_error(wf$run(output_dir = out, format = "parquet", input_id = "run3"))
+  expect_true(file.exists(file.path(out, "metadata.parquet")))
+  n <- nrow(wf$written_files)
+  expect_no_error(wf$run(output_dir = out, format = "parquet", input_id = "run3"))
+  expect_equal(nrow(wf$written_files), n)
+})
+
+test_that("Workflow get_metadata before write lists matched files only", {
+  d <- withr::local_tempdir()
+  file.copy(file.path(path, "latest", "sampleA.tool1.table1.tsv"), d)
+  writeLines("x", file.path(d, "unrelated.txt"))
+  wf <- Workflow$new(name = "wf4", path = d, tools = tools)
+  meta <- wf$get_metadata(input_id = "r", output_id = "o", output_dir = d)
+  expect_equal(basename(meta$files[[1]]$fin), "sampleA.tool1.table1.tsv")
+})

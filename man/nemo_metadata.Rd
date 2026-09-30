@@ -8,7 +8,9 @@ nemo_metadata(files, pkgs, input_id, output_id, input_dirs, output_dir)
 }
 \arguments{
 \item{files}{(\code{tibble()})\cr
-Written files.}
+Written files, as produced from a Tool/Workflow's \code{written_files}
+(columns \code{tbl}, \code{prefix}, \code{fout}, \code{fin}), or matched input files
+(\code{fin}, \code{size}) when nothing has been written yet.}
 
 \item{pkgs}{(\code{character(n)})\cr
 Packages to include versions of.}
@@ -34,9 +36,10 @@ Assemble run metadata
 }
 \examples{
 files <- tibble::tibble(
-  tbl_name = c("purple_qc", "amber_qc"),
+  tbl = c("purple_qc", "amber_qc"),
   prefix = c("S123", "S123"),
-  outpath = c("S123_purple_qc.tsv", "S123_amber_qc.tsv")
+  fout = c("S123_purple_qc.tsv.gz", "S123_amber_qc.tsv.gz"),
+  fin = c("/path/to/S123.purple.qc", "/path/to/S123.amber.qc.tsv")
 )
 pkgs <- c("nemo")
 input_id <- "run123"
