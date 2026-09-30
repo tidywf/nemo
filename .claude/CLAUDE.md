@@ -17,9 +17,8 @@ nemo
 │   ├── cli/nemo.R                 # cli entry point
 │   ├── config/<...>/schema.yaml   # example schema config
 │   ├── doc-templates              # documentation templates in qmd/md, used in docs, README and other child pkgs
-│   ├── extdata                    # example data for tests and CI, loaded via systeme.file(), one dir per tool
-│   ├── scripts                    # for random scripts
-│   └── tiledb                     # ignore
+│   ├── extdata                    # example data for tests and CI, loaded via system.file(), one dir per tool
+│   └── scripts                    # for random scripts
 ├── Makefile                       # Makefile, keep repetitive commands in here
 ├── man                            # ignore (Rd files)
 ├── NAMESPACE                      # NAMESPACE
@@ -64,8 +63,8 @@ Extension points a `Tool` subclass may override in `private`:
   `prefix` so those files no longer collide and don't pick up a spurious
   `_2`/`_3`. Receives
   `parser/bname/size/lastmodified/path/pattern/prefix/tool_parser`; default is a
-  no-op. `Linx`/`Purple` in tidywigits use it. (Renamed from
-  `post_process_files`; note it now runs *before*, not after, disambiguation.)
+  no-op. `Linx`/`Purple`/`Sage` in tidywigits and `DragenTool`/`DragenBcl`/
+  `DragenTso`/`Interop` in tidydragen override it.
 
 ## Critical gotchas
 
@@ -85,20 +84,29 @@ Extension points a `Tool` subclass may override in `private`:
 | `nemo_out_formats()`                          | `write.R`      | Returns valid format strings: `parquet`, `db`, `tsv`, `csv`, `rds`                |
 | `nemo_metadata(files, pkgs, ...)`             | `metadata.R`   | Assembles run-level metadata as a single-row tibble written to `metadata.parquet` |
 | `nemo_schema_reactable(tools, pkg, ...)`      | `schema_vis.R` | Interactive reactable schema explorer                                             |
-| `nemo_schemavis_data(tools, pkg)`             | `schema_vis.R` | Per-table schema tibble (versions, columns)                                       |
+| `nemo_schemavis_data(tools, pkg)`             | `schema_vis.R` | Per-table schema tibble (versions, columns); internal, not exported               |
 | `nemo_gha_mermaid(actions_url, deploy_yaml)`  | `gha.R`        | Builds Mermaid CI/CD flowchart from local + remote YAML                           |
 | `nemo_uml()`                                  | `uml.R`        | Generates PlantUML SVG from R6 class names                                        |
+| `nemo_enframe(x)`                             | `utils.R`      | Named list of tibbles → `name`/`data` tibble; used for 1-file → N-table fan-out   |
+| `nemoverse_wf_dispatch(wf)`                   | `utils.R`      | Workflow name (`wigits`/`dragen`/`workflow1`) → workflow class                    |
+| `read_parquet_grep(odir, lf, pattern, first)` | `utils.R`      | Read the one parquet in `lf` matching `pattern` (used in `@testexamples`)         |
+| `wf_sync_patterns(workflow)`                  | `sync.R`       | Include/exclude tibble for `aws s3 sync`, built from schema `glob` fields         |
+| `schema_glob_check(pkg, fixture_dir)`         | `sync.R`       | Fixture files a `pattern` matches but no `glob` covers (0 rows = consistent)      |
+| `s3sync(src, dest, pats, workflow, dryrun)`   | `s3.R`         | `aws s3 sync` wrapper; `workflow` pulls patterns from `wf_sync_patterns()`        |
 
 ## CLI (`R/cli.R`, `inst/cli/nemo.R`)
 
-Built with `argparse` via `nemo_cli()`. Two subcommands:
+Built with `argparse` via `nemo_cli()`. Three subcommands:
 
-| Subcommand | Key args                         | What it does                                      |
-| ---------- | -------------------------------- | ------------------------------------------------- |
-| `list`     | `-d IN_DIR -f FORMAT`            | Lists parsable files; output as `pretty` or `tsv` |
-| `tidy`     | `-d IN_DIR -o OUT_DIR -f FORMAT` | Runs `run()` and writes tidy outputs              |
+| Subcommand | Key args                         | What it does                                                   |
+| ---------- | -------------------------------- | -------------------------------------------------------------- |
+| `list`     | `-d IN_DIR -f FORMAT -m MAX`     | Lists parsable files; output as `pretty` or `tsv`              |
+| `tidy`     | `-d IN_DIR -o OUT_DIR -f FORMAT` | Runs `run()` and writes tidy outputs                           |
+| `sync`     | `-s S3_SRC -d DEST`              | `s3sync()` with the workflow's schema-derived include patterns |
 
-Both accept `-w WORKFLOW` and `-q` (quiet). `tidy` also accepts:
+All accept `-w WORKFLOW` (omitted when the child CLI fixes `wf`) and `-q`
+(quiet). `sync` also accepts `--dryrun` and `--show_patterns` (print the
+patterns and exit). `tidy` also accepts:
 
 - `--input_id` --- adds an `input_id` column to all output tables
 - `--output_id` / `--ulid` --- adds an `output_id` column (mutually exclusive;
