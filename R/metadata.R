@@ -12,6 +12,22 @@ meta_files_from_written <- function(written_files) {
     dplyr::select(tbl = "tbl_name", "prefix", fout = "outpath", fin = "raw_path")
 }
 
+# Files for metadata: written outputs if any, else the matched input files.
+meta_files <- function(written_files, matched_files) {
+  if (!is.null(written_files)) {
+    return(meta_files_from_written(written_files))
+  }
+  matched_files |>
+    dplyr::select(fin = "path", "size") |>
+    dplyr::mutate(size = as.numeric(.data$size))
+}
+
+# Writes obj$get_metadata() (a Tool or Workflow) to output_dir/fname.
+meta_write <- function(obj, fname, input_id, output_id, output_dir) {
+  meta <- obj$get_metadata(input_id = input_id, output_id = output_id, output_dir = output_dir)
+  arrow::write_parquet(meta, file.path(output_dir, fname))
+}
+
 #' Assemble run metadata
 #'
 #' @param files (`tibble()`)\cr

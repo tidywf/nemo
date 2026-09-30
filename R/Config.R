@@ -56,6 +56,7 @@ Config <- R6::R6Class(
       self$tool <- tool
       self$pkg <- pkg
       private$tables <- private$read()
+      private$validate_tables()
       invalid <- private$collect_invalid_schema_types()
       if (nrow(invalid) > 0) {
         nemo_stop(private$format_invalid_types_msg(invalid))
@@ -200,6 +201,47 @@ Config <- R6::R6Class(
     schemas_raw = NULL,
     schemas_tidy = NULL,
     schemas_both = NULL,
+    # Fail fast on missing keys: otherwise a missing `versions` silently drops
+    # the column, and a missing `pattern`/`tidy` surfaces as an obscure
+    # map_chr()/select() error far from the schema.
+    validate_tables = function() {
+      tab_keys <- c("description", "pattern", "ftype", "columns")
+      col_keys <- c("raw", "tidy", "type", "versions")
+      problems <- purrr::imap(private$tables, \(tab, tab_name) {
+        missing_tab <- setdiff(tab_keys, names(tab))
+        not_string <- purrr::keep(
+          c("description", "pattern", "ftype"),
+          \(k) k %in% names(tab) && !rlang::is_string(tab[[k]])
+        )
+        col_probs <- purrr::imap(tab[["columns"]] %||% list(), \(col, i) {
+          missing_col <- setdiff(col_keys, names(col))
+          if (length(missing_col) == 0) {
+            return(NULL)
+          }
+          glue(
+            "{tab_name} -> column '{col[['raw']] %||% i}': ",
+            "missing {glue::glue_collapse(missing_col, sep = ', ')}"
+          )
+        })
+        c(
+          if (length(missing_tab) > 0) {
+            glue("{tab_name}: missing {glue::glue_collapse(missing_tab, sep = ', ')}")
+          },
+          if (length(not_string) > 0) {
+            glue("{tab_name}: not a single string: {glue::glue_collapse(not_string, sep = ', ')}")
+          },
+          unlist(col_probs)
+        )
+      }) |>
+        unlist()
+      if (length(problems) > 0) {
+        nemo_stop(glue(
+          "Invalid schema.yaml for {self$pkg}::{self$tool}:\n",
+          "{glue::glue_collapse(problems, sep = '\n')}"
+        ))
+      }
+      invisible(TRUE)
+    },
     collect_invalid_schema_types = function() {
       private$tables |>
         purrr::imap(\(tab, tab_name) {
@@ -365,9 +407,18 @@ schema_type_remap <- function(x) {
 #' expect_equal(config_sort_versions(c("v2.0.0", "v1.0.0", "latest")), c("v1.0.0", "v2.0.0", "latest"))
 #' expect_equal(config_sort_versions(c("latest", "v1.2.3")), c("v1.2.3", "latest"))
 #' expect_equal(config_sort_versions(c("v1.0.0", "v10.0.0", "v2.0.0")), c("v1.0.0", "v2.0.0", "v10.0.0"))
+#' expect_equal(config_sort_versions(c("v1.25", "v1.4", "v2.0")), c("v1.4", "v1.25", "v2.0"))
+#' expect_error(config_sort_versions(c("v1.2.3-beta", "latest")), "v1.2.3-beta")
 #' @export
 config_sort_versions <- function(versions) {
   non_latest <- versions[versions != "latest"]
+  bad <- non_latest[!grepl("^[vV]?[0-9]+(\\.[0-9]+)*$", non_latest)]
+  if (length(bad) > 0) {
+    nemo_stop(glue(
+      "Unsupported version string(s): {glue::glue_collapse(bad, sep = ', ')}. ",
+      "Use 'latest' or numeric dotted versions (e.g. 'v1.2.3')."
+    ))
+  }
   non_latest <- non_latest[order(numeric_version(gsub("^[vV]", "", non_latest)))]
   c(non_latest, if ("latest" %in% versions) "latest")
 }

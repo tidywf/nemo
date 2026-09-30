@@ -151,34 +151,20 @@ Workflow <- R6::R6Class(
       }
       known <- purrr::map(private$tools, \(x) {
         paste0(x$name, "_", x$config$get_patterns()$name)
-      }) |>
-        unlist() |>
-        unique()
+      })
       if (!is.null(include)) {
-        check_unknown_parsers(include, known, "include")
+        check_unknown_parsers(include, unique(unlist(known)), "include")
       }
       if (!is.null(exclude)) {
-        check_unknown_parsers(exclude, known, "exclude")
+        check_unknown_parsers(exclude, unique(unlist(known)), "exclude")
       }
-      if (all(purrr::map_lgl(private$tools, \(x) nrow(x$list_files()) == 0))) {
-        return(invisible(self))
-      }
-      purrr::walk(private$tools, \(x) {
-        tool_parsers <- unique(x$list_files()$tool_parser)
-        # no include match for this tool -> exclude all its parsers
+      # hand each tool only its own parsers; an empty include empties that
+      # tool, an empty exclude leaves it untouched
+      purrr::walk2(private$tools, known, \(x, known_x) {
         if (!is.null(include)) {
-          matched <- include[include %in% tool_parsers]
-          if (length(matched) > 0) {
-            x$filter_files(include = matched)
-          } else if (length(tool_parsers) > 0) {
-            x$filter_files(exclude = tool_parsers)
-          }
-        } else if (!is.null(exclude)) {
-          matched <- exclude[exclude %in% tool_parsers]
-          if (length(matched) > 0) {
-            x$filter_files(exclude = matched)
-          }
-          # tools with no matching parsers are left untouched
+          x$filter_files(include = intersect(include, known_x))
+        } else {
+          x$filter_files(exclude = intersect(exclude, known_x))
         }
       })
       invisible(self)
@@ -240,9 +226,10 @@ Workflow <- R6::R6Class(
       if (!private$is_tidied) {
         nemo_stop("Did you forget to tidy?")
       }
-      output_dir <- private$validate_output_dir(format, output_dir)
+      # normalised once so every Tool gets the same path
+      output_dir <- resolve_output_dir(format, output_dir)
       res <- private$tools |>
-        purrr::map(\(x) {
+        lapply(\(x) {
           x$write(
             output_dir = output_dir,
             format = format,
@@ -315,11 +302,12 @@ Workflow <- R6::R6Class(
           write_metadata = write_metadata
         ))
       }
-      output_dir <- private$validate_output_dir(format, output_dir)
+      # normalised once so every Tool gets the same path
+      output_dir <- resolve_output_dir(format, output_dir)
       # Delegate to each Tool's streaming run() to bound memory; a single
       # workflow-level metadata.parquet replaces per-tool metadata.
       res <- private$tools |>
-        purrr::map(\(x) {
+        lapply(\(x) {
           x$run(
             output_dir = output_dir,
             format = format,
@@ -388,16 +376,9 @@ Workflow <- R6::R6Class(
     #' `output_dir`, `pkg_versions`, and `files`.
     get_metadata = function(input_id, output_id, output_dir, pkgs = NULL) {
       pkgs <- pkgs %||% self$metapkg
-      if (!is.null(self$written_files)) {
-        files <- meta_files_from_written(self$written_files)
-      } else {
-        # matched files only, consistent with Tool$get_metadata()
-        files <- self$list_files() |>
-          dplyr::select(fin = "path", "size") |>
-          dplyr::mutate(size = as.numeric(.data$size))
-      }
       nemo_metadata(
-        files = files,
+        # matched files only, consistent with Tool$get_metadata()
+        files = meta_files(self$written_files, self$list_files()),
         pkgs = pkgs,
         input_id = input_id,
         output_id = output_id,
@@ -424,23 +405,8 @@ Workflow <- R6::R6Class(
         nemo_stop("All elements of `tools` must inherit from Tool.")
       }
     },
-    # Normalised once so every Tool gets the same path.
-    validate_output_dir = function(format, output_dir) {
-      if (format == "db") {
-        return(output_dir)
-      }
-      if (is.null(output_dir)) {
-        nemo_stop("Output directory must be specified when format is not 'db'.")
-      }
-      normalizePath(output_dir, mustWork = FALSE)
-    },
     write_metadata_file = function(input_id, output_id, output_dir) {
-      meta <- self$get_metadata(
-        input_id = input_id,
-        output_id = output_id,
-        output_dir = output_dir
-      )
-      arrow::write_parquet(meta, file.path(output_dir, "metadata.parquet"))
+      meta_write(self, "metadata.parquet", input_id, output_id, output_dir)
     },
     is_tidied = FALSE,
     is_written = FALSE,

@@ -373,3 +373,22 @@ test_that("Tool run is a no-op once written", {
   expect_identical(tool$written_files, wf1)
   expect_length(list.files(out2), 0)
 })
+
+test_that("parse/tidy errors name the tool_parser and file", {
+  d <- withr::local_tempdir()
+  # header matches no table1 schema version
+  writeLines("Foo\tBar\n1\t2", file.path(d, "sampleA.tool1.table1.tsv"))
+  tool <- Tool$new(name = name, pkg = pkg, path = d)
+  expect_error(tool$tidy(), "Failed to tidy 'tool1_table1' from .*sampleA.tool1.table1.tsv")
+  # the original cause is kept as the parent
+  err <- tryCatch(Tool$new(name = name, pkg = pkg, path = d)$tidy(), error = identity)
+  expect_match(conditionMessage(err$parent), "Expected 1 matching schema")
+  expect_error(
+    Tool$new(name = name, pkg = pkg, path = d)$tidy(keep_raw = TRUE),
+    "Failed to parse 'tool1_table1'"
+  )
+  expect_error(
+    Tool$new(name = name, pkg = pkg, path = d)$run(output_dir = withr::local_tempdir()),
+    "Failed to tidy 'tool1_table1'"
+  )
+})

@@ -151,6 +151,17 @@ Tool <- R6::R6Class(
         .before = 1
       )
     },
+    # Evaluates `expr` (a parse/tidy of one file), re-raising any error with the
+    # tool_parser and file path so failures across many files are traceable.
+    with_file_context = function(expr, step, parser, path) {
+      tryCatch(expr, error = function(e) {
+        rlang::abort(
+          glue("Failed to {step} '{self$name}_{parser}' from {path}"),
+          parent = e,
+          call = NULL
+        )
+      })
+    },
     # Calls custom parse_{table_name}() if defined, else parse_by_ftype().
     dispatch_parse = function(x, table_name) {
       fun <- glue("parse_{table_name}")
@@ -328,25 +339,11 @@ Tool <- R6::R6Class(
           "Set write_metadata = FALSE to suppress metadata writing."
         )
       }
-      if (format == "db") {
-        return(output_dir)
-      }
-      if (is.null(output_dir)) {
-        nemo_stop("Output directory must be specified when format is not 'db'.")
-      }
-      normalizePath(output_dir, mustWork = FALSE)
+      resolve_output_dir(format, output_dir)
     },
     # Writes metadata_<tool>.parquet.
     write_metadata_file = function(input_id, output_id, output_dir) {
-      meta <- self$get_metadata(
-        input_id = input_id,
-        output_id = output_id,
-        output_dir = output_dir
-      )
-      arrow::write_parquet(
-        meta,
-        file.path(output_dir, paste0("metadata_", self$name, ".parquet"))
-      )
+      meta_write(self, paste0("metadata_", self$name, ".parquet"), input_id, output_id, output_dir)
     }
   ),
   public = list(
@@ -491,19 +488,37 @@ Tool <- R6::R6Class(
         private$is_tidied <- TRUE
         return(invisible(self))
       }
+      # lapply() rather than mutate(map2()): dplyr/purrr add their own error
+      # context layers on top of the file context from with_file_context()
+      files <- private$files
+      paths <- files$path
+      parsers <- files$parser
+      raw <- NULL
       if (keep_raw) {
-        d <- private$files |>
-          dplyr::mutate(
-            raw = purrr::map2(.data$path, .data$parser, \(p, t) private$dispatch_parse(p, t)),
-            # pass already-parsed raw to dispatch_tidy to avoid re-reading the file
-            tidy = purrr::map2(.data$raw, .data$parser, \(r, t) private$dispatch_tidy(r, t))
+        raw <- lapply(seq_along(paths), \(i) {
+          private$with_file_context(
+            private$dispatch_parse(paths[[i]], parsers[[i]]),
+            "parse",
+            parsers[[i]],
+            paths[[i]]
           )
-      } else {
-        d <- private$files |>
-          dplyr::mutate(
-            tidy = purrr::map2(.data$path, .data$parser, \(p, t) private$dispatch_tidy(p, t))
-          )
+        })
       }
+      tidy <- lapply(seq_along(paths), \(i) {
+        # pass already-parsed raw to dispatch_tidy to avoid re-reading the file
+        x <- if (keep_raw) raw[[i]] else paths[[i]]
+        private$with_file_context(
+          private$dispatch_tidy(x, parsers[[i]]),
+          "tidy",
+          parsers[[i]],
+          paths[[i]]
+        )
+      })
+      d <- files
+      if (keep_raw) {
+        d$raw <- raw
+      }
+      d$tidy <- tidy
       private$tbls <- d
       private$is_tidied <- TRUE
       return(invisible(self))
@@ -582,15 +597,8 @@ Tool <- R6::R6Class(
     #' `output_dir`, `pkg_versions`, and `files`.
     get_metadata = function(input_id, output_id, output_dir, pkgs = NULL) {
       pkgs <- pkgs %||% self$pkg
-      if (!is.null(self$written_files)) {
-        files <- meta_files_from_written(self$written_files)
-      } else {
-        files <- private$files |>
-          dplyr::select(fin = "path", "size") |>
-          dplyr::mutate(size = as.numeric(.data$size))
-      }
       nemo_metadata(
-        files = files,
+        files = meta_files(self$written_files, private$files),
         pkgs = pkgs,
         input_id = input_id,
         output_id = output_id,
@@ -665,9 +673,14 @@ Tool <- R6::R6Class(
       # Stream parse -> tidy -> write one file at a time to bound memory.
       # private$tbls stays NULL, so get_tbls() returns NULL afterwards.
       seen_fpfix <- character()
-      written <- purrr::map(seq_len(nrow(private$files)), \(i) {
+      written <- lapply(seq_len(nrow(private$files)), \(i) {
         row <- private$files[i, ]
-        row$tidy <- list(private$dispatch_tidy(row$path, row$parser))
+        row$tidy <- list(private$with_file_context(
+          private$dispatch_tidy(row$path, row$parser),
+          "tidy",
+          row$parser,
+          row$path
+        ))
         d_write <- private$build_d_write(row, output_dir, input_id, output_id, prefix_include)
         seen_fpfix <<- c(seen_fpfix, d_write$fpfix)
         private$assert_no_dup_fpfix(seen_fpfix)

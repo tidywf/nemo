@@ -68,6 +68,17 @@ nemo_write <- function(d, fpfix = NULL, format = "tsv", dbconn = NULL, dbtab = N
   invisible(osfx)
 }
 
+# Normalised output_dir; passed through as-is for "db", which writes no files.
+resolve_output_dir <- function(format, output_dir) {
+  if (format == "db") {
+    return(output_dir)
+  }
+  if (is.null(output_dir)) {
+    nemo_stop("Output directory must be specified when format is not 'db'.")
+  }
+  normalizePath(output_dir, mustWork = FALSE)
+}
+
 #' Output Formats Supported
 #'
 #' @return Character vector of supported output formats.

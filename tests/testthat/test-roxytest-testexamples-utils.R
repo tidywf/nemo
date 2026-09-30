@@ -47,7 +47,7 @@ test_that("Function empty_tbl() @ L116", {
 })
 
 
-test_that("Function nemoverse_wf_dispatch() @ L155", {
+test_that("Function nemoverse_wf_dispatch() @ L157", {
   
   (fun <- nemoverse_wf_dispatch("workflow1"))
   expect_identical(fun, Workflow1)
@@ -55,7 +55,7 @@ test_that("Function nemoverse_wf_dispatch() @ L155", {
 })
 
 
-test_that("Function read_parquet_grep() @ L206", {
+test_that("Function read_parquet_grep() @ L208", {
   
   odir <- fs::dir_create(tempfile())
   arrow::write_parquet(data.frame(x = 1L), file.path(odir, "a_1.parquet"))
@@ -71,7 +71,7 @@ test_that("Function read_parquet_grep() @ L206", {
 })
 
 
-test_that("Function pkg_found() @ L233", {
+test_that("Function pkg_found() @ L235", {
   
   pkg_found("base")
   pkg_found("somefakepackagename")

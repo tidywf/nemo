@@ -130,14 +130,16 @@ nemo_enframe <- function(x) {
 
 #' Get Python Binary
 #'
-#' Get the path to the Python binary in the system PATH.
+#' Get the path to the Python binary in the system PATH, preferring `python3`
+#' (many systems, e.g. macOS and Debian, ship no bare `python`).
 #' @keywords internal
 get_python <- function() {
-  py <- Sys.which("python")
-  if (!nzchar(py)) {
-    nemo_stop("Cannot find Python in PATH.")
+  py <- Sys.which(c("python3", "python"))
+  py <- unname(py[nzchar(py)])
+  if (length(py) == 0) {
+    nemo_stop("Cannot find python3 or python in PATH.")
   }
-  py
+  py[[1]]
 }
 
 #' Nemoverse Workflow Dispatcher

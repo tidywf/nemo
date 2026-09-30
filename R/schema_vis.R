@@ -71,7 +71,8 @@ reactable_schema <- function(dat, ...) {
           html = TRUE,
           cell = function(value, index) {
             row_id <- dat$row_id[[index]]
-            versions <- value$version
+            # schema.yaml text (versions, descriptions) goes into raw HTML
+            versions <- htmltools::htmlEscape(value$version)
 
             version_buttons <- purrr::map_chr(
               seq_along(versions),
@@ -120,7 +121,7 @@ reactable_schema <- function(dat, ...) {
                   '<thead>',
                   paste0(
                     '<th style="border: 1px solid #ddd; padding: 6px; background-color: #f5f5f5; text-align: left;">',
-                    names(schema_data),
+                    htmltools::htmlEscape(names(schema_data)),
                     '</th>',
                     collapse = ""
                   ),
@@ -130,7 +131,7 @@ reactable_schema <- function(dat, ...) {
                     vapply(
                       seq_len(nrow(schema_data)),
                       function(r) {
-                        cells <- as.character(unlist(schema_data[r, ]))
+                        cells <- htmltools::htmlEscape(as.character(unlist(schema_data[r, ])))
                         paste0(
                           '<tr>',
                           paste0(

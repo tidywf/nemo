@@ -14,7 +14,7 @@ test_that("Function nemo_write() @ L40", {
 })
 
 
-test_that("Function nemo_osfx() @ L95", {
+test_that("Function nemo_osfx() @ L106", {
   
   fpfix <- "path/to/foo"
   format <- "tsv"
