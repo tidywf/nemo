@@ -1,7 +1,7 @@
 .PHONY: all pkgdown test check-pushed bump
 
 air:
-	@air format
+	@air format .
 
 readme:
 	@quarto render README.qmd
