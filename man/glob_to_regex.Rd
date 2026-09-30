@@ -12,13 +12,16 @@ Glob pattern.}
 }
 \value{
 (\code{character(1)})\cr
-Anchored regex equivalent.
+Anchored PCRE regex equivalent.
 }
 \description{
-Translates an \verb{aws s3 sync} glob (\code{*} = any run of characters, \verb{?} = one
-character, everything else literal) into an anchored regex. Used by
-\code{\link[=schema_glob_check]{schema_glob_check()}}; \verb{aws s3 sync} filters are fnmatch-style, so \code{*} also
-matches \code{/} and an empty string.
+Translates an \verb{aws s3 sync} glob into an anchored regex, following Python's
+\code{fnmatch} (which \verb{aws s3 sync} filters use): \code{*} = any run of characters
+(including \code{/} and the empty string), \verb{?} = one character, \verb{[seq]} = one
+character in \code{seq} (ranges like \verb{[0-9]} allowed), \verb{[!seq]} = one character
+not in \code{seq}, everything else literal. An unclosed \code{[} is literal. Used by
+\code{\link[=schema_glob_check]{schema_glob_check()}}. The result is a PCRE regex: match with \code{perl = TRUE}
+(escapes inside \verb{[...]} are not portable to R's default TRE engine).
 }
 \examples{
 (r1 <- glob_to_regex("*.purple.qc"))

@@ -57,34 +57,89 @@ pkg_res_dir <- function(pkg, sub) {
 
 #' Convert an S3 Sync Glob to a Regex
 #'
-#' Translates an `aws s3 sync` glob (`*` = any run of characters, `?` = one
-#' character, everything else literal) into an anchored regex. Used by
-#' [schema_glob_check()]; `aws s3 sync` filters are fnmatch-style, so `*` also
-#' matches `/` and an empty string.
+#' Translates an `aws s3 sync` glob into an anchored regex, following Python's
+#' `fnmatch` (which `aws s3 sync` filters use): `*` = any run of characters
+#' (including `/` and the empty string), `?` = one character, `[seq]` = one
+#' character in `seq` (ranges like `[0-9]` allowed), `[!seq]` = one character
+#' not in `seq`, everything else literal. An unclosed `[` is literal. Used by
+#' [schema_glob_check()]. The result is a PCRE regex: match with `perl = TRUE`
+#' (escapes inside `[...]` are not portable to R's default TRE engine).
 #'
 #' @param x (`character(1)`)\cr
 #' Glob pattern.
 #' @returns (`character(1)`)\cr
-#' Anchored regex equivalent.
+#' Anchored PCRE regex equivalent.
 #'
 #' @examples
 #' (r1 <- glob_to_regex("*.purple.qc"))
 #' (r2 <- glob_to_regex("*purple/*.purple.qc"))
 #' @testexamples
-#' expect_true(grepl(r1, "sample1.purple.qc"))
-#' expect_true(grepl(r1, "a/b/sample1.purple.qc"))
-#' expect_false(grepl(r1, "sample1.purple.qc.bak"))
-#' expect_true(grepl(r2, "run/purple/sample1.purple.qc"))
-#' expect_false(grepl(r2, "run/amber/sample1.purple.qc"))
+#' expect_true(grepl(r1, "sample1.purple.qc", perl = TRUE))
+#' expect_true(grepl(r1, "a/b/sample1.purple.qc", perl = TRUE))
+#' expect_false(grepl(r1, "sample1.purple.qc.bak", perl = TRUE))
+#' expect_true(grepl(r2, "run/purple/sample1.purple.qc", perl = TRUE))
+#' expect_false(grepl(r2, "run/amber/sample1.purple.qc", perl = TRUE))
 #' expect_error(glob_to_regex(c("a", "b")))
+#' # character classes
+#' r3 <- glob_to_regex("*_R[12].fastq.gz")
+#' expect_true(grepl(r3, "s1_R1.fastq.gz", perl = TRUE))
+#' expect_false(grepl(r3, "s1_R3.fastq.gz", perl = TRUE))
+#' r4 <- glob_to_regex("chr[!XY].tsv")
+#' expect_true(grepl(r4, "chr1.tsv", perl = TRUE))
+#' expect_false(grepl(r4, "chrX.tsv", perl = TRUE))
+#' expect_true(grepl(glob_to_regex("s[0-9]x"), "s7x", perl = TRUE))
+#' expect_true(grepl(glob_to_regex("a[]]b"), "a]b", perl = TRUE))
+#' expect_true(grepl(glob_to_regex("a[^]b"), "a^b", perl = TRUE))
+#' expect_true(grepl(glob_to_regex("a[\\]b"), "a\\b", perl = TRUE))
+#' # unclosed bracket and other metachars are literal
+#' expect_true(grepl(glob_to_regex("a[b"), "a[b", perl = TRUE))
+#' expect_true(grepl(glob_to_regex("a(b)+c|d"), "a(b)+c|d", perl = TRUE))
 #' @export
 glob_to_regex <- function(x) {
   nemo_assert_scalar_chr(x)
-  # escape every regex metacharacter, then re-open the two glob wildcards
-  esc <- gsub("([.\\\\+^$(){}\\[\\]|])", "\\\\\\1", x)
-  esc <- gsub("*", ".*", esc, fixed = TRUE)
-  esc <- gsub("?", ".", esc, fixed = TRUE)
-  paste0("^", esc, "$")
+  # perl = TRUE: TRE treats a backslash inside [...] as literal
+  esc_lit <- \(ch) gsub("([.\\\\+^$(){}\\[\\]|*?])", "\\\\\\1", ch, perl = TRUE)
+  chars <- strsplit(x, "")[[1]]
+  n <- length(chars)
+  out <- character()
+  i <- 1L
+  while (i <= n) {
+    ch <- chars[[i]]
+    if (ch == "*") {
+      out <- c(out, ".*")
+    } else if (ch == "?") {
+      out <- c(out, ".")
+    } else if (ch == "[") {
+      # find the closing ']'; a ']' right after '[' or '[!' is literal
+      j <- i + 1L
+      if (j <= n && chars[[j]] == "!") {
+        j <- j + 1L
+      }
+      if (j <= n && chars[[j]] == "]") {
+        j <- j + 1L
+      }
+      while (j <= n && chars[[j]] != "]") {
+        j <- j + 1L
+      }
+      if (j > n) {
+        out <- c(out, "\\[")
+      } else {
+        body <- chars[(i + 1L):(j - 1L)]
+        neg <- body[[1]] == "!"
+        if (neg) {
+          body <- body[-1]
+        }
+        # inside a regex class only \ ^ [ ] need escaping ('-' keeps ranges)
+        body <- gsub("([\\\\^\\[\\]])", "\\\\\\1", body, perl = TRUE)
+        out <- c(out, paste0("[", if (neg) "^", paste(body, collapse = ""), "]"))
+        i <- j
+      }
+    } else {
+      out <- c(out, esc_lit(ch))
+    }
+    i <- i + 1L
+  }
+  paste0("^", paste(out, collapse = ""), "$")
 }
 
 #' Check Schema Globs Against Schema Patterns
@@ -145,7 +200,7 @@ schema_glob_check <- function(pkg, fixture_dir = NULL) {
         return(NULL)
       }
       tbl_globs <- globs[globs[["name"]] == tbl, ][["glob"]]
-      covered <- purrr::map(tbl_globs, \(g) grepl(glob_to_regex(g), hits)) |>
+      covered <- purrr::map(tbl_globs, \(g) grepl(glob_to_regex(g), hits, perl = TRUE)) |>
         purrr::reduce(`|`, .init = rep(FALSE, length(hits)))
       if (all(covered)) {
         return(NULL)

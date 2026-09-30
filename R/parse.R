@@ -257,6 +257,9 @@ schema_guess <- function(pname, cnames, schemas_all) {
 #' expect_equal(names(d3_lat), c("SampleID", "QCStatus", "TotalReads", "MappedReads", "UnmappedReads"))
 #' expect_type(d3_v1$SampleID, "character")
 #' expect_type(d3_v1$TotalReads, "double")
+#' fdup <- tempfile()
+#' writeLines(c("SampleID\tA", "SampleID\tB"), fdup)
+#' expect_error(parse_file_keyvalue(fdup, pname, schemas_all), "Duplicate key")
 #' @export
 parse_file_keyvalue <- function(fpath, pname, schemas_all, delim = "\t", ...) {
   ncols <- count_file_cols(fpath, delim, ...)
@@ -270,6 +273,13 @@ parse_file_keyvalue <- function(fpath, pname, schemas_all, delim = "\t", ...) {
     delim = delim,
     ...
   )
+  # pivot_wider() would only warn and produce list-cols
+  dup <- unique(d$key[duplicated(d$key)])
+  if (length(dup) > 0) {
+    nemo_stop(glue(
+      "Duplicate key(s) in '{fpath}': {glue::glue_collapse(dup, sep = ', ')}."
+    ))
+  }
   d_wide <- d |>
     tidyr::pivot_wider(names_from = "key", values_from = "value")
   schema <- schema_guess(

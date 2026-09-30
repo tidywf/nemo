@@ -31,6 +31,12 @@ cli_tidy_add_args <- function(subp, wf = NULL) {
   oid$add_argument("--ulid", help = "Generate a ULID as output ID.", action = "store_true")
   tidy$add_argument("--dbname", help = "Database name.")
   tidy$add_argument("--dbuser", help = "Database user.")
+  tidy$add_argument("--dbhost", help = "Database host (default: driver/env default, e.g. PGHOST).")
+  tidy$add_argument(
+    "--dbport",
+    help = "Database port (default: driver/env default, e.g. PGPORT).",
+    type = "integer"
+  )
   tidy$add_argument("--include", help = "Include only these files (comma sep tool_parsers).")
   tidy$add_argument("--exclude", help = "Exclude only these files (comma sep tool_parsers).")
   tidy$add_argument(
@@ -51,8 +57,8 @@ cli_tidy_add_args <- function(subp, wf = NULL) {
 #' @param args Named list of parsed CLI arguments, as returned by argparse.
 #' Expected fields: `format`, `in_dir`, `output_dir`, `input_id` (optional),
 #' `output_id` (optional), `ulid`, `prefix_include`, `dbname`, `dbuser`,
-#' `include`, `exclude`, `workflow` (may be `NULL` when `wf` is provided),
-#' `quiet`.
+#' `dbhost` (optional), `dbport` (optional), `include`, `exclude`, `workflow`
+#' (may be `NULL` when `wf` is provided), `quiet`.
 #' `output_id` and `ulid` are mutually exclusive at the CLI level (enforced by
 #' argparse). When called directly, if both are set `ulid` takes precedence
 #' and `output_id` is silently ignored.
@@ -119,6 +125,8 @@ cli_tidy_parse_args <- function(args, wf = NULL, dbdrv = NULL) {
     dbdrv = dbdrv,
     dbname = args$dbname,
     dbuser = args$dbuser,
+    dbhost = args$dbhost,
+    dbport = args$dbport,
     include = include,
     exclude = exclude
   )
@@ -150,6 +158,12 @@ cli_tidy_parse_args <- function(args, wf = NULL, dbdrv = NULL) {
 #' `out_format` is `"db"`.
 #' @param dbuser (`character(1)` or `NULL`)\cr Database user. Required when
 #' `out_format` is `"db"`.
+#' @param dbhost (`character(1)` or `NULL`)\cr Database host. `NULL` leaves it
+#' to the driver default (e.g. the `PGHOST` env var for `RPostgres`).
+#' @param dbport (`integer(1)` or `NULL`)\cr Database port. `NULL` leaves it
+#' to the driver default (e.g. the `PGPORT` env var for `RPostgres`).
+#' Password is never taken as an argument: use the driver's env var or
+#' password file (e.g. `PGPASSWORD`, `~/.pgpass`).
 #' @param include (`character(n)` or `NULL`)\cr Tool parser names to include.
 #' `NULL` includes all.
 #' @param exclude (`character(n)` or `NULL`)\cr Tool parser names to exclude.
@@ -184,6 +198,8 @@ cli_nemo_tidy <- function(
   dbdrv = NULL,
   dbname = NULL,
   dbuser = NULL,
+  dbhost = NULL,
+  dbport = NULL,
   include = NULL,
   exclude = NULL
 ) {
@@ -194,25 +210,28 @@ cli_nemo_tidy <- function(
     nemo_assert_not_null(dbdrv)
     nemo_assert_not_null(dbname)
     nemo_assert_not_null(dbuser)
-    dbconn <- DBI::dbConnect(
-      drv = dbdrv,
-      dbname = dbname,
-      user = dbuser
-    )
+    # only pass host/port when given, so drivers without them still work
+    conn_args <- purrr::compact(list(dbname = dbname, user = dbuser, host = dbhost, port = dbport))
+    dbconn <- rlang::exec(DBI::dbConnect, drv = dbdrv, !!!conn_args)
     on.exit(DBI::dbDisconnect(dbconn), add = TRUE)
   }
   nemo_log("INFO", "Tidying dir: %s", in_dir)
   obj <- fun$new(in_dir)
-  res <- obj$run(
-    output_dir = output_dir,
-    format = out_format,
-    input_id = input_id,
-    output_id = output_id,
-    prefix_include = prefix_include,
-    dbconn = dbconn,
-    include = include,
-    exclude = exclude
-  )
+  run_wf <- function() {
+    obj$run(
+      output_dir = output_dir,
+      format = out_format,
+      input_id = input_id,
+      output_id = output_id,
+      prefix_include = prefix_include,
+      dbconn = dbconn,
+      include = include,
+      exclude = exclude
+    )
+  }
+  # one transaction: a mid-run failure rolls back every table's appends, so a
+  # rerun doesn't leave partial or duplicated rows
+  res <- if (out_format == "db") DBI::dbWithTransaction(dbconn, run_wf()) else run_wf()
   if (out_format == "db") {
     nemo_log("INFO", "Tidy results written to db: %s", dbname)
   } else {

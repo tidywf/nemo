@@ -13,20 +13,34 @@ test_that("Function wf_sync_patterns() @ L34", {
 })
 
 
-test_that("Function glob_to_regex() @ L81", {
+test_that("Function glob_to_regex() @ L98", {
   
   (r1 <- glob_to_regex("*.purple.qc"))
   (r2 <- glob_to_regex("*purple/*.purple.qc"))
-  expect_true(grepl(r1, "sample1.purple.qc"))
-  expect_true(grepl(r1, "a/b/sample1.purple.qc"))
-  expect_false(grepl(r1, "sample1.purple.qc.bak"))
-  expect_true(grepl(r2, "run/purple/sample1.purple.qc"))
-  expect_false(grepl(r2, "run/amber/sample1.purple.qc"))
+  expect_true(grepl(r1, "sample1.purple.qc", perl = TRUE))
+  expect_true(grepl(r1, "a/b/sample1.purple.qc", perl = TRUE))
+  expect_false(grepl(r1, "sample1.purple.qc.bak", perl = TRUE))
+  expect_true(grepl(r2, "run/purple/sample1.purple.qc", perl = TRUE))
+  expect_false(grepl(r2, "run/amber/sample1.purple.qc", perl = TRUE))
   expect_error(glob_to_regex(c("a", "b")))
+  # character classes
+  r3 <- glob_to_regex("*_R[12].fastq.gz")
+  expect_true(grepl(r3, "s1_R1.fastq.gz", perl = TRUE))
+  expect_false(grepl(r3, "s1_R3.fastq.gz", perl = TRUE))
+  r4 <- glob_to_regex("chr[!XY].tsv")
+  expect_true(grepl(r4, "chr1.tsv", perl = TRUE))
+  expect_false(grepl(r4, "chrX.tsv", perl = TRUE))
+  expect_true(grepl(glob_to_regex("s[0-9]x"), "s7x", perl = TRUE))
+  expect_true(grepl(glob_to_regex("a[]]b"), "a]b", perl = TRUE))
+  expect_true(grepl(glob_to_regex("a[^]b"), "a^b", perl = TRUE))
+  expect_true(grepl(glob_to_regex("a[\\]b"), "a\\b", perl = TRUE))
+  # unclosed bracket and other metachars are literal
+  expect_true(grepl(glob_to_regex("a[b"), "a[b", perl = TRUE))
+  expect_true(grepl(glob_to_regex("a(b)+c|d"), "a(b)+c|d", perl = TRUE))
 })
 
 
-test_that("Function schema_glob_check() @ L122", {
+test_that("Function schema_glob_check() @ L177", {
   
   (bad <- schema_glob_check("nemo"))
   expect_equal(nrow(bad), 0)

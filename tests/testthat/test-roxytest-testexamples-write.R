@@ -2,7 +2,7 @@
 
 # File R/write.R: @testexamples
 
-test_that("Function nemo_write() @ L37", {
+test_that("Function nemo_write() @ L40", {
   
   d <- tibble::tibble(name = "foo", data = 123)
   fpfix <- file.path(tempdir(), "data_test1")
@@ -14,7 +14,7 @@ test_that("Function nemo_write() @ L37", {
 })
 
 
-test_that("Function nemo_osfx() @ L92", {
+test_that("Function nemo_osfx() @ L106", {
   
   fpfix <- "path/to/foo"
   format <- "tsv"

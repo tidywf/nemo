@@ -12,10 +12,28 @@ meta_files_from_written <- function(written_files) {
     dplyr::select(tbl = "tbl_name", "prefix", fout = "outpath", fin = "raw_path")
 }
 
+# Files for metadata: written outputs if any, else the matched input files.
+meta_files <- function(written_files, matched_files) {
+  if (!is.null(written_files)) {
+    return(meta_files_from_written(written_files))
+  }
+  matched_files |>
+    dplyr::select(fin = "path", "size") |>
+    dplyr::mutate(size = as.numeric(.data$size))
+}
+
+# Writes obj$get_metadata() (a Tool or Workflow) to output_dir/fname.
+meta_write <- function(obj, fname, input_id, output_id, output_dir) {
+  meta <- obj$get_metadata(input_id = input_id, output_id = output_id, output_dir = output_dir)
+  arrow::write_parquet(meta, file.path(output_dir, fname))
+}
+
 #' Assemble run metadata
 #'
 #' @param files (`tibble()`)\cr
-#' Written files.
+#' Written files, as produced from a Tool/Workflow's `written_files`
+#' (columns `tbl`, `prefix`, `fout`, `fin`), or matched input files
+#' (`fin`, `size`) when nothing has been written yet.
 #' @param pkgs (`character(n)`)\cr
 #' Packages to include versions of.
 #' @param input_id (`character(1)`)\cr
@@ -32,9 +50,10 @@ meta_files_from_written <- function(written_files) {
 #'
 #' @examples
 #' files <- tibble::tibble(
-#'   tbl_name = c("purple_qc", "amber_qc"),
+#'   tbl = c("purple_qc", "amber_qc"),
 #'   prefix = c("S123", "S123"),
-#'   outpath = c("S123_purple_qc.tsv", "S123_amber_qc.tsv")
+#'   fout = c("S123_purple_qc.tsv.gz", "S123_amber_qc.tsv.gz"),
+#'   fin = c("/path/to/S123.purple.qc", "/path/to/S123.amber.qc.tsv")
 #' )
 #' pkgs <- c("nemo")
 #' input_id <- "run123"

@@ -5,7 +5,9 @@
 #'
 #' @param x Path to a `.dvc` pointer file.
 #' @param output_dir Directory to write the downloaded file into.
-#' @param overwrite Logical. If `FALSE`, skip if the file already exists.
+#' @param overwrite Logical. If `FALSE`, skip if the file already exists with
+#' the expected md5. An existing file with a mismatching md5 (e.g. from an
+#' interrupted download) is always re-downloaded.
 #' @param pkg_nm Package name, used to point to the Cloudflare R2 bucket of
 #' interest.
 #'
@@ -16,10 +18,15 @@
 #' output_dir <- file.path(tempdir(), "dvc_single_test")
 #' result <- dvc_download_file(x, output_dir)
 #' result_cached <- dvc_download_file(x, output_dir, overwrite = FALSE)
+#' # a corrupted local copy gets replaced
+#' writeLines("truncated", result)
+#' result_fixed <- suppressWarnings(dvc_download_file(x, output_dir, overwrite = FALSE))
 #'
 #' @testexamples
 #' expect_true(file.exists(result))
 #' expect_null(result_cached)
+#' expect_equal(result_fixed, result)
+#' expect_equal(unname(tools::md5sum(result_fixed)), "df4021245c33f4a75d1c29a17388608c")
 #' @export
 dvc_download_file <- function(
   x,
@@ -36,20 +43,33 @@ dvc_download_file <- function(
   md5_line <- grep("md5:", lines, value = TRUE)[1]
   path_line <- grep("path:", lines, value = TRUE)[1]
   if (is.na(md5_line) || is.na(path_line)) {
+    warning(glue("Skipping malformed .dvc file (no md5/path): {x}"), call. = FALSE)
     return(NULL)
   }
   md5 <- trimws(sub(".*md5:", "", md5_line))
   rel_path <- trimws(sub(".*path:", "", path_line))
   out_file <- file.path(output_dir, rel_path)
+  md5_ok <- function(f) identical(unname(tools::md5sum(f)), md5)
   if (!overwrite && file.exists(out_file)) {
-    return(NULL)
+    if (md5_ok(out_file)) {
+      return(NULL)
+    }
+    warning(glue("md5 mismatch for existing {out_file}, re-downloading."), call. = FALSE)
   }
   fs::dir_create(output_dir)
   url <- paste0(base_url, "/", substr(md5, 1, 2), "/", substr(md5, 3, nchar(md5)))
-  status <- utils::download.file(url, out_file, quiet = TRUE)
+  # download to a temp file and only move into place once verified, so an
+  # interrupted download never leaves a truncated file that later runs skip
+  tmp <- paste0(out_file, ".part")
+  on.exit(unlink(tmp), add = TRUE)
+  status <- utils::download.file(url, tmp, quiet = TRUE, mode = "wb")
   if (status != 0L) {
     nemo_stop(glue("Download failed (status {status}): {url}"))
   }
+  if (!md5_ok(tmp)) {
+    nemo_stop(glue("md5 mismatch after download (expected {md5}): {url}"))
+  }
+  fs::file_move(tmp, out_file)
   out_file
 }
 

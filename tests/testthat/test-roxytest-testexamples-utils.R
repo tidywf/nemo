@@ -2,15 +2,21 @@
 
 # File R/utils.R: @testexamples
 
-test_that("Function list_files_dir() @ L20", {
+test_that("Function list_files_dir() @ L29", {
   
   d <- system.file("R", package = "nemo")
   x <- list_files_dir(d)
+  # symlinked files are included
+  d2 <- fs::dir_create(tempfile())
+  f <- fs::file_create(file.path(d2, "real.tsv"))
+  fs::link_create(f, file.path(d2, "link.tsv"))
+  x2 <- list_files_dir(d2)
   expect_equal(names(x), c("bname", "size", "lastmodified", "path"))
+  expect_setequal(x2$bname, c("real.tsv", "link.tsv"))
 })
 
 
-test_that("Function get_tbl_version_attr() @ L51", {
+test_that("Function get_tbl_version_attr() @ L71", {
   
   path <- system.file("extdata/tool1", package = "nemo")
   path2 <- file.path(path, "v1.2.3", "sampleA.tool1.table1.tsv")
@@ -23,7 +29,7 @@ test_that("Function get_tbl_version_attr() @ L51", {
 })
 
 
-test_that("Function set_tbl_version_attr() @ L75", {
+test_that("Function set_tbl_version_attr() @ L95", {
   
   d <- tibble::tibble(a = 1:3, b = letters[1:3])
   v <- "v1.2.3"
@@ -34,14 +40,14 @@ test_that("Function set_tbl_version_attr() @ L75", {
 })
 
 
-test_that("Function empty_tbl() @ L96", {
+test_that("Function empty_tbl() @ L116", {
   
   (x <- empty_tbl(cnames = c("a", "b", "c")))
   expect_equal(nrow(x), 0)
 })
 
 
-test_that("Function nemoverse_wf_dispatch() @ L135", {
+test_that("Function nemoverse_wf_dispatch() @ L157", {
   
   (fun <- nemoverse_wf_dispatch("workflow1"))
   expect_identical(fun, Workflow1)
@@ -49,16 +55,23 @@ test_that("Function nemoverse_wf_dispatch() @ L135", {
 })
 
 
-test_that("Function read_parquet_grep() @ L179", {
+test_that("Function read_parquet_grep() @ L208", {
   
-  tmp <- tempfile(fileext = ".parquet")
-  arrow::write_parquet(data.frame(x = 1L), tmp)
-  (x <- read_parquet_grep(dirname(tmp), basename(tmp), basename(tmp)))
+  odir <- fs::dir_create(tempfile())
+  arrow::write_parquet(data.frame(x = 1L), file.path(odir, "a_1.parquet"))
+  arrow::write_parquet(data.frame(x = 2L), file.path(odir, "a_2.parquet"))
+  lf <- list.files(odir)
+  (x <- read_parquet_grep(odir, lf, "a_1"))
+  (y <- read_parquet_grep(odir, lf, "^a_", first = TRUE))
   expect_equal(x$x, 1L)
+  expect_equal(y$x, 1L)
+  expect_error(read_parquet_grep(odir, lf, "^a_"), "2 files match")
+  expect_error(read_parquet_grep(odir, lf, "nomatch"), "No file matches")
+  expect_error(read_parquet_grep(odir, lf, "nomatch", first = TRUE), "No file matches")
 })
 
 
-test_that("Function pkg_found() @ L200", {
+test_that("Function pkg_found() @ L235", {
   
   pkg_found("base")
   pkg_found("somefakepackagename")

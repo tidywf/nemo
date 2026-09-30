@@ -6,7 +6,10 @@
 #' A data.frame (or tibble) with tidy data.
 #' @param fpfix (`character(1)`)\cr
 #' File prefix. The file extension is generated automatically via the `format`
-#' argument. For a format of db, this is inserted into the `nemo_pfix` column.
+#' argument. Ignored when format is db: rows are appended to `dbtab` with no
+#' record of the source prefix, so rows from different samples are
+#' indistinguishable unless the data carries its own identifier (e.g. the
+#' `input_prefix` column added by `prefix_include = TRUE` in `Tool$write()`).
 #' @param format (`character(1)`)\cr
 #' Output format. One of tsv, csv, parquet, rds, or db.
 #' @param dbconn (`DBIConnection(1)`)\cr
@@ -63,6 +66,17 @@ nemo_write <- function(d, fpfix = NULL, format = "tsv", dbconn = NULL, dbtab = N
     rds = readr::write_rds(d, osfx)
   )
   invisible(osfx)
+}
+
+# Normalised output_dir; passed through as-is for "db", which writes no files.
+resolve_output_dir <- function(format, output_dir) {
+  if (format == "db") {
+    return(output_dir)
+  }
+  if (is.null(output_dir)) {
+    nemo_stop("Output directory must be specified when format is not 'db'.")
+  }
+  normalizePath(output_dir, mustWork = FALSE)
 }
 
 #' Output Formats Supported

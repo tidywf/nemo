@@ -13,10 +13,17 @@ nemo_stop <- function(...) stop(..., call. = FALSE)
 #' @param arg Name of `x` used in the error message; defaults to the expression
 #'   passed as `x`.
 #' @return `x` invisibly on success.
+#' @examples
+#' nemo_assert_scalar_chr("foo")
+#' @testexamples
+#' expect_identical(nemo_assert_scalar_chr("foo"), "foo")
+#' expect_error(nemo_assert_scalar_chr(NA_character_), "non-NA")
+#' expect_error(nemo_assert_scalar_chr(c("a", "b")))
+#' expect_error(nemo_assert_scalar_chr(1))
 #' @export
 nemo_assert_scalar_chr <- function(x, arg = deparse(substitute(x))) {
-  if (!rlang::is_scalar_character(x)) {
-    nemo_stop(glue("'{arg}' must be a single character string."))
+  if (!rlang::is_string(x)) {
+    nemo_stop(glue("'{arg}' must be a single non-NA character string."))
   }
   invisible(x)
 }

@@ -2,7 +2,7 @@
 
 # File R/Config.R: @testexamples
 
-test_that("Function config_sort_versions() @ L369", {
+test_that("Function config_sort_versions() @ L413", {
   
   config_sort_versions(c("v2.0.0", "v1.0.0", "latest"))
   config_sort_versions(c("latest", "v1.2.3"))
@@ -10,5 +10,7 @@ test_that("Function config_sort_versions() @ L369", {
   expect_equal(config_sort_versions(c("v2.0.0", "v1.0.0", "latest")), c("v1.0.0", "v2.0.0", "latest"))
   expect_equal(config_sort_versions(c("latest", "v1.2.3")), c("v1.2.3", "latest"))
   expect_equal(config_sort_versions(c("v1.0.0", "v10.0.0", "v2.0.0")), c("v1.0.0", "v2.0.0", "v10.0.0"))
+  expect_equal(config_sort_versions(c("v1.25", "v1.4", "v2.0")), c("v1.4", "v1.25", "v2.0"))
+  expect_error(config_sort_versions(c("v1.2.3-beta", "latest")), "v1.2.3-beta")
 })
 

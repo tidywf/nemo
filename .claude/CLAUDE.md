@@ -114,14 +114,19 @@ patterns and exit). `tidy` also accepts:
 - `--prefix_include` --- adds an `input_prefix` column derived from the input
   filename prefix
 - `--include`/`--exclude` --- filter tool parsers (comma-separated)
-- `--dbname`/`--dbuser` --- required when `--format db`
+- `--dbname`/`--dbuser` --- required when `--format db`; `--dbhost`/`--dbport`
+  optional (driver/env default otherwise, e.g. `PGHOST`); password via the
+  driver's env var/file (e.g. `PGPASSWORD`), never an arg. db writes run in one
+  transaction
 
 ## Logging (`R/log.R`)
 
-`log4r`-based, initialised in `.onLoad`. Env vars:
+`log4r`-based, logger created lazily and rebuilt when the level changes; env
+vars are read at call time:
 
 - `NEMO_LOG_ENABLE` --- "FALSE" to disable (default "TRUE")
-- `NEMO_LOG_LEVEL` --- "DEBUG", "INFO" (default), "WARN", "ERROR", "FATAL"
+- `NEMO_LOG_LEVEL` --- "DEBUG", "INFO" (default), "WARN", "ERROR", "FATAL";
+  case-insensitive, invalid values warn once and fall back to INFO
 
 Public API: `nemo_log(level, msg, ...)` (sprintf-style), `nemo_log_date()`.
 

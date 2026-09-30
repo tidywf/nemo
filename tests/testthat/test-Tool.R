@@ -314,3 +314,81 @@ test_that("refine_files can split a prefix collision to avoid a spurious _2", {
   expect_setequal(lf$prefix, c("shared_sampleA", "shared_sampleB"))
   expect_false(any(grepl("_2$", lf$prefix)))
 })
+
+test_that("prefix suffixes do not depend on file listing order", {
+  ftbl <- list_files_dir(path)
+  map1 <- Tool$new(name = name, pkg = pkg, files_tbl = ftbl)$list_files()
+  map2 <- Tool$new(
+    name = name,
+    pkg = pkg,
+    files_tbl = ftbl[rev(seq_len(nrow(ftbl))), ]
+  )$list_files()
+  key <- \(x) {
+    dplyr::arrange(dplyr::select(x, "path", "tool_parser", "prefix"), .data$path, .data$tool_parser)
+  }
+  expect_equal(key(map1), key(map2))
+  # rows come back sorted by path
+  expect_false(is.unsorted(map2$path))
+})
+
+test_that("a file matched by two parsers gets no spurious _2 suffix", {
+  tool <- Tool$new(name = name, pkg = pkg, path = file.path(path, "latest"))
+  # swap in overlapping patterns and recompute the matched files
+  tool$config <- list(get_patterns = function() {
+    tibble::tibble(
+      name = c("table1", "table1b"),
+      pattern = c("\\.tool1\\.table1\\.tsv$", "\\.table1\\.tsv$")
+    )
+  })
+  lf <- tool$.__enclos_env__$private$compute_files()
+  expect_setequal(lf$tool_parser, c("tool1_table1", "tool1_table1b"))
+  expect_equal(lf$prefix[lf$tool_parser == "tool1_table1"], "sampleA")
+  expect_equal(lf$prefix[lf$tool_parser == "tool1_table1b"], "sampleA.tool1")
+})
+
+test_that("Tool run after tidy writes the tidied tables", {
+  out <- withr::local_tempdir()
+  tool <- Tool$new(name = name, pkg = pkg, path = path)$filter_files(
+    exclude = "tool1_table6"
+  )$tidy()
+  expect_no_error(tool$run(output_dir = out, format = "parquet", input_id = "run1"))
+  expect_true(any(grepl("table1", list.files(out))))
+  expect_false(any(grepl("table6", list.files(out))))
+  # include/exclude after tidy is still an error
+  expect_error(
+    Tool$new(name = name, pkg = pkg, path = path)$tidy()$run(
+      output_dir = out,
+      include = "tool1_table1"
+    ),
+    "Cannot filter files after tidy"
+  )
+})
+
+test_that("Tool run is a no-op once written", {
+  out <- withr::local_tempdir()
+  tool <- Tool$new(name = name, pkg = pkg, path = path)$run(output_dir = out, format = "parquet")
+  wf1 <- tool$written_files
+  out2 <- withr::local_tempdir()
+  tool$run(output_dir = out2, format = "parquet")
+  expect_identical(tool$written_files, wf1)
+  expect_length(list.files(out2), 0)
+})
+
+test_that("parse/tidy errors name the tool_parser and file", {
+  d <- withr::local_tempdir()
+  # header matches no table1 schema version
+  writeLines("Foo\tBar\n1\t2", file.path(d, "sampleA.tool1.table1.tsv"))
+  tool <- Tool$new(name = name, pkg = pkg, path = d)
+  expect_error(tool$tidy(), "Failed to tidy 'tool1_table1' from .*sampleA.tool1.table1.tsv")
+  # the original cause is kept as the parent
+  err <- tryCatch(Tool$new(name = name, pkg = pkg, path = d)$tidy(), error = identity)
+  expect_match(conditionMessage(err$parent), "Expected 1 matching schema")
+  expect_error(
+    Tool$new(name = name, pkg = pkg, path = d)$tidy(keep_raw = TRUE),
+    "Failed to parse 'tool1_table1'"
+  )
+  expect_error(
+    Tool$new(name = name, pkg = pkg, path = d)$run(output_dir = withr::local_tempdir()),
+    "Failed to tidy 'tool1_table1'"
+  )
+})

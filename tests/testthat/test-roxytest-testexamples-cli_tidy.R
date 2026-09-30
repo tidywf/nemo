@@ -2,7 +2,7 @@
 
 # File R/cli_tidy.R: @testexamples
 
-test_that("Function cli_tidy_parse_args() @ L92", {
+test_that("Function cli_tidy_parse_args() @ L94", {
   
   path <- system.file("extdata/tool1", package = "nemo")
   args <- list(
@@ -31,7 +31,7 @@ test_that("Function cli_tidy_parse_args() @ L92", {
 })
 
 
-test_that("Function cli_nemo_tidy() @ L176", {
+test_that("Function cli_nemo_tidy() @ L186", {
   
   path <- system.file("extdata/tool1", package = "nemo")
   out <- tempfile()

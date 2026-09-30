@@ -36,3 +36,20 @@ test_that("Config get_col_map", {
   cm <- conf$get_col_map("table6")
   expect_named(cm, c("raw", "tidy", "type", "description"))
 })
+
+test_that("Config validates required table and column keys", {
+  conf <- Config$new("tool1", "nemo")
+  priv <- conf$.__enclos_env__$private
+  good <- priv$tables
+  expect_true(priv$validate_tables())
+
+  bad <- good
+  bad$table1$pattern <- NULL
+  bad$table2$ftype <- c("tsv", "csv")
+  bad$table3$columns[[1]]$versions <- NULL
+  priv$tables <- bad
+  err <- expect_error(priv$validate_tables(), "Invalid schema.yaml for nemo::tool1")
+  expect_match(conditionMessage(err), "table1: missing pattern")
+  expect_match(conditionMessage(err), "table2: not a single string: ftype")
+  expect_match(conditionMessage(err), "table3 -> column '.+': missing versions")
+})

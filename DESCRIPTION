@@ -28,9 +28,9 @@ Imports:
     R6,
     readr,
     rlang,
-    stringr,
     tibble,
     tidyr,
+    tools,
     ulid,
     yaml
 Suggests:
