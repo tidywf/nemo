@@ -48,6 +48,13 @@ child1 <- system.file(
 - Removed the `csv-nohead-long` ftype (`r pr(80)`).
 - `parse_file_keyvalue()` now applies the schema column types instead of
   returning all-character columns (`r pr(84)`).
+- `nemo_gha_mermaid()` redesigned: now takes the `.github/workflows` dir
+  (`nemo_gha_mermaid(here(".github/workflows"))`) instead of
+  `actions_url`/`deploy_yaml`. Job edges follow `needs:` (parallel jobs no
+  longer drawn as a chain), reusable workflows are read at their pinned `@ref`,
+  steps gated on `inputs.*` conditions are dropped or marked `(if)`, each job is
+  one compact node listing its steps, and unreadable workflows show as a warning
+  node instead of silently vanishing.
 
 ### Bug fixes
 

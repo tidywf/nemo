@@ -25,12 +25,7 @@ use("here", "here")
 #| label: mermaid_diagram
 #| include: false
 
-repo <- "https://raw.githubusercontent.com/tidywf/actions/"
-actions_url <- paste0(repo, "refs/heads/main/.github/workflows")
-diagram <- nemo_gha_mermaid(
-  actions_url = actions_url,
-  deploy_yaml = here(".github/workflows/deploy.yaml")
-)
+diagram <- nemo_gha_mermaid(here(".github/workflows"))
 ```
 
 ````{r}
