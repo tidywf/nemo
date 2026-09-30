@@ -33,6 +33,10 @@ child1 <- system.file(
 - `Tool` gains `flat_tidy_names` for simpler output names on tools that split
   one file into several tables (`r pr(81)`).
 - `nemoverse_wf_dispatch()` now includes `tidydragen`.
+- `nemo_schema_reactable()` rewritten on native reactable row details: search
+  now matches column names and globs, expanded rows show a per-version
+  column-presence matrix, and the table follows light/dark page themes.
+  `nemo_schemavis_data()` now returns one row per table with nested columns.
 
 ### Performance
 

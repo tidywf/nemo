@@ -2,10 +2,13 @@
 
 # File R/schema_vis.R: @testexamples
 
-test_that("Function nemo_schemavis_data() @ L199", {
+test_that("Function nemo_schemavis_data() @ L143", {
   
-  expect_s3_class(nemo_schemavis_data("tool1", pkg = "nemo"), "tbl_df")
-  expect_true(all(c("n", "tool", "tbl", "schema_version", "description") %in%
-    names(nemo_schemavis_data("tool1", pkg = "nemo"))))
+  d <- nemo_schemavis_data("tool1", pkg = "nemo")
+  expect_s3_class(d, "tbl_df")
+  expect_true(all(c("tool", "tbl", "description", "ftype", "glob", "columns",
+    "versions", "n_cols", "col_names") %in% names(d)))
+  expect_equal(d$n_cols[d$tbl == "table1"], 6L)
+  expect_true(grepl("sample_id", d$col_names[d$tbl == "table1"]))
 })
 

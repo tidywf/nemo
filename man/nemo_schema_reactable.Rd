@@ -18,7 +18,7 @@ An htmlwidget.
 }
 \description{
 Builds schema data for one or more tools and renders it as an interactive
-\code{\link[reactable:reactable]{reactable::reactable()}} table with expandable per-version column details.
+\code{\link[reactable:reactable]{reactable::reactable()}} table with expandable per-table column details.
 }
 \examples{
 \dontrun{

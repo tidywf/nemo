@@ -7,6 +7,10 @@ knitr:
     echo: false
 ---
 
+One row per table. Search matches table metadata, globs **and** raw/tidy column
+names (e.g. try `sample_id`). Expand a row to see its glob and columns, with one
+column per schema version (`●` = column present in that version).
+
 ```{r}
 #| label: setup
 #| message: false
