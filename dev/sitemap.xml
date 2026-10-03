@@ -23,7 +23,10 @@
 <url><loc>https://tidywf.github.io/nemo/dev/reference/cli_list_add_args.html</loc></url>
 <url><loc>https://tidywf.github.io/nemo/dev/reference/cli_list_parse_args.html</loc></url>
 <url><loc>https://tidywf.github.io/nemo/dev/reference/cli_nemo_list.html</loc></url>
+<url><loc>https://tidywf.github.io/nemo/dev/reference/cli_nemo_sync.html</loc></url>
 <url><loc>https://tidywf.github.io/nemo/dev/reference/cli_nemo_tidy.html</loc></url>
+<url><loc>https://tidywf.github.io/nemo/dev/reference/cli_sync_add_args.html</loc></url>
+<url><loc>https://tidywf.github.io/nemo/dev/reference/cli_sync_parse_args.html</loc></url>
 <url><loc>https://tidywf.github.io/nemo/dev/reference/cli_tidy_add_args.html</loc></url>
 <url><loc>https://tidywf.github.io/nemo/dev/reference/cli_tidy_parse_args.html</loc></url>
 <url><loc>https://tidywf.github.io/nemo/dev/reference/config_prep_multi.html</loc></url>
@@ -37,6 +40,7 @@
 <url><loc>https://tidywf.github.io/nemo/dev/reference/file_hdr.html</loc></url>
 <url><loc>https://tidywf.github.io/nemo/dev/reference/get_python.html</loc></url>
 <url><loc>https://tidywf.github.io/nemo/dev/reference/get_tbl_version_attr.html</loc></url>
+<url><loc>https://tidywf.github.io/nemo/dev/reference/glob_to_regex.html</loc></url>
 <url><loc>https://tidywf.github.io/nemo/dev/reference/index.html</loc></url>
 <url><loc>https://tidywf.github.io/nemo/dev/reference/list_files_dir.html</loc></url>
 <url><loc>https://tidywf.github.io/nemo/dev/reference/nemo-package.html</loc></url>
@@ -63,7 +67,12 @@
 <url><loc>https://tidywf.github.io/nemo/dev/reference/parse_file_nohead.html</loc></url>
 <url><loc>https://tidywf.github.io/nemo/dev/reference/pkg_found.html</loc></url>
 <url><loc>https://tidywf.github.io/nemo/dev/reference/reactable_schema.html</loc></url>
+<url><loc>https://tidywf.github.io/nemo/dev/reference/read_parquet_grep.html</loc></url>
+<url><loc>https://tidywf.github.io/nemo/dev/reference/s3sync.html</loc></url>
+<url><loc>https://tidywf.github.io/nemo/dev/reference/schema_columns_detail.html</loc></url>
+<url><loc>https://tidywf.github.io/nemo/dev/reference/schema_glob_check.html</loc></url>
 <url><loc>https://tidywf.github.io/nemo/dev/reference/schema_guess.html</loc></url>
 <url><loc>https://tidywf.github.io/nemo/dev/reference/set_tbl_version_attr.html</loc></url>
+<url><loc>https://tidywf.github.io/nemo/dev/reference/wf_sync_patterns.html</loc></url>
 </urlset>
 

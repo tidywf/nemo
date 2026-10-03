@@ -9,7 +9,7 @@ results to output_dir in the requested format."><meta property="og:image" conten
 
     <a class="navbar-brand me-2" href="../index.html">nemo</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.1.0.9002</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.1.0.9005</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -42,7 +42,7 @@ results to output_dir in the requested format."><meta property="og:image" conten
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Tidy workflow output files</h1>
-      <small class="dont-index">Source: <a href="https://github.com/tidywf/nemo/blob/v0.1.0.9002/R/cli_tidy.R" class="external-link"><code>R/cli_tidy.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/tidywf/nemo/blob/v0.1.0.9005/R/cli_tidy.R" class="external-link"><code>R/cli_tidy.R</code></a></small>
       <div class="d-none name"><code>cli_nemo_tidy.Rd</code></div>
     </div>
 
@@ -64,6 +64,8 @@ results to <code>output_dir</code> in the requested format.</p>
 <span>  dbdrv <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  dbname <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  dbuser <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  dbhost <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  dbport <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  include <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  exclude <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -120,6 +122,18 @@ If <code>TRUE</code>, prepend an <code>input_prefix</code> column to each tidy t
 <code>out_format</code> is <code>"db"</code>.</p></dd>
 
 
+<dt id="arg-dbhost">dbhost<a class="anchor" aria-label="anchor" href="#arg-dbhost"></a></dt>
+<dd><p>(<code>character(1)</code> or <code>NULL</code>)<br> Database host. <code>NULL</code> leaves it
+to the driver default (e.g. the <code>PGHOST</code> env var for <code>RPostgres</code>).</p></dd>
+
+
+<dt id="arg-dbport">dbport<a class="anchor" aria-label="anchor" href="#arg-dbport"></a></dt>
+<dd><p>(<code>integer(1)</code> or <code>NULL</code>)<br> Database port. <code>NULL</code> leaves it
+to the driver default (e.g. the <code>PGPORT</code> env var for <code>RPostgres</code>).
+Password is never taken as an argument: use the driver's env var or
+password file (e.g. <code>PGPASSWORD</code>, <code>~/.pgpass</code>).</p></dd>
+
+
 <dt id="arg-include">include<a class="anchor" aria-label="anchor" href="#arg-include"></a></dt>
 <dd><p>(<code>character(n)</code> or <code>NULL</code>)<br> Tool parser names to include.
 <code>NULL</code> includes all.</p></dd>
@@ -139,8 +153,8 @@ If <code>TRUE</code>, prepend an <code>input_prefix</code> column to each tidy t
 <span class="r-in"><span>  workflow <span class="op">=</span> <span class="st">"workflow1"</span>, in_dir <span class="op">=</span> <span class="va">path</span>, output_dir <span class="op">=</span> <span class="va">out</span>,</span></span>
 <span class="r-in"><span>  out_format <span class="op">=</span> <span class="st">"parquet"</span>, input_id <span class="op">=</span> <span class="st">"run1"</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [2026-08-06T13:48:05UTC] nemo INFO: Tidying dir: /home/runner/miniconda3/envs/pkgdown_env/lib/R/library/nemo/extdata/tool1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [2026-08-06T13:48:05UTC] nemo INFO: Tidy results written to dir: /tmp/Rtmp0FIKsU/file10821bf2b3fb</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [2026-10-03T08:43:25UTC] nemo INFO: Tidying dir: /home/runner/miniconda3/envs/pkgdown_env/lib/R/library/nemo/extdata/tool1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [2026-10-03T08:43:25UTC] nemo INFO: Tidy results written to dir: /tmp/Rtmp2E55o0/file105f521f9119</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

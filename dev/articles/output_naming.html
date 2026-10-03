@@ -28,7 +28,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">nemo</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.1.0.9002</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.1.0.9005</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -72,7 +72,7 @@
 
 
 
-      <small class="dont-index">Source: <a href="https://github.com/tidywf/nemo/blob/v0.1.0.9002/vignettes/output_naming.qmd" class="external-link"><code>vignettes/output_naming.qmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/tidywf/nemo/blob/v0.1.0.9005/vignettes/output_naming.qmd" class="external-link"><code>vignettes/output_naming.qmd</code></a></small>
       <div class="d-none name"><code></code></div>
     </div>
 
@@ -117,7 +117,7 @@
 <span><span class="op">}</span></span>
 <span></span>
 <span><span class="fu">dir_tree</span><span class="op">(</span><span class="va">dir_runs</span><span class="op">)</span></span>
-<span><span class="co">#&gt; /tmp/RtmpBdfOfh/naming-demo/runs</span></span>
+<span><span class="co">#&gt; /tmp/RtmpEu0BHo/naming-demo/runs</span></span>
 <span><span class="co">#&gt; ├── run1</span></span>
 <span><span class="co">#&gt; │   ├── sampleA.tool1.table1.tsv</span></span>
 <span><span class="co">#&gt; │   └── sampleA.tool1.table2.tsv</span></span>
@@ -140,10 +140,10 @@
 <span><span class="co">#&gt;   bname                    parser prefix   </span></span>
 <span><span class="co">#&gt;   &lt;chr&gt;                    &lt;chr&gt;  &lt;chr&gt;    </span></span>
 <span><span class="co">#&gt; 1 sampleA.tool1.table1.tsv table1 sampleA  </span></span>
-<span><span class="co">#&gt; 2 sampleA.tool1.table1.tsv table1 sampleA_2</span></span>
-<span><span class="co">#&gt; 3 sampleA.tool1.table1.tsv table1 sampleA_3</span></span>
-<span><span class="co">#&gt; 4 sampleA.tool1.table2.tsv table2 sampleA  </span></span>
-<span><span class="co">#&gt; 5 sampleA.tool1.table2.tsv table2 sampleA_2</span></span>
+<span><span class="co">#&gt; 2 sampleA.tool1.table2.tsv table2 sampleA  </span></span>
+<span><span class="co">#&gt; 3 sampleA.tool1.table1.tsv table1 sampleA_2</span></span>
+<span><span class="co">#&gt; 4 sampleA.tool1.table2.tsv table2 sampleA_2</span></span>
+<span><span class="co">#&gt; 5 sampleA.tool1.table1.tsv table1 sampleA_3</span></span>
 <span><span class="co">#&gt; 6 sampleA.tool1.table2.tsv table2 sampleA_3</span></span></code></pre></div>
 </div>
 <p>As you can see, the files share a basename but get prefixes <code>sampleA</code>, <code>sampleA_2</code>, <code>sampleA_3</code>. Writing them out, nothing gets overwritten:</p>
@@ -158,7 +158,7 @@
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">dir_tree</span><span class="op">(</span><span class="va">dir_outA</span><span class="op">)</span></span>
-<span><span class="co">#&gt; /tmp/RtmpBdfOfh/naming-demo/outA</span></span>
+<span><span class="co">#&gt; /tmp/RtmpEu0BHo/naming-demo/outA</span></span>
 <span><span class="co">#&gt; ├── metadata_tool1.parquet</span></span>
 <span><span class="co">#&gt; ├── sampleA_2_tool1_table1.parquet</span></span>
 <span><span class="co">#&gt; ├── sampleA_2_tool1_table2.parquet</span></span>
@@ -203,7 +203,7 @@
 <span><span class="op">}</span></span>
 <span></span>
 <span><span class="fu">dir_tree</span><span class="op">(</span><span class="va">dir_outB</span><span class="op">)</span></span>
-<span><span class="co">#&gt; /tmp/RtmpBdfOfh/naming-demo/outB</span></span>
+<span><span class="co">#&gt; /tmp/RtmpEu0BHo/naming-demo/outB</span></span>
 <span><span class="co">#&gt; ├── run1</span></span>
 <span><span class="co">#&gt; │   ├── metadata_tool1.parquet</span></span>
 <span><span class="co">#&gt; │   ├── sampleA_tool1_table1.parquet</span></span>

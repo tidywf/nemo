@@ -31,7 +31,7 @@ caches all tidy schemas as a flat tibble (schemas_tidy)
 
     <a class="navbar-brand me-2" href="../index.html">nemo</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.1.0.9002</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.1.0.9005</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -64,7 +64,7 @@ caches all tidy schemas as a flat tibble (schemas_tidy)
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Config Object</h1>
-      <small class="dont-index">Source: <a href="https://github.com/tidywf/nemo/blob/v0.1.0.9002/R/Config.R" class="external-link"><code>R/Config.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/tidywf/nemo/blob/v0.1.0.9005/R/Config.R" class="external-link"><code>R/Config.R</code></a></small>
       <div class="d-none name"><code>Config.Rd</code></div>
     </div>
 
@@ -105,6 +105,7 @@ Package name tool belongs to (for config lookup).</p></dd>
 <ul><li><p><a href="#method-Config-new"><code>Config$new()</code></a></p></li>
 <li><p><a href="#method-Config-print"><code>Config$print()</code></a></p></li>
 <li><p><a href="#method-Config-get_patterns"><code>Config$get_patterns()</code></a></p></li>
+<li><p><a href="#method-Config-get_globs"><code>Config$get_globs()</code></a></p></li>
 <li><p><a href="#method-Config-get_ftypes"><code>Config$get_ftypes()</code></a></p></li>
 <li><p><a href="#method-Config-get_descriptions"><code>Config$get_descriptions()</code></a></p></li>
 <li><p><a href="#method-Config-get_pattern"><code>Config$get_pattern()</code></a></p></li>
@@ -178,15 +179,29 @@ R6 object invisibly.</p>
 Table <code>name</code> and its <code>pattern</code>.</p>
 </div>
 
-</div><p></p><hr><a id="method-Config-get_ftypes"></a><div class="section">
-<h3 id="method-get-ftypes-">Method <code>get_ftypes()</code><a class="anchor" aria-label="anchor" href="#method-get-ftypes-"></a></h3>
-<p>Return all output file types.</p><div class="section">
+</div><p></p><hr><a id="method-Config-get_globs"></a><div class="section">
+<h3 id="method-get-globs-">Method <code>get_globs()</code><a class="anchor" aria-label="anchor" href="#method-get-globs-"></a></h3>
+<p>Return all output file globs. Derived tables (no file of
+their own, hence no <code>glob</code>) contribute no rows.</p><div class="section">
 <h4 id="usage-3">Usage<a class="anchor" aria-label="anchor" href="#usage-3"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Config</span><span class="op">$</span><span class="fu">get_ftypes</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Config</span><span class="op">$</span><span class="fu">get_globs</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
 <h4 id="returns-3">Returns<a class="anchor" aria-label="anchor" href="#returns-3"></a></h4>
+<p>(<code>tibble()</code>)<br>
+Table <code>name</code> and its <code>glob</code>.</p>
+</div>
+
+</div><p></p><hr><a id="method-Config-get_ftypes"></a><div class="section">
+<h3 id="method-get-ftypes-">Method <code>get_ftypes()</code><a class="anchor" aria-label="anchor" href="#method-get-ftypes-"></a></h3>
+<p>Return all output file types.</p><div class="section">
+<h4 id="usage-4">Usage<a class="anchor" aria-label="anchor" href="#usage-4"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Config</span><span class="op">$</span><span class="fu">get_ftypes</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+<div class="section">
+<h4 id="returns-4">Returns<a class="anchor" aria-label="anchor" href="#returns-4"></a></h4>
 <p>(<code>tibble()</code>)<br>
 Table <code>name</code> and its <code>ftype</code>.</p>
 </div>
@@ -194,12 +209,12 @@ Table <code>name</code> and its <code>ftype</code>.</p>
 </div><p></p><hr><a id="method-Config-get_descriptions"></a><div class="section">
 <h3 id="method-get-descriptions-">Method <code>get_descriptions()</code><a class="anchor" aria-label="anchor" href="#method-get-descriptions-"></a></h3>
 <p>Return all table descriptions.</p><div class="section">
-<h4 id="usage-4">Usage<a class="anchor" aria-label="anchor" href="#usage-4"></a></h4>
+<h4 id="usage-5">Usage<a class="anchor" aria-label="anchor" href="#usage-5"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Config</span><span class="op">$</span><span class="fu">get_descriptions</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="returns-4">Returns<a class="anchor" aria-label="anchor" href="#returns-4"></a></h4>
+<h4 id="returns-5">Returns<a class="anchor" aria-label="anchor" href="#returns-5"></a></h4>
 <p>(<code>tibble()</code>)<br>
 Table <code>name</code> and its <code>description</code>.</p>
 </div>
@@ -207,7 +222,7 @@ Table <code>name</code> and its <code>description</code>.</p>
 </div><p></p><hr><a id="method-Config-get_pattern"></a><div class="section">
 <h3 id="method-get-pattern-">Method <code>get_pattern()</code><a class="anchor" aria-label="anchor" href="#method-get-pattern-"></a></h3>
 <p>Return pattern for a specific table.</p><div class="section">
-<h4 id="usage-5">Usage<a class="anchor" aria-label="anchor" href="#usage-5"></a></h4>
+<h4 id="usage-6">Usage<a class="anchor" aria-label="anchor" href="#usage-6"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Config</span><span class="op">$</span><span class="fu">get_pattern</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -221,7 +236,7 @@ Table name.</p></dd>
 </dl><p></p></div>
 </div>
 <div class="section">
-<h4 id="returns-5">Returns<a class="anchor" aria-label="anchor" href="#returns-5"></a></h4>
+<h4 id="returns-6">Returns<a class="anchor" aria-label="anchor" href="#returns-6"></a></h4>
 <p>(<code><a href="https://rdrr.io/r/base/character.html" class="external-link">character()</a></code>)<br>
 File pattern(s).</p>
 </div>
@@ -229,7 +244,7 @@ File pattern(s).</p>
 </div><p></p><hr><a id="method-Config-get_ftype"></a><div class="section">
 <h3 id="method-get-ftype-">Method <code>get_ftype()</code><a class="anchor" aria-label="anchor" href="#method-get-ftype-"></a></h3>
 <p>Return ftype for a specific table.</p><div class="section">
-<h4 id="usage-6">Usage<a class="anchor" aria-label="anchor" href="#usage-6"></a></h4>
+<h4 id="usage-7">Usage<a class="anchor" aria-label="anchor" href="#usage-7"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Config</span><span class="op">$</span><span class="fu">get_ftype</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -243,7 +258,7 @@ Table name.</p></dd>
 </dl><p></p></div>
 </div>
 <div class="section">
-<h4 id="returns-6">Returns<a class="anchor" aria-label="anchor" href="#returns-6"></a></h4>
+<h4 id="returns-7">Returns<a class="anchor" aria-label="anchor" href="#returns-7"></a></h4>
 <p>(<code>character(1)</code>)<br>
 File type.</p>
 </div>
@@ -251,7 +266,7 @@ File type.</p>
 </div><p></p><hr><a id="method-Config-get_description"></a><div class="section">
 <h3 id="method-get-description-">Method <code>get_description()</code><a class="anchor" aria-label="anchor" href="#method-get-description-"></a></h3>
 <p>Return description for a specific table.</p><div class="section">
-<h4 id="usage-7">Usage<a class="anchor" aria-label="anchor" href="#usage-7"></a></h4>
+<h4 id="usage-8">Usage<a class="anchor" aria-label="anchor" href="#usage-8"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Config</span><span class="op">$</span><span class="fu">get_description</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -265,7 +280,7 @@ Table name.</p></dd>
 </dl><p></p></div>
 </div>
 <div class="section">
-<h4 id="returns-7">Returns<a class="anchor" aria-label="anchor" href="#returns-7"></a></h4>
+<h4 id="returns-8">Returns<a class="anchor" aria-label="anchor" href="#returns-8"></a></h4>
 <p>(<code>character(1)</code>)<br>
 Table description.</p>
 </div>
@@ -273,12 +288,12 @@ Table description.</p>
 </div><p></p><hr><a id="method-Config-get_tables"></a><div class="section">
 <h3 id="method-get-tables-">Method <code>get_tables()</code><a class="anchor" aria-label="anchor" href="#method-get-tables-"></a></h3>
 <p>Return the parsed tables list.</p><div class="section">
-<h4 id="usage-8">Usage<a class="anchor" aria-label="anchor" href="#usage-8"></a></h4>
+<h4 id="usage-9">Usage<a class="anchor" aria-label="anchor" href="#usage-9"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Config</span><span class="op">$</span><span class="fu">get_tables</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="returns-8">Returns<a class="anchor" aria-label="anchor" href="#returns-8"></a></h4>
+<h4 id="returns-9">Returns<a class="anchor" aria-label="anchor" href="#returns-9"></a></h4>
 <p>(<code><a href="https://rdrr.io/r/base/list.html" class="external-link">list()</a></code>)<br>
 Named list of table definitions from schema.yaml.</p>
 </div>
@@ -286,22 +301,8 @@ Named list of table definitions from schema.yaml.</p>
 </div><p></p><hr><a id="method-Config-get_schemas_raw"></a><div class="section">
 <h3 id="method-get-schemas-raw-">Method <code>get_schemas_raw()</code><a class="anchor" aria-label="anchor" href="#method-get-schemas-raw-"></a></h3>
 <p>Return raw schemas for all tables.</p><div class="section">
-<h4 id="usage-9">Usage<a class="anchor" aria-label="anchor" href="#usage-9"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Config</span><span class="op">$</span><span class="fu">get_schemas_raw</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
-</div>
-
-<div class="section">
-<h4 id="returns-9">Returns<a class="anchor" aria-label="anchor" href="#returns-9"></a></h4>
-<p>(<code>tibble()</code>)<br>
-Table <code>name</code>, <code>tbl_description</code>, <code>version</code>, and <code>schema</code>
-(list-col of tibble(field, type)).</p>
-</div>
-
-</div><p></p><hr><a id="method-Config-get_schemas_tidy"></a><div class="section">
-<h3 id="method-get-schemas-tidy-">Method <code>get_schemas_tidy()</code><a class="anchor" aria-label="anchor" href="#method-get-schemas-tidy-"></a></h3>
-<p>Return tidy schemas for all tables.</p><div class="section">
 <h4 id="usage-10">Usage<a class="anchor" aria-label="anchor" href="#usage-10"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Config</span><span class="op">$</span><span class="fu">get_schemas_tidy</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Config</span><span class="op">$</span><span class="fu">get_schemas_raw</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
@@ -311,24 +312,38 @@ Table <code>name</code>, <code>tbl_description</code>, <code>version</code>, and
 (list-col of tibble(field, type)).</p>
 </div>
 
-</div><p></p><hr><a id="method-Config-get_schemas_both"></a><div class="section">
-<h3 id="method-get-schemas-both-">Method <code>get_schemas_both()</code><a class="anchor" aria-label="anchor" href="#method-get-schemas-both-"></a></h3>
-<p>Return both raw and tidy schemas for all tables.</p><div class="section">
+</div><p></p><hr><a id="method-Config-get_schemas_tidy"></a><div class="section">
+<h3 id="method-get-schemas-tidy-">Method <code>get_schemas_tidy()</code><a class="anchor" aria-label="anchor" href="#method-get-schemas-tidy-"></a></h3>
+<p>Return tidy schemas for all tables.</p><div class="section">
 <h4 id="usage-11">Usage<a class="anchor" aria-label="anchor" href="#usage-11"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Config</span><span class="op">$</span><span class="fu">get_schemas_both</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Config</span><span class="op">$</span><span class="fu">get_schemas_tidy</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
 <h4 id="returns-11">Returns<a class="anchor" aria-label="anchor" href="#returns-11"></a></h4>
 <p>(<code>tibble()</code>)<br>
 Table <code>name</code>, <code>tbl_description</code>, <code>version</code>, and <code>schema</code>
-(list-col of tibble(raw, tidy, type)).</p>
+(list-col of tibble(field, type)).</p>
+</div>
+
+</div><p></p><hr><a id="method-Config-get_schemas_both"></a><div class="section">
+<h3 id="method-get-schemas-both-">Method <code>get_schemas_both()</code><a class="anchor" aria-label="anchor" href="#method-get-schemas-both-"></a></h3>
+<p>Return both raw and tidy schemas for all tables.</p><div class="section">
+<h4 id="usage-12">Usage<a class="anchor" aria-label="anchor" href="#usage-12"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Config</span><span class="op">$</span><span class="fu">get_schemas_both</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+<div class="section">
+<h4 id="returns-12">Returns<a class="anchor" aria-label="anchor" href="#returns-12"></a></h4>
+<p>(<code>tibble()</code>)<br>
+Table <code>name</code>, <code>tbl_description</code>, <code>version</code>, and <code>schema</code>
+(list-col of tibble(raw, tidy, type, description)).</p>
 </div>
 
 </div><p></p><hr><a id="method-Config-get_schema_raw"></a><div class="section">
 <h3 id="method-get-schema-raw-">Method <code>get_schema_raw()</code><a class="anchor" aria-label="anchor" href="#method-get-schema-raw-"></a></h3>
 <p>Get raw schema for a specific table and optional version.</p><div class="section">
-<h4 id="usage-12">Usage<a class="anchor" aria-label="anchor" href="#usage-12"></a></h4>
+<h4 id="usage-13">Usage<a class="anchor" aria-label="anchor" href="#usage-13"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Config</span><span class="op">$</span><span class="fu">get_schema_raw</span><span class="op">(</span><span class="va">x</span>, version <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -341,14 +356,14 @@ Table name.</p></dd>
 
 <dt><code>version</code></dt>
 <dd><p>(<code>character(1)</code>)<br>
-Version string. If <code>NULL</code>, <strong>all</strong> versions are returned (one row per version).
-This differs from <code>get_col_map(version = NULL)</code>, which resolves to a single version.</p></dd>
+Version string. If <code>NULL</code>, <strong>all</strong> versions are returned (unlike
+<code>get_col_map()</code>).</p></dd>
 
 
 </dl><p></p></div>
 </div>
 <div class="section">
-<h4 id="returns-12">Returns<a class="anchor" aria-label="anchor" href="#returns-12"></a></h4>
+<h4 id="returns-13">Returns<a class="anchor" aria-label="anchor" href="#returns-13"></a></h4>
 <p>(<code>tibble()</code>)<br>
 Table <code>version</code>, <code>field</code> and <code>type</code>.</p>
 </div>
@@ -356,7 +371,7 @@ Table <code>version</code>, <code>field</code> and <code>type</code>.</p>
 </div><p></p><hr><a id="method-Config-get_schema_tidy"></a><div class="section">
 <h3 id="method-get-schema-tidy-">Method <code>get_schema_tidy()</code><a class="anchor" aria-label="anchor" href="#method-get-schema-tidy-"></a></h3>
 <p>Get tidy schema for a specific table and optional version.</p><div class="section">
-<h4 id="usage-13">Usage<a class="anchor" aria-label="anchor" href="#usage-13"></a></h4>
+<h4 id="usage-14">Usage<a class="anchor" aria-label="anchor" href="#usage-14"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Config</span><span class="op">$</span><span class="fu">get_schema_tidy</span><span class="op">(</span><span class="va">x</span>, version <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -369,27 +384,23 @@ Table name.</p></dd>
 
 <dt><code>version</code></dt>
 <dd><p>(<code>character(1)</code>)<br>
-Version string. If <code>NULL</code>, <strong>all</strong> versions are returned (one row per version).
-This differs from <code>get_col_map(version = NULL)</code>, which resolves to a single version.</p></dd>
+Version string. If <code>NULL</code>, <strong>all</strong> versions are returned (unlike
+<code>get_col_map()</code>).</p></dd>
 
 
 </dl><p></p></div>
 </div>
 <div class="section">
-<h4 id="returns-13">Returns<a class="anchor" aria-label="anchor" href="#returns-13"></a></h4>
+<h4 id="returns-14">Returns<a class="anchor" aria-label="anchor" href="#returns-14"></a></h4>
 <p>(<code>tibble()</code>)<br>
 Table <code>version</code>, <code>field</code> and <code>type</code>.</p>
 </div>
 
 </div><p></p><hr><a id="method-Config-get_col_map"></a><div class="section">
 <h3 id="method-get-col-map-">Method <code>get_col_map()</code><a class="anchor" aria-label="anchor" href="#method-get-col-map-"></a></h3>
-<p>Get column mapping (raw -&gt; tidy) for a table.
-Used for tables with custom parse logic (e.g. csv-nohead-long).</p>
-<p><strong><code>version = NULL</code> resolves to a single version here</strong>, unlike
-<code>get_schema_raw()</code>/<code>get_schema_tidy()</code> which return <em>all</em> versions when
-<code>version = NULL</code>. Use an explicit version string if you need a specific version
-from either family of methods.</p><div class="section">
-<h4 id="usage-14">Usage<a class="anchor" aria-label="anchor" href="#usage-14"></a></h4>
+<p>Get column mapping (raw -&gt; tidy) for a table, e.g. for
+custom parse/tidy logic.</p><div class="section">
+<h4 id="usage-15">Usage<a class="anchor" aria-label="anchor" href="#usage-15"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Config</span><span class="op">$</span><span class="fu">get_col_map</span><span class="op">(</span><span class="va">x</span>, version <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -402,14 +413,14 @@ Table name.</p></dd>
 
 <dt><code>version</code></dt>
 <dd><p>(<code>character(1)</code>)<br>
-Version string. If <code>NULL</code>, resolves to the highest semver version present,
-or <code>"latest"</code> if defined.</p></dd>
+Version string. If <code>NULL</code>, resolves to a single version: <code>"latest"</code> if
+defined, else the highest semver.</p></dd>
 
 
 </dl><p></p></div>
 </div>
 <div class="section">
-<h4 id="returns-14">Returns<a class="anchor" aria-label="anchor" href="#returns-14"></a></h4>
+<h4 id="returns-15">Returns<a class="anchor" aria-label="anchor" href="#returns-15"></a></h4>
 <p>(<code>tibble()</code>)<br>
 Tibble with columns <code>raw</code>, <code>tidy</code>, <code>type</code>, <code>description</code>.</p>
 </div>
@@ -424,7 +435,7 @@ Tibble with columns <code>raw</code>, <code>tidy</code>, <code>type</code>, <cod
 <span class="r-in"><span><span class="va">pkg</span> <span class="op">&lt;-</span> <span class="st">"nemo"</span></span></span>
 <span class="r-in"><span><span class="va">conf</span> <span class="op">&lt;-</span> <span class="va">Config</span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="va">tool</span>, <span class="va">pkg</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">(</span><span class="va">patterns</span> <span class="op">&lt;-</span> <span class="va">conf</span><span class="op">$</span><span class="fu">get_patterns</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 6 × 2</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 5 × 2</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   name   pattern                   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                     </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> table1 <span style="color: #949494;">"</span>\\.tool1\\.table1\\.tsv$<span style="color: #949494;">"</span></span>
@@ -432,65 +443,69 @@ Tibble with columns <code>raw</code>, <code>tidy</code>, <code>type</code>, <cod
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> table3 <span style="color: #949494;">"</span>\\.tool1\\.table3\\.tsv$<span style="color: #949494;">"</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> table4 <span style="color: #949494;">"</span>\\.tool1\\.table4\\.tsv$<span style="color: #949494;">"</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span> table6 <span style="color: #949494;">"</span>\\.tool1\\.table6\\.csv$<span style="color: #949494;">"</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span> table5 <span style="color: #949494;">"</span>\\.tool1\\.table5\\.csv$<span style="color: #949494;">"</span></span>
+<span class="r-in"><span><span class="op">(</span><span class="va">globs</span> <span class="op">&lt;-</span> <span class="va">conf</span><span class="op">$</span><span class="fu">get_globs</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 5 × 2</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   name   glob              </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>             </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> table1 *.tool1.table1.tsv</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> table2 *.tool1.table2.tsv</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> table3 *.tool1.table3.tsv</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> table4 *.tool1.table4.tsv</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span> table6 *.tool1.table6.csv</span>
 <span class="r-in"><span><span class="op">(</span><span class="va">ftypes</span> <span class="op">&lt;-</span> <span class="va">conf</span><span class="op">$</span><span class="fu">get_ftypes</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 6 × 2</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   name   ftype          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> table1 tsv            </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> table2 tsv            </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> table3 tsv-keyvalue   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> table4 tsv-nohead     </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span> table6 csv            </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span> table5 csv-nohead-long</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 5 × 2</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   name   ftype       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> table1 tsv         </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> table2 tsv         </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> table3 tsv-keyvalue</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> table4 tsv-nohead  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span> table6 csv         </span>
 <span class="r-in"><span><span class="op">(</span><span class="va">pat1</span> <span class="op">&lt;-</span> <span class="va">conf</span><span class="op">$</span><span class="fu">get_pattern</span><span class="op">(</span><span class="st">"table1"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "\\.tool1\\.table1\\.tsv$"</span>
 <span class="r-in"><span><span class="op">(</span><span class="va">ftype1</span> <span class="op">&lt;-</span> <span class="va">conf</span><span class="op">$</span><span class="fu">get_ftype</span><span class="op">(</span><span class="st">"table1"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "tsv"</span>
 <span class="r-in"><span><span class="op">(</span><span class="va">descr1</span> <span class="op">&lt;-</span> <span class="va">conf</span><span class="op">$</span><span class="fu">get_description</span><span class="op">(</span><span class="st">"table1"</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Table1 for tool1 (txt: header present, tab-delimited)."</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "Table1 for tool1 (tsv: header present, tab-delimited)."</span>
 <span class="r-in"><span><span class="op">(</span><span class="va">descr</span> <span class="op">&lt;-</span> <span class="va">conf</span><span class="op">$</span><span class="fu">get_descriptions</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 6 × 2</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 5 × 2</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   name   description                                                            </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                                                                  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> table1 Table1 for tool1 (txt: header present, tab-delimited).                 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> table2 Table2 for tool1 (txt: header present, tab-delimited).                 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> table3 Table3 for tool1 (txt-keyvalue: no header, 2 cols, col1=key col2=value…</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> table4 Table4 for tool1 (txt-nohead: no header, positional cols X1..XN).      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> table1 Table1 for tool1 (tsv: header present, tab-delimited).                 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> table2 Table2 for tool1 (tsv: header present, tab-delimited).                 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> table3 Table3 for tool1 (tsv-keyvalue: no header, 2 cols, col1=key col2=value…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> table4 Table4 for tool1 (tsv-nohead: no header, positional cols X1..XN).      </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span> table6 Table6 for tool1 (csv: header present, comma-delimited).               </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span> table5 Table5 for tool1 (csv-nohead-long: no header, long format with metric …</span>
 <span class="r-in"><span><span class="op">(</span><span class="va">rs</span> <span class="op">&lt;-</span> <span class="va">conf</span><span class="op">$</span><span class="fu">get_schemas_raw</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 12 × 4</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 11 × 4</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    name   tbl_description                                       version schema  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                                                 <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;list&gt;</span>  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> table1 Table1 for tool1 (txt: header present, tab-delimited… v1.2.3  <span style="color: #949494;">&lt;tibble&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> table1 Table1 for tool1 (txt: header present, tab-delimited… v4.5.6  <span style="color: #949494;">&lt;tibble&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> table1 Table1 for tool1 (txt: header present, tab-delimited… latest  <span style="color: #949494;">&lt;tibble&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> table2 Table2 for tool1 (txt: header present, tab-delimited… v1.0.0  <span style="color: #949494;">&lt;tibble&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> table2 Table2 for tool1 (txt: header present, tab-delimited… latest  <span style="color: #949494;">&lt;tibble&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> table3 Table3 for tool1 (txt-keyvalue: no header, 2 cols, c… v1.0.0  <span style="color: #949494;">&lt;tibble&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> table3 Table3 for tool1 (txt-keyvalue: no header, 2 cols, c… latest  <span style="color: #949494;">&lt;tibble&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> table4 Table4 for tool1 (txt-nohead: no header, positional … v1.0.0  <span style="color: #949494;">&lt;tibble&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> table4 Table4 for tool1 (txt-nohead: no header, positional … latest  <span style="color: #949494;">&lt;tibble&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> table1 Table1 for tool1 (tsv: header present, tab-delimited… v1.2.3  <span style="color: #949494;">&lt;tibble&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> table1 Table1 for tool1 (tsv: header present, tab-delimited… v4.5.6  <span style="color: #949494;">&lt;tibble&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> table1 Table1 for tool1 (tsv: header present, tab-delimited… latest  <span style="color: #949494;">&lt;tibble&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> table2 Table2 for tool1 (tsv: header present, tab-delimited… v1.0.0  <span style="color: #949494;">&lt;tibble&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> table2 Table2 for tool1 (tsv: header present, tab-delimited… latest  <span style="color: #949494;">&lt;tibble&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> table3 Table3 for tool1 (tsv-keyvalue: no header, 2 cols, c… v1.0.0  <span style="color: #949494;">&lt;tibble&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> table3 Table3 for tool1 (tsv-keyvalue: no header, 2 cols, c… latest  <span style="color: #949494;">&lt;tibble&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> table4 Table4 for tool1 (tsv-nohead: no header, positional … v1.0.0  <span style="color: #949494;">&lt;tibble&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> table4 Table4 for tool1 (tsv-nohead: no header, positional … latest  <span style="color: #949494;">&lt;tibble&gt;</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> table6 Table6 for tool1 (csv: header present, comma-delimit… v1.0.0  <span style="color: #949494;">&lt;tibble&gt;</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">11</span> table6 Table6 for tool1 (csv: header present, comma-delimit… latest  <span style="color: #949494;">&lt;tibble&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">12</span> table5 Table5 for tool1 (csv-nohead-long: no header, long f… latest  <span style="color: #949494;">&lt;tibble&gt;</span></span>
 <span class="r-in"><span><span class="op">(</span><span class="va">ts</span> <span class="op">&lt;-</span> <span class="va">conf</span><span class="op">$</span><span class="fu">get_schemas_tidy</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 12 × 4</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 11 × 4</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    name   tbl_description                                       version schema  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                                                 <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;list&gt;</span>  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> table1 Table1 for tool1 (txt: header present, tab-delimited… v1.2.3  <span style="color: #949494;">&lt;tibble&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> table1 Table1 for tool1 (txt: header present, tab-delimited… v4.5.6  <span style="color: #949494;">&lt;tibble&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> table1 Table1 for tool1 (txt: header present, tab-delimited… latest  <span style="color: #949494;">&lt;tibble&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> table2 Table2 for tool1 (txt: header present, tab-delimited… v1.0.0  <span style="color: #949494;">&lt;tibble&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> table2 Table2 for tool1 (txt: header present, tab-delimited… latest  <span style="color: #949494;">&lt;tibble&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> table3 Table3 for tool1 (txt-keyvalue: no header, 2 cols, c… v1.0.0  <span style="color: #949494;">&lt;tibble&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> table3 Table3 for tool1 (txt-keyvalue: no header, 2 cols, c… latest  <span style="color: #949494;">&lt;tibble&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> table4 Table4 for tool1 (txt-nohead: no header, positional … v1.0.0  <span style="color: #949494;">&lt;tibble&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> table4 Table4 for tool1 (txt-nohead: no header, positional … latest  <span style="color: #949494;">&lt;tibble&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> table1 Table1 for tool1 (tsv: header present, tab-delimited… v1.2.3  <span style="color: #949494;">&lt;tibble&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> table1 Table1 for tool1 (tsv: header present, tab-delimited… v4.5.6  <span style="color: #949494;">&lt;tibble&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> table1 Table1 for tool1 (tsv: header present, tab-delimited… latest  <span style="color: #949494;">&lt;tibble&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> table2 Table2 for tool1 (tsv: header present, tab-delimited… v1.0.0  <span style="color: #949494;">&lt;tibble&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> table2 Table2 for tool1 (tsv: header present, tab-delimited… latest  <span style="color: #949494;">&lt;tibble&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> table3 Table3 for tool1 (tsv-keyvalue: no header, 2 cols, c… v1.0.0  <span style="color: #949494;">&lt;tibble&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> table3 Table3 for tool1 (tsv-keyvalue: no header, 2 cols, c… latest  <span style="color: #949494;">&lt;tibble&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> table4 Table4 for tool1 (tsv-nohead: no header, positional … v1.0.0  <span style="color: #949494;">&lt;tibble&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> table4 Table4 for tool1 (tsv-nohead: no header, positional … latest  <span style="color: #949494;">&lt;tibble&gt;</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> table6 Table6 for tool1 (csv: header present, comma-delimit… v1.0.0  <span style="color: #949494;">&lt;tibble&gt;</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">11</span> table6 Table6 for tool1 (csv: header present, comma-delimit… latest  <span style="color: #949494;">&lt;tibble&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">12</span> table5 Table5 for tool1 (csv-nohead-long: no header, long f… latest  <span style="color: #949494;">&lt;tibble&gt;</span></span>
 <span class="r-in"><span><span class="op">(</span><span class="va">s1</span> <span class="op">&lt;-</span> <span class="va">conf</span><span class="op">$</span><span class="fu">get_schema_raw</span><span class="op">(</span><span class="st">"table1"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 15 × 3</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    version field      type </span>
@@ -538,14 +553,14 @@ Tibble with columns <code>raw</code>, <code>tidy</code>, <code>type</code>, <cod
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">13</span> latest  end        i    </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">14</span> latest  metric_y   d    </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">15</span> latest  metric_z   d    </span>
-<span class="r-in"><span><span class="op">(</span><span class="va">cm</span> <span class="op">&lt;-</span> <span class="va">conf</span><span class="op">$</span><span class="fu">get_col_map</span><span class="op">(</span><span class="st">"table5"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">(</span><span class="va">cm</span> <span class="op">&lt;-</span> <span class="va">conf</span><span class="op">$</span><span class="fu">get_col_map</span><span class="op">(</span><span class="st">"table6"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 4 × 4</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   raw            tidy        type  description   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> Total reads    reads_total d     total reads   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> Mapped reads   reads_map   d     mapped reads  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> Unmapped reads reads_unmap d     unmapped reads</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> Total bases    bases_total d     total bases   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   raw      tidy      type  description    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> GeneId   gene_id   c     Ensembl gene ID</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> GeneName gene_name c     gene name      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> AdjTPM   tpm_adj   d     adjusted TPM   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> RawTPM   tpm_raw   d     raw TPM        </span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

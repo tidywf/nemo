@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">nemo</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.1.0.9002</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.1.0.9005</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -40,7 +40,7 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Write data</h1>
-      <small class="dont-index">Source: <a href="https://github.com/tidywf/nemo/blob/v0.1.0.9002/R/write.R" class="external-link"><code>R/write.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/tidywf/nemo/blob/v0.1.0.9005/R/write.R" class="external-link"><code>R/write.R</code></a></small>
       <div class="d-none name"><code>nemo_write.Rd</code></div>
     </div>
 
@@ -65,7 +65,10 @@ A data.frame (or tibble) with tidy data.</p></dd>
 <dt id="arg-fpfix">fpfix<a class="anchor" aria-label="anchor" href="#arg-fpfix"></a></dt>
 <dd><p>(<code>character(1)</code>)<br>
 File prefix. The file extension is generated automatically via the <code>format</code>
-argument. For a format of db, this is inserted into the <code>nemo_pfix</code> column.</p></dd>
+argument. Ignored when format is db: rows are appended to <code>dbtab</code> with no
+record of the source prefix, so rows from different samples are
+indistinguishable unless the data carries its own identifier (e.g. the
+<code>input_prefix</code> column added by <code>prefix_include = TRUE</code> in <code>Tool$write()</code>).</p></dd>
 
 
 <dt id="arg-format">format<a class="anchor" aria-label="anchor" href="#arg-format"></a></dt>

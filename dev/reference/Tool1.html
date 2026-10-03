@@ -11,7 +11,7 @@ methods are provided for tables that require non-standard handling."><meta prope
 
     <a class="navbar-brand me-2" href="../index.html">nemo</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.1.0.9002</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.1.0.9005</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -44,7 +44,7 @@ methods are provided for tables that require non-standard handling."><meta prope
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Tool1 Object</h1>
-      <small class="dont-index">Source: <a href="https://github.com/tidywf/nemo/blob/v0.1.0.9002/R/Tool1.R" class="external-link"><code>R/Tool1.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/tidywf/nemo/blob/v0.1.0.9005/R/Tool1.R" class="external-link"><code>R/Tool1.R</code></a></small>
       <div class="d-none name"><code>Tool1.Rd</code></div>
     </div>
 
@@ -67,9 +67,8 @@ methods are provided for tables that require non-standard handling.</p>
 
 <ul><li><p><a href="#method-Tool1-new"><code>Tool1$new()</code></a></p></li>
 <li><p><a href="#method-Tool1-tidy_table3"><code>Tool1$tidy_table3()</code></a></p></li>
-<li><p><a href="#method-Tool1-parse_table5"><code>Tool1$parse_table5()</code></a></p></li>
-<li><p><a href="#method-Tool1-tidy_table5"><code>Tool1$tidy_table5()</code></a></p></li>
 </ul></div><p><details><summary>Inherited methods</summary><ul><li><span class="pkg-link" data-pkg="nemo" data-topic="Tool" data-id="filter_files"><a href="Tool.html#method-filter_files"><code>nemo::Tool$filter_files()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="nemo" data-topic="Tool" data-id="get_globs"><a href="Tool.html#method-get_globs"><code>nemo::Tool$get_globs()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="nemo" data-topic="Tool" data-id="get_metadata"><a href="Tool.html#method-get_metadata"><code>nemo::Tool$get_metadata()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="nemo" data-topic="Tool" data-id="get_tbls"><a href="Tool.html#method-get_tbls"><code>nemo::Tool$get_tbls()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="nemo" data-topic="Tool" data-id="list_files"><a href="Tool.html#method-list_files"><code>nemo::Tool$list_files()</code></a></span></li>
@@ -126,50 +125,6 @@ Path to file or already parsed tibble.</p></dd>
 Tidy data in enframed tibble.</p>
 </div>
 
-</div><p></p><hr><a id="method-Tool1-parse_table5"></a><div class="section">
-<h3 id="method-parse-table-">Method <code>parse_table5()</code><a class="anchor" aria-label="anchor" href="#method-parse-table-"></a></h3>
-<p>Read <code>table5.csv</code> file (csv, no header, long format).</p><div class="section">
-<h4 id="usage-2">Usage<a class="anchor" aria-label="anchor" href="#usage-2"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Tool1</span><span class="op">$</span><span class="fu">parse_table5</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></code></pre></div><p></p></div>
-</div>
-
-<div class="section">
-<h4 id="arguments-2">Arguments<a class="anchor" aria-label="anchor" href="#arguments-2"></a></h4>
-<p></p><div class="arguments"><dl><dt><code>x</code></dt>
-<dd><p>(<code>character(1)</code>)<br>
-Path to file.</p></dd>
-
-
-</dl><p></p></div>
-</div>
-<div class="section">
-<h4 id="returns-2">Returns<a class="anchor" aria-label="anchor" href="#returns-2"></a></h4>
-<p>(<code>tibble()</code>)<br>
-Raw parsed tibble with columns <code>section</code>, <code>rg</code>, <code>variable</code>, <code>count</code>, <code>pct</code>.</p>
-</div>
-
-</div><p></p><hr><a id="method-Tool1-tidy_table5"></a><div class="section">
-<h3 id="method-tidy-table--1">Method <code>tidy_table5()</code><a class="anchor" aria-label="anchor" href="#method-tidy-table--1"></a></h3>
-<p>Tidy <code>table5.csv</code> file.</p><div class="section">
-<h4 id="usage-3">Usage<a class="anchor" aria-label="anchor" href="#usage-3"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Tool1</span><span class="op">$</span><span class="fu">tidy_table5</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></code></pre></div><p></p></div>
-</div>
-
-<div class="section">
-<h4 id="arguments-3">Arguments<a class="anchor" aria-label="anchor" href="#arguments-3"></a></h4>
-<p></p><div class="arguments"><dl><dt><code>x</code></dt>
-<dd><p>(<code>character(1)</code> or <code>tibble()</code>)<br>
-Path to file or already parsed tibble.</p></dd>
-
-
-</dl><p></p></div>
-</div>
-<div class="section">
-<h4 id="returns-3">Returns<a class="anchor" aria-label="anchor" href="#returns-3"></a></h4>
-<p>(<code>tibble()</code>)<br>
-Tidy data in enframed tibble, pivoted wide from long format.</p>
-</div>
-
 </div>
 
     </div>
@@ -181,37 +136,11 @@ Tidy data in enframed tibble, pivoted wide from long format.</p>
 <span class="r-in"><span><span class="va">obj1</span> <span class="op">&lt;-</span> <span class="va">Tool1</span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="va">indir</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">p3</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata/tool1/latest/sampleA.tool1.table3.tsv"</span>, package <span class="op">=</span> <span class="st">"nemo"</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">p5</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata/tool1/latest/sampleA.tool1.table5.csv"</span>, package <span class="op">=</span> <span class="st">"nemo"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">(</span><span class="va">tidy3</span> <span class="op">&lt;-</span> <span class="va">obj1</span><span class="op">$</span><span class="fu">tidy_table3</span><span class="op">(</span><span class="va">p3</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 1 × 2</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   name   data            </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;list&gt;</span>          </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> table3 <span style="color: #949494;">&lt;tibble [1 × 5]&gt;</span></span>
-<span class="r-in"><span><span class="op">(</span><span class="va">raw5</span> <span class="op">&lt;-</span> <span class="va">obj1</span><span class="op">$</span><span class="fu">parse_table5</span><span class="op">(</span><span class="va">p5</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 16 × 5</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    section                         rg         variable           count    pct</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                           <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> TUMOR MAPPING/ALIGNING SUMMARY  <span style="color: #BB0000;">NA</span>         Total reads      3<span style="text-decoration: underline;">000</span>000 100   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> TUMOR MAPPING/ALIGNING SUMMARY  <span style="color: #BB0000;">NA</span>         Mapped reads     2<span style="text-decoration: underline;">900</span>000  96.7 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> TUMOR MAPPING/ALIGNING SUMMARY  <span style="color: #BB0000;">NA</span>         Unmapped reads    <span style="text-decoration: underline;">100</span>000   3.33</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> TUMOR MAPPING/ALIGNING SUMMARY  <span style="color: #BB0000;">NA</span>         Total bases    450<span style="text-decoration: underline;">000</span>000  <span style="color: #BB0000;">NA</span>   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> NORMAL MAPPING/ALIGNING SUMMARY <span style="color: #BB0000;">NA</span>         Total reads      1<span style="text-decoration: underline;">500</span>000 100   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> NORMAL MAPPING/ALIGNING SUMMARY <span style="color: #BB0000;">NA</span>         Mapped reads     1<span style="text-decoration: underline;">460</span>000  97.3 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> NORMAL MAPPING/ALIGNING SUMMARY <span style="color: #BB0000;">NA</span>         Unmapped reads     <span style="text-decoration: underline;">40</span>000   2.67</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> NORMAL MAPPING/ALIGNING SUMMARY <span style="color: #BB0000;">NA</span>         Total bases    226<span style="text-decoration: underline;">500</span>000  <span style="color: #BB0000;">NA</span>   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> TUMOR MAPPING/ALIGNING PER RG   BC01.1.FC1 Total reads      3<span style="text-decoration: underline;">000</span>000 100   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> TUMOR MAPPING/ALIGNING PER RG   BC01.1.FC1 Mapped reads     2<span style="text-decoration: underline;">900</span>000  96.7 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">11</span> TUMOR MAPPING/ALIGNING PER RG   BC01.1.FC1 Unmapped reads    <span style="text-decoration: underline;">100</span>000   3.33</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">12</span> TUMOR MAPPING/ALIGNING PER RG   BC01.1.FC1 Total bases    450<span style="text-decoration: underline;">000</span>000  <span style="color: #BB0000;">NA</span>   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">13</span> NORMAL MAPPING/ALIGNING PER RG  BC02.1.FC1 Total reads      1<span style="text-decoration: underline;">500</span>000 100   </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">14</span> NORMAL MAPPING/ALIGNING PER RG  BC02.1.FC1 Mapped reads     1<span style="text-decoration: underline;">460</span>000  97.3 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">15</span> NORMAL MAPPING/ALIGNING PER RG  BC02.1.FC1 Unmapped reads     <span style="text-decoration: underline;">40</span>000   2.67</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">16</span> NORMAL MAPPING/ALIGNING PER RG  BC02.1.FC1 Total bases    226<span style="text-decoration: underline;">500</span>000  <span style="color: #BB0000;">NA</span>   </span>
-<span class="r-in"><span><span class="op">(</span><span class="va">tidy5</span> <span class="op">&lt;-</span> <span class="va">obj1</span><span class="op">$</span><span class="fu">tidy_table5</span><span class="op">(</span><span class="va">p5</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 1 × 2</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   name   data            </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;list&gt;</span>          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> table5 <span style="color: #949494;">&lt;tibble [4 × 9]&gt;</span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">obj1</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span>output_dir <span class="op">=</span> <span class="va">dir1</span>, format <span class="op">=</span> <span class="st">"parquet"</span>, input_id <span class="op">=</span> <span class="st">"run1"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">(</span><span class="va">lf</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.files.html" class="external-link">list.files</a></span><span class="op">(</span><span class="va">dir1</span>, pattern <span class="op">=</span> <span class="st">"tool1.*parquet"</span>, full.names <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span><span class="op">)</span></span></span>
@@ -220,8 +149,7 @@ Tidy data in enframed tibble, pivoted wide from long format.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  [5] "sampleA_2_tool1_table4.parquet" "sampleA_2_tool1_table6.parquet"</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  [7] "sampleA_3_tool1_table1.parquet" "sampleA_tool1_table1.parquet"  </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  [9] "sampleA_tool1_table2.parquet"   "sampleA_tool1_table3.parquet"  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [11] "sampleA_tool1_table4.parquet"   "sampleA_tool1_table5.parquet"  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [13] "sampleA_tool1_table6.parquet"  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [11] "sampleA_tool1_table4.parquet"   "sampleA_tool1_table6.parquet"  </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">obj2</span> <span class="op">&lt;-</span> <span class="va">Tool1</span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="va">indir</span><span class="op">)</span><span class="op">$</span><span class="fu">tidy</span><span class="op">(</span><span class="op">)</span></span></span>
 </code></pre></div>

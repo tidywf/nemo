@@ -29,7 +29,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">nemo</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.1.0.9002</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.1.0.9005</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -73,7 +73,7 @@
 
 
 
-      <small class="dont-index">Source: <a href="https://github.com/tidywf/nemo/blob/v0.1.0.9002/vignettes/cicd.qmd" class="external-link"><code>vignettes/cicd.qmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/tidywf/nemo/blob/v0.1.0.9005/vignettes/cicd.qmd" class="external-link"><code>vignettes/cicd.qmd</code></a></small>
       <div class="d-none name"><code></code></div>
     </div>
 
@@ -89,54 +89,27 @@
 <figure class=""><p></p>
 <div>
 <pre class="mermaid mermaid-js">flowchart TD
+    classDef trigger font-weight:bold
+    classDef warn fill:#fff3cd,stroke:#e0a800
 
-    subgraph BUMP ["🔧 Bump Version"]
-    B1["👾 Miniforge setup"]
-    B2["🔖 Bump version"]
-    B3["📦 Install from source"]
-    B4["📖 Render README"]
-    B5["💾 Commit and push"]
-    B6["🔖 Create and push tag"]
-    B1 --&gt; B2
-    B2 --&gt; B3
-    B3 --&gt; B4
-    B4 --&gt; B5
-    B5 --&gt; B6
-    end
-
-    B6 --&gt; J1S1
-
-    subgraph DEPLOY ["🔧 Deploy"]
+    subgraph W1["bumpversion"]
         direction TB
-        subgraph prep ["📋 Version"]
-        J1S1["📋 Version"]
-        end
-        subgraph condarise ["🐍 Condarise"]
-        J2S1["🏷️ Set dev flags"]
-        J2S2["👾 Miniforge setup"]
-        J2S3["🐍 Conda pkg build"]
-        J2S4["🐍 Conda pkg upload"]
-        J2S5["🔒 Conda lock"]
-        J2S6["📦 Publish lockfiles to release"]
-        J2S1 --&gt; J2S2
-        J2S2 --&gt; J2S3
-        J2S3 --&gt; J2S4
-        J2S4 --&gt; J2S5
-        J2S5 --&gt; J2S6
-        end
-        subgraph pkgdownise ["🌐 Pkgdownise"]
-        J3S1["👾 Miniforge setup"]
-        J3S2["📦 Install from source"]
-        J3S3["🌐 Website build"]
-        J3S4["🚀 Website publish"]
-        J3S1 --&gt; J3S2
-        J3S2 --&gt; J3S3
-        J3S3 --&gt; J3S4
-        end
-
-        J1S1 --&gt; J2S1
-        J2S6 --&gt; J3S1
+        W1T(["▶️ manual dispatch"]):::trigger
+        W1J1["&lt;b&gt;bump&lt;/b&gt;&lt;br&gt;✅ Validate version&lt;br&gt;🔖 Bump version&lt;br&gt;📦 Install from source&lt;br&gt;📖 Render README&lt;br&gt;💾 Commit and push&lt;br&gt;🔖 Create and push tag"]
+        W1T --&gt; W1J1
     end
+
+    subgraph W2["conda-docs"]
+        direction TB
+        W2T(["▶️ tag push"]):::trigger
+        W2J1["&lt;b&gt;📋 Version&lt;/b&gt;"]
+        W2J2["&lt;b&gt;🐍 Condarise&lt;/b&gt;&lt;br&gt;🏷️ Set dev flags&lt;br&gt;🐍 Conda pkg build&lt;br&gt;🐍 Conda pkg upload&lt;br&gt;🔒 Conda lock&lt;br&gt;📦 Publish lockfiles to release"]
+        W2J3["&lt;b&gt;🌐 Pkgdownise&lt;/b&gt;&lt;br&gt;🌐 Website build&lt;br&gt;🚀 Website publish"]
+        W2T --&gt; W2J1
+        W2J1 --&gt; W2J2
+        W2J2 --&gt; W2J3
+    end
+    W1 -.-&gt; W2T
 </pre>
 </div>
 <p></p></figure><p></p>
