@@ -133,7 +133,7 @@ Using {remotes} directly from GitHub:
 ``` r
 install.packages("remotes")
 remotes::install_github("tidywf/nemo") # latest main commit
-remotes::install_github("tidywf/nemo@v0.1.0.9004") # specific version
+remotes::install_github("tidywf/nemo@v0.1.0.9005") # specific version
 ```
 
 Alternatively:
@@ -158,29 +158,31 @@ export PATH="${nemo_cli}:${PATH}"
 ```
 
     $ nemo.R --version
-    nemo 0.1.0.9004
+    nemo 0.1.0.9005
 
     #-----------------------------------#
     $ nemo.R --help
-    usage: nemo.R [-h] [-v] {tidy,list} ...
+    usage: nemo.R [-h] [-v] {tidy,list,sync} ...
 
     Tidy Bioinformatic Workflows
 
     positional arguments:
-      {tidy,list}    sub-command help
-        tidy         Tidy Workflow Outputs
-        list         List Parsable Workflow Outputs
+      {tidy,list,sync}  sub-command help
+        tidy            Tidy Workflow Outputs
+        list            List Parsable Workflow Outputs
+        sync            Sync Parsable Workflow Outputs From AWS S3
 
     options:
-      -h, --help     show this help message and exit
-      -v, --version  show program's version number and exit
+      -h, --help        show this help message and exit
+      -v, --version     show program's version number and exit
     '
     #-----------------------------------#
     $ nemo.R tidy --help
     usage: nemo.R tidy [-h] -w WORKFLOW -d IN_DIR [-o OUTPUT_DIR] [-f FORMAT]
                        [--input_id INPUT_ID] [--output_id OUTPUT_ID | --ulid]
-                       [--dbname DBNAME] [--dbuser DBUSER] [--include INCLUDE]
-                       [--exclude EXCLUDE] [--prefix_include] [-q]
+                       [--dbname DBNAME] [--dbuser DBUSER] [--dbhost DBHOST]
+                       [--dbport DBPORT] [--include INCLUDE] [--exclude EXCLUDE]
+                       [--prefix_include] [-q]
 
     options:
       -h, --help            show this help message and exit
@@ -197,6 +199,10 @@ export PATH="${nemo_cli}:${PATH}"
       --ulid                Generate a ULID as output ID.
       --dbname DBNAME       Database name.
       --dbuser DBUSER       Database user.
+      --dbhost DBHOST       Database host (default: driver/env default, e.g.
+                            PGHOST).
+      --dbport DBPORT       Database port (default: driver/env default, e.g.
+                            PGPORT).
       --include INCLUDE     Include only these files (comma sep tool_parsers).
       --exclude EXCLUDE     Exclude only these files (comma sep tool_parsers).
       --prefix_include      Include input prefix column in output tables.
