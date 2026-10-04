@@ -79,7 +79,7 @@ reactable_schema <- function(dat, tool_colours = NULL, ...) {
         name = "Tool",
         width = schema_col_width(tools, extra = 40),
         cell = function(value) {
-          schema_pill(value, colour = tool_cols[[value]], weight = 600)
+          schema_pill(value, colour = tool_cols[[value]], weight = 500)
         }
       ),
       tbl = colDef(
