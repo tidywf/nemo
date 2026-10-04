@@ -12,4 +12,5 @@ dependencies:
   - r-r6toplant
   - plantuml
   - r-htmltools
+  - r-htmlwidgets
   - r-reactable

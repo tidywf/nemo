@@ -37,6 +37,9 @@ child1 <- system.file(
   now matches column names and globs, expanded rows show a per-version
   column-presence matrix, and the table follows light/dark page themes.
   `nemo_schemavis_data()` now returns one row per table with nested columns.
+  Tool pills are grey unless coloured via `tool_colours` (a named vector
+  supplied by the child package). The widget ships its own CSS so it spans the
+  full page width on any pkgdown site.
 
 ### Performance
 

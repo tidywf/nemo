@@ -36,6 +36,7 @@ Imports:
 Suggests:
     here,
     htmltools,
+    htmlwidgets,
     R6toPlant,
     reactable,
     testthat (>= 3.0.0),

@@ -11,7 +11,8 @@ nemo_schema_reactable(tools, pkg = "nemo", ...)
 
 \item{pkg}{package name that owns the tool configs. Defaults to \code{"nemo"}.}
 
-\item{...}{additional arguments passed to \code{\link[reactable:reactable]{reactable::reactable()}}.}
+\item{...}{additional arguments passed to \code{\link[=reactable_schema]{reactable_schema()}} (e.g.
+\code{tool_colours}) and on to \code{\link[reactable:reactable]{reactable::reactable()}}.}
 }
 \value{
 An htmlwidget.

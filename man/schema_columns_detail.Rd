@@ -4,7 +4,7 @@
 \alias{schema_columns_detail}
 \title{Column-level detail for one schema table}
 \usage{
-schema_columns_detail(x, versions, glob)
+schema_columns_detail(x, versions, ftype)
 }
 \arguments{
 \item{x}{tibble of columns (\code{raw}, \code{tidy}, \code{type}, \code{description}, and
@@ -12,13 +12,13 @@ list-column \code{versions}).}
 
 \item{versions}{character vector of sorted schema versions for the table.}
 
-\item{glob}{glob string for the table.}
+\item{ftype}{ftype string for the table.}
 }
 \value{
 An htmltools tag.
 }
 \description{
-Internal helper for \code{\link[=reactable_schema]{reactable_schema()}}: glob line plus a nested reactable
+Internal helper for \code{\link[=reactable_schema]{reactable_schema()}}: ftype line plus a nested reactable
 of the table's columns, with one \verb{●} presence column per schema version.
 }
 \keyword{internal}
