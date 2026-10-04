@@ -69,9 +69,15 @@
 <url><loc>https://tidywf.github.io/nemo/dev/reference/reactable_schema.html</loc></url>
 <url><loc>https://tidywf.github.io/nemo/dev/reference/read_parquet_grep.html</loc></url>
 <url><loc>https://tidywf.github.io/nemo/dev/reference/s3sync.html</loc></url>
+<url><loc>https://tidywf.github.io/nemo/dev/reference/schema_col_width.html</loc></url>
 <url><loc>https://tidywf.github.io/nemo/dev/reference/schema_columns_detail.html</loc></url>
+<url><loc>https://tidywf.github.io/nemo/dev/reference/schema_css.html</loc></url>
 <url><loc>https://tidywf.github.io/nemo/dev/reference/schema_glob_check.html</loc></url>
 <url><loc>https://tidywf.github.io/nemo/dev/reference/schema_guess.html</loc></url>
+<url><loc>https://tidywf.github.io/nemo/dev/reference/schema_mono.html</loc></url>
+<url><loc>https://tidywf.github.io/nemo/dev/reference/schema_pill.html</loc></url>
+<url><loc>https://tidywf.github.io/nemo/dev/reference/schema_version_colour.html</loc></url>
+<url><loc>https://tidywf.github.io/nemo/dev/reference/schema_version_pill.html</loc></url>
 <url><loc>https://tidywf.github.io/nemo/dev/reference/set_tbl_version_attr.html</loc></url>
 <url><loc>https://tidywf.github.io/nemo/dev/reference/wf_sync_patterns.html</loc></url>
 </urlset>
