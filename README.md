@@ -19,45 +19,21 @@
 
 ## nemo
 
-Bioinformatic pipelines produce a lot of output files, but consuming
-them downstream is harder than it should be:
+Schema-driven parsing and tidying of bioinformatic pipeline outputs:
 
-- Format variety: tools write TSV, CSV and various other proprietary
-  formats, often mixed within the same pipeline
-- Non-standard structure: files may be transposed, headerless, or embed
-  section labels alongside data, requiring custom parsing logic for each
-  tool
-- Messy column names: raw names are frequently uppercase,
-  space-separated, dot-delimited, or otherwise non-standard; joining
-  across tools requires manual renaming
-- Schema drift: column names and file layouts change silently between
-  tool versions, breaking downstream code with no clear signal of what
-  changed
-- No run-level provenance: it is hard to tell which output file came
-  from which sample or processing run once files are collected into a
-  shared directory
+- find files via YAML-defined `schema.yaml` patterns
+- parse TSV/CSV/headerless/key-value/crazy files
+- rename columns to `snake_case`, track column changes across tool
+  versions
+- write to Parquet, TSV, CSV, RDS or database of your choice, plus a
+  `metadata.parquet` for provenance (IDs, paths, pkg versions) per run
 
-nemo is an R package that attempts to address these issues by providing
-a schema-driven parsing and tidying layer that turns raw pipeline
-outputs into consistently structured, versioned, analysis-ready tables.
-
-Its R6 classes (`Tool`, `Workflow`, `Config`) form the base layer: given
-a directory of bioinformatic results, they identify files by
-YAML-defined schemas, reshape and rename columns to a consistent tidy
-form, and write to a specified format (Apache Parquet, TSV, CSV, RDS, or
-PostgreSQL). Each run also produces a `metadata.parquet` file alongside
-the tidy tables, capturing IDs, paths, and package versions.
-
-Downstream packages extend these base classes by supplying tool-specific
-schemas and parsers.
-[tidywigits](https://github.com/tidywf/tidywigits "tidywigits") and
-[tidydragen](https://github.com/tidywf/tidydragen "tidydragen") are
-example R packages that target the large number of outputs from the
-established bioinformatic pipelines
-[WiGiTS/hmftools](https://github.com/hartwigmedical/hmftools "hmftools")
-and [Illumina
-DRAGEN](https://help.dragen.illumina.com/ "Illumina DRAGEN"),
-respectively.
+Base R6 classes (`Tool`, `Workflow`, `Config`) are extended by
+tool-specific packages such as
+[tidywigits](https://github.com/tidywf/tidywigits "tidywigits")
+([WiGiTS/hmftools](https://github.com/hartwigmedical/hmftools "hmftools"))
+and [tidydragen](https://github.com/tidywf/tidydragen "tidydragen")
+([Illumina/DRAGEN](https://help.dragen.illumina.com/ "Illumina DRAGEN")).
 
 ## Documentation
 
@@ -71,8 +47,7 @@ respectively.
 
 ## Quickstart
 
-Raw pipeline outputs often have non-standard layouts. For example, this
-file stores QC metrics as key-value rows rather than columns:
+Raw key-value file:
 
 ``` r
 library(nemo)
@@ -86,8 +61,7 @@ writeLines(readLines(file.path(path, "sampleA.tool1.table3.tsv")))
 #> UnmappedReads    500
 ```
 
-The `run()` method is able to filter, tidy, and write all tables of
-interest in one call (`Workflow1` is nemo’s built-in example workflow):
+Filter, tidy and write all tables with `run()`:
 
 ``` r
 outdir <- file.path(tempdir(), "quickstart")
@@ -105,7 +79,7 @@ list.files(outdir, pattern = "\\.parquet$")
 #> [4] "sampleA_tool1_table3.parquet" "sampleA_tool1_table4.parquet" "sampleA_tool1_table6.parquet"
 ```
 
-Read back the tidied table:
+Tidy output:
 
 ``` r
 arrow::read_parquet(file.path(outdir, "sampleA_tool1_table3.parquet"))
@@ -115,42 +89,31 @@ arrow::read_parquet(file.path(outdir, "sampleA_tool1_table3.parquet"))
 #> 1 run1     sampleA      out1      sampleA   Pass           10000      9500         500
 ```
 
-Three optional columns can be prepended to every written table to
-support downstream tracing and joining. All are opt-in and off by
-default, but highly recommended for any multi-sample or multi-run
-pipeline:
+Optional provenance columns (recommended for multi-sample/multi-run
+use):
 
 | Column | Purpose | User-supplied or auto-generated? |
 |----|----|----|
 | `input_id` | identifies the sample or input run | user |
-| `output_id` | identifies the tidywigits processing run | user or auto (ULID) |
+| `output_id` | identifies the nemo processing run | user or auto (ULID) |
 | `input_prefix` | filename prefix (e.g. sample name) | auto |
 
 ## Installation
 
-Using {remotes} directly from GitHub:
+From GitHub:
 
 ``` r
 install.packages("remotes")
 remotes::install_github("tidywf/nemo") # latest main commit
-remotes::install_github("tidywf/nemo@v0.1.0.9006") # specific version
+remotes::install_github("tidywf/nemo@v0.1.0.9007") # specific version
 ```
 
-Alternatively:
-
-- conda package: <https://anaconda.org/tidywf/r-nemo>
-
-For more details see:
+Conda: <https://anaconda.org/tidywf/r-nemo>. More options:
 <https://tidywf.github.io/nemo/articles/installation>
 
 ## CLI
 
-A `nemo.R` command line interface is available for convenience.
-
-- If you’re using the conda package, the `nemo.R` command will already
-  be available inside the activated conda environment.
-- If you’re *not* using the conda package, you need to export the
-  `nemo/inst/cli/` directory to your `PATH` in order to use `nemo.R`.
+`nemo.R` is on `PATH` in the conda env. Otherwise:
 
 ``` bash
 nemo_cli=$(Rscript -e 'x = system.file("cli", package = "nemo"); cat(x, "\n")' | xargs)
@@ -158,7 +121,7 @@ export PATH="${nemo_cli}:${PATH}"
 ```
 
     $ nemo.R --version
-    nemo 0.1.0.9006
+    nemo 0.1.0.9007
 
     #-----------------------------------#
     $ nemo.R --help
@@ -175,7 +138,7 @@ export PATH="${nemo_cli}:${PATH}"
     options:
       -h, --help        show this help message and exit
       -v, --version     show program's version number and exit
-    '
+
     #-----------------------------------#
     $ nemo.R tidy --help
     usage: nemo.R tidy [-h] -w WORKFLOW -d IN_DIR [-o OUTPUT_DIR] [-f FORMAT]
