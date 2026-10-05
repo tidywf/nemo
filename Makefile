@@ -14,10 +14,10 @@ readme-pkgdown: readme pkgdown
 roxydoc:
 	@R -e "devtools::document()" --quiet --no-restore --no-save
 
-build:
-	@R -e "pak::local_install(upgrade = FALSE, dependencies = FALSE)" --quiet --no-restore --no-save
+install:
+	@R CMD INSTALL --no-multiarch .
 
-build-readme: build readme
+install-readme: install readme
 
 test:
 	@R -e "devtools::test()" --quiet --no-restore --no-save
@@ -25,7 +25,7 @@ test:
 check:
 	@R -e "devtools::check()" --quiet --no-restore --no-save
 
-full: roxydoc test build check
+full: roxydoc test install check
 
 check-pushed:
 ifndef BRANCH
