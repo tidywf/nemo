@@ -28,7 +28,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">nemo</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.1.0.9006</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.1.0.9007</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -72,7 +72,7 @@
 
 
 
-      <small class="dont-index">Source: <a href="https://github.com/tidywf/nemo/blob/v0.1.0.9006/vignettes/output_naming.qmd" class="external-link"><code>vignettes/output_naming.qmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/tidywf/nemo/blob/v0.1.0.9007/vignettes/output_naming.qmd" class="external-link"><code>vignettes/output_naming.qmd</code></a></small>
       <div class="d-none name"><code></code></div>
     </div>
 
@@ -81,29 +81,25 @@
 
 
 
-    <p>When the same sample is processed more than once (e.g. repeat runs of a tool over different dates), you end up with several sets of raw outputs that share identical file names but live under different parent folders. Here we show:</p>
-<ul>
-<li>how tidy outputs are named so that repeated runs avoid overwriting each other</li>
-<li>how to carry a run identifier into the data so the runs are still distinguishable once the files have been merged into a merged parquet dataset or database.</li>
-</ul>
+    <p>Repeat runs of the same sample produce identical file names in different folders. Below: how tidy outputs avoid overwriting each other, and how to keep runs distinguishable after merging.</p>
 <section class="level2"><h2 id="anatomy-of-a-tidy-filename">Anatomy of a tidy filename<a class="anchor" aria-label="anchor" href="#anatomy-of-a-tidy-filename"></a>
 </h2>
-<p>Every tidy file is named:</p>
 <pre><code>{output_dir}/{prefix}_{tool}_{parser}.{ext}</code></pre>
 <ul>
 <li>
-<code>{output_dir}</code>: the directory to output the tidy files in a flat structure.</li>
+<code>{output_dir}</code>: flat output directory</li>
 <li>
-<code>{prefix}</code>: the input file’s basename with the table’s schema <code>pattern</code> stripped off. For <code>sampleA.tool1.table1.tsv</code> the <code>table1</code> pattern (<code>\.tool1\.table1\.tsv$</code>) is removed, leaving <code>sampleA</code>.</li>
+<code>{prefix}</code>: input basename minus the schema <code>pattern</code> (<code>sampleA.tool1.table1.tsv</code> =&gt; <code>sampleA</code>)</li>
 <li>
-<code>{tool}_{parser}</code>: the tool name and the matched table (e.g. <code>tool1_table1</code>).</li>
+<code>{tool}_{parser}</code>: e.g. <code>tool1_table1</code>
+</li>
 <li>
-<code>{ext}</code>: driven by <code>format</code> (parquet, db, tsv, csv or rds).</li>
+<code>{ext}</code>: from <code>format</code> (parquet, db, tsv, csv or rds)</li>
 </ul>
-<p>So <code>sampleA.tool1.table1.tsv</code> tidied in parquet format becomes <code>sampleA_tool1_table1.parquet</code>.</p>
+<p><code>sampleA.tool1.table1.tsv</code> =&gt; <code>sampleA_tool1_table1.parquet</code>.</p>
 </section><section class="level2"><h2 id="a-repeated-sample">A repeated sample<a class="anchor" aria-label="anchor" href="#a-repeated-sample"></a>
 </h2>
-<p>Let us simulate three runs of the same sample by copying one tool’s outputs into separate folders. Each run holds the same files:</p>
+<p>Three runs, same input files:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">src</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata/tool1/latest"</span>, package <span class="op">=</span> <span class="st">"nemo"</span><span class="op">)</span></span>
@@ -117,7 +113,7 @@
 <span><span class="op">}</span></span>
 <span></span>
 <span><span class="fu">dir_tree</span><span class="op">(</span><span class="va">dir_runs</span><span class="op">)</span></span>
-<span><span class="co">#&gt; /tmp/RtmpJM3Ulv/naming-demo/runs</span></span>
+<span><span class="co">#&gt; /tmp/Rtmpij2lNJ/naming-demo/runs</span></span>
 <span><span class="co">#&gt; ├── run1</span></span>
 <span><span class="co">#&gt; │   ├── sampleA.tool1.table1.tsv</span></span>
 <span><span class="co">#&gt; │   └── sampleA.tool1.table2.tsv</span></span>
@@ -130,23 +126,24 @@
 </div>
 <section class="level3"><h3 id="mode-a-one-recursive-tidy">Mode A: one recursive tidy<a class="anchor" aria-label="anchor" href="#mode-a-one-recursive-tidy"></a>
 </h3>
-<p>Point a single <code>Tool1</code> at the <em>parent</em> of the run folders. <code>list_files()</code> recurses into all three and, because the basenames collide, appends <code>_2</code> / <code>_3</code> to disambiguate the prefixes:</p>
+<p>Point <code>Tool1</code> at the parent folder. Colliding prefixes get <code>_2</code>/<code>_3</code>:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tool</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/Tool1.html">Tool1</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span>path <span class="op">=</span> <span class="va">dir_runs</span><span class="op">)</span></span>
 <span><span class="va">tool</span><span class="op">$</span><span class="fu">list_files</span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">bname</span>, <span class="va">parser</span>, <span class="va">prefix</span><span class="op">)</span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">path</span>, <span class="va">prefix</span>, <span class="va">parser</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">parser</span><span class="op">)</span></span>
 <span><span class="co">#&gt; # A tibble: 6 × 3</span></span>
-<span><span class="co">#&gt;   bname                    parser prefix   </span></span>
-<span><span class="co">#&gt;   &lt;chr&gt;                    &lt;chr&gt;  &lt;chr&gt;    </span></span>
-<span><span class="co">#&gt; 1 sampleA.tool1.table1.tsv table1 sampleA  </span></span>
-<span><span class="co">#&gt; 2 sampleA.tool1.table2.tsv table2 sampleA  </span></span>
-<span><span class="co">#&gt; 3 sampleA.tool1.table1.tsv table1 sampleA_2</span></span>
-<span><span class="co">#&gt; 4 sampleA.tool1.table2.tsv table2 sampleA_2</span></span>
-<span><span class="co">#&gt; 5 sampleA.tool1.table1.tsv table1 sampleA_3</span></span>
-<span><span class="co">#&gt; 6 sampleA.tool1.table2.tsv table2 sampleA_3</span></span></code></pre></div>
+<span><span class="co">#&gt;   path                                                           prefix   parser</span></span>
+<span><span class="co">#&gt;   &lt;chr&gt;                                                          &lt;chr&gt;    &lt;chr&gt; </span></span>
+<span><span class="co">#&gt; 1 /tmp/Rtmpij2lNJ/naming-demo/runs/run1/sampleA.tool1.table1.tsv sampleA  table1</span></span>
+<span><span class="co">#&gt; 2 /tmp/Rtmpij2lNJ/naming-demo/runs/run2/sampleA.tool1.table1.tsv sampleA… table1</span></span>
+<span><span class="co">#&gt; 3 /tmp/Rtmpij2lNJ/naming-demo/runs/run3/sampleA.tool1.table1.tsv sampleA… table1</span></span>
+<span><span class="co">#&gt; 4 /tmp/Rtmpij2lNJ/naming-demo/runs/run1/sampleA.tool1.table2.tsv sampleA  table2</span></span>
+<span><span class="co">#&gt; 5 /tmp/Rtmpij2lNJ/naming-demo/runs/run2/sampleA.tool1.table2.tsv sampleA… table2</span></span>
+<span><span class="co">#&gt; 6 /tmp/Rtmpij2lNJ/naming-demo/runs/run3/sampleA.tool1.table2.tsv sampleA… table2</span></span></code></pre></div>
 </div>
-<p>As you can see, the files share a basename but get prefixes <code>sampleA</code>, <code>sampleA_2</code>, <code>sampleA_3</code>. Writing them out, nothing gets overwritten:</p>
+<p>No overwrites:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">dir_outA</span> <span class="op">&lt;-</span> <span class="fu">dir_create</span><span class="op">(</span><span class="fu">path</span><span class="op">(</span><span class="va">dir1</span>, <span class="st">"outA"</span><span class="op">)</span><span class="op">)</span></span>
@@ -158,7 +155,7 @@
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">dir_tree</span><span class="op">(</span><span class="va">dir_outA</span><span class="op">)</span></span>
-<span><span class="co">#&gt; /tmp/RtmpJM3Ulv/naming-demo/outA</span></span>
+<span><span class="co">#&gt; /tmp/Rtmpij2lNJ/naming-demo/outA</span></span>
 <span><span class="co">#&gt; ├── metadata_tool1.parquet</span></span>
 <span><span class="co">#&gt; ├── sampleA_2_tool1_table1.parquet</span></span>
 <span><span class="co">#&gt; ├── sampleA_2_tool1_table2.parquet</span></span>
@@ -167,7 +164,7 @@
 <span><span class="co">#&gt; ├── sampleA_tool1_table1.parquet</span></span>
 <span><span class="co">#&gt; └── sampleA_tool1_table2.parquet</span></span></code></pre></div>
 </div>
-<p>The <code>prefix_include</code> option also writes the prefix as an <code>input_prefix</code> column in the output file itself, so the source run survives even after the three files are read and stacked into one table:</p>
+<p><code>prefix_include = TRUE</code> adds an <code>input_prefix</code> column, so runs stay distinct after stacking:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">dir_ls</span><span class="op">(</span><span class="va">dir_outA</span>, regexp <span class="op">=</span> <span class="st">"tool1_table1\\.parquet"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -186,10 +183,10 @@
 <span><span class="co">#&gt; 8 input1   sampleA      sampleA   chr2         100   500      0.5      0.8</span></span>
 <span><span class="co">#&gt; 9 input1   sampleA      sampleA   chr3        1000  5000      0.6      0.9</span></span></code></pre></div>
 </div>
-<p>Mode A is the simplest way to dump every tidy run into one folder without overwriting each other. Its limit: the tidy call shares a single <code>input_id</code>, so the only per-run key is the filename-derived <code>input_prefix</code>.</p>
+<p>Limit: one shared <code>input_id</code>; the only per-run key is <code>input_prefix</code>.</p>
 </section><section class="level3"><h3 id="mode-b-per-run-tidy">Mode B: per-run tidy<a class="anchor" aria-label="anchor" href="#mode-b-per-run-tidy"></a>
 </h3>
-<p>When you want a more meaningful run identifier than e.g. <code>sampleA_2</code>, you should tidy each run separately and pass a distinct <code>input_id</code>. Because the output basenames are now identical across runs, write each run to its own output subfolder so they don’t get overwritten:</p>
+<p>Tidy each run separately with its own <code>input_id</code> and output subfolder:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">dir_outB</span> <span class="op">&lt;-</span> <span class="fu">dir_create</span><span class="op">(</span><span class="fu">path</span><span class="op">(</span><span class="va">dir1</span>, <span class="st">"outB"</span><span class="op">)</span><span class="op">)</span></span>
@@ -203,7 +200,7 @@
 <span><span class="op">}</span></span>
 <span></span>
 <span><span class="fu">dir_tree</span><span class="op">(</span><span class="va">dir_outB</span><span class="op">)</span></span>
-<span><span class="co">#&gt; /tmp/RtmpJM3Ulv/naming-demo/outB</span></span>
+<span><span class="co">#&gt; /tmp/Rtmpij2lNJ/naming-demo/outB</span></span>
 <span><span class="co">#&gt; ├── run1</span></span>
 <span><span class="co">#&gt; │   ├── metadata_tool1.parquet</span></span>
 <span><span class="co">#&gt; │   ├── sampleA_tool1_table1.parquet</span></span>
@@ -217,7 +214,7 @@
 <span><span class="co">#&gt;     ├── sampleA_tool1_table1.parquet</span></span>
 <span><span class="co">#&gt;     └── sampleA_tool1_table2.parquet</span></span></code></pre></div>
 </div>
-<p>Note the same file names in each subfolder. The folder separates them on disk, and the <code>input_id</code> column keeps them apart once merged:</p>
+<p>Same file names per subfolder; <code>input_id</code> separates them once merged:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">fs</span><span class="fu">::</span><span class="fu"><a href="https://fs.r-lib.org/reference/dir_ls.html" class="external-link">dir_ls</a></span><span class="op">(</span><span class="va">dir_outB</span>, recurse <span class="op">=</span> <span class="cn">TRUE</span>, glob <span class="op">=</span> <span class="st">"*tool1_table1.parquet"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -236,14 +233,16 @@
 <span><span class="co">#&gt; 8 run3     sampleA      sampleA   chr2         100   500      0.5      0.8</span></span>
 <span><span class="co">#&gt; 9 run3     sampleA      sampleA   chr3        1000  5000      0.6      0.9</span></span></code></pre></div>
 </div>
-<p>For a globally-unique key with no coordination between runs, use <code>output_id = "&lt;your id&gt;"</code> with e.g. an auto-generated <a href="https://wiki.tcl-lang.org/page/ULID" title="What is ULID" class="external-link">ULID</a> (done automatically with the CLI’s <code>--ulid</code> flag via the <a href="https://github.com/eddelbuettel/ulid" title="ULID in R" class="external-link">ulid</a> R package), which would generate an <code>output_id</code> column alongside <code>input_id</code>.</p>
+<p>For a globally-unique key, set <code>output_id</code>, e.g. to a <a href="https://wiki.tcl-lang.org/page/ULID" title="What is ULID" class="external-link">ULID</a> (CLI: <code>--ulid</code>, via the <a href="https://github.com/eddelbuettel/ulid" title="ULID in R" class="external-link">ulid</a> R package).</p>
 </section></section><section class="level2"><h2 id="rule-of-thumb">Rule of thumb<a class="anchor" aria-label="anchor" href="#rule-of-thumb"></a>
 </h2>
 <ul>
-<li>File names stop repeat runs from overwriting each other on disk automatically via <code>_2</code>/<code>_3</code> (Mode A), or by writing to per-run folders (Mode B).</li>
-<li>Provenance columns (<code>input_prefix</code>, <code>input_id</code>, <code>output_id</code>) let you tell the runs apart after the files are merged into one parquet dataset or loaded into a database, where the filename is no longer visible.</li>
-<li>Use <code>prefix_include</code> when one recursive tidy is enough</li>
-<li>Use <code>input_id</code> / <code>output_id</code> when each run is better described by an explicitly specified name you can control.</li>
+<li>On disk: <code>_2</code>/<code>_3</code> suffixes (Mode A) or per-run folders (Mode B)</li>
+<li>After merging: <code>input_prefix</code>, <code>input_id</code>, <code>output_id</code> columns</li>
+<li>One recursive tidy is enough =&gt; <code>prefix_include</code>
+</li>
+<li>Want named runs =&gt; <code>input_id</code> / <code>output_id</code>
+</li>
 </ul></section><script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {
       var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
