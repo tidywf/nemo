@@ -35,9 +35,8 @@ knitr:
 
 ### Debugging R6 private methods
 
-`debugonce()` doesn't take an object like `tool$tidy()` for private methods -
-reach into `.__enclos_env__$private` first. This flags the function on that one
-instance only (each `$new()` gets its own private env/closure copy).
+For private methods, reach into `.__enclos_env__$private` (flags that instance
+only):
 
 ```r
 devtools::load_all()
@@ -48,11 +47,7 @@ debugonce(t$.__enclos_env__$private$build_d_write)
 t$run(output_dir = tempdir(), format = "parquet") # breaks on first call
 ```
 
-Inside the browser, `self$` and `private$` both resolve normally. Step with `n`,
-inspect args (e.g. `d_write`, `output_dir`).
-
-Private methods can also be called standalone, without going through
-`run()`/`tidy()`:
+Call private methods standalone:
 
 ```r
 row <- t$list_files()[1, ]
@@ -68,13 +63,8 @@ d_write <- t$.__enclos_env__$private$build_d_write(
 
 ### Data Version Control
 
-Instead of committing big data files into `git`, we can store the files remotely
-(e.g. Google Drive, AWS S3, Cloudflare R2) and just keep track of the data
-updates in `git` using [DVC](https://dvc.org/).
-
-The R package uses the data files when running the code examples and tests, and
-when rendering the vignettes. A simple `dvc pull` will pull the data from the
-remote storage and allow these processes to take place.
+[DVC](https://dvc.org/) keeps test/example data in remote storage (GDrive, S3,
+R2), tracked in `git`. Run `dvc pull` before tests, examples or vignettes.
 
 | Command                                                                      | Comments                                |
 | ---------------------------------------------------------------------------- | --------------------------------------- |

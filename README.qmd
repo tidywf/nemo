@@ -57,41 +57,22 @@ options(width = 100)
 
 ## nemo
 
-Bioinformatic pipelines produce a lot of output files, but consuming them
-downstream is harder than it should be:
+Schema-driven parsing and tidying of bioinformatic pipeline outputs:
 
-- Format variety: tools write TSV, CSV and various other proprietary formats,
-  often mixed within the same pipeline
-- Non-standard structure: files may be transposed, headerless, or embed section
-  labels alongside data, requiring custom parsing logic for each tool
-- Messy column names: raw names are frequently uppercase, space-separated,
-  dot-delimited, or otherwise non-standard; joining across tools requires manual
-  renaming
-- Schema drift: column names and file layouts change silently between tool
-  versions, breaking downstream code with no clear signal of what changed
-- No run-level provenance: it is hard to tell which output file came from which
-  sample or processing run once files are collected into a shared directory
+- find files via YAML-defined `schema.yaml` patterns
+- parse TSV/CSV/headerless/key-value/crazy files
+- rename columns to `snake_case`, track column changes across tool versions
+- write to Parquet, TSV, CSV, RDS or database of your choice, plus a
+  `metadata.parquet` for provenance (IDs, paths, pkg versions) per run
 
-nemo is an R package that attempts to address these issues by providing a
-schema-driven parsing and tidying layer that turns raw pipeline outputs into
-consistently structured, versioned, analysis-ready tables.
-
-Its R6 classes (`Tool`, `Workflow`, `Config`) form the base layer: given a
-directory of bioinformatic results, they identify files by YAML-defined schemas,
-reshape and rename columns to a consistent tidy form, and write to a specified
-format (Apache Parquet, TSV, CSV, RDS, or PostgreSQL). Each run also produces a
-`metadata.parquet` file alongside the tidy tables, capturing IDs, paths, and
-package versions.
-
-Downstream packages extend these base classes by supplying tool-specific schemas
-and parsers. [tidywigits] and [tidydragen] are example R packages that target
-the large number of outputs from the established bioinformatic pipelines
-[WiGiTS/hmftools] and [Illumina DRAGEN], respectively.
+Base R6 classes (`Tool`, `Workflow`, `Config`) are extended by tool-specific
+packages such as [tidywigits] ([WiGiTS/hmftools]) and [tidydragen]
+([Illumina/DRAGEN]).
 
 [tidywigits]: <https://github.com/tidywf/tidywigits> "tidywigits"
 [tidydragen]: <https://github.com/tidywf/tidydragen> "tidydragen"
 [WiGiTS/hmftools]: <https://github.com/hartwigmedical/hmftools> "hmftools"
-[Illumina DRAGEN]: <https://help.dragen.illumina.com/> "Illumina DRAGEN"
+[Illumina/DRAGEN]: <https://help.dragen.illumina.com/> "Illumina DRAGEN"
 
 ## Documentation
 
@@ -114,8 +95,7 @@ glue(
 
 ## Quickstart
 
-Raw pipeline outputs often have non-standard layouts. For example, this file
-stores QC metrics as key-value rows rather than columns:
+Raw key-value file:
 
 ```{r}
 #| label: quickstart_raw
@@ -127,8 +107,7 @@ path <- system.file("extdata/tool1/latest", package = "nemo")
 writeLines(readLines(file.path(path, "sampleA.tool1.table3.tsv")))
 ```
 
-The `run()` method is able to filter, tidy, and write all tables of interest in
-one call (`Workflow1` is nemo's built-in example workflow):
+Filter, tidy and write all tables with `run()`:
 
 ```{r}
 #| label: quickstart
@@ -147,7 +126,7 @@ wf1$run(
 list.files(outdir, pattern = "\\.parquet$")
 ```
 
-Read back the tidied table:
+Tidy output:
 
 ```{r}
 #| label: quickstart_read
@@ -155,15 +134,13 @@ Read back the tidied table:
 arrow::read_parquet(file.path(outdir, "sampleA_tool1_table3.parquet"))
 ```
 
-Three optional columns can be prepended to every written table to support
-downstream tracing and joining. All are opt-in and off by default, but highly
-recommended for any multi-sample or multi-run pipeline:
+Optional provenance columns (recommended for multi-sample/multi-run use):
 
-| Column         | Purpose                                  | User-supplied or auto-generated? |
-| -------------- | ---------------------------------------- | -------------------------------- |
-| `input_id`     | identifies the sample or input run       | user                             |
-| `output_id`    | identifies the tidywigits processing run | user or auto (ULID)              |
-| `input_prefix` | filename prefix (e.g. sample name)       | auto                             |
+| Column         | Purpose                            | User-supplied or auto-generated? |
+| -------------- | ---------------------------------- | -------------------------------- |
+| `input_id`     | identifies the sample or input run | user                             |
+| `output_id`    | identifies the nemo processing run | user or auto (ULID)              |
+| `input_prefix` | filename prefix (e.g. sample name) | auto                             |
 
 ## Installation
 
@@ -171,20 +148,12 @@ recommended for any multi-sample or multi-run pipeline:
 #| label: child-r
 ```
 
-Alternatively:
-
-- conda package: <https://anaconda.org/tidywf/r-nemo>
-
-For more details see: <https://tidywf.github.io/nemo/articles/installation>
+Conda: <https://anaconda.org/tidywf/r-nemo>. More options:
+<https://tidywf.github.io/nemo/articles/installation>
 
 ## CLI
 
-A `nemo.R` command line interface is available for convenience.
-
-- If you're using the conda package, the `nemo.R` command will already be
-  available inside the activated conda environment.
-- If you're *not* using the conda package, you need to export the
-  `nemo/inst/cli/` directory to your `PATH` in order to use `nemo.R`.
+`nemo.R` is on `PATH` in the conda env. Otherwise:
 
 ```{bash}
 #| label: cli1
@@ -207,7 +176,7 @@ echo "$ nemo.R --version" & nemo.R --version
 echo ""
 echo "#-----------------------------------#"
 echo "$ nemo.R --help" & nemo.R --help
-echo "'"
+echo ""
 echo "#-----------------------------------#"
 echo "$ nemo.R tidy --help" & nemo.R tidy --help
 echo ""

@@ -1,7 +1,6 @@
-If you use [Pixi](https://pixi.sh/), you can create a new isolated environment
-with the deployed conda package:
+With [Pixi](https://pixi.sh/):
 
-```{r}
+````{r}
 #| label: installation-pixi
 #| results: asis
 #| echo: false
@@ -16,7 +15,7 @@ glue(
   "```",
   "
 
-  Then you can create a task to run the `{pkg_nm}.R` CLI script:
+  CLI task:
 
   ```bash
   pixi task add {pkg_nm} \"{pkg_nm}.R\"
@@ -25,7 +24,7 @@ glue(
   "```",
   "
 
-  Or activate the environment and use {pkg_nm} directly in an R environment:
+  Or from R:
 
   ```bash
   pixi shell
@@ -39,4 +38,4 @@ glue(
   ",
   "```"
 )
-```
+````

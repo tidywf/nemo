@@ -65,43 +65,31 @@ params <- list(
 options(width = 100)
 ```
 
-nemo is built on top of R's [R6] encapsulated object-oriented programming
-implementation, which helps with code organisation. It consists of several base
-classes (`Config`, `Tool`, and `Workflow`) which we describe below. Each R6
-class can contain public and private functions and non-functions (fields).
-
-Other R packages like [tidywigits] and [tidydragen] can create their own `Tool`
-and `Workflow` children classes that inherit (or override) functions from the
-nemo parent classes. This allows for custom parsers and tidiers for specific
-bioinformatic tools and workflows.
+nemo has three base [R6] classes: `Config`, `Tool`, `Workflow`. Child packages
+([tidywigits], [tidydragen]) subclass `Tool`/`Workflow` with tool-specific
+parsers and tidiers.
 
 [R6]: <https://github.com/r-lib/R6> "R6 package repo"
 [tidywigits]: <https://github.com/tidywf/tidywigits> "tidywigits"
 [tidydragen]: <https://github.com/tidywf/tidydragen> "tidydragen"
 
-Here we use the `Tool1` and `Workflow1` nemo classes as examples to illustrate
-the structure of the package.
+Examples below use the built-in `Tool1` and `Workflow1`.
 
 ## Config {.tabset .tabset-pills}
 
-A `Config` object reads a single `schema.yaml` file from
-`inst/config/tools/<tool>/`. Each table entry defines its file pattern, file
-type, description, and a list of columns --- each column carrying both its raw
-name (as produced by the tool) and its tidy name (snake_case), type,
-description, and the `versions` array listing every tool version the column
-appears in. `Config` derives versioned raw and tidy views from this unified
-source on demand. See `?Config`.
+Reads `inst/config/tools/<tool>/schema.yaml` and serves versioned raw/tidy
+schemas from it. See `?Config`.
 
 ### format
 
-Each tool has a `schema.yaml` under `inst/config/tools/<tool>/`. It is a flat
-`tables` map with one entry per output file:
+One `tables` entry per output file:
 
 ```yaml
 tables:
   <table_name>:
     description: '<human-readable description>'
     pattern: "<regex matching the file basename>"
+    glob: ["<aws s3 sync --include glob>", '...']
     ftype: '<file type — see below>'
     columns:
       - raw: '<raw column name or positional label>'
@@ -111,7 +99,14 @@ tables:
         versions: ['<version1>', '<version2>']
 ```
 
-The `ftype` field signals how the file is parsed:
+- `pattern`: PCRE regex on the file **basename**; `Tool` uses it to discover and
+  classify local files.
+- `glob`: list of `aws s3 sync --include` patterns on the whole key;
+  `wf_sync_patterns()` collects them to decide what to sync down. Usually the
+  basename pattern with a leading `*` (`"\\.tool1\\.table1\\.tsv$"` =>
+  `["*.tool1.table1.tsv"]`).
+
+`ftype` picks the parser:
 
 | `ftype`        | Description                                  | `raw:` names        | Parser                   |
 | -------------- | -------------------------------------------- | ------------------- | ------------------------ |
@@ -120,13 +115,10 @@ The `ftype` field signals how the file is parsed:
 | `tsv-nohead`   | No header; positional columns                | `X1, X2, …, XN`     | `parse_file_nohead`      |
 | `tsv-keyvalue` | No header; 2 cols (key, value); pivoted wide | actual key values   | `parse_file_keyvalue`    |
 
-Child packages can register additional ftypes by overriding
-`private$extra_ftypes()` --- return a named list of
-`ftype -> function(x, table_name)`. These are checked before the built-in
-switch.
+Child packages add ftypes by overriding `private$extra_ftypes()` (named list of
+`ftype -> function(x, table_name)`).
 
-The `versions` array on each column lists every tool version that column appears
-in, giving a full picture of additions and removals:
+`versions` lists every tool version a column appears in:
 
 ```yaml
 # table1 columns
@@ -135,9 +127,8 @@ metricX:    versions: ['v1.2.3']                        # dropped in v4.5.6
 metricY:    versions: ['latest']                        # added in latest
 ```
 
-The effective schema for version `V` is all columns whose `versions` array
-contains `V`. `schema_guess` uses this to automatically match a file's columns
-against the correct versioned snapshot.
+Schema for version `V` = columns whose `versions` contain `V`. `schema_guess`
+matches a file's columns to the right version.
 
 ### intro
 
@@ -152,17 +143,18 @@ conf
 
 ### tables
 
-Table-level metadata --- patterns, file types, and descriptions for all tables:
+All tables:
 
 ```{r}
 #| label: config_tables_all
 
 conf$get_patterns() |> knitr::kable(caption = glue("{tool} patterns."))
+conf$get_globs() |> knitr::kable(caption = glue("{tool} globs."))
 conf$get_ftypes() |> knitr::kable(caption = glue("{tool} file types."))
 conf$get_descriptions() |> knitr::kable(caption = glue("{tool} descriptions."))
 ```
 
-Per-table lookups:
+One table:
 
 ```{r}
 #| label: config_tables_one
@@ -174,7 +166,7 @@ conf$get_description("table1")
 
 ### schemas
 
-All versioned raw and tidy schemas:
+All versions:
 
 ```{r}
 #| label: config_schemas_all
@@ -184,7 +176,7 @@ conf$get_schemas_tidy() |> dplyr::select("name", "version", "schema")
 conf$get_schemas_both()
 ```
 
-Per-table, per-version:
+One table, one version:
 
 ```{r}
 #| label: config_schemas_one
@@ -193,8 +185,7 @@ conf$get_schema_raw("table1", version = "v1.2.3")
 conf$get_schema_tidy("table1", version = "v1.2.3")
 ```
 
-`get_col_map()` returns the raw-to-tidy column mapping (with types and
-descriptions) for a table, handy inside a custom `tidy_*` method:
+Raw-to-tidy column map, for use in `tidy_*` methods:
 
 ```{r}
 #| label: config_col_map
@@ -204,29 +195,9 @@ conf$get_col_map("table6")
 
 ## Tool {.tabset .tabset-pills}
 
-`Tool` is the main organisation class for all file parsers and tidiers. It
-contains functions for parsing and tidying typical CSV/TSV files (with column
-names), and TXT files where the column names are missing. Currently it utilises
-the very simple `readr::read_delim` function from the [readr] package that reads
-all the data into memory. See `?Tool`.
-
-These simple parsers are used in 80-90% of cases, so in the future we can
-optimise the parsing if needed with faster packages such as [data.table],
-[duckdb-r]/[duckplyr] or [r-polars].
-
-[readr]: <https://github.com/tidyverse/readr> "readr"
-[duckdb-r]: <https://github.com/duckdb/duckdb-r> "duckdb-r"
-[duckplyr]: <https://github.com/tidyverse/duckplyr> "duckplyr"
-[data.table]: <https://github.com/Rdatatable/data.table> "data.table"
-[r-polars]: <https://github.com/pola-rs/r-polars> "r-polars"
+Finds, parses, tidies and writes one tool's files. See `?Tool`.
 
 ### initialise
-
-We can have different `Tool` children classes that inherit (or override)
-functions and fields from the `Tool` parent class. For example, we can create a
-`Tool` object for `Tool1` as follows:
-
-- Initialise a `Tool1` object:
 
 ```{r}
 #| label: tool_tool1
@@ -238,9 +209,6 @@ t1
 ```
 
 ### config
-
-- Its `Config` object is also constructed based on the `name` supplied - this is
-  used internally to find files of interest and infer their schemas:
 
 ```{r}
 #| label: tool1_conf
@@ -255,8 +223,6 @@ t1$config$get_schema_tidy("table1", version = "v1.2.3")
 
 ### list
 
-We can list files that can be parsed with `list_files()`:
-
 ```{r}
 #| label: tool1_list
 
@@ -266,8 +232,7 @@ lf |> dplyr::slice(1) |> str()
 
 ### tidy
 
-We can parse and tidy files of interest using the `tidy` function. Note that
-this function is called on the object and not assigned anywhere:
+`tidy()` modifies the object in place:
 
 ```{r}
 #| label: tool1_tidy
@@ -284,9 +249,7 @@ tbls$tidy[[1]][["data"]][[1]] |> dplyr::glimpse()
 
 ### filter
 
-We can also focus on a subset of files to tidy using the `filter_files()`
-function. The `include` and `exclude` arguments can specify which `tool_parser`s
-to include or exclude in the analysis:
+Keep/drop `tool_parser`s with `include`/`exclude`:
 
 ```{r}
 #| label: tool1_filter
@@ -300,15 +263,9 @@ t2$list_files()
 
 ### write
 
-After tidying the data of interest, we can write the tidy tibbles to various
-formats, like Apache Parquet, PostgreSQL, CSV/TSV and R's RDS. Below we can see
-that the (optional) `input_id` specified is added to the written files in an
-additional `input_id` column. This can be used e.g. to distinguish results from
-different samples in a data pipeline. An optional `output_id` column can also be
-added (e.g. to distinguish between runs for the same input sample). An
-`input_prefix` column can be included via `prefix_include = TRUE`, which would
-use the prefix of the file basename. For more details about output naming
-conventions, see the [output naming](output_naming.html) vignette.
+Formats: `parquet`, `db`, `tsv`, `csv`, `rds`. Optional `input_id`, `output_id`
+and `input_prefix` (`prefix_include = TRUE`) columns get prepended. See [output
+naming](output_naming.html).
 
 ```{r}
 #| label: tool1_write
@@ -331,8 +288,7 @@ wfiles
 
 ### run
 
-The `run` function is a convenient wrapper for the process of filtering,
-tidying, and writing.
+`run()` = filter + tidy + write:
 
 ```{r}
 #| label: run1
@@ -360,14 +316,8 @@ readr::read_tsv(tbl1_path, show_col_types = FALSE)
 
 ## Workflow
 
-A `Workflow` consists of a list of one or more `Tool`s. We can construct a
-certain `Workflow` with different `Tool`s, which would allow parsing and writing
-tidy tables from a variety of bioinformatic tools. See `?Workflow`.
-
-For example, nemo contains a `Workflow1` class as a `Workflow` child (containing
-only a single `Tool1` for simplicity). Similarly to `Tool`, a `Workflow` object
-contains functions such as `filter_files`, `list_files`, `tidy`, `write`, `run`,
-and `get_tools()` (to access the instantiated `Tool` objects):
+A list of `Tool`s with the same `list_files`/`filter_files`/`tidy`/`write`/`run`
+API, plus `get_tools()`. `Workflow1` wraps a single `Tool1`. See `?Workflow`.
 
 ```{r}
 #| label: w1_init
@@ -393,10 +343,8 @@ wfiles3 |>
 
 ## Metadata
 
-After each `Workflow$write()` or `Workflow$run()` call (for non-`db` formats), a
-`metadata.parquet` file is written directly to the output directory alongside
-the tidy tables. It is a single-row tibble capturing the run context: IDs,
-input/output paths, package versions, and the list of files written.
+`Workflow$write()`/`$run()` (non-`db` formats) also write a single-row
+`metadata.parquet`: IDs, paths, pkg versions, files written.
 
 ```{r}
 #| label: metadata_read
@@ -405,7 +353,7 @@ meta <- arrow::read_parquet(file.path(outdir3, "metadata.parquet"))
 meta |> dplyr::glimpse()
 ```
 
-The nested list columns can be unpacked with `tidyr::unnest()`:
+Unnest list columns:
 
 ```{r}
 #| label: metadata_pkgs
