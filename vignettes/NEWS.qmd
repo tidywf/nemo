@@ -56,6 +56,9 @@ child1 <- system.file(
 
 ### Performance
 
+- `Config` memoises schema lookups (`get_schema_raw()`/`get_schema_tidy()`/
+  `get_col_map()`), which `Tool` calls per file for renames and fan-out output
+  checks.
 - `run()` now parses, tidies, and writes one file at a time, so memory scales
   with a single file rather than the whole run (`r pr(82)`).
 

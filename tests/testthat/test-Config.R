@@ -101,3 +101,15 @@ test_that("Config validates output shape", {
   priv$tables <- bad
   expect_error(priv$validate_tables(), "output 'table7dp': shape must be one of exact, subset")
 })
+
+test_that("Config schema lookups are memoised but errors are not", {
+  conf <- Config$new("tool1", "nemo")
+  s1 <- conf$get_schema_tidy("table1", version = "v1.2.3")
+  expect_identical(conf$get_schema_tidy("table1", version = "v1.2.3"), s1)
+  expect_identical(conf$get_col_map("table6"), conf$get_col_map("table6"))
+  expect_false(identical(conf$get_schema_raw("table1"), conf$get_schema_tidy("table1")))
+  for (i in 1:2) {
+    expect_error(conf$get_schema_tidy("foo"), "foo not found")
+    expect_error(conf$get_schema_raw("table1", version = "v9"), "v9 not found")
+  }
+})

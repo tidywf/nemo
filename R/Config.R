@@ -82,6 +82,7 @@ Config <- R6::R6Class(
       if (nrow(invalid) > 0) {
         nemo_stop(private$format_invalid_types_msg(invalid))
       }
+      private$cache <- new.env(parent = emptyenv())
       private$schemas_both <- private$compute_schemas()
       private$schemas_raw <- private$derive_schema(private$schemas_both, "raw")
       private$schemas_tidy <- private$derive_schema(private$schemas_both, "tidy")
@@ -247,7 +248,7 @@ Config <- R6::R6Class(
     #' @return (`tibble()`)\cr
     #' Table `version`, `field` and `type`.
     get_schema_raw = function(x, version = NULL) {
-      private$get_schema(x, version, private$schemas_raw)
+      private$get_schema(x, version, "raw")
     },
     #' @description Get tidy schema for a specific table and optional version.
     #' @param x (`character(1)`)\cr
@@ -258,7 +259,7 @@ Config <- R6::R6Class(
     #' @return (`tibble()`)\cr
     #' Table `version`, `field` and `type`.
     get_schema_tidy = function(x, version = NULL) {
-      private$get_schema(x, version, private$schemas_tidy)
+      private$get_schema(x, version, "tidy")
     },
     #' @description Get column mapping (raw -> tidy) for a table, e.g. for
     #' custom parse/tidy logic.
@@ -276,6 +277,7 @@ Config <- R6::R6Class(
   ), # end public
   private = list(
     tables = NULL,
+    cache = NULL,
     schemas_raw = NULL,
     schemas_tidy = NULL,
     schemas_both = NULL,
@@ -529,36 +531,57 @@ Config <- R6::R6Class(
           )
         )
     },
+    # Schema lookups only read the schemas fixed at initialize(), and Tool
+    # calls them per file (fan-out output checks, tidy renames), so memoise by
+    # key. Errors are raised before anything is cached.
+    cached = function(key, compute) {
+      hit <- private$cache[[key]]
+      if (!is.null(hit)) {
+        return(hit)
+      }
+      val <- compute()
+      assign(key, val, envir = private$cache)
+      val
+    },
     get_schema_both_one = function(x, version) {
       nemo_assert_scalar_chr(x)
       if (!is.null(version)) {
         nemo_assert_scalar_chr(version)
       }
-      if (!x %in% private$schemas_both[["name"]]) {
-        nemo_stop(glue("{x} not found in schemas for {self$tool}."))
-      }
-      rows <- private$schemas_both |> dplyr::filter(.data$name == x)
-      version <- private$resolve_version(x, version, rows[["version"]])
-      rows |>
-        dplyr::filter(.data$version == .env$version) |>
-        tidyr::unnest("schema")
+      key <- paste("both", x, version %||% "<default>", sep = "\r")
+      private$cached(key, \() {
+        if (!x %in% private$schemas_both[["name"]]) {
+          nemo_stop(glue("{x} not found in schemas for {self$tool}."))
+        }
+        rows <- private$schemas_both |> dplyr::filter(.data$name == x)
+        version <- private$resolve_version(x, version, rows[["version"]])
+        rows |>
+          dplyr::filter(.data$version == .env$version) |>
+          tidyr::unnest("schema")
+      })
     },
-    get_schema = function(x, version, schemas) {
+    get_schema = function(x, version, side) {
       nemo_assert_scalar_chr(x)
-      if (!x %in% schemas[["name"]]) {
-        nemo_stop(glue("{x} not found in schemas for {self$tool}."))
-      }
-      res <- schemas |>
-        dplyr::filter(.data$name == x)
       if (!is.null(version)) {
         nemo_assert_scalar_chr(version)
-        private$assert_version(x, version, res[["version"]])
-        res <- res |>
-          dplyr::filter(.data$version == .env$version)
       }
-      res |>
-        tidyr::unnest("schema") |>
-        dplyr::select("version", "field", "type")
+      key <- paste(side, x, version %||% "<all>", sep = "\r")
+      private$cached(key, \() {
+        schemas <- private[[paste0("schemas_", side)]]
+        if (!x %in% schemas[["name"]]) {
+          nemo_stop(glue("{x} not found in schemas for {self$tool}."))
+        }
+        res <- schemas |>
+          dplyr::filter(.data$name == x)
+        if (!is.null(version)) {
+          private$assert_version(x, version, res[["version"]])
+          res <- res |>
+            dplyr::filter(.data$version == .env$version)
+        }
+        res |>
+          tidyr::unnest("schema") |>
+          dplyr::select("version", "field", "type")
+      })
     }
   ) # end private
 )
