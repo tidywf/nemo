@@ -42,12 +42,23 @@ Raw names and types are auto-detected. Fill in by hand:
 - `description`: from the tool's docs
 - `versions`: tool versions the column appears in, e.g. `['v1.2.3', 'latest']`
 
+If one file holds several tables (a stats header plus a histogram, a JSON with
+several sections), keep the file's raw `columns:` and declare each table under
+`outputs:` with its tidy columns. Name the schema table after the file and the
+outputs after their content.
+
 Schema format: see [Structure].
 
 ### 3. Parsers
 
 Copy `R/Tool1.R` to `R/<Tool>.R`: `initialize()`, per-table `parse_*()` /
 `tidy_*()`, roxygen with `@testexamples`.
+
+- Method names must match a schema table (`tidy_table3()` for `table3`); `Tool`
+  errors on construction otherwise.
+- A table with `outputs:` needs a `tidy_<table>()` returning one tibble per
+  output via `nemo_enframe()`, keyed by output name (see `Tool1$tidy_table7()`).
+  `Tool` checks the columns and types of each against the schema on every tidy.
 
 [DVC]: <https://github.com/iterative/dvc> "Data Version Control"
 [Structure]: <https://tidywf.github.io/nemo/articles/structure.html> "Structure"

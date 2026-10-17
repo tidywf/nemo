@@ -30,8 +30,21 @@ child1 <- system.file(
   files it needs, and the new `s3sync()` / `nemo.R sync` pull only those files
   for a workflow (`r pr(77)`-`r pr(79)`, `r pr(83)`). `schema_glob_check()`
   catches globs that drift from their table `pattern`.
-- `Tool` gains `flat_tidy_names` for simpler output names on tools that split
-  one file into several tables (`r pr(81)`).
+- Fan-out tables (one file split into several output tables) declare their
+  outputs under a new `outputs:` key in `schema.yaml`: a description and
+  versioned tidy columns per output, `raw` optional, and `shape: 'subset'` for
+  outputs whose columns depend on the data. `Tool` checks every fan-out
+  `tidy_*()` result against them: all declared outputs returned, each with the
+  columns (in order) and types of one of its schema versions. Outputs are
+  written as `<tool>_<output>`.
+- New `Config` methods `get_outputs()`, `get_table_outputs()` and
+  `get_output_shape()`. `get_schemas_raw()`/`get_schemas_tidy()`/
+  `get_schemas_both()` include output rows and gain a `parent` column (the file
+  table of an output). `nemo_schema_reactable()` lists outputs after their file
+  table.
+- `Tool` errors on construction when a `parse_*()`/`tidy_*()` method matches no
+  schema table, instead of a typo'd name silently falling back to the ftype
+  default parser.
 - `nemoverse_wf_dispatch()` now includes `tidydragen`.
 - `nemo_schema_reactable()` rewritten on native reactable row details: search
   now matches column names and globs, expanded rows show a per-version
@@ -48,6 +61,9 @@ child1 <- system.file(
 
 ### Breaking changes
 
+- Removed `Tool$flat_tidy_names` and the `__no_file_match__` sentinel tables;
+  declare fan-outs with `outputs:` instead. Output names may not clash with
+  table names, and duplicate output paths now always error.
 - Removed the `csv-nohead-long` ftype (`r pr(80)`).
 - `parse_file_keyvalue()` now applies the schema column types instead of
   returning all-character columns (`r pr(84)`).
