@@ -15,9 +15,9 @@ nemo
 ├── DESCRIPTION                    # keep in sync with conda recipe deps
 ├── inst
 │   ├── cli/nemo.R                 # cli entry point
-│   ├── config/<...>/schema.yaml   # example schema config
+│   ├── config/tools/tool1         # example schema.yaml (table7 = fan-out)
 │   ├── doc-templates              # documentation templates in qmd/md, used in docs, README and other child pkgs
-│   ├── extdata                    # example data for tests and CI, loaded via system.file(), one dir per tool
+│   ├── extdata                    # test/CI example data via system.file(); tool1_outputs/ = table7 fan-out
 │   └── scripts                    # for random scripts
 ├── Makefile                       # Makefile, keep repetitive commands in here
 ├── man                            # ignore (Rd files)
@@ -36,6 +36,8 @@ nemo
 `Tool1` (`R/Tool1.R`) and `Workflow1` (`R/Workflow1.R`) are the canonical
 examples --- follow these when creating new tools or workflows. They demonstrate
 the full pattern: schema config, file discovery, raw parsing, and tidy output.
+`Tool1$tidy_table7()` is the fan-out example (one file → `table7main` +
+`table7dp`, declared under `outputs:`).
 
 ## ftypes (`schema.yaml` → `parse_by_ftype`)
 
@@ -74,6 +76,20 @@ Extension points a `Tool` subclass may override in `private`:
   `self$config$get_col_map(...)`
 - Use accessor methods, not direct field access: `list_files()` not `$files`,
   `get_tbls()` not `$tbls`.
+- `parse_<table>()`/`tidy_<table>()` are dispatched by schema table name, and
+  `Tool$initialize()` errors if a `parse_*`/`tidy_*` method matches no table
+  (`check_method_names()`).
+- **Fan-out = `outputs:`** under the file table in `schema.yaml` (rules in
+  `tidywf/docs/r-pkg/schema.md` → *Fan-out*). `dispatch_tidy()` requires a
+  custom `tidy_<table>()` for such a table and runs `check_outputs()` on its
+  result: exactly the declared outputs, each matching one schema version's
+  columns (in order, unless `shape: 'subset'`) and types. Outputs are written as
+  `<tool>_<output>` (`build_d_write()`). Config: `get_outputs()`,
+  `get_table_outputs()`, `get_output_shape()`; output rows appear in
+  `get_schemas_*()` with a `parent` column. No sentinel tables or
+  `flat_tidy_names` any more.
+- Schema `type` is only `char`/`int`/`float` (`schema_type_map`). Don't add
+  types (e.g. bool): coerce in the tool code instead.
 
 ## Key API (`R/`)
 
@@ -84,9 +100,9 @@ Extension points a `Tool` subclass may override in `private`:
 | `nemo_out_formats()`                          | `write.R`      | Returns valid format strings: `parquet`, `db`, `tsv`, `csv`, `rds`                |
 | `nemo_metadata(files, pkgs, ...)`             | `metadata.R`   | Assembles run-level metadata as a single-row tibble written to `metadata.parquet` |
 | `nemo_schema_reactable(tools, pkg, ...)`      | `schema_vis.R` | Interactive reactable schema explorer                                             |
-| `nemo_schemavis_data(tools, pkg)`             | `schema_vis.R` | Per-table schema tibble (versions, columns); internal, not exported               |
-| `nemo_gha_mermaid(actions_url, deploy_yaml)`  | `gha.R`        | Builds Mermaid CI/CD flowchart from local + remote YAML                           |
-| `nemo_uml()`                                  | `uml.R`        | Generates PlantUML SVG from R6 class names                                        |
+| `nemo_schemavis_data(tools, pkg)`             | `schema_vis.R` | Per-table schema tibble (+ output rows, `parent`); internal, not exported         |
+| `nemo_gha_mermaid(wf_dir, workflows, ...)`    | `gha.R`        | Builds Mermaid CI/CD flowchart from a `.github/workflows` dir                     |
+| `nemo_uml(classes, output_dir, pkg)`          | `uml.R`        | Generates PlantUML SVG from R6 class names                                        |
 | `nemo_enframe(x)`                             | `utils.R`      | Named list of tibbles → `name`/`data` tibble; used for 1-file → N-table fan-out   |
 | `nemoverse_wf_dispatch(wf)`                   | `utils.R`      | Workflow name (`wigits`/`dragen`/`workflow1`) → workflow class                    |
 | `read_parquet_grep(odir, lf, pattern, first)` | `utils.R`      | Read the one parquet in `lf` matching `pattern` (used in `@testexamples`)         |
@@ -139,7 +155,9 @@ vs roxytest-generated). Manually-tested classes here: `Tool`, `Tool1`,
 ## Dev commands
 
 Full Makefile target list (shared with tidywigits/tidydragen):
-`tidywf/docs/r-pkg/dev-commands.md`.
+`tidywf/docs/r-pkg/dev-commands.md`. Run `make fmt` (also run by `make test`)
+before committing: local air + panache on changed files, so the pre-commit hooks
+have nothing left to reformat.
 
 `devtools::load_all()` (no make equivalent) to load package interactively:
 
