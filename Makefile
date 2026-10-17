@@ -1,7 +1,19 @@
-.PHONY: all pkgdown test check-pushed bump
+.PHONY: all pkgdown test check-pushed bump fmt
 
 air:
 	@air format .
+
+# format tracked files changed vs HEAD with the pre-commit hooks' pinned
+# air + panache, so the commit hooks find nothing left to reformat
+fmt:
+	@files=$$(git diff --name-only --diff-filter=d HEAD); \
+	if [ -z "$$files" ]; then \
+		echo "fmt: no changed files"; \
+	elif ! command -v prek >/dev/null 2>&1; then \
+		echo "fmt: prek not found, skipping"; \
+	else \
+		prek run air-format panache-format --hide-status skipped --files $$files || true; \
+	fi
 
 readme:
 	@quarto render README.qmd
@@ -19,7 +31,7 @@ install:
 
 install-readme: install readme
 
-test:
+test: fmt
 	@R -e "devtools::test()" --quiet --no-restore --no-save
 
 check:
