@@ -1,12 +1,3 @@
-#' Sentinel prefix for schema tables with no file of their own
-#'
-#' Some schema tables are derived from a parent table's file rather than parsed
-#' from a file of their own (e.g. the DRAGEN FASTQC positional tables). Their
-#' `pattern` is set to `__no_file_match__<table>` so they never match a real
-#' file, and they carry no `glob`.
-#' @noRd
-NEMO_NO_FILE_MATCH <- "__no_file_match__"
-
 #' S3 Sync Patterns for a Workflow
 #'
 #' Builds the `aws s3 sync` include/exclude pattern tibble for a workflow,
@@ -192,9 +183,6 @@ schema_glob_check <- function(pkg, fixture_dir = NULL) {
     globs <- conf$get_globs()
     purrr::map(conf$get_tables() |> names(), \(tbl) {
       pat <- conf$get_pattern(tbl)
-      if (startsWith(pat, NEMO_NO_FILE_MATCH)) {
-        return(NULL)
-      }
       hits <- rel[grepl(pat, basename(rel), perl = TRUE)]
       if (length(hits) == 0) {
         return(NULL)

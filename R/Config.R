@@ -2,10 +2,16 @@
 #'
 #' @description
 #' Reads and parses a tool's `schema.yaml` from `inst/config/tools/<tool>/` in
-#' the package. The schema defines each output table: its file pattern, file
+#' the package. The schema defines each file table: its file pattern, file
 #' type, description, and versioned columns (raw name, tidy name, type, versions).
 #' Exposes raw and tidy schemas and column mappings used by `Tool` for
 #' file discovery and column renaming.
+#'
+#' A file table that splits into several output tables (fan-out) declares them
+#' under `outputs:`, each with a description and versioned tidy columns (`raw`
+#' optional: set only when the output is parsed straight from a section of the
+#' file). Output names share one namespace with table names. Outputs get their
+#' own rows in the schema tibbles, with `parent` set to the file table.
 #'
 #' A Config object:
 #' - belongs to a package (`pkg`)
@@ -30,6 +36,21 @@
 #' conf$get_schema_raw("table1", version = "v1.2.3")
 #' conf$get_schema_tidy("table1")
 #' (cm <- conf$get_col_map("table6"))
+#' # table7 fans out into two outputs
+#' (outs <- conf$get_outputs())
+#' conf$get_table_outputs("table7")
+#' conf$get_schema_tidy("table7dp")
+#'
+#' @testexamples
+#' expect_equal(conf$get_table_outputs("table7"), c("table7main", "table7dp"))
+#' expect_equal(conf$get_table_outputs("table1"), character())
+#' expect_named(outs, c("name", "table", "description"))
+#' expect_equal(outs$table[outs$name == "table7dp"], "table7")
+#' expect_equal(outs$table[outs$name == "table1"], "table1")
+#' expect_false("table7" %in% outs$name)
+#' expect_equal(rs$parent[rs$name == "table7"][1], NA_character_)
+#' expect_false("table7dp" %in% rs$name)
+#' expect_equal(unique(ts$parent[ts$name == "table7dp"]), "table7")
 #'
 #' @export
 Config <- R6::R6Class(
@@ -142,22 +163,79 @@ Config <- R6::R6Class(
     #' Named list of table definitions from schema.yaml.
     get_tables = function() private$tables,
 
-    #' @description Return raw schemas for all tables.
+    #' @description Return the output names declared under a table's
+    #' `outputs:`.
+    #' @param x (`character(1)`)\cr
+    #' Table name.
+    #' @return (`character(n)`)\cr
+    #' Output names, or `character(0)` when the table has no `outputs:`.
+    get_table_outputs = function(x) {
+      names(private$get_field_for_table(x, "outputs")) %||% character()
+    },
+
+    #' @description Return how strictly an output's tidy columns are checked.
+    #' `"exact"` (default): exactly the columns of one schema version, in
+    #' order. `"subset"`: any subset of them, in any order (for outputs whose
+    #' columns depend on the data, e.g. wide pivots of the metrics present).
+    #' @param x (`character(1)`)\cr
+    #' Output name.
+    #' @return (`character(1)`)\cr
+    #' `"exact"` or `"subset"`.
+    get_output_shape = function(x) {
+      nemo_assert_scalar_chr(x)
+      out <- purrr::detect(private$tables, \(tab) x %in% names(tab[["outputs"]]))
+      if (is.null(out)) {
+        nemo_stop(glue("{x} not found in outputs for {self$tool}."))
+      }
+      out[["outputs"]][[x]][["shape"]] %||% "exact"
+    },
+
+    #' @description Return every output table the tool writes: the declared
+    #' `outputs:` of a fan-out table, or the table itself otherwise.
     #' @return (`tibble()`)\cr
-    #' Table `name`, `tbl_description`, `version`, and `schema`
-    #' (list-col of tibble(field, type)).
+    #' Output `name`, its file `table` and `description`.
+    get_outputs = function() {
+      private$tables |>
+        purrr::imap(\(tab, tab_name) {
+          outs <- tab[["outputs"]]
+          if (is.null(outs)) {
+            return(tibble::tibble(
+              name = tab_name,
+              table = tab_name,
+              description = tab[["description"]]
+            ))
+          }
+          tibble::tibble(
+            name = names(outs),
+            table = tab_name,
+            description = unname(purrr::map_chr(outs, "description"))
+          )
+        }) |>
+        dplyr::bind_rows()
+    },
+
+    #' @description Return raw schemas for all tables, plus outputs that carry
+    #' raw column names.
+    #' @return (`tibble()`)\cr
+    #' Table `name`, `tbl_description`, `version`, `schema`
+    #' (list-col of tibble(field, type)) and `parent` (file table of an
+    #' output, `NA` for a file table).
     get_schemas_raw = function() private$schemas_raw,
 
-    #' @description Return tidy schemas for all tables.
+    #' @description Return tidy schemas for all tables and outputs.
     #' @return (`tibble()`)\cr
-    #' Table `name`, `tbl_description`, `version`, and `schema`
-    #' (list-col of tibble(field, type)).
+    #' Table `name`, `tbl_description`, `version`, `schema`
+    #' (list-col of tibble(field, type)) and `parent` (file table of an
+    #' output, `NA` for a file table).
     get_schemas_tidy = function() private$schemas_tidy,
 
-    #' @description Return both raw and tidy schemas for all tables.
+    #' @description Return both raw and tidy schemas for all tables and
+    #' outputs.
     #' @return (`tibble()`)\cr
-    #' Table `name`, `tbl_description`, `version`, and `schema`
-    #' (list-col of tibble(raw, tidy, type, description)).
+    #' Table `name`, `tbl_description`, `version`, `schema`
+    #' (list-col of tibble(raw, tidy, type, description); `raw` is `NA` for
+    #' output columns without one) and `parent` (file table of an output, `NA`
+    #' for a file table).
     get_schemas_both = function() private$schemas_both,
 
     #' @description Get raw schema for a specific table and optional version.
@@ -234,6 +312,7 @@ Config <- R6::R6Class(
         )
       }) |>
         unlist()
+      problems <- c(problems, private$validate_outputs())
       if (length(problems) > 0) {
         nemo_stop(glue(
           "Invalid schema.yaml for {self$pkg}::{self$tool}:\n",
@@ -242,12 +321,91 @@ Config <- R6::R6Class(
       }
       invisible(TRUE)
     },
+    # Output columns describe tidy output, so need `tidy` rather than `raw`.
+    # Output names are written as <tool>_<output>, hence one namespace with
+    # the table names.
+    validate_outputs = function() {
+      out_keys <- c("description", "columns")
+      col_keys <- c("tidy", "type", "versions")
+      tab_names <- names(private$tables)
+      problems <- purrr::imap(private$tables, \(tab, tab_name) {
+        outs <- tab[["outputs"]]
+        if (is.null(outs)) {
+          return(NULL)
+        }
+        if (
+          !is.list(outs) || length(outs) == 0 || is.null(names(outs)) || !all(nzchar(names(outs)))
+        ) {
+          return(glue("{tab_name}: outputs must be a non-empty named map"))
+        }
+        clash <- intersect(names(outs), tab_names)
+        out_probs <- purrr::imap(outs, \(out, out_name) {
+          loc <- glue("{tab_name} -> output '{out_name}'")
+          if (!is.list(out)) {
+            return(glue("{loc}: must be a map"))
+          }
+          missing_out <- setdiff(out_keys, names(out))
+          bad_shape <- !is.null(out[["shape"]]) && !isTRUE(out[["shape"]] %in% config_output_shapes)
+          col_probs <- purrr::imap(out[["columns"]] %||% list(), \(col, i) {
+            missing_col <- setdiff(col_keys, names(col))
+            if (length(missing_col) == 0) {
+              return(NULL)
+            }
+            glue(
+              "{loc} -> column '{col[['tidy']] %||% i}': ",
+              "missing {glue::glue_collapse(missing_col, sep = ', ')}"
+            )
+          })
+          c(
+            if (length(missing_out) > 0) {
+              glue("{loc}: missing {glue::glue_collapse(missing_out, sep = ', ')}")
+            },
+            if (bad_shape) {
+              glue(
+                "{loc}: shape must be one of {glue::glue_collapse(config_output_shapes, sep = ', ')}"
+              )
+            },
+            unlist(col_probs)
+          )
+        })
+        c(
+          if (length(clash) > 0) {
+            glue(
+              "{tab_name}: output name(s) clash with table name(s): {glue::glue_collapse(clash, sep = ', ')}"
+            )
+          },
+          unlist(out_probs)
+        )
+      }) |>
+        unlist()
+      all_outs <- unlist(
+        purrr::map(private$tables, \(tab) names(tab[["outputs"]])),
+        use.names = FALSE
+      )
+      dup <- unique(all_outs[duplicated(all_outs)])
+      c(
+        problems,
+        if (length(dup) > 0) {
+          glue(
+            "output name(s) declared by more than one table: {glue::glue_collapse(dup, sep = ', ')}"
+          )
+        }
+      )
+    },
     collect_invalid_schema_types = function() {
       private$tables |>
         purrr::imap(\(tab, tab_name) {
-          purrr::map(tab[["columns"]], \(col) {
-            tibble::tibble(name = tab_name, field = col[["raw"]], type = col[["type"]])
+          out_cols <- purrr::imap(tab[["outputs"]] %||% list(), \(out, out_name) {
+            purrr::map(out[["columns"]], \(col) {
+              tibble::tibble(name = out_name, field = col[["tidy"]], type = col[["type"]])
+            })
           })
+          c(
+            purrr::map(tab[["columns"]], \(col) {
+              tibble::tibble(name = tab_name, field = col[["raw"]], type = col[["type"]])
+            }),
+            purrr::list_flatten(out_cols)
+          )
         }) |>
         purrr::list_flatten() |>
         dplyr::bind_rows() |>
@@ -308,14 +466,15 @@ Config <- R6::R6Class(
       purrr::map_chr(private$tables, \(x) x[[key]]) |>
         tibble::enframe(name = "name", value = key)
     },
-    compute_schema_one = function(tab, tab_name) {
-      cols_df <- tab[["columns"]] |>
+    # One row per version of a file table or output (`parent` = its file table).
+    compute_schema_rows = function(columns, name, description, parent = NA_character_) {
+      cols_df <- columns |>
         purrr::map(\(col) {
           tibble::tibble(
-            raw = col[["raw"]],
+            raw = col[["raw"]] %||% NA_character_,
             tidy = col[["tidy"]],
             type = col[["type"]],
-            description = col[["description"]],
+            description = col[["description"]] %||% NA_character_,
             versions = list(col[["versions"]])
           )
         }) |>
@@ -327,13 +486,29 @@ Config <- R6::R6Class(
           dplyr::mutate(type = schema_type_remap(.data$type)) |>
           dplyr::select("raw", "tidy", "type", "description")
         tibble::tibble(
-          name = tab_name,
-          tbl_description = tab[["description"]],
+          name = name,
+          tbl_description = description,
           version = v,
-          schema = list(cols_v)
+          schema = list(cols_v),
+          parent = parent
         )
       }) |>
         dplyr::bind_rows()
+    },
+    compute_schema_one = function(tab, tab_name) {
+      outs <- purrr::imap(tab[["outputs"]] %||% list(), \(out, out_name) {
+        private$compute_schema_rows(
+          out[["columns"]],
+          out_name,
+          out[["description"]],
+          parent = tab_name
+        )
+      })
+      # unname: bind_rows() packs a named list of tibbles into df-columns
+      dplyr::bind_rows(
+        private$compute_schema_rows(tab[["columns"]], tab_name, tab[["description"]]),
+        unname(outs)
+      )
     },
     compute_schemas = function() {
       private$tables |>
@@ -341,6 +516,10 @@ Config <- R6::R6Class(
         dplyr::bind_rows()
     },
     derive_schema = function(cache, side) {
+      # outputs without raw names are never parsed from a file
+      if (side == "raw") {
+        cache <- dplyr::filter(cache, purrr::map_lgl(.data$schema, \(s) !anyNA(s[["raw"]])))
+      }
       # field + type only: deframe()d straight into readr col specs
       cache |>
         dplyr::mutate(
@@ -385,6 +564,8 @@ Config <- R6::R6Class(
 )
 
 schema_type_map <- c(char = "c", float = "d", int = "i")
+
+config_output_shapes <- c("exact", "subset")
 
 schema_type_remap <- function(x) {
   unname(schema_type_map[x])

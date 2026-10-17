@@ -173,16 +173,110 @@ Tool <- R6::R6Class(
     },
     # Calls custom tidy_{table_name}() if defined, else tidy_file().
     # `x` is a path or an already-parsed tibble (keep_raw = TRUE).
+    # A table with `outputs:` needs a custom tidy, checked against the schema.
     dispatch_tidy = function(x, table_name) {
       fun <- glue("tidy_{table_name}")
+      outputs <- self$config$get_table_outputs(table_name)
       if (is.function(self[[fun]])) {
         if (!tibble::is_tibble(x)) {
           x <- private$dispatch_parse(x, table_name)
         }
-        self[[fun]](x)
+        res <- self[[fun]](x)
+        if (length(outputs) > 0) {
+          private$check_outputs(res, table_name, outputs)
+        }
+        res
+      } else if (length(outputs) > 0) {
+        nemo_stop(glue(
+          "'{table_name}' declares outputs ({glue::glue_collapse(outputs, sep = ', ')}) ",
+          "but {class(self)[1]} has no tidy_{table_name}() to produce them."
+        ))
       } else {
         private$tidy_file(x, table_name)
       }
+    },
+    # A fan-out tidy_*() must return exactly its declared outputs, each with
+    # the columns (in order; any subset in any order for shape: subset) and
+    # types of one of its schema versions - the one in its file_version attr,
+    # if set.
+    check_outputs = function(res, table_name, outputs) {
+      ctx <- glue("tidy_{table_name}()")
+      if (!tibble::is_tibble(res) || !all(c("name", "data") %in% names(res))) {
+        nemo_stop(glue("{ctx} must return a nemo_enframe() tibble with columns name and data."))
+      }
+      missing <- setdiff(outputs, res[["name"]])
+      extra <- setdiff(res[["name"]], outputs)
+      dup <- unique(res[["name"]][duplicated(res[["name"]])])
+      if (length(missing) + length(extra) + length(dup) > 0) {
+        nemo_stop(glue(
+          "{ctx} outputs do not match the schema.",
+          if (length(missing) > 0) " Missing: {glue::glue_collapse(missing, sep = ', ')}." else "",
+          if (length(extra) > 0) " Undeclared: {glue::glue_collapse(extra, sep = ', ')}." else "",
+          if (length(dup) > 0) " Duplicated: {glue::glue_collapse(dup, sep = ', ')}." else ""
+        ))
+      }
+      purrr::walk2(res[["name"]], res[["data"]], \(nm, d) private$check_output_shape(d, nm, ctx))
+      invisible(TRUE)
+    },
+    check_output_shape = function(d, output, ctx) {
+      schemas <- self$config$get_schema_tidy(output)
+      v <- attr(d, "file_version")
+      if (!is.null(v)) {
+        if (!v %in% schemas[["version"]]) {
+          nemo_stop(glue("{ctx}: output '{output}' has no schema for version '{v}'."))
+        }
+        schemas <- dplyr::filter(schemas, .data$version == v)
+      }
+      by_version <- split(schemas, schemas[["version"]])
+      subset <- self$config$get_output_shape(output) == "subset"
+      matches <- if (subset) {
+        \(s) all(names(d) %in% s[["field"]])
+      } else {
+        \(s) identical(names(d), s[["field"]])
+      }
+      hit <- purrr::detect(by_version, matches)
+      if (is.null(hit)) {
+        expected <- by_version[[length(by_version)]]
+        extra <- if (subset) {
+          glue(
+            "\n  undeclared: {glue::glue_collapse(setdiff(names(d), expected$field), sep = ', ')}"
+          )
+        } else {
+          ""
+        }
+        nemo_stop(glue(
+          "{ctx}: output '{output}' columns match no schema version.\n",
+          "  got: {glue::glue_collapse(names(d), sep = ', ')}\n",
+          "  expected ({expected$version[1]}): {glue::glue_collapse(expected$field, sep = ', ')}",
+          "{extra}"
+        ))
+      }
+      hit <- dplyr::filter(hit, .data$field %in% names(d))
+      is_type <- list(c = is.character, d = is.double, i = is.integer)
+      ok <- purrr::map2_lgl(hit[["field"]], hit[["type"]], \(f, t) is_type[[t]](d[[f]]))
+      if (!all(ok)) {
+        got <- purrr::map_chr(d[hit[["field"]][!ok]], \(x) class(x)[1])
+        bad <- glue("{hit$field[!ok]} ({hit$type[!ok]}, got {got})")
+        nemo_stop(glue(
+          "{ctx}: output '{output}' column type mismatch: {glue::glue_collapse(bad, sep = ', ')}."
+        ))
+      }
+      invisible(TRUE)
+    },
+    # parse_/tidy_ methods are dispatched by table name, so a typo'd or stale
+    # name would silently fall back to the ftype default.
+    check_method_names = function() {
+      meths <- grep("^(parse|tidy)_", names(self), value = TRUE)
+      meths <- meths[purrr::map_lgl(meths, \(m) is.function(self[[m]]))]
+      bad <- meths[!sub("^(parse|tidy)_", "", meths) %in% names(self$config$get_tables())]
+      if (length(bad) > 0) {
+        nemo_stop(glue(
+          "{class(self)[1]} method(s) match no schema table: ",
+          "{glue::glue_collapse(sort(bad), sep = ', ')}. ",
+          "parse_<table>()/tidy_<table>() names must match a table in schema.yaml."
+        ))
+      }
+      invisible(TRUE)
     },
     # Subclass hook: named list of pkg-specific ftype parsers,
     # `ftype = function(x, table_name)`.
@@ -269,21 +363,18 @@ Tool <- R6::R6Class(
       # format "db" has no output_dir and never uses fpfix, but file.path(NULL, x)
       # is length 0 and would break the if_else() below
       output_dir <- output_dir %||% "."
+      fanout <- names(purrr::keep(self$config$get_tables(), \(tab) !is.null(tab[["outputs"]])))
       tbls_with_tidy |>
         dplyr::rename(raw_path = "path") |>
         dplyr::select("raw_path", "tool_parser", "parser", "prefix", "tidy") |>
         tidyr::unnest("tidy", names_sep = "_") |>
         dplyr::mutate(
-          # flat: <tool>_<tidy_name>; else <tool>_<parser><tidy_name>
-          tbl_name = if (isTRUE(self$flat_tidy_names)) {
-            paste0(self$name, "_", .data$tidy_name)
-          } else {
-            dplyr::if_else(
-              .data$parser == .data$tidy_name,
-              .data$tool_parser,
-              paste0(.data$tool_parser, .data$tidy_name)
-            )
-          },
+          # schema outputs: <tool>_<output>; else <tool>_<parser>[<tidy_name>]
+          tbl_name = dplyr::case_when(
+            .data$parser %in% fanout ~ paste0(self$name, "_", .data$tidy_name),
+            .data$parser == .data$tidy_name ~ .data$tool_parser,
+            .default = paste0(.data$tool_parser, .data$tidy_name)
+          ),
           # run-scoped tools (no sample prefix, just ""/_2/_3) -> <tool>_<table>[_N].
           # compute_files() turns an empty prefix into the parser name, so ""
           # only reaches here when a subclass refine_files() sets it.
@@ -298,17 +389,13 @@ Tool <- R6::R6Class(
           )
         )
     },
-    # With flat_tidy_names, two outputs must not collide on the same name.
+    # Two outputs must not collide on the same name (one would overwrite the other).
     assert_no_dup_fpfix = function(fpfixes) {
-      if (!isTRUE(self$flat_tidy_names)) {
-        return(invisible(NULL))
-      }
       dup <- unique(fpfixes[duplicated(fpfixes)])
       if (length(dup) > 0) {
         nemo_stop(glue(
-          "flat_tidy_names = TRUE produced duplicate output name(s): ",
-          "{glue::glue_collapse(basename(dup), sep = '; ')}. ",
-          "Sub-table tidy_names must be unique across the tool's outputs."
+          "Duplicate output name(s): {glue::glue_collapse(basename(dup), sep = '; ')}. ",
+          "Sub-table names must be unique across the tool's outputs."
         ))
       }
       invisible(NULL)
@@ -362,16 +449,6 @@ Tool <- R6::R6Class(
     #' @field written_files (`tibble()`)\cr
     #' Tibble of files written from `self$write()`.
     written_files = NULL,
-    #' @field flat_tidy_names (`logical(1)`)\cr
-    #' Controls how a fanned-out (one-file-to-many-tables) output is named. When
-    #' `FALSE`, a sub-table's name is the parser table name concatenated
-    #' with its `tidy_name` (e.g. parser `gcmed` + `sample` -> `gcmedsample`).
-    #' When `TRUE`, the output is named `<tool>_<tidy_name>` directly (e.g.
-    #' `dragenfqc_posbasecontent`). Fan-out tools in the child packages set
-    #' `TRUE`; tools that never fan out keep the `FALSE` default. `tidy_name`s
-    #' must then be unique across the tool's outputs - `write()` errors on
-    #' collisions.
-    flat_tidy_names = FALSE,
     #' @description Create a new Tool object.
     #' @param name (`character(1)`)\cr
     #' Name of tool.
@@ -401,6 +478,7 @@ Tool <- R6::R6Class(
       self$pkg <- pkg
       self$path <- if (!is.null(path)) normalizePath(path) else NULL
       self$config <- Config$new(self$name, pkg = self$pkg)
+      private$check_method_names()
       private$files_tbl <- files_tbl
       private$files <- private$compute_files()
     },

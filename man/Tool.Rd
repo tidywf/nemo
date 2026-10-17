@@ -70,16 +70,6 @@ Config of tool.}
 
 \item{\code{written_files}}{(\code{tibble()})\cr
 Tibble of files written from \code{self$write()}.}
-
-\item{\code{flat_tidy_names}}{(\code{logical(1)})\cr
-Controls how a fanned-out (one-file-to-many-tables) output is named. When
-\code{FALSE}, a sub-table's name is the parser table name concatenated
-with its \code{tidy_name} (e.g. parser \code{gcmed} + \code{sample} -> \code{gcmedsample}).
-When \code{TRUE}, the output is named \verb{<tool>_<tidy_name>} directly (e.g.
-\code{dragenfqc_posbasecontent}). Fan-out tools in the child packages set
-\code{TRUE}; tools that never fan out keep the \code{FALSE} default. \code{tidy_name}s
-must then be unique across the tool's outputs - \code{write()} errors on
-collisions.}
 }
 \if{html}{\out{</div>}}
 }

@@ -2,7 +2,7 @@
 
 # File R/sync.R: @testexamples
 
-test_that("Function wf_sync_patterns() @ L34", {
+test_that("Function wf_sync_patterns() @ L25", {
   
   (pats <- wf_sync_patterns("workflow1"))
   expect_equal(names(pats), c("inex", "pat"))
@@ -13,7 +13,7 @@ test_that("Function wf_sync_patterns() @ L34", {
 })
 
 
-test_that("Function glob_to_regex() @ L98", {
+test_that("Function glob_to_regex() @ L89", {
   
   (r1 <- glob_to_regex("*.purple.qc"))
   (r2 <- glob_to_regex("*purple/*.purple.qc"))
@@ -40,7 +40,7 @@ test_that("Function glob_to_regex() @ L98", {
 })
 
 
-test_that("Function schema_glob_check() @ L177", {
+test_that("Function schema_glob_check() @ L168", {
   
   (bad <- schema_glob_check("nemo"))
   expect_equal(nrow(bad), 0)

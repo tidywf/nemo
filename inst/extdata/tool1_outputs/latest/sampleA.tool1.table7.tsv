@@ -1,0 +1,2 @@
+SampleID	TotalReads	MappedReads	DepthCov_10	DepthCov_20	DepthCov_30
+sampleA	1000	950	0.98	0.9	0.75
