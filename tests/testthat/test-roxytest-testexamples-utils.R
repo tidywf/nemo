@@ -16,7 +16,18 @@ test_that("Function list_files_dir() @ L29", {
 })
 
 
-test_that("Function get_tbl_version_attr() @ L71", {
+test_that("Function uniquify_prefixes() @ L74", {
+  
+  (u1 <- uniquify_prefixes(c("a", "a", "b", "a")))
+  # the second "s1" would naively become "s1_2", which is already taken
+  (u2 <- uniquify_prefixes(c("s1", "s1", "s1_2")))
+  expect_equal(u1, c("a", "a_2", "b", "a_3"))
+  expect_equal(u2, c("s1", "s1_3", "s1_2"))
+  expect_equal(uniquify_prefixes(character()), character())
+})
+
+
+test_that("Function get_tbl_version_attr() @ L105", {
   
   path <- system.file("extdata/tool1", package = "nemo")
   path2 <- file.path(path, "v1.2.3", "sampleA.tool1.table1.tsv")
@@ -29,7 +40,7 @@ test_that("Function get_tbl_version_attr() @ L71", {
 })
 
 
-test_that("Function set_tbl_version_attr() @ L95", {
+test_that("Function set_tbl_version_attr() @ L129", {
   
   d <- tibble::tibble(a = 1:3, b = letters[1:3])
   v <- "v1.2.3"
@@ -40,14 +51,14 @@ test_that("Function set_tbl_version_attr() @ L95", {
 })
 
 
-test_that("Function empty_tbl() @ L116", {
+test_that("Function empty_tbl() @ L150", {
   
   (x <- empty_tbl(cnames = c("a", "b", "c")))
   expect_equal(nrow(x), 0)
 })
 
 
-test_that("Function nemoverse_wf_dispatch() @ L157", {
+test_that("Function nemoverse_wf_dispatch() @ L191", {
   
   (fun <- nemoverse_wf_dispatch("workflow1"))
   expect_identical(fun, Workflow1)
@@ -55,7 +66,7 @@ test_that("Function nemoverse_wf_dispatch() @ L157", {
 })
 
 
-test_that("Function read_parquet_grep() @ L208", {
+test_that("Function read_parquet_grep() @ L242", {
   
   odir <- fs::dir_create(tempfile())
   arrow::write_parquet(data.frame(x = 1L), file.path(odir, "a_1.parquet"))
@@ -71,7 +82,7 @@ test_that("Function read_parquet_grep() @ L208", {
 })
 
 
-test_that("Function pkg_found() @ L235", {
+test_that("Function pkg_found() @ L269", {
   
   pkg_found("base")
   pkg_found("somefakepackagename")

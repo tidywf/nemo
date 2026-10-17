@@ -460,3 +460,34 @@ test_that("Tool accepts any subset of columns, in any order, for shape: subset",
   }
   expect_error(tool1_subset(added)$tidy(), "undeclared: foo")
 })
+
+test_that("Tool prefixes stay unique when both disambiguation passes add suffixes", {
+  # run1/{sampleA,sampleB} + run2/sampleA; refine_files() folds sampleB into
+  # sampleA, so the bname pass gives run2's file sampleA_2 and the prefix pass
+  # would naively give run1's sampleB sampleA_2 as well
+  src <- system.file("extdata/tool1/latest/sampleA.tool1.table1.tsv", package = "nemo")
+  d <- withr::local_tempdir()
+  fs::dir_create(file.path(d, c("run1", "run2")))
+  fs::file_copy(src, file.path(d, "run1", "sampleA.tool1.table1.tsv"))
+  fs::file_copy(src, file.path(d, "run1", "sampleB.tool1.table1.tsv"))
+  fs::file_copy(src, file.path(d, "run2", "sampleA.tool1.table1.tsv"))
+  ToolFold <- R6::R6Class(
+    "ToolFold",
+    inherit = Tool,
+    cloneable = FALSE,
+    private = list(
+      refine_files = function(files) {
+        files$prefix <- "sampleA"
+        files
+      }
+    )
+  )
+  tool <- ToolFold$new(name = name, pkg = pkg, path = d)
+  lf <- tool$list_files()
+  pfx <- setNames(lf$prefix, basename(dirname(lf$path)))[order(lf$path)]
+  expect_false(anyDuplicated(lf$prefix) > 0)
+  expect_equal(unname(pfx), c("sampleA", "sampleA_3", "sampleA_2"))
+  out <- withr::local_tempdir()
+  tool$run(output_dir = out, format = "tsv", write_metadata = FALSE)
+  expect_length(list.files(out), 3)
+})

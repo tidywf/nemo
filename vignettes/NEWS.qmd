@@ -77,6 +77,10 @@ child1 <- system.file(
 
 ### Bug fixes
 
+- Output prefixes no longer collide when one recursive tidy holds repeat runs of
+  a sample and a parser matches two basenames reducing to the same prefix (e.g.
+  WiGiTS `redux` vs plain `duplicate_freq` files); previously one output
+  silently overwrote the other.
 - Tools with no sample prefix no longer get a leading `_` in output names.
 
 ### Infrastructure

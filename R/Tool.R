@@ -117,16 +117,9 @@ Tool <- R6::R6Class(
           ),
           prefix = paste0(.data$prefix, .data$prefix_suffix)
         ) |>
-        # different basenames can reduce to the same prefix: append _2, _3...
-        dplyr::mutate(grp2 = dplyr::row_number(), .by = c("tool_parser", "prefix")) |>
-        dplyr::mutate(
-          prefix = dplyr::if_else(
-            .data$grp2 == 1,
-            .data$prefix,
-            paste0(.data$prefix, "_", .data$grp2)
-          )
-        ) |>
-        dplyr::select(-"grp2") |>
+        # different basenames can reduce to the same prefix: append _2, _3...,
+        # skipping names the bname pass above already handed out
+        dplyr::mutate(prefix = uniquify_prefixes(.data$prefix), .by = "tool_parser") |>
         dplyr::relocate("tool_parser", .before = 1)
     },
     prepend_id_cols = function(d, tidy_name, prefix, input_id, output_id, prefix_include) {
