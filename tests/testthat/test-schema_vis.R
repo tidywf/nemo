@@ -18,3 +18,16 @@ test_that("schema_columns_detail marks per-version column presence", {
   )
   expect_true(grepl("*.tool1.table1.tsv", html, fixed = TRUE))
 })
+
+test_that("schema tables number rows in display order", {
+  d <- nemo_schemavis_data("tool1", pkg = "nemo")
+  main <- htmltools::renderTags(reactable_schema(d))$html
+  expect_match(main, "viewIndex + 1", fixed = TRUE)
+  i <- which(d$tbl == "table1")
+  detail <- htmltools::renderTags(schema_columns_detail(
+    d$columns[[i]],
+    d$versions[[i]],
+    d$ftype[[i]]
+  ))$html
+  expect_match(detail, "viewIndex + 1", fixed = TRUE)
+})

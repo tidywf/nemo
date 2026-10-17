@@ -42,7 +42,8 @@ child1 <- system.file(
   `get_output_shape()`. `get_schemas_raw()`/`get_schemas_tidy()`/
   `get_schemas_both()` include output rows and gain a `parent` column (the file
   table of an output). `nemo_schema_reactable()` lists outputs after their file
-  table.
+  table, and both it and its expanded column tables number rows in display order
+  (`#`).
 - `Tool` errors on construction when a `parse_*()`/`tidy_*()` method matches no
   schema table, instead of a typo'd name silently falling back to the ftype
   default parser.

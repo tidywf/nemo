@@ -48,7 +48,8 @@ reactable_schema <- function(dat, tool_colours = NULL, ...) {
   tool_cols <- rlang::set_names(as.character(tool_colours[tools]), tools)
   tool_cols[is.na(tool_cols)] <- "#868e96"
   w <- reactable::reactable(
-    dplyr::select(dat, dplyr::all_of(cols)),
+    dplyr::select(dat, dplyr::all_of(cols)) |>
+      dplyr::mutate(row = seq_len(dplyr::n()), .before = 1),
     class = "nemo-schema",
     searchable = TRUE,
     filterable = TRUE,
@@ -75,6 +76,7 @@ reactable_schema <- function(dat, tool_colours = NULL, ...) {
     },
     columns = list(
       .details = colDef(name = "", width = 36),
+      row = schema_row_col(),
       tool = colDef(
         name = "Tool",
         width = schema_col_width(tools, extra = 40),
@@ -135,7 +137,7 @@ schema_columns_detail <- function(x, versions, ftype, parent = NA_character_) {
       style = "padding: 8px 16px 16px 40px; font-size: 0.9em;",
       htmltools::strong("ftype: "),
       htmltools::code(ftype),
-      " \u00b7 parsed by its own parser; columns are on its outputs below."
+      " \u00b7 parsed by its own parser; its columns are on its output tables (\"output of\" this table)."
     ))
   }
   pres <- purrr::map(versions, \(v) {
@@ -143,7 +145,11 @@ schema_columns_detail <- function(x, versions, ftype, parent = NA_character_) {
   }) |>
     rlang::set_names(versions) |>
     tibble::as_tibble()
-  d <- dplyr::bind_cols(dplyr::select(x, -"versions"), pres)
+  d <- dplyr::bind_cols(
+    tibble::tibble(row = seq_len(nrow(x))),
+    dplyr::select(x, -"versions"),
+    pres
+  )
   # outputs not parsed straight from a file have no raw names
   if (all(is.na(d[["raw"]]))) {
     d[["raw"]] <- NULL
@@ -185,6 +191,7 @@ schema_columns_detail <- function(x, versions, ftype, parent = NA_character_) {
         headerStyle = list(backgroundColor = "rgba(127, 127, 127, 0.10)")
       ),
       columns = c(
+        list(row = schema_row_col()),
         list(
           raw = colDef(minWidth = 110, style = mono),
           tidy = colDef(minWidth = 110, style = mono),
@@ -194,6 +201,27 @@ schema_columns_detail <- function(x, versions, ftype, parent = NA_character_) {
         vcols
       )
     )
+  )
+}
+
+#' Row number column
+#'
+#' Numbers rows in display order (after search, filter and sort), not data
+#' order, so they always read 1, 2, 3, ... Both schema tables are unpaginated,
+#' so the view index is the row number.
+#'
+#' @return A `reactable::colDef()`.
+#' @keywords internal
+schema_row_col <- function() {
+  reactable::colDef(
+    name = "#",
+    width = 48,
+    align = "right",
+    sortable = FALSE,
+    filterable = FALSE,
+    searchable = FALSE,
+    cell = reactable::JS("function(cellInfo) { return cellInfo.viewIndex + 1 }"),
+    style = list(color = "rgba(127, 127, 127, 0.9)", fontVariantNumeric = "tabular-nums")
   )
 }
 

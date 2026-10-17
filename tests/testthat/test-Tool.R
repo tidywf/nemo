@@ -511,5 +511,5 @@ test_that("schema detail view handles a table without columns", {
     versions = list()
   )
   html <- htmltools::renderTags(schema_columns_detail(x, character(), "json"))$html
-  expect_match(html, "columns are on its outputs")
+  expect_match(html, "columns are on its output tables")
 })
