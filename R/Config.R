@@ -11,7 +11,10 @@
 #' under `outputs:`, each with a description and versioned tidy columns (`raw`
 #' optional: set only when the output is parsed straight from a section of the
 #' file). Output names share one namespace with table names. Outputs get their
-#' own rows in the schema tibbles, with `parent` set to the file table.
+#' own rows in the schema tibbles, with `parent` set to the file table. A
+#' fan-out table read by its own `parse_<table>()` may omit `columns:`
+#' (JSON, multi-section or configurable files); it then has no schema rows of
+#' its own.
 #'
 #' A Config object:
 #' - belongs to a package (`pkg`)
@@ -288,7 +291,10 @@ Config <- R6::R6Class(
       tab_keys <- c("description", "pattern", "ftype", "columns")
       col_keys <- c("raw", "tidy", "type", "versions")
       problems <- purrr::imap(private$tables, \(tab, tab_name) {
-        missing_tab <- setdiff(tab_keys, names(tab))
+        # a fan-out table read by its own parse_<table>() may omit columns:
+        # (Tool checks the method exists)
+        keys <- if (is.null(tab[["outputs"]])) tab_keys else setdiff(tab_keys, "columns")
+        missing_tab <- setdiff(keys, names(tab))
         not_string <- purrr::keep(
           c("description", "pattern", "ftype"),
           \(k) k %in% names(tab) && !rlang::is_string(tab[[k]])
@@ -506,11 +512,12 @@ Config <- R6::R6Class(
           parent = tab_name
         )
       })
+      # no columns: (custom-parsed fan-out file) -> no schema rows of its own
+      own <- if (length(tab[["columns"]]) > 0) {
+        private$compute_schema_rows(tab[["columns"]], tab_name, tab[["description"]])
+      }
       # unname: bind_rows() packs a named list of tibbles into df-columns
-      dplyr::bind_rows(
-        private$compute_schema_rows(tab[["columns"]], tab_name, tab[["description"]]),
-        unname(outs)
-      )
+      dplyr::bind_rows(own, unname(outs))
     },
     compute_schemas = function() {
       private$tables |>

@@ -36,7 +36,8 @@ child1 <- system.file(
   outputs whose columns depend on the data. `Tool` checks every fan-out
   `tidy_*()` result against them: all declared outputs returned, each with the
   columns (in order) and types of one of its schema versions. Outputs are
-  written as `<tool>_<output>`.
+  written as `<tool>_<output>`. A fan-out table read by its own
+  `parse_<table>()` may omit `columns:`.
 - New `Config` methods `get_outputs()`, `get_table_outputs()` and
   `get_output_shape()`. `get_schemas_raw()`/`get_schemas_tidy()`/
   `get_schemas_both()` include output rows and gain a `parent` column (the file

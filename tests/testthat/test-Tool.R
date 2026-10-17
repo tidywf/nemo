@@ -491,3 +491,25 @@ test_that("Tool prefixes stay unique when both disambiguation passes add suffixe
   tool$run(output_dir = out, format = "tsv", write_metadata = FALSE)
   expect_length(list.files(out), 3)
 })
+
+test_that("Tool requires a parse_ for a table without columns", {
+  t7 <- Tool1$new(path7)
+  priv <- t7$config$.__enclos_env__$private
+  tabs <- priv$tables
+  tabs$table7$columns <- NULL
+  priv$tables <- tabs
+  # Tool1 has tidy_table7() but no parse_table7()
+  expect_error(t7$tidy(), "needs a parse_table7\\(\\) to read it")
+})
+
+test_that("schema detail view handles a table without columns", {
+  x <- tibble::tibble(
+    raw = character(),
+    tidy = character(),
+    type = character(),
+    description = character(),
+    versions = list()
+  )
+  html <- htmltools::renderTags(schema_columns_detail(x, character(), "json"))$html
+  expect_match(html, "columns are on its outputs")
+})

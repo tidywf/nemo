@@ -2,7 +2,7 @@
 
 # File R/Config.R: @testexamples
 
-test_that("Function Config() @ L56", {
+test_that("Function Config() @ L59", {
   
   tool <- "tool1"
   pkg <- "nemo"
@@ -37,7 +37,7 @@ test_that("Function Config() @ L56", {
 })
 
 
-test_that("Function config_sort_versions() @ L594", {
+test_that("Function config_sort_versions() @ L624", {
   
   config_sort_versions(c("v2.0.0", "v1.0.0", "latest"))
   config_sort_versions(c("latest", "v1.2.3"))

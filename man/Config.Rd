@@ -14,7 +14,10 @@ A file table that splits into several output tables (fan-out) declares them
 under \verb{outputs:}, each with a description and versioned tidy columns (\code{raw}
 optional: set only when the output is parsed straight from a section of the
 file). Output names share one namespace with table names. Outputs get their
-own rows in the schema tibbles, with \code{parent} set to the file table.
+own rows in the schema tibbles, with \code{parent} set to the file table. A
+fan-out table read by its own \verb{parse_<table>()} may omit \verb{columns:}
+(JSON, multi-section or configurable files); it then has no schema rows of
+its own.
 
 A Config object:
 \itemize{

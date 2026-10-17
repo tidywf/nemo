@@ -156,10 +156,16 @@ Tool <- R6::R6Class(
       })
     },
     # Calls custom parse_{table_name}() if defined, else parse_by_ftype().
+    # A table without columns: has no schema to parse by, so needs the former.
     dispatch_parse = function(x, table_name) {
       fun <- glue("parse_{table_name}")
       if (is.function(self[[fun]])) {
         self[[fun]](x)
+      } else if (length(self$config$get_tables()[[table_name]][["columns"]]) == 0) {
+        nemo_stop(glue(
+          "'{table_name}' has no columns: in schema.yaml, ",
+          "so {class(self)[1]} needs a parse_{table_name}() to read it."
+        ))
       } else {
         private$parse_by_ftype(x, table_name)
       }

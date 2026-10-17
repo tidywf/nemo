@@ -130,6 +130,14 @@ reactable_schema <- function(dat, tool_colours = NULL, ...) {
 #' @keywords internal
 schema_columns_detail <- function(x, versions, ftype, parent = NA_character_) {
   colDef <- reactable::colDef
+  if (nrow(x) == 0) {
+    return(htmltools::div(
+      style = "padding: 8px 16px 16px 40px; font-size: 0.9em;",
+      htmltools::strong("ftype: "),
+      htmltools::code(ftype),
+      " \u00b7 parsed by its own parser; columns are on its outputs below."
+    ))
+  }
   pres <- purrr::map(versions, \(v) {
     ifelse(purrr::map_lgl(x[["versions"]], \(vs) v %in% vs), "●", "")
   }) |>
@@ -311,6 +319,16 @@ schema_mono <- function() {
 #' expect_false(grepl("NA", d$col_names[d$tbl == "table7dp"]))
 nemo_schemavis_data <- function(tools, pkg = "nemo") {
   cols_tbl <- function(cols) {
+    if (length(cols) == 0) {
+      # custom-parsed fan-out file: its columns live on its outputs
+      return(tibble::tibble(
+        raw = character(),
+        tidy = character(),
+        type = character(),
+        description = character(),
+        versions = list()
+      ))
+    }
     purrr::map(cols, \(col) {
       tibble::tibble(
         raw = col[["raw"]] %||% NA_character_,

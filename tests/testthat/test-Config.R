@@ -113,3 +113,20 @@ test_that("Config schema lookups are memoised but errors are not", {
     expect_error(conf$get_schema_raw("table1", version = "v9"), "v9 not found")
   }
 })
+
+test_that("Config allows omitting columns only on a table with outputs", {
+  conf <- Config$new("tool1", "nemo")
+  priv <- conf$.__enclos_env__$private
+  good <- priv$tables
+  nocols <- good
+  nocols$table7$columns <- NULL
+  priv$tables <- nocols
+  expect_true(priv$validate_tables())
+  both <- priv$compute_schemas()
+  expect_false("table7" %in% both$name)
+  expect_true(all(c("table7main", "table7dp") %in% both$name))
+  bad <- good
+  bad$table1$columns <- NULL
+  priv$tables <- bad
+  expect_error(priv$validate_tables(), "table1: missing columns")
+})

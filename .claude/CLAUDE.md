@@ -87,7 +87,8 @@ Extension points a `Tool` subclass may override in `private`:
   `<tool>_<output>` (`build_d_write()`). Config: `get_outputs()`,
   `get_table_outputs()`, `get_output_shape()`; output rows appear in
   `get_schemas_*()` with a `parent` column. No sentinel tables or
-  `flat_tidy_names` any more.
+  `flat_tidy_names` any more. A fan-out table may omit `columns:`; then it has
+  no schema rows and `dispatch_parse()` requires its `parse_<table>()`.
 - Schema `type` is only `char`/`int`/`float` (`schema_type_map`). Don't add
   types (e.g. bool): coerce in the tool code instead.
 
