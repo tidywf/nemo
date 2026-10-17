@@ -3,16 +3,20 @@
 air:
 	@air format .
 
-# format tracked files changed vs HEAD with the pre-commit hooks' pinned
-# air + panache, so the commit hooks find nothing left to reformat
+# format tracked files changed vs HEAD with the local air + panache (same file
+# types and excludes as the pre-commit hooks; versions may differ from the pins)
 fmt:
 	@files=$$(git diff --name-only --diff-filter=d HEAD); \
-	if [ -z "$$files" ]; then \
-		echo "fmt: no changed files"; \
-	elif ! command -v prek >/dev/null 2>&1; then \
-		echo "fmt: prek not found, skipping"; \
-	else \
-		prek run air-format panache-format --hide-status skipped --files $$files || true; \
+	rfiles=$$(printf '%s\n' $$files | grep -E '\.[Rr]$$'); \
+	mdfiles=$$(printf '%s\n' $$files | grep -E '\.(qmd|Rmd|md|markdown|mdown|mkd)$$'); \
+	if [ -z "$$rfiles$$mdfiles" ]; then echo "fmt: no changed R/Markdown files"; fi; \
+	if [ -n "$$rfiles" ]; then \
+		if command -v air >/dev/null 2>&1; then air format $$rfiles; \
+		else echo "fmt: air not found, skipping R files"; fi; \
+	fi; \
+	if [ -n "$$mdfiles" ]; then \
+		if command -v panache >/dev/null 2>&1; then panache format --force-exclude $$mdfiles; \
+		else echo "fmt: panache not found, skipping Markdown files"; fi; \
 	fi
 
 readme:
