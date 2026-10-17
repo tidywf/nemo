@@ -2,7 +2,7 @@
 
 # File R/schema_vis.R: @testexamples
 
-test_that("Function nemo_schemavis_data() @ L300", {
+test_that("Function nemo_schemavis_data() @ L312", {
   
   d <- nemo_schemavis_data("tool1", pkg = "nemo")
   expect_s3_class(d, "tbl_df")
@@ -10,5 +10,8 @@ test_that("Function nemo_schemavis_data() @ L300", {
     "versions", "n_cols", "col_names") %in% names(d)))
   expect_equal(d$n_cols[d$tbl == "table1"], 6L)
   expect_true(grepl("sample_id", d$col_names[d$tbl == "table1"]))
+  expect_equal(d$tbl[d$parent %in% "table7"], c("table7main", "table7dp"))
+  expect_equal(d$ftype[d$tbl == "table7dp"], "tsv")
+  expect_false(grepl("NA", d$col_names[d$tbl == "table7dp"]))
 })
 

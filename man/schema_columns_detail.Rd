@@ -4,7 +4,7 @@
 \alias{schema_columns_detail}
 \title{Column-level detail for one schema table}
 \usage{
-schema_columns_detail(x, versions, ftype)
+schema_columns_detail(x, versions, ftype, parent = NA_character_)
 }
 \arguments{
 \item{x}{tibble of columns (\code{raw}, \code{tidy}, \code{type}, \code{description}, and
