@@ -44,8 +44,10 @@ Raw names and types are auto-detected. Fill in by hand:
 
 If one file holds several tables (a stats header plus a histogram, a JSON with
 several sections), keep the file's raw `columns:` and declare each table under
-`outputs:` with its tidy columns. Name the schema table after the file and the
-outputs after their content.
+`outputs:` with its tidy columns. A file read by its own `parse_<table>()`
+(JSON, multi-section, configurable columns) may omit `columns:`. Name the schema
+table after the file and the outputs after their content; for a wide pivot whose
+columns depend on the data, set `shape: 'subset'` on the output.
 
 Schema format: see [Structure].
 
