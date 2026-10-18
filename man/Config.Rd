@@ -4,29 +4,10 @@
 \alias{Config}
 \title{Config Object}
 \description{
-Reads and parses a tool's \code{schema.yaml} from \verb{inst/config/tools/<tool>/} in
-the package. The schema defines each file table: its file pattern, file
-type, description, and versioned columns (raw name, tidy name, type, versions).
-Exposes raw and tidy schemas and column mappings used by \code{Tool} for
-file discovery and column renaming.
-
-A file table that splits into several output tables (fan-out) declares them
-under \verb{outputs:}, each with a description and versioned tidy columns (\code{raw}
-optional: set only when the output is parsed straight from a section of the
-file). Output names share one namespace with table names. Outputs get their
-own rows in the schema tibbles, with \code{parent} set to the file table. A
-fan-out table read by its own \verb{parse_<table>()} may omit \verb{columns:}
-(JSON, multi-section or configurable files); it then has no schema rows of
-its own.
-
-A Config object:
-\itemize{
-\item belongs to a package (\code{pkg})
-\item has a tool name (\code{tool})
-\item has a parsed tables list (accessible via \code{get_tables()})
-\item caches all raw schemas as a flat tibble (\code{schemas_raw})
-\item caches all tidy schemas as a flat tibble (\code{schemas_tidy})
-}
+Reads a tool's \code{schema.yaml} from \verb{inst/config/tools/<tool>/} in the
+package, exposing the raw/tidy schemas and column maps \code{Tool} uses for file
+discovery and renaming. Fan-out \verb{outputs:} get their own schema rows, with
+\code{parent} set to the file table. Schema format: see \emph{new-tool} article.
 }
 \examples{
 tool <- "tool1"

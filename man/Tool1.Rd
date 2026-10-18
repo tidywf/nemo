@@ -106,9 +106,7 @@ Tidy data in enframed tibble.
 \if{html}{\out{<a id="method-Tool1-tidy_table7"></a>}}
 \if{latex}{\out{\hypertarget{method-Tool1-tidy_table7}{}}}
 \subsection{Method \code{tidy_table7()}}{
-Tidy \code{table7.tsv} file into its two schema outputs:
-\code{table7main} with the read counts and \code{table7dp} with the long-form
-depth coverage.
+Tidy \code{table7.tsv} file.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Tool1$tidy_table7(x)}\if{html}{\out{</div>}}
 }

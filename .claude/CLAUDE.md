@@ -107,9 +107,9 @@ Extension points a `Tool` subclass may override in `private`:
 | `nemo_enframe(x)`                             | `utils.R`      | Named list of tibbles → `name`/`data` tibble; used for 1-file → N-table fan-out   |
 | `nemoverse_wf_dispatch(wf)`                   | `utils.R`      | Workflow name (`wigits`/`dragen`/`workflow1`) → workflow class                    |
 | `read_parquet_grep(odir, lf, pattern, first)` | `utils.R`      | Read the one parquet in `lf` matching `pattern` (used in `@testexamples`)         |
-| `wf_sync_patterns(workflow)`                  | `sync.R`       | Include/exclude tibble for `aws s3 sync`, built from schema `glob` fields         |
-| `schema_glob_check(pkg, fixture_dir)`         | `sync.R`       | Fixture files a `pattern` matches but no `glob` covers (0 rows = consistent)      |
-| `s3sync(src, dest, pats, workflow, dryrun)`   | `s3.R`         | `aws s3 sync` wrapper; `workflow` pulls patterns from `wf_sync_patterns()`        |
+| `wf_sync_patterns(workflow)`                  | `aws_s3.R`     | Include/exclude tibble for `aws s3 sync`, built from schema `glob` fields         |
+| `schema_glob_check(pkg, fixture_dir)`         | `aws_s3.R`     | Fixture files a `pattern` matches but no `glob` covers (0 rows = consistent)      |
+| `s3sync(src, dest, pats, workflow, dryrun)`   | `aws_s3.R`     | `aws s3 sync` wrapper; `workflow` pulls patterns from `wf_sync_patterns()`        |
 
 ## CLI (`R/cli.R`, `inst/cli/nemo.R`)
 

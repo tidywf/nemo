@@ -1,27 +1,10 @@
 #' @title Config Object
 #'
 #' @description
-#' Reads and parses a tool's `schema.yaml` from `inst/config/tools/<tool>/` in
-#' the package. The schema defines each file table: its file pattern, file
-#' type, description, and versioned columns (raw name, tidy name, type, versions).
-#' Exposes raw and tidy schemas and column mappings used by `Tool` for
-#' file discovery and column renaming.
-#'
-#' A file table that splits into several output tables (fan-out) declares them
-#' under `outputs:`, each with a description and versioned tidy columns (`raw`
-#' optional: set only when the output is parsed straight from a section of the
-#' file). Output names share one namespace with table names. Outputs get their
-#' own rows in the schema tibbles, with `parent` set to the file table. A
-#' fan-out table read by its own `parse_<table>()` may omit `columns:`
-#' (JSON, multi-section or configurable files); it then has no schema rows of
-#' its own.
-#'
-#' A Config object:
-#' - belongs to a package (`pkg`)
-#' - has a tool name (`tool`)
-#' - has a parsed tables list (accessible via `get_tables()`)
-#' - caches all raw schemas as a flat tibble (`schemas_raw`)
-#' - caches all tidy schemas as a flat tibble (`schemas_tidy`)
+#' Reads a tool's `schema.yaml` from `inst/config/tools/<tool>/` in the
+#' package, exposing the raw/tidy schemas and column maps `Tool` uses for file
+#' discovery and renaming. Fan-out `outputs:` get their own schema rows, with
+#' `parent` set to the file table. Schema format: see *new-tool* article.
 #' @examples
 #' tool <- "tool1"
 #' pkg <- "nemo"

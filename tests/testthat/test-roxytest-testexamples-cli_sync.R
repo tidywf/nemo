@@ -13,7 +13,7 @@ test_that("Function cli_sync_parse_args() @ L53", {
 })
 
 
-test_that("Function cli_nemo_sync() @ L91", {
+test_that("Function cli_nemo_sync() @ L89", {
   
   out <- capture.output(
     cli_nemo_sync(

@@ -21,9 +21,7 @@ syncing.}
 }
 \description{
 Runs \verb{aws s3 sync} from \code{src} to \code{dest}, pulling down only the files the
-workflow's tool schemas declare (see \code{\link[=wf_sync_patterns]{wf_sync_patterns()}}). This keeps the
-"what do we need?" list in one place (the \code{schema.yaml} files) instead of
-duplicating it in every caller.
+workflow's tool schemas declare (see \code{\link[=wf_sync_patterns]{wf_sync_patterns()}}).
 }
 \examples{
 out <- capture.output(

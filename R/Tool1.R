@@ -60,9 +60,7 @@ Tool1 <- R6::R6Class(
     tidy_table3 = function(x) {
       private$tidy_file(x, "table3", convert_types = TRUE)
     },
-    #' @description Tidy `table7.tsv` file into its two schema outputs:
-    #' `table7main` with the read counts and `table7dp` with the long-form
-    #' depth coverage.
+    #' @description Tidy `table7.tsv` file.
     #' @param x (`character(1)` or `tibble()`)\cr
     #' Path to file or already parsed tibble.
     #' @return (`tibble()`)\cr

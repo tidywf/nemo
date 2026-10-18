@@ -89,8 +89,10 @@ glue(
 - Output naming: <{base}/articles/output_naming>
 - Changelog: <{base}/articles/NEWS>
 - R6 structure: <{base}/articles/structure>
+- New tool: <{base}/articles/new-tool>
 - UML: <{base}/articles/uml>
-- CI/CD: <{base}/articles/cicd>"
+- CI/CD: <{base}/articles/cicd>
+- Devnotes: <{base}/articles/devnotes>"
 )
 ```
 
@@ -183,5 +185,8 @@ echo "$ nemo.R tidy --help" & nemo.R tidy --help
 echo ""
 echo "#-----------------------------------#"
 echo "$ nemo.R list --help" & nemo.R list --help
+echo ""
+echo "#-----------------------------------#"
+echo "$ nemo.R sync --help" & nemo.R sync --help
 echo ""
 ```

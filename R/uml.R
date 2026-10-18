@@ -4,10 +4,9 @@
 #' Uses `R6toPlant` to generate a PlantUML file from a set of R6 classes,
 #' then calls `plantuml` to render it as an SVG.
 #'
-#' When `output_dir` is `NULL` (default), the SVG is piped from `plantuml` to
-#' stdout and returned as a character string — suitable for inline rendering
-#' in a vignette chunk with `output: asis`. When `output_dir` is provided, the
-#' `.uml` and `.svg` files are written to that directory instead.
+#' With `output_dir = NULL` the SVG is returned as a string (for an
+#' `output: asis` vignette chunk); otherwise the `.uml` and `.svg` are written
+#' there.
 #'
 #' @param classes (`character(n)`)\cr
 #' Names of R6 classes to include in the diagram.

@@ -1,18 +1,10 @@
 #' @title Workflow Object
 #'
 #' @description
-#' Orchestrates multiple `Tool` objects over a shared directory, handling file
-#' discovery, filtering, tidying, and writing in a single pipeline.
+#' Orchestrates multiple `Tool` objects over shared directories.
 #'
-#' A Workflow object:
-#' - has a name (`name`);
-#' - has one or more paths to workflow results (`path`);
-#' - holds `Tool` subclass objects accessible via `get_tools()`;
-#' - exposes matched files across all tools via `list_files()`;
-#' - has a tibble of written output files, populated after `write()` (`written_files`);
-#'
-#' The typical workflow is: optionally filter with `filter_files()`, tidy with
-#' `tidy()`, then write with `write()`. `run()` chains all three steps.
+#' Typical use: `filter_files()` (optional), `tidy()`, `write()`; `run()` chains
+#' all three.
 #'
 #' @examples
 #' fs::path(tempdir(), letters[1:5]) |>
@@ -53,10 +45,8 @@ Workflow <- R6::R6Class(
     #' Tibble of files written from `self$write()`.
     written_files = NULL,
     #' @field sync_exclude (`character(n)`)\cr
-    #' Globs appended as trailing `--exclude` patterns by
-    #' `get_sync_patterns()`, to carve files back out of the schema-derived
-    #' includes (e.g. duplicate copies of the same output under a different
-    #' directory). Subclasses override this.
+    #' Trailing `--exclude` globs for `get_sync_patterns()`, carving files back
+    #' out of the schema-derived includes. Subclasses override this.
     sync_exclude = character(),
 
     #' @description Create a new Workflow object.
@@ -120,10 +110,9 @@ Workflow <- R6::R6Class(
         purrr::map(\(x) x$get_globs()) |>
         dplyr::bind_rows()
     },
-    #' @description Build the `aws s3 sync` include/exclude patterns for this
-    #' Workflow: exclude everything, then include every schema-derived glob,
-    #' then apply `sync_exclude`. `aws s3 sync` filters are ordered and
-    #' last-match wins, so the trailing excludes carve back out of the includes.
+    #' @description Build the `aws s3 sync` patterns: exclude everything,
+    #' include the schema globs, then `sync_exclude` (filters are
+    #' last-match-wins).
     #' @return (`tibble()`)\cr
     #' Tibble with `inex` (`"in"`/`"ex"`) and `pat` columns, as expected by
     #' [s3sync()].
@@ -169,9 +158,7 @@ Workflow <- R6::R6Class(
       })
       invisible(self)
     },
-    #' @description List only files of interest in given workflow directory, i.e.
-    #' only those files that match the patterns listed in the individual tool
-    #' config.
+    #' @description List files matching the tools' patterns.
     #' @return (`tibble()`)\cr
     #' Bound `files` tibbles from all Tools, with a leading `tool` column.
     list_files = function() {

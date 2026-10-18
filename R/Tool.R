@@ -1,20 +1,11 @@
 #' @title Tool Object
 #'
 #' @description
-#' Base R6 class for all nemo tools. Subclasses implement parsers for specific
-#' bioinformatic tool outputs by optionally overriding `parse_{table_name}()` and
-#' `tidy_{table_name}()` methods for custom parse or tidy logic per table.
+#' Base R6 class for all nemo tools. Subclasses override `parse_{table_name}()`
+#' and `tidy_{table_name}()` for tables needing custom logic.
 #'
-#' A Tool object:
-#' - has a name (`name`);
-#' - has a path to a directory with its outputs (`path`);
-#' - has a schema configuration `Config` object (`config`);
-#' - exposes matched files via `list_files()`;
-#' - exposes parsed and tidied tables via `get_tbls()`;
-#'
-#' The typical workflow is: optionally filter files with `filter_files()`, parse
-#' and tidy with `tidy()`, then write outputs with `write()`. `run()` chains
-#' all three steps.
+#' Typical use: `filter_files()` (optional), `tidy()`, `write()`; `run()` chains
+#' all three.
 #'
 #' @examples
 #' fs::path(tempdir(), letters[1:5]) |>
@@ -511,9 +502,9 @@ Tool <- R6::R6Class(
     },
     #' @description Get tidy tibbles after parsing and tidying.
     #' @return (`tibble()` or `NULL`)\cr
-    #' The `tbls` tibble, or `NULL` if `tidy()` has not been called, found no
-    #' matching files, or `run()` was used (it streams and keeps nothing). When `tidy(keep_raw = TRUE)` was used,
-    #' the tibble also contains a `raw` list-column of the unparsed tibbles.
+    #' The `tbls` tibble (with a `raw` list-column after `tidy(keep_raw = TRUE)`),
+    #' or `NULL` if `tidy()` wasn't called, matched no files, or `run()` was used
+    #' (it streams and keeps nothing).
     get_tbls = function() private$tbls,
     #' @description Filter files in given tool directory based on inclusion or
     #' exclusion tool_parser names. The result is reflected in the `files` field.
@@ -614,9 +605,8 @@ Tool <- R6::R6Class(
     #' @param dbconn (`DBIConnection`)\cr
     #' Database connection object (see `DBI::dbConnect`).
     #' @param write_metadata (`logical(1)`)\cr
-    #' If `TRUE` (default), write a `metadata_<tool>.parquet` file alongside
-    #' the tidy outputs. Set to `FALSE` when a `Workflow` is orchestrating the
-    #' write and will emit its own workflow-level metadata instead.
+    #' If `TRUE`, write a `metadata_<tool>.parquet` file. `Workflow`
+    #' sets `FALSE` and writes its own.
     #' @return (`R6::R6Class()`)\cr
     #' R6 object invisibly. Results stored in `self$written_files`
     #' (`NULL` if no files were found).
@@ -699,8 +689,7 @@ Tool <- R6::R6Class(
     #' @param dbconn (`DBIConnection`)\cr
     #' Database connection object (see `DBI::dbConnect`).
     #' @param write_metadata (`logical(1)`)\cr
-    #' If `TRUE` (default), write a `metadata_<tool>.parquet` file alongside
-    #' the tidy outputs. Set to `FALSE` to suppress.
+    #' If `TRUE`, write a `metadata_<tool>.parquet` file.
     #' @param include (`character(n)`)\cr
     #' tool_parser names to include (e.g. `"tool1_table1"`).
     #' @param exclude (`character(n)`)\cr
