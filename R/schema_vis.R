@@ -93,7 +93,17 @@ reactable_schema <- function(dat, tool_colours = NULL, ...) {
       glob = colDef(
         name = "Glob",
         minWidth = 200,
-        cell = function(value) htmltools::code(value)
+        cell = function(value, index) {
+          parent <- dat$parent[[index]]
+          if (is.na(parent)) {
+            return(htmltools::code(value))
+          }
+          # outputs are synced via their file table's glob
+          htmltools::span(
+            style = "opacity: 0.6;",
+            glue::glue("\u2014 (child of {parent})")
+          )
+        }
       ),
       n_cols = colDef(
         name = "Cols (latest)",

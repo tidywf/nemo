@@ -22,14 +22,10 @@ child1 <- system.file(
 #| label: child-news
 ```
 
-## v0.1.0.9004 (current dev)
+## v0.1.0.9007 (current dev)
 
 ### New features
 
-- Schema-driven S3 sync: each `schema.yaml` table can declare a `glob` of the
-  files it needs, and the new `s3sync()` / `nemo.R sync` pull only those files
-  for a workflow (`r pr(77)`-`r pr(79)`, `r pr(83)`). `schema_glob_check()`
-  catches globs that drift from their table `pattern`.
 - Fan-out tables (one file split into several output tables) declare their
   outputs under a new `outputs:` key in `schema.yaml`: a description and
   versioned tidy columns per output, `raw` optional, and `shape: 'subset'` for
@@ -38,23 +34,35 @@ child1 <- system.file(
   columns (in order) and types of one of its schema versions. Outputs are
   written as `<tool>_<output>`. A fan-out table read by its own
   `parse_<table>()` may omit `columns:`.
-- New `Config` methods `get_outputs()`, `get_table_outputs()` and
-  `get_output_shape()`. `get_schemas_raw()`/`get_schemas_tidy()`/
-  `get_schemas_both()` include output rows and gain a `parent` column (the file
-  table of an output). `nemo_schema_reactable()` lists outputs after their file
-  table, and both it and its expanded column tables number rows in display order
-  (`#`).
-- `Tool` errors on construction when a `parse_*()`/`tidy_*()` method matches no
-  schema table, instead of a typo'd name silently falling back to the ftype
-  default parser.
 - `nemoverse_wf_dispatch()` now includes `tidydragen`.
+- CLI `tidy` gains `--dbhost`/`--dbport`, and its database writes run in a
+  single transaction.
+- `list_files_dir()` follows symlinks (keeping the link name) and drops broken
+  ones.
 - `nemo_schema_reactable()` rewritten on native reactable row details: search
   now matches column names and globs, expanded rows show a per-version
-  column-presence matrix, and the table follows light/dark page themes.
+  column-presence matrix, and the table follows light/dark page themes. Outputs
+  are listed after their file table, tagged "parent of"/"child of" in the
+  description (and in the Glob column for outputs), and both the table and its
+  expanded column tables number rows in display order (`#`).
   `nemo_schemavis_data()` now returns one row per table with nested columns.
   Tool pills are grey unless coloured via `tool_colours` (a named vector
   supplied by the child package). The widget ships its own CSS so it spans the
   full page width on any pkgdown site.
+- Schema-driven S3 sync: each `schema.yaml` table can declare a `glob` of the
+  files it needs, and the new `s3sync()` / `nemo.R sync` pull only those files
+  for a workflow (`r pr(77)`-`r pr(79)`, `r pr(83)`). `wf_sync_patterns()`
+  returns a workflow's include/exclude patterns; `schema_glob_check()` catches
+  globs that drift from their table `pattern` (matched via `glob_to_regex()`).
+- New `Config` methods `get_outputs()`, `get_table_outputs()` and
+  `get_output_shape()`. `get_schemas_raw()`/`get_schemas_tidy()`/
+  `get_schemas_both()` include output rows and gain a `parent` column (the file
+  table of an output).
+- `Tool` errors on construction when a `parse_*()`/`tidy_*()` method matches no
+  schema table, instead of a typo'd name silently falling back to the ftype
+  default parser.
+- `read_parquet_grep()` reads the one parquet file matching a pattern (for
+  `@testexamples`).
 
 ### Performance
 
@@ -66,12 +74,15 @@ child1 <- system.file(
 
 ### Breaking changes
 
-- Removed `Tool$flat_tidy_names` and the `__no_file_match__` sentinel tables;
-  declare fan-outs with `outputs:` instead. Output names may not clash with
-  table names, and duplicate output paths now always error.
+- Output names may not clash with table names, and duplicate output paths now
+  error instead of silently overwriting each other.
+- `_2`/`_3` prefix numbering for repeated basenames is now ordered by path, so
+  output names no longer depend on file listing order.
+- `Config` validates required table/column keys on construction, listing every
+  problem at once.
 - Removed the `csv-nohead-long` ftype (`r pr(80)`).
 - `parse_file_keyvalue()` now applies the schema column types instead of
-  returning all-character columns (`r pr(84)`).
+  returning all-character columns (`r pr(84)`), and errors on duplicate keys.
 - `nemo_gha_mermaid()` redesigned: now takes the `.github/workflows` dir
   (`nemo_gha_mermaid(here(".github/workflows"))`) instead of
   `actions_url`/`deploy_yaml`. Job edges follow `needs:` (parallel jobs no
@@ -87,6 +98,10 @@ child1 <- system.file(
   WiGiTS `redux` vs plain `duplicate_freq` files); previously one output
   silently overwrote the other.
 - Tools with no sample prefix no longer get a leading `_` in output names.
+- Parse/tidy errors name the tool parser and file they came from.
+- `NEMO_LOG_LEVEL` is case-insensitive; an invalid value warns and falls back to
+  `INFO` instead of breaking package load.
+- `dvc_download_file()` verifies the md5 and re-fetches corrupted local copies.
 
 ### Infrastructure
 
