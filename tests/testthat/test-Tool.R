@@ -161,22 +161,6 @@ test_that("Tool write produces correct outputs and metadata", {
   expect_named(tool$written_files, c("raw_path", "tool_parser", "prefix", "tbl_name", "outpath"))
 })
 
-test_that("flat_tidy_names defaults FALSE and leaves single-table names unchanged", {
-  expect_false(Tool$new(name = name, pkg = pkg, path = path)$flat_tidy_names)
-  base_out <- withr::local_tempdir()
-  flat_out <- withr::local_tempdir()
-  Tool$new(name = name, pkg = pkg, path = path)$filter_files(
-    exclude = "tool1_table6"
-  )$tidy()$write(output_dir = base_out, format = "parquet")
-  tool <- Tool$new(name = name, pkg = pkg, path = path)$filter_files(exclude = "tool1_table6")
-  tool$flat_tidy_names <- TRUE
-  tool$tidy()$write(output_dir = flat_out, format = "parquet")
-  strip <- function(d) sort(grep("^metadata_", list.files(d), value = TRUE, invert = TRUE))
-  # Tool1's tables are single-output (parser == tidy_name), so dropping the parser
-  # token must produce identical <tool>_<tidy_name> names as the default path.
-  expect_equal(strip(flat_out), strip(base_out))
-})
-
 test_that("Tool write with write_metadata = FALSE skips metadata file", {
   out <- withr::local_tempdir()
   Tool$new(name = name, pkg = pkg, path = path)$filter_files(include = "tool1_table1")$tidy()$write(
@@ -391,4 +375,141 @@ test_that("parse/tidy errors name the tool_parser and file", {
     Tool$new(name = name, pkg = pkg, path = d)$run(output_dir = withr::local_tempdir()),
     "Failed to tidy 'tool1_table1'"
   )
+})
+
+path7 <- system.file("extdata/tool1_outputs", package = "nemo")
+
+test_that("Tool errors when a table with outputs has no custom tidy", {
+  expect_error(
+    Tool$new(name = name, pkg = pkg, path = path7)$tidy(),
+    "declares outputs \\(table7main, table7dp\\) but Tool has no tidy_table7"
+  )
+})
+
+# Tool1 whose tidy_table7() result is passed through `modify` (a field, since
+# R6 rebinds method environments and a method can't close over `modify`)
+Tool1Mod <- R6::R6Class(
+  "Tool1Mod",
+  inherit = Tool1,
+  cloneable = FALSE,
+  public = list(
+    modify = NULL,
+    tidy_table7 = function(x) self$modify(super$tidy_table7(x))
+  )
+)
+tool1_with <- function(modify) {
+  obj <- Tool1Mod$new(path7)$filter_files(include = "tool1_table7")
+  obj$modify <- modify
+  obj
+}
+
+test_that("Tool checks fan-out tidy results against the schema outputs", {
+  dropped <- function(d) dplyr::filter(d, .data$name != "table7dp")
+  expect_error(tool1_with(dropped)$tidy(), "Missing: table7dp")
+  extra <- function(d) dplyr::bind_rows(d, nemo_enframe(list(foo = tibble::tibble())))
+  expect_error(tool1_with(extra)$tidy(), "Undeclared: foo")
+  renamed <- function(d) {
+    d$data[[2]] <- dplyr::rename(d$data[[2]], depth = "dp")
+    d
+  }
+  expect_error(tool1_with(renamed)$tidy(), "output 'table7dp' columns match no schema version")
+  retyped <- function(d) {
+    d$data[[2]]$dp <- as.character(d$data[[2]]$dp)
+    d
+  }
+  expect_error(tool1_with(retyped)$tidy(), "dp \\(d, got character\\)")
+  # without file_version, any schema version is accepted
+  unversioned <- function(d) {
+    d$data <- lapply(d$data, \(t) {
+      attr(t, "file_version") <- NULL
+      t
+    })
+    d
+  }
+  expect_no_error(tool1_with(unversioned)$tidy())
+})
+
+test_that("Tool errors on parse_/tidy_ methods matching no table", {
+  cls <- R6::R6Class(
+    "Tool1Typo",
+    inherit = Tool1,
+    cloneable = FALSE,
+    public = list(tidy_tabel7 = function(x) x)
+  )
+  expect_error(cls$new(path7), "method\\(s\\) match no schema table: tidy_tabel7")
+})
+
+test_that("Tool accepts any subset of columns, in any order, for shape: subset", {
+  tool1_subset <- function(modify) {
+    obj <- tool1_with(modify)
+    tabs <- obj$config$.__enclos_env__$private$tables
+    tabs$table7$outputs$table7main$shape <- "subset"
+    obj$config$.__enclos_env__$private$tables <- tabs
+    obj
+  }
+  expect_equal(tool1_subset(identity)$config$get_output_shape("table7main"), "subset")
+  reordered <- function(d) {
+    d$data[[1]] <- dplyr::select(d$data[[1]], "reads_total", "sample_id")
+    d
+  }
+  expect_no_error(tool1_subset(reordered)$tidy())
+  expect_error(tool1_with(reordered)$tidy(), "match no schema version")
+  added <- function(d) {
+    d$data[[1]]$foo <- 1
+    d
+  }
+  expect_error(tool1_subset(added)$tidy(), "undeclared: foo")
+})
+
+test_that("Tool prefixes stay unique when both disambiguation passes add suffixes", {
+  # run1/{sampleA,sampleB} + run2/sampleA; refine_files() folds sampleB into
+  # sampleA, so the bname pass gives run2's file sampleA_2 and the prefix pass
+  # would naively give run1's sampleB sampleA_2 as well
+  src <- system.file("extdata/tool1/latest/sampleA.tool1.table1.tsv", package = "nemo")
+  d <- withr::local_tempdir()
+  fs::dir_create(file.path(d, c("run1", "run2")))
+  fs::file_copy(src, file.path(d, "run1", "sampleA.tool1.table1.tsv"))
+  fs::file_copy(src, file.path(d, "run1", "sampleB.tool1.table1.tsv"))
+  fs::file_copy(src, file.path(d, "run2", "sampleA.tool1.table1.tsv"))
+  ToolFold <- R6::R6Class(
+    "ToolFold",
+    inherit = Tool,
+    cloneable = FALSE,
+    private = list(
+      refine_files = function(files) {
+        files$prefix <- "sampleA"
+        files
+      }
+    )
+  )
+  tool <- ToolFold$new(name = name, pkg = pkg, path = d)
+  lf <- tool$list_files()
+  pfx <- setNames(lf$prefix, basename(dirname(lf$path)))[order(lf$path)]
+  expect_false(anyDuplicated(lf$prefix) > 0)
+  expect_equal(unname(pfx), c("sampleA", "sampleA_3", "sampleA_2"))
+  out <- withr::local_tempdir()
+  tool$run(output_dir = out, format = "tsv", write_metadata = FALSE)
+  expect_length(list.files(out), 3)
+})
+
+test_that("Tool requires a parse_ for a table without columns", {
+  t7 <- Tool1$new(path7)
+  priv <- t7$config$.__enclos_env__$private
+  tabs <- priv$tables
+  tabs$table7$columns <- NULL
+  priv$tables <- tabs
+  # Tool1 has tidy_table7() but no parse_table7()
+  expect_error(t7$tidy(), "needs a parse_table7\\(\\) to read it")
+})
+
+test_that("schema detail view handles a table without columns", {
+  x <- tibble::tibble(
+    raw = character(),
+    tidy = character(),
+    type = character(),
+    description = character(),
+    versions = list()
+  )
+  html <- htmltools::renderTags(schema_columns_detail(x, character(), "json"))$html
+  expect_match(html, "columns are on its output tables")
 })

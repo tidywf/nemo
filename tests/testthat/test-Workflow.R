@@ -50,7 +50,7 @@ test_that("Workflow filter_files + tidy + get_tbls", {
 test_that("Workflow get_schemas_raw", {
   wf <- Workflow$new(name = "wf1", path = path, tools = tools)
   rs <- wf$get_schemas_raw()
-  expect_named(rs, c("tool", "name", "tbl_description", "version", "schema"))
+  expect_named(rs, c("tool", "name", "tbl_description", "version", "schema", "parent"))
 })
 
 test_that("Workflow write produces correct outputs and written_files", {

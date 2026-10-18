@@ -5,7 +5,7 @@ runs distinguishable after merging.
 ## Anatomy of a tidy filename
 
 ```
-{output_dir}/{prefix}_{tool}_{parser}.{ext}
+{output_dir}/{prefix}_{tool}_{table}.{ext}
 ```
 
 ```{r}
@@ -19,10 +19,31 @@ fmts <- nemo::nemo_out_formats() |>
 - `{output_dir}`: flat output directory
 - `{prefix}`: input basename minus the schema `pattern`
   (`sampleA.tool1.table1.tsv` => `sampleA`)
-- `{tool}_{parser}`: e.g. `tool1_table1`
+- `{tool}_{table}`: the schema table that matched the file, e.g. `tool1_table1`;
+  for a file that fans out, one file per declared output instead (see below)
 - `{ext}`: from `format` (`r fmts`)
 
 `sampleA.tool1.table1.tsv` => `sampleA_tool1_table1.parquet`.
+
+## One file, several tables
+
+A file can fan out into several tables, declared under its schema table's
+`outputs:`. Each output is written as `{prefix}_{tool}_{output}`: `table7`
+splits into `table7main` (read counts) and `table7dp` (long-form depth
+coverage):
+
+```{r}
+#| label: fanout-write
+
+dir_fan <- path(tempdir(), "naming-fanout")
+fan <- Tool1$new(path = system.file("extdata/tool1_outputs", package = "nemo"))
+fan$config$get_table_outputs("table7")
+fan$run(output_dir = dir_fan, format = "parquet", input_id = "input1")
+sort(basename(fan$written_files$outpath))
+```
+
+The two `table7` files (`latest`, `v1.0.0`) share basename `sampleA`, hence
+`sampleA` and `sampleA_2`, as in the repeated-sample case below.
 
 ## A repeated sample
 

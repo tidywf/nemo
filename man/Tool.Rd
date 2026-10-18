@@ -4,22 +4,11 @@
 \alias{Tool}
 \title{Tool Object}
 \description{
-Base R6 class for all nemo tools. Subclasses implement parsers for specific
-bioinformatic tool outputs by optionally overriding \verb{parse_\{table_name\}()} and
-\verb{tidy_\{table_name\}()} methods for custom parse or tidy logic per table.
+Base R6 class for all nemo tools. Subclasses override \verb{parse_\{table_name\}()}
+and \verb{tidy_\{table_name\}()} for tables needing custom logic.
 
-A Tool object:
-\itemize{
-\item has a name (\code{name});
-\item has a path to a directory with its outputs (\code{path});
-\item has a schema configuration \code{Config} object (\code{config});
-\item exposes matched files via \code{list_files()};
-\item exposes parsed and tidied tables via \code{get_tbls()};
-}
-
-The typical workflow is: optionally filter files with \code{filter_files()}, parse
-and tidy with \code{tidy()}, then write outputs with \code{write()}. \code{run()} chains
-all three steps.
+Typical use: \code{filter_files()} (optional), \code{tidy()}, \code{write()}; \code{run()} chains
+all three.
 }
 \examples{
 fs::path(tempdir(), letters[1:5]) |>
@@ -70,16 +59,6 @@ Config of tool.}
 
 \item{\code{written_files}}{(\code{tibble()})\cr
 Tibble of files written from \code{self$write()}.}
-
-\item{\code{flat_tidy_names}}{(\code{logical(1)})\cr
-Controls how a fanned-out (one-file-to-many-tables) output is named. When
-\code{FALSE}, a sub-table's name is the parser table name concatenated
-with its \code{tidy_name} (e.g. parser \code{gcmed} + \code{sample} -> \code{gcmedsample}).
-When \code{TRUE}, the output is named \verb{<tool>_<tidy_name>} directly (e.g.
-\code{dragenfqc_posbasecontent}). Fan-out tools in the child packages set
-\code{TRUE}; tools that never fan out keep the \code{FALSE} default. \code{tidy_name}s
-must then be unique across the tool's outputs - \code{write()} errors on
-collisions.}
 }
 \if{html}{\out{</div>}}
 }
@@ -190,9 +169,9 @@ Get tidy tibbles after parsing and tidying.
 
 \subsection{Returns}{
 (\code{tibble()} or \code{NULL})\cr
-The \code{tbls} tibble, or \code{NULL} if \code{tidy()} has not been called, found no
-matching files, or \code{run()} was used (it streams and keeps nothing). When \code{tidy(keep_raw = TRUE)} was used,
-the tibble also contains a \code{raw} list-column of the unparsed tibbles.
+The \code{tbls} tibble (with a \code{raw} list-column after \code{tidy(keep_raw = TRUE)}),
+or \code{NULL} if \code{tidy()} wasn't called, matched no files, or \code{run()} was used
+(it streams and keeps nothing).
 }
 }
 \if{html}{\out{<hr>}}
@@ -282,9 +261,8 @@ If \code{TRUE}, prepend an \code{input_prefix} column to each tidy table.}
 Database connection object (see \code{DBI::dbConnect}).}
 
 \item{\code{write_metadata}}{(\code{logical(1)})\cr
-If \code{TRUE} (default), write a \verb{metadata_<tool>.parquet} file alongside
-the tidy outputs. Set to \code{FALSE} when a \code{Workflow} is orchestrating the
-write and will emit its own workflow-level metadata instead.}
+If \code{TRUE}, write a \verb{metadata_<tool>.parquet} file. \code{Workflow}
+sets \code{FALSE} and writes its own.}
 }
 \if{html}{\out{</div>}}
 }
@@ -369,8 +347,7 @@ If \code{TRUE}, prepend an \code{input_prefix} column to each tidy table.}
 Database connection object (see \code{DBI::dbConnect}).}
 
 \item{\code{write_metadata}}{(\code{logical(1)})\cr
-If \code{TRUE} (default), write a \verb{metadata_<tool>.parquet} file alongside
-the tidy outputs. Set to \code{FALSE} to suppress.}
+If \code{TRUE}, write a \verb{metadata_<tool>.parquet} file.}
 
 \item{\code{include}}{(\code{character(n)})\cr
 tool_parser names to include (e.g. \code{"tool1_table1"}).}

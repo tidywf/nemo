@@ -20,6 +20,14 @@ obj1$run(output_dir = dir1, format = "parquet", input_id = "run1")
 (lf <- list.files(dir1, pattern = "tool1.*parquet", full.names = FALSE))
 
 obj2 <- Tool1$new(indir)$tidy()
+
+# table7 fans out into the table7main + table7dp outputs
+indir7 <- system.file("extdata/tool1_outputs", package = "nemo")
+dir7 <- tempfile()
+obj7 <- Tool1$new(indir7)$tidy()
+(t7 <- obj7$get_tbls())
+obj7$write(output_dir = dir7, format = "parquet", input_id = "run1")
+(lf7 <- sort(basename(obj7$written_files$outpath)))
 }
 \section{Super class}{
 \code{\link[nemo:Tool]{nemo::Tool}} -> \code{Tool1}
@@ -29,6 +37,7 @@ obj2 <- Tool1$new(indir)$tidy()
 \itemize{
 \item \href{#method-Tool1-new}{\code{Tool1$new()}}
 \item \href{#method-Tool1-tidy_table3}{\code{Tool1$tidy_table3()}}
+\item \href{#method-Tool1-tidy_table7}{\code{Tool1$tidy_table7()}}
 }
 }
 \if{html}{\out{
@@ -78,6 +87,28 @@ R6 object.
 Tidy \code{table3.tsv} file with type conversion enabled.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Tool1$tidy_table3(x)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{x}}{(\code{character(1)} or \code{tibble()})\cr
+Path to file or already parsed tibble.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+(\code{tibble()})\cr
+Tidy data in enframed tibble.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Tool1-tidy_table7"></a>}}
+\if{latex}{\out{\hypertarget{method-Tool1-tidy_table7}{}}}
+\subsection{Method \code{tidy_table7()}}{
+Tidy \code{table7.tsv} file.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Tool1$tidy_table7(x)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{

@@ -82,7 +82,7 @@ schemas from it. See `?Config`.
 
 ### format
 
-One `tables` entry per output file:
+One `tables` entry per file type:
 
 ```yaml
 tables:
@@ -97,6 +97,15 @@ tables:
         type: 'char | int | float'
         description: '<human-readable description>'
         versions: ['<version1>', '<version2>']
+    outputs: # optional: only when the file fans out
+      <output_name>:
+        description: '<human-readable description>'
+        shape: 'exact | subset' # optional, default exact
+        columns:
+          - tidy: '<tidy snake_case name>'
+            type: 'char | int | float'
+            description: '<human-readable description>'
+            versions: ['<version1>', '<version2>']
 ```
 
 - `pattern`: PCRE regex on the file **basename**; `Tool` uses it to discover and
@@ -129,6 +138,16 @@ metricY:    versions: ['latest']                        # added in latest
 
 Schema for version `V` = columns whose `versions` contain `V`. `schema_guess`
 matches a file's columns to the right version.
+
+A file that splits into several tables (fan-out) declares them under `outputs:`:
+one entry per output table, with versioned **tidy** columns (`raw` optional,
+only when the output is parsed straight from a section of the file). The table's
+`tidy_<table>()` returns one tibble per output, and `Tool` checks the result:
+exactly the declared outputs, each with the columns (in order) and types of one
+of its schema versions. `shape: 'subset'` allows any subset of the declared
+columns in any order, for outputs whose columns depend on the data. Each output
+is written as `<tool>_<output>`. `Tool1`'s `table7` fans out into `table7main`
+and `table7dp`.
 
 ### intro
 
@@ -164,15 +183,27 @@ conf$get_ftype("table1")
 conf$get_description("table1")
 ```
 
+Output tables: a fan-out table's declared `outputs:`, or the table itself:
+
+```{r}
+#| label: config_outputs
+
+conf$get_outputs() |> knitr::kable(caption = glue("{tool} outputs."))
+conf$get_table_outputs("table7")
+conf$get_output_shape("table7dp")
+```
+
 ### schemas
 
-All versions:
+All versions. Outputs get their own rows, with `parent` set to their file table;
+outputs without raw names (`table7main`, `table7dp`) are left out of the raw
+schemas:
 
 ```{r}
 #| label: config_schemas_all
 
-conf$get_schemas_raw() |> dplyr::select("name", "version", "schema")
-conf$get_schemas_tidy() |> dplyr::select("name", "version", "schema")
+conf$get_schemas_raw() |> dplyr::select("name", "parent", "version", "schema")
+conf$get_schemas_tidy() |> dplyr::select("name", "parent", "version", "schema")
 conf$get_schemas_both()
 ```
 
@@ -245,6 +276,22 @@ tbls
 tbls$raw[[1]] |> dplyr::glimpse()
 # the tidy tibbles are nested to allow for more than one tidy tibble per file
 tbls$tidy[[1]][["data"]][[1]] |> dplyr::glimpse()
+```
+
+### fan-out
+
+`table7` (in `extdata/tool1_outputs`) splits into its two schema outputs. The
+`tidy` list-column holds one tibble per output:
+
+```{r}
+#| label: tool1_fanout
+
+t7 <- nemo::Tool1$new(
+  path = system.file("extdata/tool1_outputs", package = "nemo")
+)
+t7$tidy()
+t7$get_tbls()$tidy[[1]]
+t7$get_tbls()$tidy[[1]][["data"]][[2]]
 ```
 
 ### filter

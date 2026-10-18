@@ -4,20 +4,10 @@
 \alias{Config}
 \title{Config Object}
 \description{
-Reads and parses a tool's \code{schema.yaml} from \verb{inst/config/tools/<tool>/} in
-the package. The schema defines each output table: its file pattern, file
-type, description, and versioned columns (raw name, tidy name, type, versions).
-Exposes raw and tidy schemas and column mappings used by \code{Tool} for
-file discovery and column renaming.
-
-A Config object:
-\itemize{
-\item belongs to a package (\code{pkg})
-\item has a tool name (\code{tool})
-\item has a parsed tables list (accessible via \code{get_tables()})
-\item caches all raw schemas as a flat tibble (\code{schemas_raw})
-\item caches all tidy schemas as a flat tibble (\code{schemas_tidy})
-}
+Reads a tool's \code{schema.yaml} from \verb{inst/config/tools/<tool>/} in the
+package, exposing the raw/tidy schemas and column maps \code{Tool} uses for file
+discovery and renaming. Fan-out \verb{outputs:} get their own schema rows, with
+\code{parent} set to the file table. Schema format: see \emph{new-tool} article.
 }
 \examples{
 tool <- "tool1"
@@ -36,6 +26,10 @@ conf <- Config$new(tool, pkg)
 conf$get_schema_raw("table1", version = "v1.2.3")
 conf$get_schema_tidy("table1")
 (cm <- conf$get_col_map("table6"))
+# table7 fans out into two outputs
+(outs <- conf$get_outputs())
+conf$get_table_outputs("table7")
+conf$get_schema_tidy("table7dp")
 
 }
 \section{Public fields}{
@@ -62,6 +56,9 @@ Package name tool belongs to (for config lookup).}
 \item \href{#method-Config-get_ftype}{\code{Config$get_ftype()}}
 \item \href{#method-Config-get_description}{\code{Config$get_description()}}
 \item \href{#method-Config-get_tables}{\code{Config$get_tables()}}
+\item \href{#method-Config-get_table_outputs}{\code{Config$get_table_outputs()}}
+\item \href{#method-Config-get_output_shape}{\code{Config$get_output_shape()}}
+\item \href{#method-Config-get_outputs}{\code{Config$get_outputs()}}
 \item \href{#method-Config-get_schemas_raw}{\code{Config$get_schemas_raw()}}
 \item \href{#method-Config-get_schemas_tidy}{\code{Config$get_schemas_tidy()}}
 \item \href{#method-Config-get_schemas_both}{\code{Config$get_schemas_both()}}
@@ -254,48 +251,117 @@ Named list of table definitions from schema.yaml.
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Config-get_table_outputs"></a>}}
+\if{latex}{\out{\hypertarget{method-Config-get_table_outputs}{}}}
+\subsection{Method \code{get_table_outputs()}}{
+Return the output names declared under a table's
+\verb{outputs:}.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Config$get_table_outputs(x)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{x}}{(\code{character(1)})\cr
+Table name.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+(\code{character(n)})\cr
+Output names, or \code{character(0)} when the table has no \verb{outputs:}.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Config-get_output_shape"></a>}}
+\if{latex}{\out{\hypertarget{method-Config-get_output_shape}{}}}
+\subsection{Method \code{get_output_shape()}}{
+Return how strictly an output's tidy columns are checked.
+\code{"exact"} (default): exactly the columns of one schema version, in
+order. \code{"subset"}: any subset of them, in any order (for outputs whose
+columns depend on the data, e.g. wide pivots of the metrics present).
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Config$get_output_shape(x)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{x}}{(\code{character(1)})\cr
+Output name.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+(\code{character(1)})\cr
+\code{"exact"} or \code{"subset"}.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Config-get_outputs"></a>}}
+\if{latex}{\out{\hypertarget{method-Config-get_outputs}{}}}
+\subsection{Method \code{get_outputs()}}{
+Return every output table the tool writes: the declared
+\verb{outputs:} of a fan-out table, or the table itself otherwise.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Config$get_outputs()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+(\code{tibble()})\cr
+Output \code{name}, its file \code{table} and \code{description}.
+}
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Config-get_schemas_raw"></a>}}
 \if{latex}{\out{\hypertarget{method-Config-get_schemas_raw}{}}}
 \subsection{Method \code{get_schemas_raw()}}{
-Return raw schemas for all tables.
+Return raw schemas for all tables, plus outputs that carry
+raw column names.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Config$get_schemas_raw()}\if{html}{\out{</div>}}
 }
 
 \subsection{Returns}{
 (\code{tibble()})\cr
-Table \code{name}, \code{tbl_description}, \code{version}, and \code{schema}
-(list-col of tibble(field, type)).
+Table \code{name}, \code{tbl_description}, \code{version}, \code{schema}
+(list-col of tibble(field, type)) and \code{parent} (file table of an
+output, \code{NA} for a file table).
 }
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Config-get_schemas_tidy"></a>}}
 \if{latex}{\out{\hypertarget{method-Config-get_schemas_tidy}{}}}
 \subsection{Method \code{get_schemas_tidy()}}{
-Return tidy schemas for all tables.
+Return tidy schemas for all tables and outputs.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Config$get_schemas_tidy()}\if{html}{\out{</div>}}
 }
 
 \subsection{Returns}{
 (\code{tibble()})\cr
-Table \code{name}, \code{tbl_description}, \code{version}, and \code{schema}
-(list-col of tibble(field, type)).
+Table \code{name}, \code{tbl_description}, \code{version}, \code{schema}
+(list-col of tibble(field, type)) and \code{parent} (file table of an
+output, \code{NA} for a file table).
 }
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Config-get_schemas_both"></a>}}
 \if{latex}{\out{\hypertarget{method-Config-get_schemas_both}{}}}
 \subsection{Method \code{get_schemas_both()}}{
-Return both raw and tidy schemas for all tables.
+Return both raw and tidy schemas for all tables and
+outputs.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Config$get_schemas_both()}\if{html}{\out{</div>}}
 }
 
 \subsection{Returns}{
 (\code{tibble()})\cr
-Table \code{name}, \code{tbl_description}, \code{version}, and \code{schema}
-(list-col of tibble(raw, tidy, type, description)).
+Table \code{name}, \code{tbl_description}, \code{version}, \code{schema}
+(list-col of tibble(raw, tidy, type, description); \code{raw} is \code{NA} for
+output columns without one) and \code{parent} (file table of an output, \code{NA}
+for a file table).
 }
 }
 \if{html}{\out{<hr>}}

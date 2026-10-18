@@ -4,20 +4,10 @@
 \alias{Workflow}
 \title{Workflow Object}
 \description{
-Orchestrates multiple \code{Tool} objects over a shared directory, handling file
-discovery, filtering, tidying, and writing in a single pipeline.
+Orchestrates multiple \code{Tool} objects over shared directories.
 
-A Workflow object:
-\itemize{
-\item has a name (\code{name});
-\item has one or more paths to workflow results (\code{path});
-\item holds \code{Tool} subclass objects accessible via \code{get_tools()};
-\item exposes matched files across all tools via \code{list_files()};
-\item has a tibble of written output files, populated after \code{write()} (\code{written_files});
-}
-
-The typical workflow is: optionally filter with \code{filter_files()}, tidy with
-\code{tidy()}, then write with \code{write()}. \code{run()} chains all three steps.
+Typical use: \code{filter_files()} (optional), \code{tidy()}, \code{write()}; \code{run()} chains
+all three.
 }
 \examples{
 fs::path(tempdir(), letters[1:5]) |>
@@ -57,10 +47,8 @@ Package name(s) used for metadata version reporting.}
 Tibble of files written from \code{self$write()}.}
 
 \item{\code{sync_exclude}}{(\code{character(n)})\cr
-Globs appended as trailing \code{--exclude} patterns by
-\code{get_sync_patterns()}, to carve files back out of the schema-derived
-includes (e.g. duplicate copies of the same output under a different
-directory). Subclasses override this.}
+Trailing \code{--exclude} globs for \code{get_sync_patterns()}, carving files back
+out of the schema-derived includes. Subclasses override this.}
 }
 \if{html}{\out{</div>}}
 }
@@ -169,10 +157,9 @@ Bound \code{get_globs()} tibbles from all Tools (\code{tool}, \code{name}, \code
 \if{html}{\out{<a id="method-Workflow-get_sync_patterns"></a>}}
 \if{latex}{\out{\hypertarget{method-Workflow-get_sync_patterns}{}}}
 \subsection{Method \code{get_sync_patterns()}}{
-Build the \verb{aws s3 sync} include/exclude patterns for this
-Workflow: exclude everything, then include every schema-derived glob,
-then apply \code{sync_exclude}. \verb{aws s3 sync} filters are ordered and
-last-match wins, so the trailing excludes carve back out of the includes.
+Build the \verb{aws s3 sync} patterns: exclude everything,
+include the schema globs, then \code{sync_exclude} (filters are
+last-match-wins).
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Workflow$get_sync_patterns()}\if{html}{\out{</div>}}
 }
@@ -212,9 +199,7 @@ R6 object invisibly.
 \if{html}{\out{<a id="method-Workflow-list_files"></a>}}
 \if{latex}{\out{\hypertarget{method-Workflow-list_files}{}}}
 \subsection{Method \code{list_files()}}{
-List only files of interest in given workflow directory, i.e.
-only those files that match the patterns listed in the individual tool
-config.
+List files matching the tools' patterns.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Workflow$list_files()}\if{html}{\out{</div>}}
 }

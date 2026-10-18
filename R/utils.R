@@ -52,6 +52,40 @@ list_files_dir <- function(path, max_files = NULL, type = "file") {
   d
 }
 
+#' Make Prefixes Unique
+#'
+#' Keeps the first of each repeated prefix and appends `_2`, `_3`, ... to the
+#' rest, skipping any candidate already in use, so a generated name never
+#' collides with another prefix in `x`.
+#'
+#' @param x (`character(n)`)\cr
+#' Prefixes, in the order that decides which one keeps its name.
+#' @return (`character(n)`)\cr
+#' Unique prefixes.
+#' @keywords internal
+#' @examples
+#' (u1 <- uniquify_prefixes(c("a", "a", "b", "a")))
+#' # the second "s1" would naively become "s1_2", which is already taken
+#' (u2 <- uniquify_prefixes(c("s1", "s1", "s1_2")))
+#' @testexamples
+#' expect_equal(u1, c("a", "a_2", "b", "a_3"))
+#' expect_equal(u2, c("s1", "s1_3", "s1_2"))
+#' expect_equal(uniquify_prefixes(character()), character())
+uniquify_prefixes <- function(x) {
+  out <- x
+  dup <- duplicated(x)
+  taken <- unique(x)
+  for (i in which(dup)) {
+    k <- 2L
+    while (paste0(x[i], "_", k) %in% taken) {
+      k <- k + 1L
+    }
+    out[i] <- paste0(x[i], "_", k)
+    taken <- c(taken, out[i])
+  }
+  out
+}
+
 #' Get Table Version Attribute
 #'
 #' Get the version attribute from a table.

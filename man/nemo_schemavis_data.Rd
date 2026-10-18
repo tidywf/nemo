@@ -12,8 +12,10 @@ nemo_schemavis_data(tools, pkg = "nemo")
 \item{pkg}{package name that owns the tool configs. Defaults to \code{"nemo"}.}
 }
 \value{
-A tibble with one row per (tool, table) and columns \code{tool}, \code{tbl},
-\code{description}, \code{ftype}, \code{glob}, \code{columns} (nested tibble of \code{raw}, \code{tidy},
+A tibble with one row per (tool, table) - plus one per declared
+output of a fan-out table, after it - and columns \code{tool}, \code{tbl},
+\code{description}, \code{ftype}, \code{glob}, \code{parent} (file table of an output, \code{NA}
+otherwise), \code{columns} (nested tibble of \code{raw}, \code{tidy},
 \code{type}, \code{description}, list-column \code{versions}), \code{versions} (sorted
 character vector), \code{n_cols} (columns in \code{latest}), \code{version_str} and
 \code{col_names} (space-separated raw + tidy names, for search).

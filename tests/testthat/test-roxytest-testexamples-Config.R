@@ -2,7 +2,42 @@
 
 # File R/Config.R: @testexamples
 
-test_that("Function config_sort_versions() @ L413", {
+test_that("Function Config() @ L42", {
+  
+  tool <- "tool1"
+  pkg <- "nemo"
+  conf <- Config$new(tool, pkg)
+  (patterns <- conf$get_patterns())
+  (globs <- conf$get_globs())
+  (ftypes <- conf$get_ftypes())
+  (pat1 <- conf$get_pattern("table1"))
+  (ftype1 <- conf$get_ftype("table1"))
+  (descr1 <- conf$get_description("table1"))
+  (descr <- conf$get_descriptions())
+  (rs <- conf$get_schemas_raw())
+  (ts <- conf$get_schemas_tidy())
+  (s1 <- conf$get_schema_raw("table1"))
+  conf$get_schema_raw("table1", version = "v1.2.3")
+  conf$get_schema_tidy("table1")
+  (cm <- conf$get_col_map("table6"))
+  # table7 fans out into two outputs
+  (outs <- conf$get_outputs())
+  conf$get_table_outputs("table7")
+  conf$get_schema_tidy("table7dp")
+  
+  expect_equal(conf$get_table_outputs("table7"), c("table7main", "table7dp"))
+  expect_equal(conf$get_table_outputs("table1"), character())
+  expect_named(outs, c("name", "table", "description"))
+  expect_equal(outs$table[outs$name == "table7dp"], "table7")
+  expect_equal(outs$table[outs$name == "table1"], "table1")
+  expect_false("table7" %in% outs$name)
+  expect_equal(rs$parent[rs$name == "table7"][1], NA_character_)
+  expect_false("table7dp" %in% rs$name)
+  expect_equal(unique(ts$parent[ts$name == "table7dp"]), "table7")
+})
+
+
+test_that("Function config_sort_versions() @ L607", {
   
   config_sort_versions(c("v2.0.0", "v1.0.0", "latest"))
   config_sort_versions(c("latest", "v1.2.3"))

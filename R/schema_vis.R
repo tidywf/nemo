@@ -48,7 +48,8 @@ reactable_schema <- function(dat, tool_colours = NULL, ...) {
   tool_cols <- rlang::set_names(as.character(tool_colours[tools]), tools)
   tool_cols[is.na(tool_cols)] <- "#868e96"
   w <- reactable::reactable(
-    dplyr::select(dat, dplyr::all_of(cols)),
+    dplyr::select(dat, dplyr::all_of(cols)) |>
+      dplyr::mutate(row = seq_len(dplyr::n()), .before = 1),
     class = "nemo-schema",
     searchable = TRUE,
     filterable = TRUE,
@@ -71,10 +72,11 @@ reactable_schema <- function(dat, tool_colours = NULL, ...) {
       inputStyle = list(backgroundColor = "transparent", color = "inherit")
     ),
     details = function(i) {
-      schema_columns_detail(dat$columns[[i]], dat$versions[[i]], dat$ftype[[i]])
+      schema_columns_detail(dat$columns[[i]], dat$versions[[i]], dat$ftype[[i]], dat$parent[[i]])
     },
     columns = list(
       .details = colDef(name = "", width = 36),
+      row = schema_row_col(),
       tool = colDef(
         name = "Tool",
         width = schema_col_width(tools, extra = 40),
@@ -91,7 +93,17 @@ reactable_schema <- function(dat, tool_colours = NULL, ...) {
       glob = colDef(
         name = "Glob",
         minWidth = 200,
-        cell = function(value) htmltools::code(value)
+        cell = function(value, index) {
+          parent <- dat$parent[[index]]
+          if (is.na(parent)) {
+            return(htmltools::code(value))
+          }
+          # outputs are synced via their file table's glob
+          htmltools::span(
+            style = "opacity: 0.6;",
+            glue::glue("\u2014 (child of {parent})")
+          )
+        }
       ),
       n_cols = colDef(
         name = "Cols (latest)",
@@ -128,14 +140,30 @@ reactable_schema <- function(dat, tool_colours = NULL, ...) {
 #' @param ftype ftype string for the table.
 #' @return An htmltools tag.
 #' @keywords internal
-schema_columns_detail <- function(x, versions, ftype) {
+schema_columns_detail <- function(x, versions, ftype, parent = NA_character_) {
   colDef <- reactable::colDef
+  if (nrow(x) == 0) {
+    return(htmltools::div(
+      style = "padding: 8px 16px 16px 40px; font-size: 0.9em;",
+      htmltools::strong("ftype: "),
+      htmltools::code(ftype),
+      " \u00b7 parsed by its own parser; its columns are on its output tables (\"output of\" this table)."
+    ))
+  }
   pres <- purrr::map(versions, \(v) {
     ifelse(purrr::map_lgl(x[["versions"]], \(vs) v %in% vs), "●", "")
   }) |>
     rlang::set_names(versions) |>
     tibble::as_tibble()
-  d <- dplyr::bind_cols(dplyr::select(x, -"versions"), pres)
+  d <- dplyr::bind_cols(
+    tibble::tibble(row = seq_len(nrow(x))),
+    dplyr::select(x, -"versions"),
+    pres
+  )
+  # outputs not parsed straight from a file have no raw names
+  if (all(is.na(d[["raw"]]))) {
+    d[["raw"]] <- NULL
+  }
   vcols <- purrr::map(versions, \(v) {
     colDef(
       header = schema_version_pill(v),
@@ -155,7 +183,10 @@ schema_columns_detail <- function(x, versions, ftype) {
     htmltools::div(
       style = "margin-bottom: 8px; font-size: 0.9em;",
       htmltools::strong("ftype: "),
-      htmltools::code(ftype)
+      htmltools::code(ftype),
+      if (!is.na(parent)) {
+        htmltools::tagList(" \u00b7 ", htmltools::strong("output of: "), htmltools::code(parent))
+      }
     ),
     reactable::reactable(
       d,
@@ -170,15 +201,37 @@ schema_columns_detail <- function(x, versions, ftype) {
         headerStyle = list(backgroundColor = "rgba(127, 127, 127, 0.10)")
       ),
       columns = c(
+        list(row = schema_row_col()),
         list(
           raw = colDef(minWidth = 110, style = mono),
           tidy = colDef(minWidth = 110, style = mono),
           type = colDef(maxWidth = 60),
           description = colDef(minWidth = 130)
-        ),
+        )[intersect(c("raw", "tidy", "type", "description"), names(d))],
         vcols
       )
     )
+  )
+}
+
+#' Row number column
+#'
+#' Numbers rows in display order (after search, filter and sort), not data
+#' order, so they always read 1, 2, 3, ... Both schema tables are unpaginated,
+#' so the view index is the row number.
+#'
+#' @return A `reactable::colDef()`.
+#' @keywords internal
+schema_row_col <- function() {
+  reactable::colDef(
+    name = "#",
+    width = 48,
+    align = "right",
+    sortable = FALSE,
+    filterable = FALSE,
+    searchable = FALSE,
+    cell = reactable::JS("function(cellInfo) { return cellInfo.viewIndex + 1 }"),
+    style = list(color = "rgba(127, 127, 127, 0.9)", fontVariantNumeric = "tabular-nums")
   )
 }
 
@@ -284,8 +337,10 @@ schema_mono <- function() {
 #'
 #' @param tools character vector of tool names.
 #' @param pkg package name that owns the tool configs. Defaults to `"nemo"`.
-#' @return A tibble with one row per (tool, table) and columns `tool`, `tbl`,
-#'   `description`, `ftype`, `glob`, `columns` (nested tibble of `raw`, `tidy`,
+#' @return A tibble with one row per (tool, table) - plus one per declared
+#'   output of a fan-out table, after it - and columns `tool`, `tbl`,
+#'   `description`, `ftype`, `glob`, `parent` (file table of an output, `NA`
+#'   otherwise), `columns` (nested tibble of `raw`, `tidy`,
 #'   `type`, `description`, list-column `versions`), `versions` (sorted
 #'   character vector), `n_cols` (columns in `latest`), `version_str` and
 #'   `col_names` (space-separated raw + tidy names, for search).
@@ -297,28 +352,67 @@ schema_mono <- function() {
 #'   "versions", "n_cols", "col_names") %in% names(d)))
 #' expect_equal(d$n_cols[d$tbl == "table1"], 6L)
 #' expect_true(grepl("sample_id", d$col_names[d$tbl == "table1"]))
+#' expect_equal(d$tbl[d$parent %in% "table7"], c("table7main", "table7dp"))
+#' expect_equal(d$ftype[d$tbl == "table7dp"], "tsv")
+#' expect_match(d$description[d$tbl == "table7"], "(parent of table7main, table7dp)", fixed = TRUE)
+#' expect_match(d$description[d$tbl == "table7dp"], "(child of table7)", fixed = TRUE)
+#' expect_false(grepl("NA", d$col_names[d$tbl == "table7dp"]))
 nemo_schemavis_data <- function(tools, pkg = "nemo") {
+  cols_tbl <- function(cols) {
+    if (length(cols) == 0) {
+      # custom-parsed fan-out file: its columns live on its outputs
+      return(tibble::tibble(
+        raw = character(),
+        tidy = character(),
+        type = character(),
+        description = character(),
+        versions = list()
+      ))
+    }
+    purrr::map(cols, \(col) {
+      tibble::tibble(
+        raw = col[["raw"]] %||% NA_character_,
+        tidy = col[["tidy"]],
+        type = col[["type"]],
+        description = col[["description"]] %||% NA_character_,
+        versions = list(col[["versions"]])
+      )
+    }) |>
+      dplyr::bind_rows()
+  }
   get_one <- function(tool) {
     tabs <- Config$new(tool, pkg = pkg)$get_tables()
-    purrr::imap(tabs, \(tab, tbl) {
-      columns <- purrr::map(tab[["columns"]], \(col) {
-        tibble::tibble(
-          raw = col[["raw"]],
-          tidy = col[["tidy"]],
-          type = col[["type"]],
-          description = col[["description"]],
-          versions = list(col[["versions"]])
-        )
-      }) |>
-        dplyr::bind_rows()
-      tibble::tibble(
+    # tag fan-out rows so parent and children read as a group
+    with_rel <- function(desc, rel) {
+      paste0(c(desc, glue::glue("({rel})")), collapse = " ")
+    }
+    purrr::imap(tabs, \(tab, tab_name) {
+      outs <- tab[["outputs"]] %||% list()
+      desc <- tab[["description"]]
+      if (length(outs) > 0) {
+        desc <- with_rel(desc, paste("parent of", paste(names(outs), collapse = ", ")))
+      }
+      file_row <- tibble::tibble(
         tool = tool,
-        tbl = tbl,
-        description = tab[["description"]],
+        tbl = tab_name,
+        description = desc,
         ftype = tab[["ftype"]],
         glob = paste(tab[["glob"]], collapse = ", "),
-        columns = list(columns)
+        parent = NA_character_,
+        columns = list(cols_tbl(tab[["columns"]]))
       )
+      out_rows <- purrr::imap(outs, \(out, out_name) {
+        tibble::tibble(
+          tool = tool,
+          tbl = out_name,
+          description = with_rel(out[["description"]], paste("child of", tab_name)),
+          ftype = tab[["ftype"]],
+          glob = "",
+          parent = tab_name,
+          columns = list(cols_tbl(out[["columns"]]))
+        )
+      })
+      dplyr::bind_rows(file_row, unname(out_rows))
     }) |>
       dplyr::bind_rows()
   }
@@ -333,7 +427,8 @@ nemo_schemavis_data <- function(tools, pkg = "nemo") {
       }),
       version_str = purrr::map_chr(.data$versions, \(v) paste(v, collapse = ", ")),
       col_names = purrr::map_chr(.data$columns, \(x) {
-        paste(unique(c(x[["raw"]], x[["tidy"]])), collapse = " ")
+        nms <- c(x[["raw"]], x[["tidy"]])
+        paste(unique(nms[!is.na(nms)]), collapse = " ")
       })
     )
 }

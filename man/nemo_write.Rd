@@ -11,11 +11,9 @@ nemo_write(d, fpfix = NULL, format = "tsv", dbconn = NULL, dbtab = NULL)
 A data.frame (or tibble) with tidy data.}
 
 \item{fpfix}{(\code{character(1)})\cr
-File prefix. The file extension is generated automatically via the \code{format}
-argument. Ignored when format is db: rows are appended to \code{dbtab} with no
-record of the source prefix, so rows from different samples are
-indistinguishable unless the data carries its own identifier (e.g. the
-\code{input_prefix} column added by \code{prefix_include = TRUE} in \code{Tool$write()}).}
+File prefix; the extension comes from \code{format}. Ignored for db, so rows from
+different samples are indistinguishable unless the data carries an id (e.g.
+\code{input_prefix} via \code{prefix_include = TRUE} in \code{Tool$write()}).}
 
 \item{format}{(\code{character(1)})\cr
 Output format. One of tsv, csv, parquet, rds, or db.}

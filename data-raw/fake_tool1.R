@@ -126,13 +126,42 @@ tool1 <- list(
         RawTPM = c(11.1, 44.4, 6.66)
       )
     )
+  ),
+  # tsv: one wide row, split into two schema outputs (table7main, table7dp).
+  # Own dir so the extdata/tool1 tests don't pick it up.
+  table7 = list(
+    list(
+      version = "v1.0.0",
+      format = "tsv",
+      dir = "tool1_outputs",
+      data = tibble::tibble(
+        SampleID = "sampleA",
+        TotalReads = 800,
+        DepthCov_10 = 0.97,
+        DepthCov_20 = 0.88,
+        DepthCov_30 = 0.7
+      )
+    ),
+    list(
+      version = "latest",
+      format = "tsv",
+      dir = "tool1_outputs",
+      data = tibble::tibble(
+        SampleID = "sampleA",
+        TotalReads = 1000,
+        MappedReads = 950,
+        DepthCov_10 = 0.98,
+        DepthCov_20 = 0.9,
+        DepthCov_30 = 0.75
+      )
+    )
   )
 )
 
 purrr::map2(tool1, names(tool1), \(tab, tab_name) {
   stopifnot(length(tab_name) == 1)
   purrr::map(tab, \(entry) {
-    odir <- here::here("inst/extdata", "tool1", entry$version) |>
+    odir <- here::here("inst/extdata", entry$dir %||% "tool1", entry$version) |>
       fs::dir_create()
     if (entry$format == "csv") {
       fname <- file.path(odir, glue::glue("sampleA.tool1.{tab_name}.csv"))

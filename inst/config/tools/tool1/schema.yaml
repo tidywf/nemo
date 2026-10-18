@@ -149,3 +149,70 @@ tables:
         type: 'float'
         description: 'raw TPM'
         versions: ['latest']
+  table7:
+    description: 'Table7 for tool1 (tsv: one wide row, split into two outputs).'
+    pattern: "\\.tool1\\.table7\\.tsv$"
+    glob: ["*.tool1.table7.tsv"]
+    ftype: 'tsv'
+    columns:
+      - raw: 'SampleID'
+        tidy: 'sample_id'
+        type: 'char'
+        description: 'sample ID'
+        versions: ['v1.0.0', 'latest']
+      - raw: 'TotalReads'
+        tidy: 'reads_total'
+        type: 'float'
+        description: 'total reads'
+        versions: ['v1.0.0', 'latest']
+      - raw: 'MappedReads'
+        tidy: 'reads_mapped'
+        type: 'float'
+        description: 'mapped reads'
+        versions: ['latest']
+      - raw: 'DepthCov_10'
+        tidy: 'depth_cov_10'
+        type: 'float'
+        description: 'fraction of bases at >= 10x depth'
+        versions: ['v1.0.0', 'latest']
+      - raw: 'DepthCov_20'
+        tidy: 'depth_cov_20'
+        type: 'float'
+        description: 'fraction of bases at >= 20x depth'
+        versions: ['v1.0.0', 'latest']
+      - raw: 'DepthCov_30'
+        tidy: 'depth_cov_30'
+        type: 'float'
+        description: 'fraction of bases at >= 30x depth'
+        versions: ['v1.0.0', 'latest']
+    outputs:
+      table7main:
+        description: 'Table7 read counts, one row per sample.'
+        columns:
+          - tidy: 'sample_id'
+            type: 'char'
+            description: 'sample ID'
+            versions: ['v1.0.0', 'latest']
+          - tidy: 'reads_total'
+            type: 'float'
+            description: 'total reads'
+            versions: ['v1.0.0', 'latest']
+          - tidy: 'reads_mapped'
+            type: 'float'
+            description: 'mapped reads'
+            versions: ['latest']
+      table7dp:
+        description: 'Table7 fraction of bases at each depth threshold, long-form.'
+        columns:
+          - tidy: 'sample_id'
+            type: 'char'
+            description: 'sample ID'
+            versions: ['v1.0.0', 'latest']
+          - tidy: 'dp'
+            type: 'float'
+            description: 'depth threshold'
+            versions: ['v1.0.0', 'latest']
+          - tidy: 'pct'
+            type: 'float'
+            description: 'fraction of bases at >= dp depth'
+            versions: ['v1.0.0', 'latest']

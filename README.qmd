@@ -61,6 +61,7 @@ Schema-driven parsing and tidying of bioinformatic pipeline outputs:
 
 - find files via YAML-defined `schema.yaml` patterns
 - parse TSV/CSV/headerless/key-value/crazy files
+- split one file into several output tables, each with a schema-checked shape
 - rename columns to `snake_case`, track column changes across tool versions
 - write to Parquet, TSV, CSV, RDS or database of your choice, plus a
   `metadata.parquet` for provenance (IDs, paths, pkg versions) per run
@@ -88,8 +89,10 @@ glue(
 - Output naming: <{base}/articles/output_naming>
 - Changelog: <{base}/articles/NEWS>
 - R6 structure: <{base}/articles/structure>
+- New tool: <{base}/articles/new-tool>
 - UML: <{base}/articles/uml>
-- CI/CD: <{base}/articles/cicd>"
+- CI/CD: <{base}/articles/cicd>
+- Devnotes: <{base}/articles/devnotes>"
 )
 ```
 
@@ -176,11 +179,14 @@ echo "$ nemo.R --version" & nemo.R --version
 echo ""
 echo "#-----------------------------------#"
 echo "$ nemo.R --help" & nemo.R --help
-echo ""
+echo "'" # balance out highlighting
 echo "#-----------------------------------#"
 echo "$ nemo.R tidy --help" & nemo.R tidy --help
 echo ""
 echo "#-----------------------------------#"
 echo "$ nemo.R list --help" & nemo.R list --help
+echo ""
+echo "#-----------------------------------#"
+echo "$ nemo.R sync --help" & nemo.R sync --help
 echo ""
 ```

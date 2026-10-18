@@ -1,19 +1,64 @@
-#' Sentinel prefix for schema tables with no file of their own
+#' AWS S3 Sync Helper
 #'
-#' Some schema tables are derived from a parent table's file rather than parsed
-#' from a file of their own (e.g. the DRAGEN FASTQC positional tables). Their
-#' `pattern` is set to `__no_file_match__<table>` so they never match a real
-#' file, and they carry no `glob`.
-#' @noRd
-NEMO_NO_FILE_MATCH <- "__no_file_match__"
+#' @param src (`character(1)`)\cr
+#' S3 source path.
+#' @param dest (`character(1)`)\cr
+#' Local destination path.
+#' @param pats (`tibble()`)\cr
+#' Patterns tibble with `inex` ("in" or "ex") and `pat` (pattern) columns.
+#' If `NULL` and `workflow` is given, the workflow's schema-derived patterns
+#' are used (see [wf_sync_patterns()]); if both are `NULL`, everything is
+#' excluded.
+#' @param workflow (`character(1)`)\cr
+#' Workflow name (e.g. `"wigits"`, `"dragen"`) whose schema-derived sync
+#' patterns to use. Ignored when `pats` is supplied.
+#' @param dryrun (`logical(1)`)\cr
+#' If `TRUE`, passes `--dryrun` to `aws s3 sync` so operations are displayed
+#' without being executed.
+#'
+#' @examples
+#' \dontrun{
+#' src <- "s3://my-awesome-bucket/path/to/run1"
+#' dest <- sub("s3:/", "~/s3", src)
+#' pats <- tibble::tribble(
+#'   ~inex, ~pat,
+#'   "ex", "*",
+#'   "in", "*foo.csv"
+#' )
+#' s3sync(src, dest, pats)
+#'
+#' # let the workflow's schemas decide what to pull down
+#' s3sync(src, dest, workflow = "wigits")
+#' }
+#' @export
+s3sync <- function(src, dest, pats = NULL, workflow = NULL, dryrun = FALSE) {
+  pats_default <- tibble::tribble(
+    ~inex , ~pat ,
+    "ex"  , "*"
+  )
+  if (is.null(pats) && !is.null(workflow)) {
+    pats <- wf_sync_patterns(workflow)
+  }
+  pats <- pats %||% pats_default
+  dest <- path.expand(dest)
+  pat_args <- pats |>
+    dplyr::mutate(
+      flag = as.character(glue::glue("--{.data$inex}clude")),
+      pat = shQuote(.data$pat)
+    ) |>
+    tidyr::pivot_longer(c("flag", "pat"), values_to = "value") |>
+    dplyr::pull("value")
+  args <- c("s3", "sync", shQuote(src), shQuote(dest), pat_args)
+  if (dryrun) {
+    args <- c(args, "--dryrun")
+  }
+  system2("aws", args)
+}
 
 #' S3 Sync Patterns for a Workflow
 #'
 #' Builds the `aws s3 sync` include/exclude pattern tibble for a workflow,
 #' from the `glob` fields declared by each of its tool's `schema.yaml`.
-#' This is the single source of truth for "which files does this workflow need?"
-#' Downstream callers (`tidywigits::s3sync()`, `tidydragen::s3sync()`, the nemo
-#' Lambda) should use it rather than maintaining their own copies.
 #'
 #' @param workflow (`character(1)`)\cr
 #' Workflow name (e.g. `"wigits"`, `"dragen"`), as accepted by
@@ -192,9 +237,6 @@ schema_glob_check <- function(pkg, fixture_dir = NULL) {
     globs <- conf$get_globs()
     purrr::map(conf$get_tables() |> names(), \(tbl) {
       pat <- conf$get_pattern(tbl)
-      if (startsWith(pat, NEMO_NO_FILE_MATCH)) {
-        return(NULL)
-      }
       hits <- rel[grepl(pat, basename(rel), perl = TRUE)]
       if (length(hits) == 0) {
         return(NULL)

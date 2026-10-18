@@ -66,9 +66,7 @@ cli_sync_parse_args <- function(args, wf = NULL) {
 #' Sync parsable workflow output files from S3
 #'
 #' Runs `aws s3 sync` from `src` to `dest`, pulling down only the files the
-#' workflow's tool schemas declare (see [wf_sync_patterns()]). This keeps the
-#' "what do we need?" list in one place (the `schema.yaml` files) instead of
-#' duplicating it in every caller.
+#' workflow's tool schemas declare (see [wf_sync_patterns()]).
 #'
 #' @param src (`character(1)`)\cr S3 source path.
 #' @param dest (`character(1)`)\cr Local destination directory.
