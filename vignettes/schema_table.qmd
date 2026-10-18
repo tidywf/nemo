@@ -14,9 +14,6 @@ knitr:
 use("nemo", "nemo_schema_reactable")
 ```
 
-One row per schema table. A file that fans out is followed by its output tables;
-expand a row for its columns and, for an output, its file table.
-
 ```{r}
 #| label: reactable
 

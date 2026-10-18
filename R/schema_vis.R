@@ -344,6 +344,8 @@ schema_mono <- function() {
 #' expect_true(grepl("sample_id", d$col_names[d$tbl == "table1"]))
 #' expect_equal(d$tbl[d$parent %in% "table7"], c("table7main", "table7dp"))
 #' expect_equal(d$ftype[d$tbl == "table7dp"], "tsv")
+#' expect_match(d$description[d$tbl == "table7"], "(parent of table7main, table7dp)", fixed = TRUE)
+#' expect_match(d$description[d$tbl == "table7dp"], "(child of table7)", fixed = TRUE)
 #' expect_false(grepl("NA", d$col_names[d$tbl == "table7dp"]))
 nemo_schemavis_data <- function(tools, pkg = "nemo") {
   cols_tbl <- function(cols) {
@@ -370,21 +372,30 @@ nemo_schemavis_data <- function(tools, pkg = "nemo") {
   }
   get_one <- function(tool) {
     tabs <- Config$new(tool, pkg = pkg)$get_tables()
+    # tag fan-out rows so parent and children read as a group
+    with_rel <- function(desc, rel) {
+      paste0(c(desc, glue::glue("({rel})")), collapse = " ")
+    }
     purrr::imap(tabs, \(tab, tab_name) {
+      outs <- tab[["outputs"]] %||% list()
+      desc <- tab[["description"]]
+      if (length(outs) > 0) {
+        desc <- with_rel(desc, paste("parent of", paste(names(outs), collapse = ", ")))
+      }
       file_row <- tibble::tibble(
         tool = tool,
         tbl = tab_name,
-        description = tab[["description"]],
+        description = desc,
         ftype = tab[["ftype"]],
         glob = paste(tab[["glob"]], collapse = ", "),
         parent = NA_character_,
         columns = list(cols_tbl(tab[["columns"]]))
       )
-      out_rows <- purrr::imap(tab[["outputs"]] %||% list(), \(out, out_name) {
+      out_rows <- purrr::imap(outs, \(out, out_name) {
         tibble::tibble(
           tool = tool,
           tbl = out_name,
-          description = out[["description"]],
+          description = with_rel(out[["description"]], paste("child of", tab_name)),
           ftype = tab[["ftype"]],
           glob = "",
           parent = tab_name,
