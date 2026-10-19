@@ -23,6 +23,8 @@ Schema-driven parsing and tidying of bioinformatic pipeline outputs:
 
 - find files via YAML-defined `schema.yaml` patterns
 - parse TSV/CSV/headerless/key-value/crazy files
+- split one file into several output tables, each with a schema-checked
+  shape
 - rename columns to `snake_case`, track column changes across tool
   versions
 - write to Parquet, TSV, CSV, RDS or database of your choice, plus a
@@ -42,8 +44,10 @@ and [tidydragen](https://github.com/tidywf/tidydragen "tidydragen")
 - Output naming: <https://tidywf.github.io/nemo/articles/output_naming>
 - Changelog: <https://tidywf.github.io/nemo/articles/NEWS>
 - R6 structure: <https://tidywf.github.io/nemo/articles/structure>
+- New tool: <https://tidywf.github.io/nemo/articles/new-tool>
 - UML: <https://tidywf.github.io/nemo/articles/uml>
 - CI/CD: <https://tidywf.github.io/nemo/articles/cicd>
+- Devnotes: <https://tidywf.github.io/nemo/articles/devnotes>
 
 ## Quickstart
 
@@ -105,7 +109,7 @@ From GitHub:
 ``` r
 install.packages("remotes")
 remotes::install_github("tidywf/nemo") # latest main commit
-remotes::install_github("tidywf/nemo@v0.1.0.9007") # specific version
+remotes::install_github("tidywf/nemo@v0.1.0.9008") # specific version
 ```
 
 Conda: <https://anaconda.org/tidywf/r-nemo>. More options:
@@ -121,7 +125,7 @@ export PATH="${nemo_cli}:${PATH}"
 ```
 
     $ nemo.R --version
-    nemo 0.1.0.9007
+    nemo 0.1.0.9008
 
     #-----------------------------------#
     $ nemo.R --help
@@ -138,7 +142,7 @@ export PATH="${nemo_cli}:${PATH}"
     options:
       -h, --help        show this help message and exit
       -v, --version     show program's version number and exit
-
+    '
     #-----------------------------------#
     $ nemo.R tidy --help
     usage: nemo.R tidy [-h] -w WORKFLOW -d IN_DIR [-o OUTPUT_DIR] [-f FORMAT]
@@ -182,4 +186,19 @@ export PATH="${nemo_cli}:${PATH}"
       -d, --in_dir IN_DIR   Input directory.
       -f, --format FORMAT   Format of list output [def: pretty] (tsv, pretty)
       -m, --max MAX         Max rows to show.
+      -q, --quiet           Shush all the logs.
+
+    #-----------------------------------#
+    $ nemo.R sync --help
+    usage: nemo.R sync [-h] -w WORKFLOW -s SRC -d DEST [--dryrun]
+                       [--show_patterns] [-q]
+
+    options:
+      -h, --help            show this help message and exit
+      -w, --workflow WORKFLOW
+                            Workflow name.
+      -s, --src SRC         S3 source path.
+      -d, --dest DEST       Local destination directory.
+      --dryrun              Show what would be synced, without syncing.
+      --show_patterns       Print the include/exclude patterns and exit.
       -q, --quiet           Shush all the logs.
