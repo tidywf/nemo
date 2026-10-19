@@ -11,7 +11,7 @@ schema.yaml tables."><meta property="og:image" content="https://tidywf.github.io
 
     <a class="navbar-brand me-2" href="../index.html">nemo</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.1.0.9007</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.1.0.9008</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -44,7 +44,7 @@ schema.yaml tables."><meta property="og:image" content="https://tidywf.github.io
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Build schema data for reactable_schema</h1>
-      <small class="dont-index">Source: <a href="https://github.com/tidywf/nemo/blob/v0.1.0.9007/R/schema_vis.R" class="external-link"><code>R/schema_vis.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/tidywf/nemo/blob/v0.1.0.9008/R/schema_vis.R" class="external-link"><code>R/schema_vis.R</code></a></small>
       <div class="d-none name"><code>nemo_schemavis_data.Rd</code></div>
     </div>
 
@@ -73,8 +73,10 @@ for one or more tools from a given package, read straight from each tool's
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A tibble with one row per (tool, table) and columns <code>tool</code>, <code>tbl</code>,
-<code>description</code>, <code>ftype</code>, <code>glob</code>, <code>columns</code> (nested tibble of <code>raw</code>, <code>tidy</code>,
+    <p>A tibble with one row per (tool, table) - plus one per declared
+output of a fan-out table, after it - and columns <code>tool</code>, <code>tbl</code>,
+<code>description</code>, <code>ftype</code>, <code>glob</code>, <code>parent</code> (file table of an output, <code>NA</code>
+otherwise), <code>columns</code> (nested tibble of <code>raw</code>, <code>tidy</code>,
 <code>type</code>, <code>description</code>, list-column <code>versions</code>), <code>versions</code> (sorted
 character vector), <code>n_cols</code> (columns in <code>latest</code>), <code>version_str</code> and
 <code>col_names</code> (space-separated raw + tidy names, for search).</p>

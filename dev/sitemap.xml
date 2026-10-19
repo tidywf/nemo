@@ -8,7 +8,6 @@
 <url><loc>https://tidywf.github.io/nemo/dev/articles/index.html</loc></url>
 <url><loc>https://tidywf.github.io/nemo/dev/articles/installation.html</loc></url>
 <url><loc>https://tidywf.github.io/nemo/dev/articles/new-tool.html</loc></url>
-<url><loc>https://tidywf.github.io/nemo/dev/articles/notes.html</loc></url>
 <url><loc>https://tidywf.github.io/nemo/dev/articles/output_naming.html</loc></url>
 <url><loc>https://tidywf.github.io/nemo/dev/articles/schema_table.html</loc></url>
 <url><loc>https://tidywf.github.io/nemo/dev/articles/structure.html</loc></url>
@@ -76,9 +75,11 @@
 <url><loc>https://tidywf.github.io/nemo/dev/reference/schema_guess.html</loc></url>
 <url><loc>https://tidywf.github.io/nemo/dev/reference/schema_mono.html</loc></url>
 <url><loc>https://tidywf.github.io/nemo/dev/reference/schema_pill.html</loc></url>
+<url><loc>https://tidywf.github.io/nemo/dev/reference/schema_row_col.html</loc></url>
 <url><loc>https://tidywf.github.io/nemo/dev/reference/schema_version_colour.html</loc></url>
 <url><loc>https://tidywf.github.io/nemo/dev/reference/schema_version_pill.html</loc></url>
 <url><loc>https://tidywf.github.io/nemo/dev/reference/set_tbl_version_attr.html</loc></url>
+<url><loc>https://tidywf.github.io/nemo/dev/reference/uniquify_prefixes.html</loc></url>
 <url><loc>https://tidywf.github.io/nemo/dev/reference/wf_sync_patterns.html</loc></url>
 </urlset>
 

@@ -28,7 +28,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">nemo</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.1.0.9007</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.1.0.9008</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -72,7 +72,7 @@
 
 
 
-      <small class="dont-index">Source: <a href="https://github.com/tidywf/nemo/blob/v0.1.0.9007/vignettes/new-tool.qmd" class="external-link"><code>vignettes/new-tool.qmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/tidywf/nemo/blob/v0.1.0.9008/vignettes/new-tool.qmd" class="external-link"><code>vignettes/new-tool.qmd</code></a></small>
       <div class="d-none name"><code></code></div>
     </div>
 
@@ -116,11 +116,15 @@
 <code>versions</code>: tool versions the column appears in, e.g. <code>['v1.2.3', 'latest']</code>
 </li>
 </ul>
+<p>If one file holds several tables (a stats header plus a histogram, a JSON with several sections), keep the file’s raw <code>columns:</code> and declare each table under <code>outputs:</code> with its tidy columns. A file read by its own <code>parse_&lt;table&gt;()</code> (JSON, multi-section, configurable columns) may omit <code>columns:</code>. Name the schema table after the file and the outputs after their content; for a wide pivot whose columns depend on the data, set <code>shape: 'subset'</code> on the output.</p>
 <p>Schema format: see <a href="https://tidywf.github.io/nemo/articles/structure.html" title="Structure">Structure</a>.</p>
 </section><section class="level3"><h3 id="parsers">3. Parsers<a class="anchor" aria-label="anchor" href="#parsers"></a>
 </h3>
 <p>Copy <code>R/Tool1.R</code> to <code>R/&lt;Tool&gt;.R</code>: <code>initialize()</code>, per-table <code>parse_*()</code> / <code>tidy_*()</code>, roxygen with <code>@testexamples</code>.</p>
-</section></section><script id="quarto-html-after-body" type="application/javascript">
+<ul>
+<li>Method names must match a schema table (<code>tidy_table3()</code> for <code>table3</code>); <code>Tool</code> errors on construction otherwise.</li>
+<li>A table with <code>outputs:</code> needs a <code>tidy_&lt;table&gt;()</code> returning one tibble per output via <code><a href="../reference/nemo_enframe.html">nemo_enframe()</a></code>, keyed by output name (see <code>Tool1$tidy_table7()</code>). <code>Tool</code> checks the columns and types of each against the schema on every tidy.</li>
+</ul></section></section><script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {
       var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
       var mailtoRegex = new RegExp(/^mailto:/);

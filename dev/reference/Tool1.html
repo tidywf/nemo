@@ -11,7 +11,7 @@ methods are provided for tables that require non-standard handling."><meta prope
 
     <a class="navbar-brand me-2" href="../index.html">nemo</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.1.0.9007</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.1.0.9008</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -44,7 +44,7 @@ methods are provided for tables that require non-standard handling."><meta prope
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Tool1 Object</h1>
-      <small class="dont-index">Source: <a href="https://github.com/tidywf/nemo/blob/v0.1.0.9007/R/Tool1.R" class="external-link"><code>R/Tool1.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/tidywf/nemo/blob/v0.1.0.9008/R/Tool1.R" class="external-link"><code>R/Tool1.R</code></a></small>
       <div class="d-none name"><code>Tool1.Rd</code></div>
     </div>
 
@@ -67,6 +67,7 @@ methods are provided for tables that require non-standard handling.</p>
 
 <ul><li><p><a href="#method-Tool1-new"><code>Tool1$new()</code></a></p></li>
 <li><p><a href="#method-Tool1-tidy_table3"><code>Tool1$tidy_table3()</code></a></p></li>
+<li><p><a href="#method-Tool1-tidy_table7"><code>Tool1$tidy_table7()</code></a></p></li>
 </ul></div><p><details><summary>Inherited methods</summary><ul><li><span class="pkg-link" data-pkg="nemo" data-topic="Tool" data-id="filter_files"><a href="Tool.html#method-filter_files"><code>nemo::Tool$filter_files()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="nemo" data-topic="Tool" data-id="get_globs"><a href="Tool.html#method-get_globs"><code>nemo::Tool$get_globs()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="nemo" data-topic="Tool" data-id="get_metadata"><a href="Tool.html#method-get_metadata"><code>nemo::Tool$get_metadata()</code></a></span></li>
@@ -125,6 +126,28 @@ Path to file or already parsed tibble.</p></dd>
 Tidy data in enframed tibble.</p>
 </div>
 
+</div><p></p><hr><a id="method-Tool1-tidy_table7"></a><div class="section">
+<h3 id="method-tidy-table--1">Method <code>tidy_table7()</code><a class="anchor" aria-label="anchor" href="#method-tidy-table--1"></a></h3>
+<p>Tidy <code>table7.tsv</code> file.</p><div class="section">
+<h4 id="usage-2">Usage<a class="anchor" aria-label="anchor" href="#usage-2"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Tool1</span><span class="op">$</span><span class="fu">tidy_table7</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+<div class="section">
+<h4 id="arguments-2">Arguments<a class="anchor" aria-label="anchor" href="#arguments-2"></a></h4>
+<p></p><div class="arguments"><dl><dt><code>x</code></dt>
+<dd><p>(<code>character(1)</code> or <code>tibble()</code>)<br>
+Path to file or already parsed tibble.</p></dd>
+
+
+</dl><p></p></div>
+</div>
+<div class="section">
+<h4 id="returns-2">Returns<a class="anchor" aria-label="anchor" href="#returns-2"></a></h4>
+<p>(<code>tibble()</code>)<br>
+Tidy data in enframed tibble.</p>
+</div>
+
 </div>
 
     </div>
@@ -152,6 +175,22 @@ Tidy data in enframed tibble.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [11] "sampleA_tool1_table4.parquet"   "sampleA_tool1_table6.parquet"  </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">obj2</span> <span class="op">&lt;-</span> <span class="va">Tool1</span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="va">indir</span><span class="op">)</span><span class="op">$</span><span class="fu">tidy</span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># table7 fans out into the table7main + table7dp outputs</span></span></span>
+<span class="r-in"><span><span class="va">indir7</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata/tool1_outputs"</span>, package <span class="op">=</span> <span class="st">"nemo"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">dir7</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">obj7</span> <span class="op">&lt;-</span> <span class="va">Tool1</span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="va">indir7</span><span class="op">)</span><span class="op">$</span><span class="fu">tidy</span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">(</span><span class="va">t7</span> <span class="op">&lt;-</span> <span class="va">obj7</span><span class="op">$</span><span class="fu">get_tbls</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 2 × 10</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   tool_parser  parser bname        size lastmodified        path  pattern prefix</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;fs:&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dttm&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> tool1_table7 table7 sampleA.to…    99 2026-10-19 <span style="color: #949494;">06:55:35</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> tool1_table7 table7 sampleA.to…    82 2026-10-19 <span style="color: #949494;">06:55:35</span> /hom… <span style="color: #949494;">"</span>\\.to… sampl…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 2 more variables: prefix_suffix &lt;chr&gt;, tidy &lt;list&gt;</span></span>
+<span class="r-in"><span><span class="va">obj7</span><span class="op">$</span><span class="fu">write</span><span class="op">(</span>output_dir <span class="op">=</span> <span class="va">dir7</span>, format <span class="op">=</span> <span class="st">"parquet"</span>, input_id <span class="op">=</span> <span class="st">"run1"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">(</span><span class="va">lf7</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="va">obj7</span><span class="op">$</span><span class="va">written_files</span><span class="op">$</span><span class="va">outpath</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "sampleA_2_tool1_table7dp.parquet"   "sampleA_2_tool1_table7main.parquet"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [3] "sampleA_tool1_table7dp.parquet"     "sampleA_tool1_table7main.parquet"  </span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

@@ -28,7 +28,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">nemo</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.1.0.9007</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.1.0.9008</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -72,7 +72,7 @@
 
 
 
-      <small class="dont-index">Source: <a href="https://github.com/tidywf/nemo/blob/v0.1.0.9007/vignettes/output_naming.qmd" class="external-link"><code>vignettes/output_naming.qmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/tidywf/nemo/blob/v0.1.0.9008/vignettes/output_naming.qmd" class="external-link"><code>vignettes/output_naming.qmd</code></a></small>
       <div class="d-none name"><code></code></div>
     </div>
 
@@ -84,24 +84,38 @@
     <p>Repeat runs of the same sample produce identical file names in different folders. Below: how tidy outputs avoid overwriting each other, and how to keep runs distinguishable after merging.</p>
 <section class="level2"><h2 id="anatomy-of-a-tidy-filename">Anatomy of a tidy filename<a class="anchor" aria-label="anchor" href="#anatomy-of-a-tidy-filename"></a>
 </h2>
-<pre><code>{output_dir}/{prefix}_{tool}_{parser}.{ext}</code></pre>
+<pre><code>{output_dir}/{prefix}_{tool}_{table}.{ext}</code></pre>
 <ul>
 <li>
 <code>{output_dir}</code>: flat output directory</li>
 <li>
 <code>{prefix}</code>: input basename minus the schema <code>pattern</code> (<code>sampleA.tool1.table1.tsv</code> =&gt; <code>sampleA</code>)</li>
 <li>
-<code>{tool}_{parser}</code>: e.g. <code>tool1_table1</code>
-</li>
+<code>{tool}_{table}</code>: the schema table that matched the file, e.g. <code>tool1_table1</code>; for a file that fans out, one file per declared output instead (see below)</li>
 <li>
 <code>{ext}</code>: from <code>format</code> (parquet, db, tsv, csv or rds)</li>
 </ul>
 <p><code>sampleA.tool1.table1.tsv</code> =&gt; <code>sampleA_tool1_table1.parquet</code>.</p>
+</section><section class="level2"><h2 id="one-file-several-tables">One file, several tables<a class="anchor" aria-label="anchor" href="#one-file-several-tables"></a>
+</h2>
+<p>A file can fan out into several tables, declared under its schema table’s <code>outputs:</code>. Each output is written as <code>{prefix}_{tool}_{output}</code>: <code>table7</code> splits into <code>table7main</code> (read counts) and <code>table7dp</code> (long-form depth coverage):</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">dir_fan</span> <span class="op">&lt;-</span> <span class="fu">path</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"naming-fanout"</span><span class="op">)</span></span>
+<span><span class="va">fan</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/Tool1.html">Tool1</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span>path <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata/tool1_outputs"</span>, package <span class="op">=</span> <span class="st">"nemo"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">fan</span><span class="op">$</span><span class="va">config</span><span class="op">$</span><span class="fu">get_table_outputs</span><span class="op">(</span><span class="st">"table7"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "table7main" "table7dp"</span></span>
+<span><span class="va">fan</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span>output_dir <span class="op">=</span> <span class="va">dir_fan</span>, format <span class="op">=</span> <span class="st">"parquet"</span>, input_id <span class="op">=</span> <span class="st">"input1"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="va">fan</span><span class="op">$</span><span class="va">written_files</span><span class="op">$</span><span class="va">outpath</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] "sampleA_2_tool1_table7dp.parquet"   "sampleA_2_tool1_table7main.parquet"</span></span>
+<span><span class="co">#&gt; [3] "sampleA_tool1_table7dp.parquet"     "sampleA_tool1_table7main.parquet"</span></span></code></pre></div>
+</div>
+<p>The two <code>table7</code> files (<code>latest</code>, <code>v1.0.0</code>) share basename <code>sampleA</code>, hence <code>sampleA</code> and <code>sampleA_2</code>, as in the repeated-sample case below.</p>
 </section><section class="level2"><h2 id="a-repeated-sample">A repeated sample<a class="anchor" aria-label="anchor" href="#a-repeated-sample"></a>
 </h2>
 <p>Three runs, same input files:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb2"><pre class="downlit sourceCode r">
+<div class="sourceCode cell-code" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">src</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata/tool1/latest"</span>, package <span class="op">=</span> <span class="st">"nemo"</span><span class="op">)</span></span>
 <span><span class="va">dir1</span> <span class="op">&lt;-</span> <span class="fu">path</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"naming-demo"</span><span class="op">)</span></span>
 <span><span class="va">dir_runs</span> <span class="op">&lt;-</span> <span class="fu">path</span><span class="op">(</span><span class="va">dir1</span>, <span class="st">"runs"</span><span class="op">)</span></span>
@@ -113,7 +127,7 @@
 <span><span class="op">}</span></span>
 <span></span>
 <span><span class="fu">dir_tree</span><span class="op">(</span><span class="va">dir_runs</span><span class="op">)</span></span>
-<span><span class="co">#&gt; /tmp/Rtmpij2lNJ/naming-demo/runs</span></span>
+<span><span class="co">#&gt; /tmp/RtmpUul1XC/naming-demo/runs</span></span>
 <span><span class="co">#&gt; ├── run1</span></span>
 <span><span class="co">#&gt; │   ├── sampleA.tool1.table1.tsv</span></span>
 <span><span class="co">#&gt; │   └── sampleA.tool1.table2.tsv</span></span>
@@ -128,7 +142,7 @@
 </h3>
 <p>Point <code>Tool1</code> at the parent folder. Colliding prefixes get <code>_2</code>/<code>_3</code>:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode cell-code" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tool</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/Tool1.html">Tool1</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span>path <span class="op">=</span> <span class="va">dir_runs</span><span class="op">)</span></span>
 <span><span class="va">tool</span><span class="op">$</span><span class="fu">list_files</span><span class="op">(</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="va">path</span>, <span class="va">prefix</span>, <span class="va">parser</span><span class="op">)</span> <span class="op">|&gt;</span></span>
@@ -136,16 +150,16 @@
 <span><span class="co">#&gt; # A tibble: 6 × 3</span></span>
 <span><span class="co">#&gt;   path                                                           prefix   parser</span></span>
 <span><span class="co">#&gt;   &lt;chr&gt;                                                          &lt;chr&gt;    &lt;chr&gt; </span></span>
-<span><span class="co">#&gt; 1 /tmp/Rtmpij2lNJ/naming-demo/runs/run1/sampleA.tool1.table1.tsv sampleA  table1</span></span>
-<span><span class="co">#&gt; 2 /tmp/Rtmpij2lNJ/naming-demo/runs/run2/sampleA.tool1.table1.tsv sampleA… table1</span></span>
-<span><span class="co">#&gt; 3 /tmp/Rtmpij2lNJ/naming-demo/runs/run3/sampleA.tool1.table1.tsv sampleA… table1</span></span>
-<span><span class="co">#&gt; 4 /tmp/Rtmpij2lNJ/naming-demo/runs/run1/sampleA.tool1.table2.tsv sampleA  table2</span></span>
-<span><span class="co">#&gt; 5 /tmp/Rtmpij2lNJ/naming-demo/runs/run2/sampleA.tool1.table2.tsv sampleA… table2</span></span>
-<span><span class="co">#&gt; 6 /tmp/Rtmpij2lNJ/naming-demo/runs/run3/sampleA.tool1.table2.tsv sampleA… table2</span></span></code></pre></div>
+<span><span class="co">#&gt; 1 /tmp/RtmpUul1XC/naming-demo/runs/run1/sampleA.tool1.table1.tsv sampleA  table1</span></span>
+<span><span class="co">#&gt; 2 /tmp/RtmpUul1XC/naming-demo/runs/run2/sampleA.tool1.table1.tsv sampleA… table1</span></span>
+<span><span class="co">#&gt; 3 /tmp/RtmpUul1XC/naming-demo/runs/run3/sampleA.tool1.table1.tsv sampleA… table1</span></span>
+<span><span class="co">#&gt; 4 /tmp/RtmpUul1XC/naming-demo/runs/run1/sampleA.tool1.table2.tsv sampleA  table2</span></span>
+<span><span class="co">#&gt; 5 /tmp/RtmpUul1XC/naming-demo/runs/run2/sampleA.tool1.table2.tsv sampleA… table2</span></span>
+<span><span class="co">#&gt; 6 /tmp/RtmpUul1XC/naming-demo/runs/run3/sampleA.tool1.table2.tsv sampleA… table2</span></span></code></pre></div>
 </div>
 <p>No overwrites:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode cell-code" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">dir_outA</span> <span class="op">&lt;-</span> <span class="fu">dir_create</span><span class="op">(</span><span class="fu">path</span><span class="op">(</span><span class="va">dir1</span>, <span class="st">"outA"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">tool</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span></span>
 <span>  input_id <span class="op">=</span> <span class="st">"input1"</span>,</span>
@@ -155,7 +169,7 @@
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">dir_tree</span><span class="op">(</span><span class="va">dir_outA</span><span class="op">)</span></span>
-<span><span class="co">#&gt; /tmp/Rtmpij2lNJ/naming-demo/outA</span></span>
+<span><span class="co">#&gt; /tmp/RtmpUul1XC/naming-demo/outA</span></span>
 <span><span class="co">#&gt; ├── metadata_tool1.parquet</span></span>
 <span><span class="co">#&gt; ├── sampleA_2_tool1_table1.parquet</span></span>
 <span><span class="co">#&gt; ├── sampleA_2_tool1_table2.parquet</span></span>
@@ -166,7 +180,7 @@
 </div>
 <p><code>prefix_include = TRUE</code> adds an <code>input_prefix</code> column, so runs stay distinct after stacking:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode cell-code" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">dir_ls</span><span class="op">(</span><span class="va">dir_outA</span>, regexp <span class="op">=</span> <span class="st">"tool1_table1\\.parquet"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">purrr</span><span class="fu">::</span><span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="fu">arrow</span><span class="fu">::</span><span class="va"><a href="https://arrow.apache.org/docs/r/reference/read_parquet.html" class="external-link">read_parquet</a></span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">purrr</span><span class="fu">::</span><span class="fu"><a href="https://purrr.tidyverse.org/reference/list_c.html" class="external-link">list_rbind</a></span><span class="op">(</span><span class="op">)</span></span>
@@ -188,7 +202,7 @@
 </h3>
 <p>Tidy each run separately with its own <code>input_id</code> and output subfolder:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode cell-code" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">dir_outB</span> <span class="op">&lt;-</span> <span class="fu">dir_create</span><span class="op">(</span><span class="fu">path</span><span class="op">(</span><span class="va">dir1</span>, <span class="st">"outB"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="kw">for</span> <span class="op">(</span><span class="va">r</span> <span class="kw">in</span> <span class="va">run_ids</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va"><a href="../reference/Tool1.html">Tool1</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span>path <span class="op">=</span> <span class="fu">path</span><span class="op">(</span><span class="va">dir_runs</span>, <span class="va">r</span><span class="op">)</span><span class="op">)</span><span class="op">$</span><span class="fu">run</span><span class="op">(</span></span>
@@ -200,7 +214,7 @@
 <span><span class="op">}</span></span>
 <span></span>
 <span><span class="fu">dir_tree</span><span class="op">(</span><span class="va">dir_outB</span><span class="op">)</span></span>
-<span><span class="co">#&gt; /tmp/Rtmpij2lNJ/naming-demo/outB</span></span>
+<span><span class="co">#&gt; /tmp/RtmpUul1XC/naming-demo/outB</span></span>
 <span><span class="co">#&gt; ├── run1</span></span>
 <span><span class="co">#&gt; │   ├── metadata_tool1.parquet</span></span>
 <span><span class="co">#&gt; │   ├── sampleA_tool1_table1.parquet</span></span>
@@ -216,7 +230,7 @@
 </div>
 <p>Same file names per subfolder; <code>input_id</code> separates them once merged:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode cell-code" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">fs</span><span class="fu">::</span><span class="fu"><a href="https://fs.r-lib.org/reference/dir_ls.html" class="external-link">dir_ls</a></span><span class="op">(</span><span class="va">dir_outB</span>, recurse <span class="op">=</span> <span class="cn">TRUE</span>, glob <span class="op">=</span> <span class="st">"*tool1_table1.parquet"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">purrr</span><span class="fu">::</span><span class="fu"><a href="https://purrr.tidyverse.org/reference/map.html" class="external-link">map</a></span><span class="op">(</span><span class="fu">arrow</span><span class="fu">::</span><span class="va"><a href="https://arrow.apache.org/docs/r/reference/read_parquet.html" class="external-link">read_parquet</a></span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu">purrr</span><span class="fu">::</span><span class="fu"><a href="https://purrr.tidyverse.org/reference/list_c.html" class="external-link">list_rbind</a></span><span class="op">(</span><span class="op">)</span></span>

@@ -28,7 +28,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">nemo</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.1.0.9007</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.1.0.9008</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -72,7 +72,7 @@
 
 
 
-      <small class="dont-index">Source: <a href="https://github.com/tidywf/nemo/blob/v0.1.0.9007/vignettes/NEWS.qmd" class="external-link"><code>vignettes/NEWS.qmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/tidywf/nemo/blob/v0.1.0.9008/vignettes/NEWS.qmd" class="external-link"><code>vignettes/NEWS.qmd</code></a></small>
       <div class="d-none name"><code></code></div>
     </div>
 
@@ -93,35 +93,55 @@ See any child package's NEWS.qmd for the exact wiring.
 The parent MUST define `repo` (the package's GitHub URL) before the child
 runs; the helpers below close over it. They build links to compares, PRs,
 issues, and users: pr(48), iss(11), vdiff("0.1.0", "0.0.3"), user("reisingerf").
---><section class="level2"><h2 id="v0-1-0-9004-current-dev">v0.1.0.9004 (current dev)<a class="anchor" aria-label="anchor" href="#v0-1-0-9004-current-dev"></a>
+--><section class="level2"><h2 id="v0-1-0-9007-current-dev">v0.1.0.9007 (current dev)<a class="anchor" aria-label="anchor" href="#v0-1-0-9007-current-dev"></a>
 </h2>
 <section class="level3"><h3 id="new-features">New features<a class="anchor" aria-label="anchor" href="#new-features"></a>
 </h3>
 <ul>
-<li>Schema-driven S3 sync: each <code>schema.yaml</code> table can declare a <code>glob</code> of the files it needs, and the new <code><a href="../reference/s3sync.html">s3sync()</a></code> / <code>nemo.R sync</code> pull only those files for a workflow (<a href="https://github.com/tidywf/nemo/pull/77" class="external-link">pr77</a>-<a href="https://github.com/tidywf/nemo/pull/79" class="external-link">pr79</a>, <a href="https://github.com/tidywf/nemo/pull/83" class="external-link">pr83</a>). <code><a href="../reference/schema_glob_check.html">schema_glob_check()</a></code> catches globs that drift from their table <code>pattern</code>.</li>
-<li>
-<code>Tool</code> gains <code>flat_tidy_names</code> for simpler output names on tools that split one file into several tables (<a href="https://github.com/tidywf/nemo/pull/81" class="external-link">pr81</a>).</li>
+<li>Fan-out tables (one file split into several output tables) declare their outputs under a new <code>outputs:</code> key in <code>schema.yaml</code>: a description and versioned tidy columns per output, <code>raw</code> optional, and <code>shape: 'subset'</code> for outputs whose columns depend on the data. <code>Tool</code> checks every fan-out <code>tidy_*()</code> result against them: all declared outputs returned, each with the columns (in order) and types of one of its schema versions. Outputs are written as <code>&lt;tool&gt;_&lt;output&gt;</code>. A fan-out table read by its own <code>parse_&lt;table&gt;()</code> may omit <code>columns:</code>.</li>
 <li>
 <code><a href="../reference/nemoverse_wf_dispatch.html">nemoverse_wf_dispatch()</a></code> now includes <code>tidydragen</code>.</li>
+<li>CLI <code>tidy</code> gains <code>--dbhost</code>/<code>--dbport</code>, and its database writes run in a single transaction.</li>
 <li>
-<code><a href="../reference/nemo_schema_reactable.html">nemo_schema_reactable()</a></code> rewritten on native reactable row details: search now matches column names and globs, expanded rows show a per-version column-presence matrix, and the table follows light/dark page themes. <code><a href="../reference/nemo_schemavis_data.html">nemo_schemavis_data()</a></code> now returns one row per table with nested columns. Tool pills are grey unless coloured via <code>tool_colours</code> (a named vector supplied by the child package). The widget ships its own CSS so it spans the full page width on any pkgdown site.</li>
+<code><a href="../reference/list_files_dir.html">list_files_dir()</a></code> follows symlinks (keeping the link name) and drops broken ones.</li>
+<li>
+<code><a href="../reference/nemo_schema_reactable.html">nemo_schema_reactable()</a></code> rewritten on native reactable row details: search now matches column names and globs, expanded rows show a per-version column-presence matrix, and the table follows light/dark page themes. Outputs are listed after their file table, tagged “parent of”/“child of” in the description (and in the Glob column for outputs), and both the table and its expanded column tables number rows in display order (<code>#</code>). <code><a href="../reference/nemo_schemavis_data.html">nemo_schemavis_data()</a></code> now returns one row per table with nested columns. Tool pills are grey unless coloured via <code>tool_colours</code> (a named vector supplied by the child package). The widget ships its own CSS so it spans the full page width on any pkgdown site.</li>
+<li>Schema-driven S3 sync: each <code>schema.yaml</code> table can declare a <code>glob</code> of the files it needs, and the new <code><a href="../reference/s3sync.html">s3sync()</a></code> / <code>nemo.R sync</code> pull only those files for a workflow (<a href="https://github.com/tidywf/nemo/pull/77" class="external-link">pr77</a>-<a href="https://github.com/tidywf/nemo/pull/79" class="external-link">pr79</a>, <a href="https://github.com/tidywf/nemo/pull/83" class="external-link">pr83</a>). <code><a href="../reference/wf_sync_patterns.html">wf_sync_patterns()</a></code> returns a workflow’s include/exclude patterns; <code><a href="../reference/schema_glob_check.html">schema_glob_check()</a></code> catches globs that drift from their table <code>pattern</code> (matched via <code><a href="../reference/glob_to_regex.html">glob_to_regex()</a></code>).</li>
+<li>New <code>Config</code> methods <code>get_outputs()</code>, <code>get_table_outputs()</code> and <code>get_output_shape()</code>. <code>get_schemas_raw()</code>/<code>get_schemas_tidy()</code>/ <code>get_schemas_both()</code> include output rows and gain a <code>parent</code> column (the file table of an output).</li>
+<li>
+<code>Tool</code> errors on construction when a <code>parse_*()</code>/<code>tidy_*()</code> method matches no schema table, instead of a typo’d name silently falling back to the ftype default parser.</li>
+<li>
+<code><a href="../reference/read_parquet_grep.html">read_parquet_grep()</a></code> reads the one parquet file matching a pattern (for <code>@testexamples</code>).</li>
 </ul></section><section class="level3"><h3 id="performance">Performance<a class="anchor" aria-label="anchor" href="#performance"></a>
 </h3>
 <ul>
+<li>
+<code>Config</code> memoises schema lookups (<code>get_schema_raw()</code>/<code>get_schema_tidy()</code>/ <code>get_col_map()</code>), which <code>Tool</code> calls per file for renames and fan-out output checks.</li>
 <li>
 <code>run()</code> now parses, tidies, and writes one file at a time, so memory scales with a single file rather than the whole run (<a href="https://github.com/tidywf/nemo/pull/82" class="external-link">pr82</a>).</li>
 </ul></section><section class="level3"><h3 id="breaking-changes">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes"></a>
 </h3>
 <ul>
+<li>Output names may not clash with table names, and duplicate output paths now error instead of silently overwriting each other.</li>
+<li>
+<code>_2</code>/<code>_3</code> prefix numbering for repeated basenames is now ordered by path, so output names no longer depend on file listing order.</li>
+<li>
+<code>Config</code> validates required table/column keys on construction, listing every problem at once.</li>
 <li>Removed the <code>csv-nohead-long</code> ftype (<a href="https://github.com/tidywf/nemo/pull/80" class="external-link">pr80</a>).</li>
 <li>
-<code><a href="../reference/parse_file_keyvalue.html">parse_file_keyvalue()</a></code> now applies the schema column types instead of returning all-character columns (<a href="https://github.com/tidywf/nemo/pull/84" class="external-link">pr84</a>).</li>
+<code><a href="../reference/parse_file_keyvalue.html">parse_file_keyvalue()</a></code> now applies the schema column types instead of returning all-character columns (<a href="https://github.com/tidywf/nemo/pull/84" class="external-link">pr84</a>), and errors on duplicate keys.</li>
 <li>
 <code><a href="../reference/nemo_gha_mermaid.html">nemo_gha_mermaid()</a></code> redesigned: now takes the <code>.github/workflows</code> dir (<code>nemo_gha_mermaid(here(".github/workflows"))</code>) instead of <code>actions_url</code>/<code>deploy_yaml</code>. Job edges follow <code>needs:</code> (parallel jobs no longer drawn as a chain), reusable workflows are read at their pinned <code>@ref</code>, steps gated on <code>inputs.*</code> conditions are dropped or marked <code>(if)</code>, each job is one compact node listing its steps, and unreadable workflows show as a warning node instead of silently vanishing.</li>
 </ul></section><section class="level3"><h3 id="bug-fixes">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes"></a>
 </h3>
 <ul>
+<li>Output prefixes no longer collide when one recursive tidy holds repeat runs of a sample and a parser matches two basenames reducing to the same prefix (e.g. WiGiTS <code>redux</code> vs plain <code>duplicate_freq</code> files); previously one output silently overwrote the other.</li>
 <li>Tools with no sample prefix no longer get a leading <code>_</code> in output names.</li>
+<li>Parse/tidy errors name the tool parser and file they came from.</li>
+<li>
+<code>NEMO_LOG_LEVEL</code> is case-insensitive; an invalid value warns and falls back to <code>INFO</code> instead of breaking package load.</li>
+<li>
+<code><a href="../reference/dvc_download_file.html">dvc_download_file()</a></code> verifies the md5 and re-fetches corrupted local copies.</li>
 </ul></section><section class="level3"><h3 id="infrastructure">Infrastructure<a class="anchor" aria-label="anchor" href="#infrastructure"></a>
 </h3>
 <ul>

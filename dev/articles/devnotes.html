@@ -28,7 +28,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">nemo</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.1.0.9007</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.1.0.9008</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -72,7 +72,7 @@
 
 
 
-      <small class="dont-index">Source: <a href="https://github.com/tidywf/nemo/blob/v0.1.0.9007/vignettes/devnotes.qmd" class="external-link"><code>vignettes/devnotes.qmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/tidywf/nemo/blob/v0.1.0.9008/vignettes/devnotes.qmd" class="external-link"><code>vignettes/devnotes.qmd</code></a></small>
       <div class="d-none name"><code></code></div>
     </div>
 
@@ -81,7 +81,8 @@
 
 
 
-    <section class="level3"><h3 id="r-pkg-dev">R pkg dev<a class="anchor" aria-label="anchor" href="#r-pkg-dev"></a>
+    <p>Dev notes shared by nemo and its child pkgs (e.g. tidywigits, tidydragen). <code>&lt;pkg&gt;</code> below stands for the pkg name.</p>
+<section class="level3"><h3 id="r-pkg-dev">R pkg dev<a class="anchor" aria-label="anchor" href="#r-pkg-dev"></a>
 </h3>
 <table class="table caption-top">
 <colgroup>
@@ -121,8 +122,8 @@
 </h3>
 <table class="table caption-top">
 <colgroup>
-<col style="width: 57%">
-<col style="width: 42%">
+<col style="width: 56%">
+<col style="width: 43%">
 </colgroup>
 <thead><tr class="header">
 <th>Command</th>
@@ -147,7 +148,7 @@
 <td>build conda pkg from a recipe file</td>
 </tr>
 <tr class="odd">
-<td><code>rattler-build upload anaconda -o umccr --api-key &lt;xxx&gt; ${HOME}/tmp/r-tidywigits.conda</code></td>
+<td><code>rattler-build upload anaconda -o tidywf --api-key &lt;xxx&gt; ${HOME}/tmp/r-&lt;pkg&gt;.conda</code></td>
 <td>upload conda pkg to anaconda</td>
 </tr>
 </tbody>
@@ -173,7 +174,7 @@
 </tr>
 <tr class="odd">
 <td><code>pkgdown::build_article("foo")</code></td>
-<td>builds foo vignette only</td>
+<td>builds <code>foo</code> vignette only</td>
 </tr>
 </tbody>
 </table></section><section class="level3"><h3 id="debugging-r6-private-methods">Debugging R6 private methods<a class="anchor" aria-label="anchor" href="#debugging-r6-private-methods"></a>
@@ -199,11 +200,17 @@
 <span><span class="op">)</span></span></code></pre></div>
 </section><section class="level3"><h3 id="data-version-control">Data Version Control<a class="anchor" aria-label="anchor" href="#data-version-control"></a>
 </h3>
-<p><a href="https://dvc.org/" class="external-link">DVC</a> keeps test/example data in remote storage (GDrive, S3, R2), tracked in <code>git</code>. Run <code>dvc pull</code> before tests, examples or vignettes.</p>
+<p><a href="https://dvc.org/" class="external-link">DVC</a> keeps test/example data in remote storage, tracked in <code>git</code>. Run <code>dvc pull</code> before tests, examples or vignettes.</p>
+<p>Each pkg has two Cloudflare R2 remotes:</p>
+<ul>
+<li>pull: <code>cloudflare_r2_&lt;pkg&gt;</code> (public, no auth), the default in <code>.dvc/config</code>
+</li>
+<li>push: <code>cloudflare_r2_&lt;pkg&gt;_push</code> (private), set in gitignored <code>.dvc/config.local</code>, with R2 creds passed via env vars</li>
+</ul>
 <table class="table caption-top">
 <colgroup>
-<col style="width: 66%">
-<col style="width: 33%">
+<col style="width: 63%">
+<col style="width: 36%">
 </colgroup>
 <thead><tr class="header">
 <th>Command</th>
@@ -235,7 +242,7 @@
 <td>check what is dvc-ignored</td>
 </tr>
 <tr class="odd">
-<td><code>dvc list https://github.com/tidywf/tidywigits inst/extdata</code></td>
+<td><code>dvc list https://github.com/tidywf/&lt;pkg&gt; inst/extdata</code></td>
 <td>list dvc’ed data</td>
 </tr>
 <tr class="even">
@@ -247,12 +254,12 @@
 <td>adds <code>file.txt</code> to dvc</td>
 </tr>
 <tr class="even">
-<td><code>dvc push</code></td>
-<td>pushes dvc data to remote</td>
+<td><code>dvc pull</code></td>
+<td>pulls dvc data from public remote (no auth)</td>
 </tr>
 <tr class="odd">
-<td><code>dvc pull</code></td>
-<td>pulls dvc data from remote</td>
+<td><code>AWS_ACCESS_KEY_ID=... AWS_SECRET_ACCESS_KEY=... dvc push -r cloudflare_r2_&lt;pkg&gt;_push</code></td>
+<td>pushes dvc data to private R2 remote (needs auth)</td>
 </tr>
 </tbody>
 </table></section><script id="quarto-html-after-body" type="application/javascript">
