@@ -3,7 +3,7 @@
 #' @description
 #' Reads a tool's `schema.yaml` from `inst/config/tools/<tool>/` in the
 #' package, exposing the raw/tidy schemas and column maps `Tool` uses for file
-#' discovery and renaming. Fan-out `outputs:` get their own schema rows, with
+#' discovery and renaming. Fan-out `outputs` get their own schema rows, with
 #' `parent` set to the file table. Schema format: see *new-tool* article.
 #' @examples
 #' tool <- "tool1"
@@ -151,11 +151,11 @@ Config <- R6::R6Class(
     get_tables = function() private$tables,
 
     #' @description Return the output names declared under a table's
-    #' `outputs:`.
+    #' `outputs`.
     #' @param x (`character(1)`)\cr
     #' Table name.
     #' @return (`character(n)`)\cr
-    #' Output names, or `character(0)` when the table has no `outputs:`.
+    #' Output names, or `character(0)` when the table has no `outputs`.
     get_table_outputs = function(x) {
       names(private$get_field_for_table(x, "outputs")) %||% character()
     },
@@ -178,7 +178,7 @@ Config <- R6::R6Class(
     },
 
     #' @description Return every output table the tool writes: the declared
-    #' `outputs:` of a fan-out table, or the table itself otherwise.
+    #' `outputs` of a fan-out table, or the table itself otherwise.
     #' @return (`tibble()`)\cr
     #' Output `name`, its file `table` and `description`.
     get_outputs = function() {

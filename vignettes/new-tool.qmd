@@ -42,12 +42,14 @@ Raw names and types are auto-detected. Fill in by hand:
 - `description`: from the tool's docs
 - `versions`: tool versions the column appears in, e.g. `['v1.2.3', 'latest']`
 
-If one file holds several tables (a stats header plus a histogram, a JSON with
-several sections), keep the file's raw `columns:` and declare each table under
-`outputs:` with its tidy columns. A file read by its own `parse_<table>()`
-(JSON, multi-section, configurable columns) may omit `columns:`. Name the schema
-table after the file and the outputs after their content; for a wide pivot whose
-columns depend on the data, set `shape: 'subset'` on the output.
+One file, several tables (stats header + histogram, multi-section JSON):
+
+- keep the file's raw `columns`; declare each table under `outputs` with its
+  tidy columns
+- name the schema table after the file, outputs after their content
+- `columns` may be omitted when the file has its own `parse_<table>()` (JSON,
+  multi-section, configurable columns)
+- `shape: 'subset'` on an output whose columns depend on the data (wide pivot)
 
 Schema format: see [Structure].
 
@@ -58,7 +60,7 @@ Copy `R/Tool1.R` to `R/<Tool>.R`: `initialize()`, per-table `parse_*()` /
 
 - Method names must match a schema table (`tidy_table3()` for `table3`); `Tool`
   errors on construction otherwise.
-- A table with `outputs:` needs a `tidy_<table>()` returning one tibble per
+- A table with `outputs` needs a `tidy_<table>()` returning one tibble per
   output via `nemo_enframe()`, keyed by output name (see `Tool1$tidy_table7()`).
   `Tool` checks the columns and types of each against the schema on every tidy.
 
