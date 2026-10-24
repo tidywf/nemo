@@ -27,7 +27,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">nemo</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -71,7 +71,7 @@
 
 
 
-      <small class="dont-index">Source: <a href="https://github.com/tidywf/nemo/blob/main/vignettes/NEWS.qmd" class="external-link"><code>vignettes/NEWS.qmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/tidywf/nemo/blob/v0.2.0/vignettes/NEWS.qmd" class="external-link"><code>vignettes/NEWS.qmd</code></a></small>
       <div class="d-none name"><code></code></div>
     </div>
 
@@ -80,10 +80,77 @@
 
 
 
-    <section class="level2"><h2 id="v0-1-0-2026-07-28">v0.1.0 (2026-07-28)<a class="anchor" aria-label="anchor" href="#v0-1-0-2026-07-28"></a>
+    <!--
+Shared NEWS helpers for nemo child packages.
+
+Included from a package's vignettes/NEWS.qmd as a knitr child chunk. In an
+`#| include: false` chunk the parent sets `repo` to its GitHub URL and points
+`child1` at this file via system.file("doc-templates/vignettes/_news.qmd",
+package = "nemo"), then a `{r, child=child1}` chunk pulls in the helpers below.
+See any child package's NEWS.qmd for the exact wiring.
+
+The parent MUST define `repo` (the package's GitHub URL) before the child
+runs; the helpers below close over it. They build links to compares, PRs,
+issues, and users: pr(48), iss(11), vdiff("0.1.0", "0.0.3"), user("reisingerf").
+--><section class="level2"><h2 id="v0-2-0-9000-dev">v0.2.0.9000 (dev)<a class="anchor" aria-label="anchor" href="#v0-2-0-9000-dev"></a>
+</h2>
+</section><section class="level2"><h2 id="v0-2-0-2026-10-24">v0.2.0 (2026-10-24)<a class="anchor" aria-label="anchor" href="#v0-2-0-2026-10-24"></a>
+</h2>
+<section class="level3"><h3 id="new-features">New features<a class="anchor" aria-label="anchor" href="#new-features"></a>
+</h3>
+<ul>
+<li>Fan-outs (one file split into several output tables) declare their outputs under a new <code>outputs</code> key in <code>schema.yaml</code> (see <code>table7</code> in <code>inst/config/tools/tool1/schema.yaml</code>).</li>
+<li>
+<code><a href="../reference/nemoverse_wf_dispatch.html">nemoverse_wf_dispatch()</a></code> now includes <code>tidydragen</code> (see https://github.com/tidywf/tidydragen).</li>
+<li>CLI <code>tidy</code> gains <code>--dbhost</code>/<code>--dbport</code>, and its database writes run in a single transaction.</li>
+<li>
+<code><a href="../reference/list_files_dir.html">list_files_dir()</a></code> follows symlinks and drops broken ones.</li>
+<li>
+<code><a href="../reference/nemo_schema_reactable.html">nemo_schema_reactable()</a></code> rewritten: row details, searchable column names and descriptions, nicer version matrix, and its own CSS so it spans the full page width on any pkgdown site. <code><a href="../reference/nemo_schemavis_data.html">nemo_schemavis_data()</a></code> now returns one row per table with nested columns.</li>
+<li>Schema-driven AWS S3 sync: each <code>schema.yaml</code> table can declare a <code>glob</code> of the files it needs, and the new <code><a href="../reference/s3sync.html">s3sync()</a></code> (exposed via <code>nemo.R sync</code>) pulls only those files for a workflow (<a href="https://github.com/tidywf/nemo/pull/77" class="external-link">pr77</a>-<a href="https://github.com/tidywf/nemo/pull/79" class="external-link">pr79</a>, <a href="https://github.com/tidywf/nemo/pull/83" class="external-link">pr83</a>). <code><a href="../reference/wf_sync_patterns.html">wf_sync_patterns()</a></code> returns a workflow’s include/exclude patterns; <code><a href="../reference/schema_glob_check.html">schema_glob_check()</a></code> catches globs that drift from their table <code>pattern</code> (matched via <code><a href="../reference/glob_to_regex.html">glob_to_regex()</a></code>).</li>
+<li>New <code>Config</code> methods <code>get_outputs()</code>, <code>get_table_outputs()</code> and <code>get_output_shape()</code>. <code>get_schemas_raw()</code>/<code>get_schemas_tidy()</code>/ <code>get_schemas_both()</code> include output rows and gain a <code>parent</code> column (the file table of an output).</li>
+<li>
+<code>Tool</code> errors on construction when a <code>parse_*()</code>/<code>tidy_*()</code> method matches no schema table.</li>
+<li>
+<code><a href="../reference/read_parquet_grep.html">read_parquet_grep()</a></code> reads the one parquet file matching a pattern (for <code>@testexamples</code>).</li>
+</ul></section><section class="level3"><h3 id="performance">Performance<a class="anchor" aria-label="anchor" href="#performance"></a>
+</h3>
+<ul>
+<li>
+<code>Config</code> memoises schema lookups (<code>get_schema_raw()</code>/<code>get_schema_tidy()</code>/ <code>get_col_map()</code>), which <code>Tool</code> calls per file for renames and fan-out output checks.</li>
+<li>
+<code>run()</code> now parses, tidies, and writes one file at a time, so memory scales with a single file rather than the whole run (<a href="https://github.com/tidywf/nemo/pull/82" class="external-link">pr82</a>).</li>
+</ul></section><section class="level3"><h3 id="breaking-changes">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes"></a>
+</h3>
+<ul>
+<li>Output names may not clash with table names, and duplicate output paths now error instead of silently overwriting each other.</li>
+<li>
+<code>_2</code>/<code>_3</code> prefix numbering for repeated basenames is now ordered by path, so output names no longer depend on file listing order.</li>
+<li>
+<code>Config</code> validates required table/column keys on construction, listing every problem at once.</li>
+<li>Removed the <code>csv-nohead-long</code> ftype (<a href="https://github.com/tidywf/nemo/pull/80" class="external-link">pr80</a>).</li>
+<li>
+<code><a href="../reference/parse_file_keyvalue.html">parse_file_keyvalue()</a></code> now applies the schema column types instead of returning all-character columns (<a href="https://github.com/tidywf/nemo/pull/84" class="external-link">pr84</a>), and errors on duplicate keys.</li>
+<li>
+<code><a href="../reference/nemo_gha_mermaid.html">nemo_gha_mermaid()</a></code> redesigned: now takes the <code>.github/workflows</code> dir instead of <code>actions_url</code>/<code>deploy_yaml</code>.</li>
+</ul></section><section class="level3"><h3 id="bug-fixes">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes"></a>
+</h3>
+<ul>
+<li>Output prefixes no longer collide when one recursive tidy holds repeat runs of a sample and a parser matches two basenames reducing to the same prefix (e.g. WiGiTS <code>redux</code> vs plain <code>duplicate_freq</code> files); previously one output silently overwrote the other.</li>
+<li>Tools with no sample prefix no longer get a leading <code>_</code> in output names.</li>
+<li>Parse/tidy errors name the tool parser and file they came from.</li>
+<li>
+<code>NEMO_LOG_LEVEL</code> is case-insensitive; an invalid value warns and falls back to <code>INFO</code> instead of breaking package load.</li>
+<li>
+<code><a href="../reference/dvc_download_file.html">dvc_download_file()</a></code> verifies the md5 and re-fetches corrupted local copies.</li>
+</ul></section><section class="level3"><h3 id="infrastructure">Infrastructure<a class="anchor" aria-label="anchor" href="#infrastructure"></a>
+</h3>
+<ul>
+<li>Release deploys (conda, Docker, pkgdown) trigger on <code>v*</code> tags only; conda lockfiles are published as release assets (<a href="https://github.com/tidywf/nemo/pull/76" class="external-link">pr76</a>).</li>
+</ul></section></section><section class="level2"><h2 id="v0-1-0-2026-07-28">v0.1.0 (2026-07-28)<a class="anchor" aria-label="anchor" href="#v0-1-0-2026-07-28"></a>
 </h2>
 <p>Major refactor.</p>
-<section class="level3"><h3 id="breaking-changes">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes"></a>
+<section class="level3"><h3 id="breaking-changes-1">Breaking changes<a class="anchor" aria-label="anchor" href="#breaking-changes-1"></a>
 </h3>
 <p><strong>Unified schema format</strong> (<a href="https://github.com/tidywf/nemo/pull/48" class="external-link">pr48</a>)</p>
 <ul>
@@ -96,7 +163,7 @@
 <code>Config</code>: <code>get_raw_*</code> / <code>get_tidy_*</code> methods renamed (e.g. <code>get_raw_patterns()</code> → <code>get_patterns()</code>, <code>get_raw_schemas_all()</code> → <code>get_schemas_raw()</code>); <code>are_raw_schemas_valid()</code> removed (validation now in <code>initialize()</code>); <code>config</code>, <code>raw_schemas_all</code>, <code>tidy_schemas_all</code> fields moved to private; <code>pkg</code> added as a public field; <code>cloneable = FALSE</code>
 </li>
 <li>
-<code>Tool</code>: <code>$files</code>, <code>$tbls</code>, <code>$files_tbl</code> moved to private — use <code>list_files()</code> / <code>get_tbls()</code> instead; schema delegate fields (<code>get_raw_schema</code>, <code>get_tidy_schema</code>) removed — use <code>tool$config$get_schema_raw()</code> / <code>tool$config$get_schema_tidy()</code>; <code>nemofy(diro = ...)</code> → <code>run(output_dir = ...)</code>; column <code>group</code> → <code>prefix_suffix</code>; <code>post_process_files</code> hook renamed to <code>refine_files</code>, now applied to the base prefix <em>before</em> the disambiguation passes so subclasses can fold a semantic distinction (e.g. germline/somatic) into the prefix and avoid a spurious <code>_2</code>/<code>_3</code> suffix; <code>cloneable = FALSE</code>
+<code>Tool</code>: <code>$files</code>, <code>$tbls</code>, <code>$files_tbl</code> moved to private — use <code>list_files()</code> / <code>get_tbls()</code> instead; schema delegate fields (<code>get_raw_schema</code>, <code>get_tidy_schema</code>) removed — use <code>tool$config$get_schema_raw()</code> / <code>tool$config$get_schema_tidy()</code>; <code>nemofy(diro = ...)</code> → <code>run(output_dir = ...)</code>; column <code>group</code> → <code>prefix_suffix</code>; <code>post_process_files</code> hook (<a href="https://github.com/tidywf/nemo/pull/70" class="external-link">pr70</a>) renamed to <code>refine_files</code> (<a href="https://github.com/tidywf/nemo/pull/73" class="external-link">pr73</a>), now applied to the base prefix <em>before</em> the disambiguation passes so subclasses can fold a semantic distinction (e.g. germline/somatic) into the prefix and avoid a spurious <code>_2</code>/<code>_3</code> suffix; <code>cloneable = FALSE</code>
 </li>
 <li>
 <code>Workflow</code>: <code>$tools</code>, <code>$files_tbl</code> moved to private — use <code>get_tools()</code>; <code>nemofy(diro = ...)</code> → <code>run(output_dir = ...)</code>; <code>list_files(type = ...)</code> — <code>type</code> arg removed; gains <code>metapkg</code> constructor argument; path existence validated at construction; <code>filter_files()</code> now validates names against known <code>tool_parser</code> values; <code>cloneable = FALSE</code>
@@ -115,7 +182,7 @@
 <code>RPostgres</code> dropped as a hard dependency - callers now supply <code>dbdrv</code> explicitly</li>
 <li>
 <code>txt</code> ftypes renamed to <code>tsv</code> (<a href="https://github.com/tidywf/nemo/pull/70" class="external-link">pr70</a>, <a href="https://github.com/tidywf/nemo/pull/71" class="external-link">pr71</a>)</li>
-</ul></section><section class="level3"><h3 id="new-features">New features<a class="anchor" aria-label="anchor" href="#new-features"></a>
+</ul></section><section class="level3"><h3 id="new-features-1">New features<a class="anchor" aria-label="anchor" href="#new-features-1"></a>
 </h3>
 <ul>
 <li>New assertion module: <code><a href="../reference/nemo_stop.html">nemo_stop()</a></code>, <code><a href="../reference/nemo_assert_scalar_chr.html">nemo_assert_scalar_chr()</a></code>, <code><a href="../reference/nemo_assert_chr.html">nemo_assert_chr()</a></code>, <code><a href="../reference/nemo_assert_not_null.html">nemo_assert_not_null()</a></code>, <code><a href="../reference/nemo_assert_out_fmt.html">nemo_assert_out_fmt()</a></code> replacing <code>assertthat</code> calls</li>
@@ -137,11 +204,11 @@
 <code>extra_ftypes()</code> subclass hook for registering pkg-specific ftype parsers (<a href="https://github.com/tidywf/nemo/pull/70" class="external-link">pr70</a>, <a href="https://github.com/tidywf/nemo/pull/71" class="external-link">pr71</a>)</li>
 <li>Add <a href="https://dvc.org/" class="external-link">DVC</a> support, mostly for child packages (<a href="https://github.com/tidywf/nemo/pull/69" class="external-link">pr69</a>)</li>
 <li>New <code>Output Naming</code> vignette, shared with child packages via <code>inst/doc-templates/vignettes/_output_naming.qmd</code> (<a href="https://github.com/tidywf/nemo/pull/73" class="external-link">pr73</a>)</li>
-</ul></section><section class="level3"><h3 id="performance">Performance<a class="anchor" aria-label="anchor" href="#performance"></a>
+</ul></section><section class="level3"><h3 id="performance-1">Performance<a class="anchor" aria-label="anchor" href="#performance-1"></a>
 </h3>
 <ul>
-<li>File discovery ~20× faster on large directories — benchmarked at 1.9s =&gt; 0.1 s on 43k files x 15 patterns</li>
-</ul></section><section class="level3"><h3 id="infrastructure">Infrastructure<a class="anchor" aria-label="anchor" href="#infrastructure"></a>
+<li>File discovery ~20× faster on large directories — benchmarked at 1.9 s =&gt; 0.1 s on 43k files x 15 patterns</li>
+</ul></section><section class="level3"><h3 id="infrastructure-1">Infrastructure<a class="anchor" aria-label="anchor" href="#infrastructure-1"></a>
 </h3>
 <ul>
 <li>CI/CD: <code>deploy.yaml</code> refactored from a 136-line monolith to reusable workflows via <code>tidywf/actions</code>; now also triggers on <code>dev</code> branch pushes</li>
