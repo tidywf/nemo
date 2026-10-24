@@ -5,8 +5,9 @@
 #' @param d (`data.frame()`)\cr
 #' A data.frame (or tibble) with tidy data.
 #' @param fpfix (`character(1)`)\cr
-#' File prefix. The file extension is generated automatically via the `format`
-#' argument. For a format of db, this is inserted into the `nemo_pfix` column.
+#' File prefix; the extension comes from `format`. Ignored for db, so rows from
+#' different samples are indistinguishable unless the data carries an id (e.g.
+#' `input_prefix` via `prefix_include = TRUE` in `Tool$write()`).
 #' @param format (`character(1)`)\cr
 #' Output format. One of tsv, csv, parquet, rds, or db.
 #' @param dbconn (`DBIConnection(1)`)\cr
@@ -65,6 +66,17 @@ nemo_write <- function(d, fpfix = NULL, format = "tsv", dbconn = NULL, dbtab = N
   invisible(osfx)
 }
 
+# Normalised output_dir; passed through as-is for "db", which writes no files.
+resolve_output_dir <- function(format, output_dir) {
+  if (format == "db") {
+    return(output_dir)
+  }
+  if (is.null(output_dir)) {
+    nemo_stop("Output directory must be specified when format is not 'db'.")
+  }
+  normalizePath(output_dir, mustWork = FALSE)
+}
+
 #' Output Formats Supported
 #'
 #' @return Character vector of supported output formats.
@@ -90,8 +102,6 @@ nemo_out_formats <- function() {
 #'
 #' @export
 nemo_osfx <- function(fpfix, format) {
-  # already validated upstream by Tool$write() / Workflow$write(); kept so nemo_osfx()
-  # is safe to call standalone without a prior validation step.
   nemo_assert_out_fmt(format)
   if (format == "db") {
     nemo_stop("nemo_osfx() is not applicable for format 'db'.")

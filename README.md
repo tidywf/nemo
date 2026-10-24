@@ -19,45 +19,23 @@
 
 ## nemo
 
-Bioinformatic pipelines produce a lot of output files, but consuming
-them downstream is harder than it should be:
+Schema-driven parsing and tidying of bioinformatic pipeline outputs:
 
-- Format variety: tools write TSV, CSV and various other proprietary
-  formats, often mixed within the same pipeline
-- Non-standard structure: files may be transposed, headerless, or embed
-  section labels alongside data, requiring custom parsing logic for each
-  tool
-- Messy column names: raw names are frequently uppercase,
-  space-separated, dot-delimited, or otherwise non-standard; joining
-  across tools requires manual renaming
-- Schema drift: column names and file layouts change silently between
-  tool versions, breaking downstream code with no clear signal of what
-  changed
-- No run-level provenance: it is hard to tell which output file came
-  from which sample or processing run once files are collected into a
-  shared directory
+- find files via YAML-defined `schema.yaml` patterns
+- parse TSV/CSV/headerless/key-value/crazy files
+- split one file into several output tables, each with a schema-checked
+  shape
+- rename columns to `snake_case`, track column changes across tool
+  versions
+- write to Parquet, TSV, CSV, RDS or database of your choice, plus a
+  `metadata.parquet` for provenance (IDs, paths, pkg versions) per run
 
-nemo is an R package that attempts to address these issues by providing
-a schema-driven parsing and tidying layer that turns raw pipeline
-outputs into consistently structured, versioned, analysis-ready tables.
-
-Its R6 classes (`Tool`, `Workflow`, `Config`) form the base layer: given
-a directory of bioinformatic results, they identify files by
-YAML-defined schemas, reshape and rename columns to a consistent tidy
-form, and write to a specified format (Apache Parquet, TSV, CSV, RDS, or
-PostgreSQL). Each run also produces a `metadata.parquet` file alongside
-the tidy tables, capturing IDs, paths, and package versions.
-
-Downstream packages extend these base classes by supplying tool-specific
-schemas and parsers.
-[tidywigits](https://github.com/tidywf/tidywigits "tidywigits") and
-[tidydragen](https://github.com/tidywf/tidydragen "tidydragen") are
-example R packages that target the large number of outputs from the
-established bioinformatic pipelines
-[WiGiTS/hmftools](https://github.com/hartwigmedical/hmftools "hmftools")
-and [Illumina
-DRAGEN](https://help.dragen.illumina.com/ "Illumina DRAGEN"),
-respectively.
+Base R6 classes (`Tool`, `Workflow`, `Config`) are extended by
+tool-specific packages such as
+[tidywigits](https://github.com/tidywf/tidywigits "tidywigits")
+([WiGiTS/hmftools](https://github.com/hartwigmedical/hmftools "hmftools"))
+and [tidydragen](https://github.com/tidywf/tidydragen "tidydragen")
+([Illumina/DRAGEN](https://help.dragen.illumina.com/ "Illumina DRAGEN")).
 
 ## Documentation
 
@@ -66,13 +44,14 @@ respectively.
 - Output naming: <https://tidywf.github.io/nemo/articles/output_naming>
 - Changelog: <https://tidywf.github.io/nemo/articles/NEWS>
 - R6 structure: <https://tidywf.github.io/nemo/articles/structure>
+- New tool: <https://tidywf.github.io/nemo/articles/new-tool>
 - UML: <https://tidywf.github.io/nemo/articles/uml>
 - CI/CD: <https://tidywf.github.io/nemo/articles/cicd>
+- Devnotes: <https://tidywf.github.io/nemo/articles/devnotes>
 
 ## Quickstart
 
-Raw pipeline outputs often have non-standard layouts. For example, this
-file stores QC metrics as key-value rows rather than columns:
+Raw key-value file:
 
 ``` r
 library(nemo)
@@ -86,8 +65,7 @@ writeLines(readLines(file.path(path, "sampleA.tool1.table3.tsv")))
 #> UnmappedReads    500
 ```
 
-The `run()` method is able to filter, tidy, and write all tables of
-interest in one call (`Workflow1` is nemo’s built-in example workflow):
+Filter, tidy and write all tables with `run()`:
 
 ``` r
 outdir <- file.path(tempdir(), "quickstart")
@@ -102,11 +80,10 @@ wf1$run(
 
 list.files(outdir, pattern = "\\.parquet$")
 #> [1] "metadata.parquet"             "sampleA_tool1_table1.parquet" "sampleA_tool1_table2.parquet"
-#> [4] "sampleA_tool1_table3.parquet" "sampleA_tool1_table4.parquet" "sampleA_tool1_table5.parquet"
-#> [7] "sampleA_tool1_table6.parquet"
+#> [4] "sampleA_tool1_table3.parquet" "sampleA_tool1_table4.parquet" "sampleA_tool1_table6.parquet"
 ```
 
-Read back the tidied table:
+Tidy output:
 
 ``` r
 arrow::read_parquet(file.path(outdir, "sampleA_tool1_table3.parquet"))
@@ -116,42 +93,31 @@ arrow::read_parquet(file.path(outdir, "sampleA_tool1_table3.parquet"))
 #> 1 run1     sampleA      out1      sampleA   Pass           10000      9500         500
 ```
 
-Three optional columns can be prepended to every written table to
-support downstream tracing and joining. All are opt-in and off by
-default, but highly recommended for any multi-sample or multi-run
-pipeline:
+Optional provenance columns (recommended for multi-sample/multi-run
+use):
 
 | Column | Purpose | User-supplied or auto-generated? |
 |----|----|----|
 | `input_id` | identifies the sample or input run | user |
-| `output_id` | identifies the tidywigits processing run | user or auto (ULID) |
+| `output_id` | identifies the nemo processing run | user or auto (ULID) |
 | `input_prefix` | filename prefix (e.g. sample name) | auto |
 
 ## Installation
 
-Using {remotes} directly from GitHub:
+From GitHub:
 
 ``` r
 install.packages("remotes")
 remotes::install_github("tidywf/nemo") # latest main commit
-remotes::install_github("tidywf/nemo@v0.1.0") # specific version
+remotes::install_github("tidywf/nemo@v0.1.0.9008") # specific version
 ```
 
-Alternatively:
-
-- conda package: <https://anaconda.org/tidywf/r-nemo>
-
-For more details see:
+Conda: <https://anaconda.org/tidywf/r-nemo>. More options:
 <https://tidywf.github.io/nemo/articles/installation>
 
 ## CLI
 
-A `nemo.R` command line interface is available for convenience.
-
-- If you’re using the conda package, the `nemo.R` command will already
-  be available inside the activated conda environment.
-- If you’re *not* using the conda package, you need to export the
-  `nemo/inst/cli/` directory to your `PATH` in order to use `nemo.R`.
+`nemo.R` is on `PATH` in the conda env. Otherwise:
 
 ``` bash
 nemo_cli=$(Rscript -e 'x = system.file("cli", package = "nemo"); cat(x, "\n")' | xargs)
@@ -159,29 +125,31 @@ export PATH="${nemo_cli}:${PATH}"
 ```
 
     $ nemo.R --version
-    nemo 0.1.0
+    nemo 0.1.0.9008
 
     #-----------------------------------#
     $ nemo.R --help
-    usage: nemo.R [-h] [-v] {tidy,list} ...
+    usage: nemo.R [-h] [-v] {tidy,list,sync} ...
 
     Tidy Bioinformatic Workflows
 
     positional arguments:
-      {tidy,list}    sub-command help
-        tidy         Tidy Workflow Outputs
-        list         List Parsable Workflow Outputs
+      {tidy,list,sync}  sub-command help
+        tidy            Tidy Workflow Outputs
+        list            List Parsable Workflow Outputs
+        sync            Sync Parsable Workflow Outputs From AWS S3
 
     options:
-      -h, --help     show this help message and exit
-      -v, --version  show program's version number and exit
+      -h, --help        show this help message and exit
+      -v, --version     show program's version number and exit
     '
     #-----------------------------------#
     $ nemo.R tidy --help
     usage: nemo.R tidy [-h] -w WORKFLOW -d IN_DIR [-o OUTPUT_DIR] [-f FORMAT]
                        [--input_id INPUT_ID] [--output_id OUTPUT_ID | --ulid]
-                       [--dbname DBNAME] [--dbuser DBUSER] [--include INCLUDE]
-                       [--exclude EXCLUDE] [--prefix_include] [-q]
+                       [--dbname DBNAME] [--dbuser DBUSER] [--dbhost DBHOST]
+                       [--dbport DBPORT] [--include INCLUDE] [--exclude EXCLUDE]
+                       [--prefix_include] [-q]
 
     options:
       -h, --help            show this help message and exit
@@ -198,6 +166,10 @@ export PATH="${nemo_cli}:${PATH}"
       --ulid                Generate a ULID as output ID.
       --dbname DBNAME       Database name.
       --dbuser DBUSER       Database user.
+      --dbhost DBHOST       Database host (default: driver/env default, e.g.
+                            PGHOST).
+      --dbport DBPORT       Database port (default: driver/env default, e.g.
+                            PGPORT).
       --include INCLUDE     Include only these files (comma sep tool_parsers).
       --exclude EXCLUDE     Exclude only these files (comma sep tool_parsers).
       --prefix_include      Include input prefix column in output tables.
@@ -214,4 +186,19 @@ export PATH="${nemo_cli}:${PATH}"
       -d, --in_dir IN_DIR   Input directory.
       -f, --format FORMAT   Format of list output [def: pretty] (tsv, pretty)
       -m, --max MAX         Max rows to show.
+      -q, --quiet           Shush all the logs.
+
+    #-----------------------------------#
+    $ nemo.R sync --help
+    usage: nemo.R sync [-h] -w WORKFLOW -s SRC -d DEST [--dryrun]
+                       [--show_patterns] [-q]
+
+    options:
+      -h, --help            show this help message and exit
+      -w, --workflow WORKFLOW
+                            Workflow name.
+      -s, --src SRC         S3 source path.
+      -d, --dest DEST       Local destination directory.
+      --dryrun              Show what would be synced, without syncing.
+      --show_patterns       Print the include/exclude patterns and exit.
       -q, --quiet           Shush all the logs.

@@ -1,7 +1,8 @@
 tables:
   table1:
-    description: 'Table1 for tool1 (txt: header present, tab-delimited).'
+    description: 'Table1 for tool1 (tsv: header present, tab-delimited).'
     pattern: "\\.tool1\\.table1\\.tsv$"
+    glob: ["*.tool1.table1.tsv"]
     ftype: 'tsv'
     columns:
       - raw: 'SampleID'
@@ -40,8 +41,9 @@ tables:
         description: 'metric Z'
         versions: ['latest']
   table2:
-    description: 'Table2 for tool1 (txt: header present, tab-delimited).'
+    description: 'Table2 for tool1 (tsv: header present, tab-delimited).'
     pattern: "\\.tool1\\.table2\\.tsv$"
+    glob: ["*.tool1.table2.tsv"]
     ftype: 'tsv'
     columns:
       - raw: 'SampleID'
@@ -60,8 +62,9 @@ tables:
         description: 'metric B'
         versions: ['latest']
   table3:
-    description: 'Table3 for tool1 (txt-keyvalue: no header, 2 cols, col1=key col2=value).'
+    description: 'Table3 for tool1 (tsv-keyvalue: no header, 2 cols, col1=key col2=value).'
     pattern: "\\.tool1\\.table3\\.tsv$"
+    glob: ["*.tool1.table3.tsv"]
     ftype: 'tsv-keyvalue'
     columns:
       - raw: 'SampleID'
@@ -90,8 +93,9 @@ tables:
         description: 'unmapped reads'
         versions: ['latest']
   table4:
-    description: 'Table4 for tool1 (txt-nohead: no header, positional cols X1..XN).'
+    description: 'Table4 for tool1 (tsv-nohead: no header, positional cols X1..XN).'
     pattern: "\\.tool1\\.table4\\.tsv$"
+    glob: ["*.tool1.table4.tsv"]
     ftype: 'tsv-nohead'
     columns:
       - raw: 'X1'
@@ -122,6 +126,7 @@ tables:
   table6:
     description: 'Table6 for tool1 (csv: header present, comma-delimited).'
     pattern: "\\.tool1\\.table6\\.csv$"
+    glob: ["*.tool1.table6.csv"]
     ftype: 'csv'
     columns:
       - raw: 'GeneId'
@@ -144,28 +149,70 @@ tables:
         type: 'float'
         description: 'raw TPM'
         versions: ['latest']
-  table5:
-    description: 'Table5 for tool1 (csv-nohead-long: no header, long format with metric name col).'
-    pattern: "\\.tool1\\.table5\\.csv$"
-    ftype: 'csv-nohead-long'
+  table7:
+    description: 'Table7 for tool1 (tsv: one wide row, split into two outputs).'
+    pattern: "\\.tool1\\.table7\\.tsv$"
+    glob: ["*.tool1.table7.tsv"]
+    ftype: 'tsv'
     columns:
-      - raw: 'Total reads'
+      - raw: 'SampleID'
+        tidy: 'sample_id'
+        type: 'char'
+        description: 'sample ID'
+        versions: ['v1.0.0', 'latest']
+      - raw: 'TotalReads'
         tidy: 'reads_total'
         type: 'float'
         description: 'total reads'
-        versions: ['latest']
-      - raw: 'Mapped reads'
-        tidy: 'reads_map'
+        versions: ['v1.0.0', 'latest']
+      - raw: 'MappedReads'
+        tidy: 'reads_mapped'
         type: 'float'
         description: 'mapped reads'
         versions: ['latest']
-      - raw: 'Unmapped reads'
-        tidy: 'reads_unmap'
+      - raw: 'DepthCov_10'
+        tidy: 'depth_cov_10'
         type: 'float'
-        description: 'unmapped reads'
-        versions: ['latest']
-      - raw: 'Total bases'
-        tidy: 'bases_total'
+        description: 'fraction of bases at >= 10x depth'
+        versions: ['v1.0.0', 'latest']
+      - raw: 'DepthCov_20'
+        tidy: 'depth_cov_20'
         type: 'float'
-        description: 'total bases'
-        versions: ['latest']
+        description: 'fraction of bases at >= 20x depth'
+        versions: ['v1.0.0', 'latest']
+      - raw: 'DepthCov_30'
+        tidy: 'depth_cov_30'
+        type: 'float'
+        description: 'fraction of bases at >= 30x depth'
+        versions: ['v1.0.0', 'latest']
+    outputs:
+      table7main:
+        description: 'Table7 read counts, one row per sample.'
+        columns:
+          - tidy: 'sample_id'
+            type: 'char'
+            description: 'sample ID'
+            versions: ['v1.0.0', 'latest']
+          - tidy: 'reads_total'
+            type: 'float'
+            description: 'total reads'
+            versions: ['v1.0.0', 'latest']
+          - tidy: 'reads_mapped'
+            type: 'float'
+            description: 'mapped reads'
+            versions: ['latest']
+      table7dp:
+        description: 'Table7 fraction of bases at each depth threshold, long-form.'
+        columns:
+          - tidy: 'sample_id'
+            type: 'char'
+            description: 'sample ID'
+            versions: ['v1.0.0', 'latest']
+          - tidy: 'dp'
+            type: 'float'
+            description: 'depth threshold'
+            versions: ['v1.0.0', 'latest']
+          - tidy: 'pct'
+            type: 'float'
+            description: 'fraction of bases at >= dp depth'
+            versions: ['v1.0.0', 'latest']

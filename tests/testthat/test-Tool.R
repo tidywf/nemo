@@ -63,9 +63,9 @@ test_that("Tool filter_files errors after tidy()", {
 
 test_that("Tool tidy produces correct structure", {
   tool <- Tool$new(name = name, pkg = pkg, path = path)$filter_files(
-    exclude = "tool1_table5"
+    exclude = "tool1_table6"
   )$tidy()
-  expect_false("tool1_table5" %in% tool$list_files()$tool_parser)
+  expect_false("tool1_table6" %in% tool$list_files()$tool_parser)
   expect_true("tool1_table3" %in% tool$list_files()$tool_parser)
   expect_false(is.null(tool$get_tbls()))
   expect_named(
@@ -147,7 +147,7 @@ test_that("Tool write is idempotent", {
 test_that("Tool write produces correct outputs and metadata", {
   out <- withr::local_tempdir()
   tool <- Tool$new(name = name, pkg = pkg, path = path)$filter_files(
-    exclude = "tool1_table5"
+    exclude = "tool1_table6"
   )$tidy()
   tool$write(output_dir = out, format = "parquet", input_id = "run1")
   lf <- list.files(out, full.names = TRUE)
@@ -224,11 +224,11 @@ test_that("Tool run chains filter + tidy + write and records written_files", {
   tool <- Tool$new(name = name, pkg = pkg, path = path)$run(
     output_dir = out,
     format = "parquet",
-    exclude = "tool1_table5",
+    exclude = "tool1_table6",
     input_id = "run2"
   )
   expect_named(tool$written_files, c("raw_path", "tool_parser", "prefix", "tbl_name", "outpath"))
-  expect_false(any(grepl("table5", basename(list.files(out)))))
+  expect_false(any(grepl("table6", basename(list.files(out)))))
   expect_true(any(grepl("table1", basename(list.files(out)))))
 })
 
@@ -297,4 +297,219 @@ test_that("refine_files can split a prefix collision to avoid a spurious _2", {
   lf <- Split$new(path = d)$list_files()
   expect_setequal(lf$prefix, c("shared_sampleA", "shared_sampleB"))
   expect_false(any(grepl("_2$", lf$prefix)))
+})
+
+test_that("prefix suffixes do not depend on file listing order", {
+  ftbl <- list_files_dir(path)
+  map1 <- Tool$new(name = name, pkg = pkg, files_tbl = ftbl)$list_files()
+  map2 <- Tool$new(
+    name = name,
+    pkg = pkg,
+    files_tbl = ftbl[rev(seq_len(nrow(ftbl))), ]
+  )$list_files()
+  key <- \(x) {
+    dplyr::arrange(dplyr::select(x, "path", "tool_parser", "prefix"), .data$path, .data$tool_parser)
+  }
+  expect_equal(key(map1), key(map2))
+  # rows come back sorted by path
+  expect_false(is.unsorted(map2$path))
+})
+
+test_that("a file matched by two parsers gets no spurious _2 suffix", {
+  tool <- Tool$new(name = name, pkg = pkg, path = file.path(path, "latest"))
+  # swap in overlapping patterns and recompute the matched files
+  tool$config <- list(get_patterns = function() {
+    tibble::tibble(
+      name = c("table1", "table1b"),
+      pattern = c("\\.tool1\\.table1\\.tsv$", "\\.table1\\.tsv$")
+    )
+  })
+  lf <- tool$.__enclos_env__$private$compute_files()
+  expect_setequal(lf$tool_parser, c("tool1_table1", "tool1_table1b"))
+  expect_equal(lf$prefix[lf$tool_parser == "tool1_table1"], "sampleA")
+  expect_equal(lf$prefix[lf$tool_parser == "tool1_table1b"], "sampleA.tool1")
+})
+
+test_that("Tool run after tidy writes the tidied tables", {
+  out <- withr::local_tempdir()
+  tool <- Tool$new(name = name, pkg = pkg, path = path)$filter_files(
+    exclude = "tool1_table6"
+  )$tidy()
+  expect_no_error(tool$run(output_dir = out, format = "parquet", input_id = "run1"))
+  expect_true(any(grepl("table1", list.files(out))))
+  expect_false(any(grepl("table6", list.files(out))))
+  # include/exclude after tidy is still an error
+  expect_error(
+    Tool$new(name = name, pkg = pkg, path = path)$tidy()$run(
+      output_dir = out,
+      include = "tool1_table1"
+    ),
+    "Cannot filter files after tidy"
+  )
+})
+
+test_that("Tool run is a no-op once written", {
+  out <- withr::local_tempdir()
+  tool <- Tool$new(name = name, pkg = pkg, path = path)$run(output_dir = out, format = "parquet")
+  wf1 <- tool$written_files
+  out2 <- withr::local_tempdir()
+  tool$run(output_dir = out2, format = "parquet")
+  expect_identical(tool$written_files, wf1)
+  expect_length(list.files(out2), 0)
+})
+
+test_that("parse/tidy errors name the tool_parser and file", {
+  d <- withr::local_tempdir()
+  # header matches no table1 schema version
+  writeLines("Foo\tBar\n1\t2", file.path(d, "sampleA.tool1.table1.tsv"))
+  tool <- Tool$new(name = name, pkg = pkg, path = d)
+  expect_error(tool$tidy(), "Failed to tidy 'tool1_table1' from .*sampleA.tool1.table1.tsv")
+  # the original cause is kept as the parent
+  err <- tryCatch(Tool$new(name = name, pkg = pkg, path = d)$tidy(), error = identity)
+  expect_match(conditionMessage(err$parent), "Expected 1 matching schema")
+  expect_error(
+    Tool$new(name = name, pkg = pkg, path = d)$tidy(keep_raw = TRUE),
+    "Failed to parse 'tool1_table1'"
+  )
+  expect_error(
+    Tool$new(name = name, pkg = pkg, path = d)$run(output_dir = withr::local_tempdir()),
+    "Failed to tidy 'tool1_table1'"
+  )
+})
+
+path7 <- system.file("extdata/tool1_outputs", package = "nemo")
+
+test_that("Tool errors when a table with outputs has no custom tidy", {
+  expect_error(
+    Tool$new(name = name, pkg = pkg, path = path7)$tidy(),
+    "declares outputs \\(table7main, table7dp\\) but Tool has no tidy_table7"
+  )
+})
+
+# Tool1 whose tidy_table7() result is passed through `modify` (a field, since
+# R6 rebinds method environments and a method can't close over `modify`)
+Tool1Mod <- R6::R6Class(
+  "Tool1Mod",
+  inherit = Tool1,
+  cloneable = FALSE,
+  public = list(
+    modify = NULL,
+    tidy_table7 = function(x) self$modify(super$tidy_table7(x))
+  )
+)
+tool1_with <- function(modify) {
+  obj <- Tool1Mod$new(path7)$filter_files(include = "tool1_table7")
+  obj$modify <- modify
+  obj
+}
+
+test_that("Tool checks fan-out tidy results against the schema outputs", {
+  dropped <- function(d) dplyr::filter(d, .data$name != "table7dp")
+  expect_error(tool1_with(dropped)$tidy(), "Missing: table7dp")
+  extra <- function(d) dplyr::bind_rows(d, nemo_enframe(list(foo = tibble::tibble())))
+  expect_error(tool1_with(extra)$tidy(), "Undeclared: foo")
+  renamed <- function(d) {
+    d$data[[2]] <- dplyr::rename(d$data[[2]], depth = "dp")
+    d
+  }
+  expect_error(tool1_with(renamed)$tidy(), "output 'table7dp' columns match no schema version")
+  retyped <- function(d) {
+    d$data[[2]]$dp <- as.character(d$data[[2]]$dp)
+    d
+  }
+  expect_error(tool1_with(retyped)$tidy(), "dp \\(d, got character\\)")
+  # without file_version, any schema version is accepted
+  unversioned <- function(d) {
+    d$data <- lapply(d$data, \(t) {
+      attr(t, "file_version") <- NULL
+      t
+    })
+    d
+  }
+  expect_no_error(tool1_with(unversioned)$tidy())
+})
+
+test_that("Tool errors on parse_/tidy_ methods matching no table", {
+  cls <- R6::R6Class(
+    "Tool1Typo",
+    inherit = Tool1,
+    cloneable = FALSE,
+    public = list(tidy_tabel7 = function(x) x)
+  )
+  expect_error(cls$new(path7), "method\\(s\\) match no schema table: tidy_tabel7")
+})
+
+test_that("Tool accepts any subset of columns, in any order, for shape: subset", {
+  tool1_subset <- function(modify) {
+    obj <- tool1_with(modify)
+    tabs <- obj$config$.__enclos_env__$private$tables
+    tabs$table7$outputs$table7main$shape <- "subset"
+    obj$config$.__enclos_env__$private$tables <- tabs
+    obj
+  }
+  expect_equal(tool1_subset(identity)$config$get_output_shape("table7main"), "subset")
+  reordered <- function(d) {
+    d$data[[1]] <- dplyr::select(d$data[[1]], "reads_total", "sample_id")
+    d
+  }
+  expect_no_error(tool1_subset(reordered)$tidy())
+  expect_error(tool1_with(reordered)$tidy(), "match no schema version")
+  added <- function(d) {
+    d$data[[1]]$foo <- 1
+    d
+  }
+  expect_error(tool1_subset(added)$tidy(), "undeclared: foo")
+})
+
+test_that("Tool prefixes stay unique when both disambiguation passes add suffixes", {
+  # run1/{sampleA,sampleB} + run2/sampleA; refine_files() folds sampleB into
+  # sampleA, so the bname pass gives run2's file sampleA_2 and the prefix pass
+  # would naively give run1's sampleB sampleA_2 as well
+  src <- system.file("extdata/tool1/latest/sampleA.tool1.table1.tsv", package = "nemo")
+  d <- withr::local_tempdir()
+  fs::dir_create(file.path(d, c("run1", "run2")))
+  fs::file_copy(src, file.path(d, "run1", "sampleA.tool1.table1.tsv"))
+  fs::file_copy(src, file.path(d, "run1", "sampleB.tool1.table1.tsv"))
+  fs::file_copy(src, file.path(d, "run2", "sampleA.tool1.table1.tsv"))
+  ToolFold <- R6::R6Class(
+    "ToolFold",
+    inherit = Tool,
+    cloneable = FALSE,
+    private = list(
+      refine_files = function(files) {
+        files$prefix <- "sampleA"
+        files
+      }
+    )
+  )
+  tool <- ToolFold$new(name = name, pkg = pkg, path = d)
+  lf <- tool$list_files()
+  pfx <- setNames(lf$prefix, basename(dirname(lf$path)))[order(lf$path)]
+  expect_false(anyDuplicated(lf$prefix) > 0)
+  expect_equal(unname(pfx), c("sampleA", "sampleA_3", "sampleA_2"))
+  out <- withr::local_tempdir()
+  tool$run(output_dir = out, format = "tsv", write_metadata = FALSE)
+  expect_length(list.files(out), 3)
+})
+
+test_that("Tool requires a parse_ for a table without columns", {
+  t7 <- Tool1$new(path7)
+  priv <- t7$config$.__enclos_env__$private
+  tabs <- priv$tables
+  tabs$table7$columns <- NULL
+  priv$tables <- tabs
+  # Tool1 has tidy_table7() but no parse_table7()
+  expect_error(t7$tidy(), "needs a parse_table7\\(\\) to read it")
+})
+
+test_that("schema detail view handles a table without columns", {
+  x <- tibble::tibble(
+    raw = character(),
+    tidy = character(),
+    type = character(),
+    description = character(),
+    versions = list()
+  )
+  html <- htmltools::renderTags(schema_columns_detail(x, character(), "json"))$html
+  expect_match(html, "columns are on its output tables")
 })

@@ -25,10 +25,9 @@ Otherwise, the path to the \code{.uml} file (invisibly).
 Uses \code{R6toPlant} to generate a PlantUML file from a set of R6 classes,
 then calls \code{plantuml} to render it as an SVG.
 
-When \code{output_dir} is \code{NULL} (default), the SVG is piped from \code{plantuml} to
-stdout and returned as a character string — suitable for inline rendering
-in a vignette chunk with \code{output: asis}. When \code{output_dir} is provided, the
-\code{.uml} and \code{.svg} files are written to that directory instead.
+With \code{output_dir = NULL} the SVG is returned as a string (for an
+\code{output: asis} vignette chunk); otherwise the \code{.uml} and \code{.svg} are written
+there.
 }
 \examples{
 \dontrun{

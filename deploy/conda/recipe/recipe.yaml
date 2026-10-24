@@ -1,6 +1,6 @@
 context:
   name: r-nemo
-  version: 0.1.0 # bump
+  version: 0.1.0.9008 # bump
 
 package:
   name: ${{ name|lower }}
@@ -18,47 +18,37 @@ requirements:
     - r-base
     - r-argparse
     - r-arrow
-    - r-assertthat
     - r-dbi
     - r-dplyr
     - r-fs
     - r-glue
-    - r-htmltools
     - r-knitr
     - r-log4r
     - r-purrr
     - r-r6
-    - r-reactable
     - r-readr
     - r-rlang
-    - r-stringr
     - r-tibble
     - r-tidyr
     - r-ulid
-    - r-withr
     - r-yaml
   run:
     - r-base
     - r-argparse
     - r-arrow
-    - r-assertthat
     - r-dbi
     - r-dplyr
     - r-fs
     - r-glue
-    - r-htmltools
     - r-knitr
     - r-log4r
     - r-purrr
     - r-r6
-    - r-reactable
     - r-readr
     - r-rlang
-    - r-stringr
     - r-tibble
     - r-tidyr
     - r-ulid
-    - r-withr
     - r-yaml
 
 tests:

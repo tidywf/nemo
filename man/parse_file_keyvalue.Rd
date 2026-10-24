@@ -22,7 +22,8 @@ File delimiter.}
 \item{...}{Passed on to \code{readr::read_delim}.}
 }
 \description{
-Parses files with no header and two columns representing key-value pairs.
+Parses files with no header and two columns representing key-value pairs,
+pivoted wide and typed per the matching raw schema.
 }
 \examples{
 path <- system.file("extdata/tool1", package = "nemo")

@@ -1,18 +1,10 @@
 #' @title Workflow Object
 #'
 #' @description
-#' Orchestrates multiple `Tool` objects over a shared directory, handling file
-#' discovery, filtering, tidying, and writing in a single pipeline.
+#' Orchestrates multiple `Tool` objects over shared directories.
 #'
-#' A Workflow object:
-#' - has a name (`name`);
-#' - has one or more paths to workflow results (`path`);
-#' - holds `Tool` subclass objects accessible via `get_tools()`;
-#' - exposes matched files across all tools via `list_files()`;
-#' - has a tibble of written output files, populated after `write()` (`written_files`);
-#'
-#' The typical workflow is: optionally filter with `filter_files()`, tidy with
-#' `tidy()`, then write with `write()`. `run()` chains all three steps.
+#' Typical use: `filter_files()` (optional), `tidy()`, `write()`; `run()` chains
+#' all three.
 #'
 #' @examples
 #' fs::path(tempdir(), letters[1:5]) |>
@@ -22,7 +14,9 @@
 #' tools <- list(tool1 = Tool1)
 #' wf <- Workflow$new(name = "wf1", path = path, tools = tools)
 #' (lf_all <- wf$list_files())
-#' wf$filter_files(exclude = "tool1_table5")
+#' (globs <- wf$get_globs())
+#' (sync_pats <- wf$get_sync_patterns())
+#' wf$filter_files(exclude = "tool1_table6")
 #' wf$tidy()
 #' (tbls <- wf$get_tbls())
 #' (rs <- wf$get_schemas_raw())
@@ -50,6 +44,10 @@ Workflow <- R6::R6Class(
     #' @field written_files (`tibble(n)`)\cr
     #' Tibble of files written from `self$write()`.
     written_files = NULL,
+    #' @field sync_exclude (`character(n)`)\cr
+    #' Trailing `--exclude` globs for `get_sync_patterns()`, carving files back
+    #' out of the schema-derived includes. Subclasses override this.
+    sync_exclude = character(),
 
     #' @description Create a new Workflow object.
     #' @param name (`character(1)`)\cr
@@ -103,56 +101,64 @@ Workflow <- R6::R6Class(
     #' @return (`list(n)`)\cr
     #' Named list of instantiated Tool objects.
     get_tools = function() private$tools,
+    #' @description Get S3 sync globs for all Tools, derived from their schema
+    #' patterns.
+    #' @return (`tibble()`)\cr
+    #' Bound `get_globs()` tibbles from all Tools (`tool`, `name`, `glob`).
+    get_globs = function() {
+      private$tools |>
+        purrr::map(\(x) x$get_globs()) |>
+        dplyr::bind_rows()
+    },
+    #' @description Build the `aws s3 sync` patterns: exclude everything,
+    #' include the schema globs, then `sync_exclude` (filters are
+    #' last-match-wins).
+    #' @return (`tibble()`)\cr
+    #' Tibble with `inex` (`"in"`/`"ex"`) and `pat` columns, as expected by
+    #' [s3sync()].
+    get_sync_patterns = function() {
+      dplyr::bind_rows(
+        tibble::tibble(inex = "ex", pat = "*"),
+        tibble::tibble(inex = "in", pat = unique(self$get_globs()[["glob"]])),
+        tibble::tibble(inex = "ex", pat = self$sync_exclude)
+      )
+    },
     #' @description Filter files in given workflow directory.
     #' @param include (`character(n)`)\cr
     #' tool_parser names to include (e.g. `"tool1_table1"`).
     #' @param exclude (`character(n)`)\cr
-    #' tool_parser names to exclude (e.g. `"tool1_table5"`).
+    #' tool_parser names to exclude (e.g. `"tool1_table6"`).
     #' @return (`R6::R6Class()`)\cr
     #' R6 object invisibly.
     filter_files = function(include = NULL, exclude = NULL) {
+      if (is.null(include) && is.null(exclude)) {
+        return(invisible(self))
+      }
       assert_include_exclude(include, exclude)
       if (private$is_tidied) {
         nemo_stop("Cannot filter files after tidy() has been called.")
       }
       known <- purrr::map(private$tools, \(x) {
         paste0(x$name, "_", x$config$get_patterns()$name)
-      }) |>
-        unlist() |>
-        unique()
+      })
       if (!is.null(include)) {
-        check_unknown_parsers(include, known, "include")
+        check_unknown_parsers(include, unique(unlist(known)), "include")
       }
       if (!is.null(exclude)) {
-        check_unknown_parsers(exclude, known, "exclude")
+        check_unknown_parsers(exclude, unique(unlist(known)), "exclude")
       }
-      if (all(purrr::map_lgl(private$tools, \(x) nrow(x$list_files()) == 0))) {
-        return(invisible(self))
-      }
-      purrr::walk(private$tools, \(x) {
-        tool_parsers <- unique(x$list_files()$tool_parser)
-        # Use if/else rather than character(0) args: an empty intersection means
-        # "no include parsers match this tool" so we explicitly exclude all it has.
+      # hand each tool only its own parsers; an empty include empties that
+      # tool, an empty exclude leaves it untouched
+      purrr::walk2(private$tools, known, \(x, known_x) {
         if (!is.null(include)) {
-          matched <- include[include %in% tool_parsers]
-          if (length(matched) > 0) {
-            x$filter_files(include = matched)
-          } else if (length(tool_parsers) > 0) {
-            x$filter_files(exclude = tool_parsers)
-          }
-        } else if (!is.null(exclude)) {
-          matched <- exclude[exclude %in% tool_parsers]
-          if (length(matched) > 0) {
-            x$filter_files(exclude = matched)
-          }
-          # tools with no matching parsers are left untouched
+          x$filter_files(include = intersect(include, known_x))
+        } else {
+          x$filter_files(exclude = intersect(exclude, known_x))
         }
       })
       invisible(self)
     },
-    #' @description List only files of interest in given workflow directory, i.e.
-    #' only those files that match the patterns listed in the individual tool
-    #' config.
+    #' @description List files matching the tools' patterns.
     #' @return (`tibble()`)\cr
     #' Bound `files` tibbles from all Tools, with a leading `tool` column.
     list_files = function() {
@@ -200,8 +206,6 @@ Workflow <- R6::R6Class(
       dbconn = NULL,
       write_metadata = TRUE
     ) {
-      # nemo_assert_out_fmt is also checked in Tool$write() and nemo_osfx(); each layer
-      # keeps its own check so callers don't need to worry about ordering.
       nemo_assert_out_fmt(format)
       if (private$is_written) {
         return(invisible(self))
@@ -209,13 +213,10 @@ Workflow <- R6::R6Class(
       if (!private$is_tidied) {
         nemo_stop("Did you forget to tidy?")
       }
-      if (format != "db") {
-        # normalise once here so all tools receive a canonical path; Tool$write()
-        # repeats the normalisation but that is idempotent.
-        output_dir <- normalizePath(output_dir, mustWork = FALSE)
-      }
+      # normalised once so every Tool gets the same path
+      output_dir <- resolve_output_dir(format, output_dir)
       res <- private$tools |>
-        purrr::map(\(x) {
+        lapply(\(x) {
           x$write(
             output_dir = output_dir,
             format = format,
@@ -232,16 +233,13 @@ Workflow <- R6::R6Class(
       self$written_files <- if (has_output) res else NULL
       private$is_written <- TRUE
       if (write_metadata && format != "db" && has_output) {
-        meta <- self$get_metadata(
-          input_id = input_id,
-          output_id = output_id,
-          output_dir = output_dir
-        )
-        arrow::write_parquet(meta, file.path(output_dir, "metadata.parquet"))
+        private$write_metadata_file(input_id, output_id, output_dir)
       }
       return(invisible(self))
     },
-    #' @description Filter, tidy, and write files in one step.
+    #' @description Filter, tidy, and write files in one step. A no-op if
+    #' already written; if already tidied, writes the in-memory tables via
+    #' `write()` instead of re-parsing.
     #' @param output_dir (`character(1)`)\cr
     #' Directory path to output tidy files.
     #' @param format (`character(1)`)\cr
@@ -259,7 +257,7 @@ Workflow <- R6::R6Class(
     #' @param include (`character(n)`)\cr
     #' tool_parser names to include (e.g. `"tool1_table1"`).
     #' @param exclude (`character(n)`)\cr
-    #' tool_parser names to exclude (e.g. `"tool1_table5"`).
+    #' tool_parser names to exclude (e.g. `"tool1_table6"`).
     #' @return (`R6::R6Class()`)\cr
     #' R6 object invisibly.
     run = function(
@@ -273,12 +271,15 @@ Workflow <- R6::R6Class(
       include = NULL,
       exclude = NULL
     ) {
-      # fail-fast before tidy(); write() re-checks but tidy can be slow
+      # fail-fast before parsing
       nemo_assert_out_fmt(format)
-      # fmt: skip
-      self$filter_files(include = include, exclude = exclude)$
-        tidy()$
-        write(
+      if (private$is_written) {
+        return(invisible(self))
+      }
+      self$filter_files(include = include, exclude = exclude)
+      # already tidied in memory: write those tables instead of re-parsing
+      if (private$is_tidied) {
+        return(self$write(
           output_dir = output_dir,
           format = format,
           input_id = input_id,
@@ -286,14 +287,39 @@ Workflow <- R6::R6Class(
           prefix_include = prefix_include,
           dbconn = dbconn,
           write_metadata = write_metadata
-      )
+        ))
+      }
+      # normalised once so every Tool gets the same path
+      output_dir <- resolve_output_dir(format, output_dir)
+      # Delegate to each Tool's streaming run() to bound memory; a single
+      # workflow-level metadata.parquet replaces per-tool metadata.
+      res <- private$tools |>
+        lapply(\(x) {
+          x$run(
+            output_dir = output_dir,
+            format = format,
+            input_id = input_id,
+            output_id = output_id,
+            prefix_include = prefix_include,
+            dbconn = dbconn,
+            write_metadata = FALSE
+          )
+          x$written_files
+        }) |>
+        dplyr::bind_rows()
+      has_output <- nrow(res) > 0
+      self$written_files <- if (has_output) res else NULL
+      private$is_tidied <- TRUE
+      private$is_written <- TRUE
+      if (write_metadata && format != "db" && has_output) {
+        private$write_metadata_file(input_id, output_id, output_dir)
+      }
+      return(invisible(self))
     },
     #' @description Get raw schemas for all Tools.
     #' @return (`tibble()`)\cr
     #' Bound `schemas_raw` tibbles from all Tools, with a leading `tool` column.
     get_schemas_raw = function() {
-      # get_schemas_raw and get_schemas_tidy are symmetric (same pattern, different Config method).
-      # The repetition is intentional — extraction was tried and reversed; they're simple enough to read in full.
       private$tools |>
         purrr::map(\(x) dplyr::mutate(x$config$get_schemas_raw(), tool = x$name, .before = 1)) |>
         dplyr::bind_rows()
@@ -310,9 +336,7 @@ Workflow <- R6::R6Class(
     #' @return (`tibble()`)\cr
     #' Bound `tbls` tibbles from all Tools, with a leading `tool` column.
     #' When `tidy(keep_raw = TRUE)` was used, each tool's tibble also contains
-    #' a `raw` list-column. Note: `get_tbls()` checks `is.null()` (not `nrow()`)
-    #' because `Tool$get_tbls()` returns `NULL` when nothing was tidied, whereas
-    #' `Tool$list_files()` always returns a zero-row tibble (never `NULL`).
+    #' a `raw` list-column.
     get_tbls = function() {
       private$tools |>
         purrr::map(\(x) {
@@ -339,15 +363,9 @@ Workflow <- R6::R6Class(
     #' `output_dir`, `pkg_versions`, and `files`.
     get_metadata = function(input_id, output_id, output_dir, pkgs = NULL) {
       pkgs <- pkgs %||% self$metapkg
-      if (!is.null(self$written_files)) {
-        files <- meta_files_from_written(self$written_files)
-      } else {
-        files <- private$files_tbl |>
-          dplyr::select(fin = "path", "size") |>
-          dplyr::mutate(size = as.numeric(.data$size))
-      }
       nemo_metadata(
-        files = files,
+        # matched files only, consistent with Tool$get_metadata()
+        files = meta_files(self$written_files, self$list_files()),
         pkgs = pkgs,
         input_id = input_id,
         output_id = output_id,
@@ -374,6 +392,9 @@ Workflow <- R6::R6Class(
         nemo_stop("All elements of `tools` must inherit from Tool.")
       }
     },
+    write_metadata_file = function(input_id, output_id, output_dir) {
+      meta_write(self, "metadata.parquet", input_id, output_id, output_dir)
+    },
     is_tidied = FALSE,
     is_written = FALSE,
     files_tbl = NULL,
@@ -381,12 +402,9 @@ Workflow <- R6::R6Class(
   ) # private end
 )
 
-# Check whether an R6 class inherits from Tool anywhere in its ancestry.
-# cls$inherit stores a symbol (the parent class name), not the class object
-# itself — get() is required to resolve it. Resolution uses cls$parent_env (the
-# namespace where the subclass was defined) rather than parent.env(.GlobalEnv)
-# (the search path), so the lookup works under R CMD check where nemo is only
-# imported into the downstream package namespace, not attached to the search path.
+# Does an R6 class inherit from Tool anywhere in its ancestry?
+# `cls$inherit` is a symbol, resolved in `cls$parent_env` (the defining
+# namespace) so this works when nemo is imported but not attached.
 wf_is_tool_subclass <- function(cls) {
   parent <- cls$inherit
   env <- cls$parent_env

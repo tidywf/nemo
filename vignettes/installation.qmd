@@ -28,8 +28,6 @@ conda <- tibble::lst(
 dir1 <- system.file("doc-templates/installation", package = pkg_nm)
 ```
 
-There are several ways to install {`r pkg_nm`}:
-
 ### R
 
 ```{r, child=file.path(dir1, "_r.qmd")}

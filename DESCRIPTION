@@ -1,6 +1,6 @@
 Package: nemo
 Title: Tidy and explore outputs from bioinformatic pipelines
-Version: 0.1.0
+Version: 0.1.0.9008
 Description: Provides the base components for tidying and exploring
              outputs from bioinformatic pipelines.
 Authors@R: 
@@ -28,14 +28,15 @@ Imports:
     R6,
     readr,
     rlang,
-    stringr,
     tibble,
     tidyr,
+    tools,
     ulid,
     yaml
 Suggests:
     here,
     htmltools,
+    htmlwidgets,
     R6toPlant,
     reactable,
     testthat (>= 3.0.0),

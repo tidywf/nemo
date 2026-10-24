@@ -17,13 +17,13 @@ knitr:
 
 ### conda
 
-| Command                                                                                 | Comment                                                           |
-| --------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| `conda install foo -c bar`                                                              | install pkg `foo` from channel `bar`                              |
-| `conda create --file env.yml --prefix ./bar`                                            | install conda pkgs listed in `env.yml` into the `./bar` directory |
-| `conda info -e`                                                                         | list conda environments installed on this machine                 |
-| `rattler-build build -r recipe.yaml --output-dir ${HOME}/tmp`                           | build conda pkg from a recipe file                                |
-| `rattler-build upload anaconda -o umccr --api-key <xxx> ${HOME}/tmp/r-tidywigits.conda` | upload conda pkg to anaconda                                      |
+| Command                                                                             | Comment                                                           |
+| ----------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| `conda install foo -c bar`                                                          | install pkg `foo` from channel `bar`                              |
+| `conda create --file env.yml --prefix ./bar`                                        | install conda pkgs listed in `env.yml` into the `./bar` directory |
+| `conda info -e`                                                                     | list conda environments installed on this machine                 |
+| `rattler-build build -r recipe.yaml --output-dir ${HOME}/tmp`                       | build conda pkg from a recipe file                                |
+| `rattler-build upload anaconda -o tidywf --api-key <xxx> ${HOME}/tmp/r-<pkg>.conda` | upload conda pkg to anaconda                                      |
 
 ### pkgdown
 
@@ -31,28 +31,57 @@ knitr:
 | ---------------------------------------- | ------------------------------ |
 | `pkgdown::build_site()`                  | builds entire site             |
 | `pkgdown::build_articles(quiet = FALSE)` | builds vignettes in debug mode |
-| `pkgdown::build_article("foo")`          | builds foo vignette only       |
+| `pkgdown::build_article("foo")`          | builds `foo` vignette only     |
+
+### Debugging R6 private methods
+
+For private methods, reach into `.__enclos_env__$private` (flags that instance
+only):
+
+```r
+devtools::load_all()
+path <- system.file("extdata/tool1", package = "nemo")
+t <- Tool$new(name = "tool1", pkg = "nemo", path = path)
+
+debugonce(t$.__enclos_env__$private$build_d_write)
+t$run(output_dir = tempdir(), format = "parquet") # breaks on first call
+```
+
+Call private methods standalone:
+
+```r
+row <- t$list_files()[1, ]
+row$tidy <- list(t$.__enclos_env__$private$dispatch_tidy(row$path, row$parser))
+d_write <- t$.__enclos_env__$private$build_d_write(
+  row,
+  tempdir(),
+  NULL,
+  NULL,
+  FALSE
+)
+```
 
 ### Data Version Control
 
-Instead of committing big data files into `git`, we can store the files remotely
-(e.g. Google Drive, AWS S3, Cloudflare R2) and just keep track of the data
-updates in `git` using [DVC](https://dvc.org/).
+[DVC](https://dvc.org/) keeps test/example data in remote storage, tracked in
+`git`. Run `dvc pull` before tests, examples or vignettes.
 
-The R package uses the data files when running the code examples and tests, and
-when rendering the vignettes. A simple `dvc pull` will pull the data from the
-remote storage and allow these processes to take place.
+Each pkg has two Cloudflare R2 remotes:
 
-| Command                                                                      | Comments                                |
-| ---------------------------------------------------------------------------- | --------------------------------------- |
-| `dvc init`                                                                   | initialise dvc                          |
-| `dvc remote add -d storage gdrive://<...>`                                   | add GDrive remote                       |
-| `dvc remote add -d my_r2 s3://<...>`                                         | add Cloudflare R2 remote                |
-| `dvc remote modify my_r2 endpointurl https://<...>.r2.cloudflarestorage.com` | add Cloudflare R2 remote endpointurl    |
-| `dvc remote list`                                                            | list all remotes                        |
-| `dvc check-ignore *`                                                         | check what is dvc-ignored               |
-| `dvc list https://github.com/tidywf/tidywigits inst/extdata`                 | list dvc'ed data                        |
-| `dvc add path/to/folder`                                                     | adds `folder` (and its contents) to dvc |
-| `dvc add path/to/file.txt`                                                   | adds `file.txt` to dvc                  |
-| `dvc push`                                                                   | pushes dvc data to remote               |
-| `dvc pull`                                                                   | pulls dvc data from remote              |
+- pull: `cloudflare_r2_<pkg>` (public, no auth), the default in `.dvc/config`
+- push: `cloudflare_r2_<pkg>_push` (private), set in gitignored
+  `.dvc/config.local`, with R2 creds passed via env vars
+
+| Command                                                                                | Comments                                          |
+| -------------------------------------------------------------------------------------- | ------------------------------------------------- |
+| `dvc init`                                                                             | initialise dvc                                    |
+| `dvc remote add -d storage gdrive://<...>`                                             | add GDrive remote                                 |
+| `dvc remote add -d my_r2 s3://<...>`                                                   | add Cloudflare R2 remote                          |
+| `dvc remote modify my_r2 endpointurl https://<...>.r2.cloudflarestorage.com`           | add Cloudflare R2 remote endpointurl              |
+| `dvc remote list`                                                                      | list all remotes                                  |
+| `dvc check-ignore *`                                                                   | check what is dvc-ignored                         |
+| `dvc list https://github.com/tidywf/<pkg> inst/extdata`                                | list dvc'ed data                                  |
+| `dvc add path/to/folder`                                                               | adds `folder` (and its contents) to dvc           |
+| `dvc add path/to/file.txt`                                                             | adds `file.txt` to dvc                            |
+| `dvc pull`                                                                             | pulls dvc data from public remote (no auth)       |
+| `AWS_ACCESS_KEY_ID=... AWS_SECRET_ACCESS_KEY=... dvc push -r cloudflare_r2_<pkg>_push` | pushes dvc data to private R2 remote (needs auth) |

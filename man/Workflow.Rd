@@ -4,20 +4,10 @@
 \alias{Workflow}
 \title{Workflow Object}
 \description{
-Orchestrates multiple \code{Tool} objects over a shared directory, handling file
-discovery, filtering, tidying, and writing in a single pipeline.
+Orchestrates multiple \code{Tool} objects over shared directories.
 
-A Workflow object:
-\itemize{
-\item has a name (\code{name});
-\item has one or more paths to workflow results (\code{path});
-\item holds \code{Tool} subclass objects accessible via \code{get_tools()};
-\item exposes matched files across all tools via \code{list_files()};
-\item has a tibble of written output files, populated after \code{write()} (\code{written_files});
-}
-
-The typical workflow is: optionally filter with \code{filter_files()}, tidy with
-\code{tidy()}, then write with \code{write()}. \code{run()} chains all three steps.
+Typical use: \code{filter_files()} (optional), \code{tidy()}, \code{write()}; \code{run()} chains
+all three.
 }
 \examples{
 fs::path(tempdir(), letters[1:5]) |>
@@ -27,7 +17,9 @@ path <- system.file("extdata/tool1", package = "nemo")
 tools <- list(tool1 = Tool1)
 wf <- Workflow$new(name = "wf1", path = path, tools = tools)
 (lf_all <- wf$list_files())
-wf$filter_files(exclude = "tool1_table5")
+(globs <- wf$get_globs())
+(sync_pats <- wf$get_sync_patterns())
+wf$filter_files(exclude = "tool1_table6")
 wf$tidy()
 (tbls <- wf$get_tbls())
 (rs <- wf$get_schemas_raw())
@@ -53,6 +45,10 @@ Package name(s) used for metadata version reporting.}
 
 \item{\code{written_files}}{(\code{tibble(n)})\cr
 Tibble of files written from \code{self$write()}.}
+
+\item{\code{sync_exclude}}{(\code{character(n)})\cr
+Trailing \code{--exclude} globs for \code{get_sync_patterns()}, carving files back
+out of the schema-derived includes. Subclasses override this.}
 }
 \if{html}{\out{</div>}}
 }
@@ -62,6 +58,8 @@ Tibble of files written from \code{self$write()}.}
 \item \href{#method-Workflow-new}{\code{Workflow$new()}}
 \item \href{#method-Workflow-print}{\code{Workflow$print()}}
 \item \href{#method-Workflow-get_tools}{\code{Workflow$get_tools()}}
+\item \href{#method-Workflow-get_globs}{\code{Workflow$get_globs()}}
+\item \href{#method-Workflow-get_sync_patterns}{\code{Workflow$get_sync_patterns()}}
 \item \href{#method-Workflow-filter_files}{\code{Workflow$filter_files()}}
 \item \href{#method-Workflow-list_files}{\code{Workflow$list_files()}}
 \item \href{#method-Workflow-tidy}{\code{Workflow$tidy()}}
@@ -141,6 +139,38 @@ Named list of instantiated Tool objects.
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Workflow-get_globs"></a>}}
+\if{latex}{\out{\hypertarget{method-Workflow-get_globs}{}}}
+\subsection{Method \code{get_globs()}}{
+Get S3 sync globs for all Tools, derived from their schema
+patterns.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Workflow$get_globs()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+(\code{tibble()})\cr
+Bound \code{get_globs()} tibbles from all Tools (\code{tool}, \code{name}, \code{glob}).
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Workflow-get_sync_patterns"></a>}}
+\if{latex}{\out{\hypertarget{method-Workflow-get_sync_patterns}{}}}
+\subsection{Method \code{get_sync_patterns()}}{
+Build the \verb{aws s3 sync} patterns: exclude everything,
+include the schema globs, then \code{sync_exclude} (filters are
+last-match-wins).
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Workflow$get_sync_patterns()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+(\code{tibble()})\cr
+Tibble with \code{inex} (\code{"in"}/\code{"ex"}) and \code{pat} columns, as expected by
+\code{\link[=s3sync]{s3sync()}}.
+}
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Workflow-filter_files"></a>}}
 \if{latex}{\out{\hypertarget{method-Workflow-filter_files}{}}}
 \subsection{Method \code{filter_files()}}{
@@ -156,7 +186,7 @@ Filter files in given workflow directory.
 tool_parser names to include (e.g. \code{"tool1_table1"}).}
 
 \item{\code{exclude}}{(\code{character(n)})\cr
-tool_parser names to exclude (e.g. \code{"tool1_table5"}).}
+tool_parser names to exclude (e.g. \code{"tool1_table6"}).}
 }
 \if{html}{\out{</div>}}
 }
@@ -169,9 +199,7 @@ R6 object invisibly.
 \if{html}{\out{<a id="method-Workflow-list_files"></a>}}
 \if{latex}{\out{\hypertarget{method-Workflow-list_files}{}}}
 \subsection{Method \code{list_files()}}{
-List only files of interest in given workflow directory, i.e.
-only those files that match the patterns listed in the individual tool
-config.
+List files matching the tools' patterns.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Workflow$list_files()}\if{html}{\out{</div>}}
 }
@@ -256,7 +284,9 @@ R6 object invisibly.
 \if{html}{\out{<a id="method-Workflow-run"></a>}}
 \if{latex}{\out{\hypertarget{method-Workflow-run}{}}}
 \subsection{Method \code{run()}}{
-Filter, tidy, and write files in one step.
+Filter, tidy, and write files in one step. A no-op if
+already written; if already tidied, writes the in-memory tables via
+\code{write()} instead of re-parsing.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Workflow$run(
   output_dir = ".",
@@ -299,7 +329,7 @@ If \code{TRUE} (default), write a \code{metadata.parquet} file. Set to \code{FAL
 tool_parser names to include (e.g. \code{"tool1_table1"}).}
 
 \item{\code{exclude}}{(\code{character(n)})\cr
-tool_parser names to exclude (e.g. \code{"tool1_table5"}).}
+tool_parser names to exclude (e.g. \code{"tool1_table6"}).}
 }
 \if{html}{\out{</div>}}
 }
@@ -349,9 +379,7 @@ Get tidy tibbles for all Tools.
 (\code{tibble()})\cr
 Bound \code{tbls} tibbles from all Tools, with a leading \code{tool} column.
 When \code{tidy(keep_raw = TRUE)} was used, each tool's tibble also contains
-a \code{raw} list-column. Note: \code{get_tbls()} checks \code{is.null()} (not \code{nrow()})
-because \code{Tool$get_tbls()} returns \code{NULL} when nothing was tidied, whereas
-\code{Tool$list_files()} always returns a zero-row tibble (never \code{NULL}).
+a \code{raw} list-column.
 }
 }
 \if{html}{\out{<hr>}}

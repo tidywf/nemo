@@ -40,7 +40,7 @@ test_that("Function config_prep_multi() @ L125", {
     name = c("table1", "table2"),
     descr = c("Table1 from Tool1.", "Table2 from Tool1."),
     pat = c("\\.tool1\\.table1\\.tsv$", "\\.tool1\\.table2\\.tsv$"),
-    type = c("txt", "txt"),
+    type = c("tsv", "tsv"),
     path = c(path1, path2)
   )
   config <- config_prep_multi(x)
@@ -62,7 +62,7 @@ test_that("Function config_prep_write() @ L179", {
     name = c("table1", "table2"),
     descr = c("Table1 from Tool1.", "Table2 from Tool1."),
     pat = c("\\.tool1\\.table1\\.tsv$", "\\.tool1\\.table2\\.tsv$"),
-    type = c("txt", "txt"),
+    type = c("tsv", "tsv"),
     path = c(path1, path2)
   )
   config <- config_prep_multi(x)

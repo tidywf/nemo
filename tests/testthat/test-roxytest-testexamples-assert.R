@@ -2,7 +2,17 @@
 
 # File R/assert.R: @testexamples
 
-test_that("Function nemo_assert_out_fmt() @ L65", {
+test_that("Function nemo_assert_scalar_chr() @ L24", {
+  
+  nemo_assert_scalar_chr("foo")
+  expect_identical(nemo_assert_scalar_chr("foo"), "foo")
+  expect_error(nemo_assert_scalar_chr(NA_character_), "non-NA")
+  expect_error(nemo_assert_scalar_chr(c("a", "b")))
+  expect_error(nemo_assert_scalar_chr(1))
+})
+
+
+test_that("Function nemo_assert_out_fmt() @ L72", {
   
   nemo_assert_out_fmt("tsv")
   expect_true(nemo_assert_out_fmt("tsv"))

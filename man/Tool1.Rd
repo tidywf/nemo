@@ -14,15 +14,20 @@ dir1 <- tempdir()
 obj1 <- Tool1$new(indir)
 
 p3 <- system.file("extdata/tool1/latest/sampleA.tool1.table3.tsv", package = "nemo")
-p5 <- system.file("extdata/tool1/latest/sampleA.tool1.table5.csv", package = "nemo")
 (tidy3 <- obj1$tidy_table3(p3))
-(raw5 <- obj1$parse_table5(p5))
-(tidy5 <- obj1$tidy_table5(p5))
 
 obj1$run(output_dir = dir1, format = "parquet", input_id = "run1")
 (lf <- list.files(dir1, pattern = "tool1.*parquet", full.names = FALSE))
 
 obj2 <- Tool1$new(indir)$tidy()
+
+# table7 fans out into the table7main + table7dp outputs
+indir7 <- system.file("extdata/tool1_outputs", package = "nemo")
+dir7 <- tempfile()
+obj7 <- Tool1$new(indir7)$tidy()
+(t7 <- obj7$get_tbls())
+obj7$write(output_dir = dir7, format = "parquet", input_id = "run1")
+(lf7 <- sort(basename(obj7$written_files$outpath)))
 }
 \section{Super class}{
 \code{\link[nemo:Tool]{nemo::Tool}} -> \code{Tool1}
@@ -32,14 +37,14 @@ obj2 <- Tool1$new(indir)$tidy()
 \itemize{
 \item \href{#method-Tool1-new}{\code{Tool1$new()}}
 \item \href{#method-Tool1-tidy_table3}{\code{Tool1$tidy_table3()}}
-\item \href{#method-Tool1-parse_table5}{\code{Tool1$parse_table5()}}
-\item \href{#method-Tool1-tidy_table5}{\code{Tool1$tidy_table5()}}
+\item \href{#method-Tool1-tidy_table7}{\code{Tool1$tidy_table7()}}
 }
 }
 \if{html}{\out{
 <details><summary>Inherited methods</summary>
 <ul>
 <li><span class="pkg-link" data-pkg="nemo" data-topic="Tool" data-id="filter_files"><a href='../../nemo/html/Tool.html#method-Tool-filter_files'><code>nemo::Tool$filter_files()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="nemo" data-topic="Tool" data-id="get_globs"><a href='../../nemo/html/Tool.html#method-Tool-get_globs'><code>nemo::Tool$get_globs()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="nemo" data-topic="Tool" data-id="get_metadata"><a href='../../nemo/html/Tool.html#method-Tool-get_metadata'><code>nemo::Tool$get_metadata()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="nemo" data-topic="Tool" data-id="get_tbls"><a href='../../nemo/html/Tool.html#method-Tool-get_tbls'><code>nemo::Tool$get_tbls()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="nemo" data-topic="Tool" data-id="list_files"><a href='../../nemo/html/Tool.html#method-Tool-list_files'><code>nemo::Tool$list_files()</code></a></span></li>
@@ -98,34 +103,12 @@ Tidy data in enframed tibble.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Tool1-parse_table5"></a>}}
-\if{latex}{\out{\hypertarget{method-Tool1-parse_table5}{}}}
-\subsection{Method \code{parse_table5()}}{
-Read \code{table5.csv} file (csv, no header, long format).
+\if{html}{\out{<a id="method-Tool1-tidy_table7"></a>}}
+\if{latex}{\out{\hypertarget{method-Tool1-tidy_table7}{}}}
+\subsection{Method \code{tidy_table7()}}{
+Tidy \code{table7.tsv} file.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Tool1$parse_table5(x)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{x}}{(\code{character(1)})\cr
-Path to file.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-(\code{tibble()})\cr
-Raw parsed tibble with columns \code{section}, \code{rg}, \code{variable}, \code{count}, \code{pct}.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Tool1-tidy_table5"></a>}}
-\if{latex}{\out{\hypertarget{method-Tool1-tidy_table5}{}}}
-\subsection{Method \code{tidy_table5()}}{
-Tidy \code{table5.csv} file.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Tool1$tidy_table5(x)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Tool1$tidy_table7(x)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -138,7 +121,7 @@ Path to file or already parsed tibble.}
 }
 \subsection{Returns}{
 (\code{tibble()})\cr
-Tidy data in enframed tibble, pivoted wide from long format.
+Tidy data in enframed tibble.
 }
 }
 }

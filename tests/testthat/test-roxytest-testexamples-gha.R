@@ -2,27 +2,65 @@
 
 # File R/gha.R: @testexamples
 
-test_that("Function nemo_gha_mermaid() @ L37", {
+test_that("Function nemo_gha_mermaid() @ L88", {
   
   # Real usage (requires network):
-  # repo <- "https://raw.githubusercontent.com/tidywf/actions/"
-  # actions_url <- paste0(repo, "refs/heads/main/.github/workflows")
-  # nemo_gha_mermaid(actions_url, here::here(".github/workflows/deploy.yaml"))
-  d <- tempfile() |> fs::dir_create()
-  bump_wf <- list(jobs = list(bump = list(steps = list(
-    list(name = "Setup"), list(name = "Bump version")
-  ))))
-  job_wf <- list(jobs = list(deploy = list(steps = list(list(name = "Run deploy")))))
-  deploy_wf <- list(jobs = list(
-    myjob = list(name = "My Job", uses = "org/repo/.github/workflows/myjob.yaml@main")
-  ))
-  yaml::write_yaml(bump_wf, file.path(d, "bump.yaml"))
-  yaml::write_yaml(job_wf, file.path(d, "myjob.yaml"))
-  yaml::write_yaml(deploy_wf, file.path(d, "deploy.yaml"))
-  diagram <- nemo_gha_mermaid(actions_url = d, deploy_yaml = file.path(d, "deploy.yaml"))
+  # nemo_gha_mermaid(here::here(".github/workflows"))
+  wf <- tempfile() |> fs::dir_create()
+  act <- tempfile() |> fs::dir_create()
+  ru <- function(f) paste0("org/actions/.github/workflows/", f, "@v1")
+  yaml::write_yaml(
+    list(name = "Bump", on = list(workflow_dispatch = NULL), jobs = list(
+      bump = list(uses = ru("bump.yaml"))
+    )),
+    file.path(wf, "bump.yaml")
+  )
+  yaml::write_yaml(
+    list(name = "Deploy", on = list(push = list(tags = "v*")), jobs = list(
+      prep = list(name = "Version", steps = list(list(run = "echo"))),
+      build = list(name = "Build", needs = "prep", uses = ru("build.yaml")),
+      docs = list(
+        name = "Docs", needs = c("prep", "build"),
+        uses = ru("docs.yaml"), with = list(extra = FALSE)
+      ),
+      img = list(name = "Image", needs = c("prep", "build"), uses = ru("img.yaml"))
+    )),
+    file.path(wf, "deploy.yaml")
+  )
+  steps <- function(...) list(jobs = list(j = list(steps = list(...))))
+  yaml::write_yaml(
+    steps(list(name = "Codeout"), list(name = "Bump version"), list(name = "Push tag")),
+    file.path(act, "bump.yaml")
+  )
+  yaml::write_yaml(steps(list(name = "Build pkg")), file.path(act, "build.yaml"))
+  yaml::write_yaml(steps(list(name = "Build image")), file.path(act, "img.yaml"))
+  docs <- steps(
+    list(name = "Extra step", `if` = "inputs.extra == true"),
+    list(name = "Maybe step", `if` = "github.event_name == 'push'"),
+    list(name = "Build site")
+  )
+  docs$on <- list(workflow_call = list(inputs = list(extra = list(default = TRUE))))
+  yaml::write_yaml(docs, file.path(act, "docs.yaml"))
+  diagram <- nemo_gha_mermaid(wf, actions_dir = act)
   expect_true(grepl("flowchart TD", diagram, fixed = TRUE))
-  expect_true(grepl("Setup", diagram, fixed = TRUE))
-  expect_true(grepl("Run deploy", diagram, fixed = TRUE))
-  expect_true(grepl("B2 --> J1S1", diagram, fixed = TRUE))
+  # skip patterns and caller `with:` overriding an input default
+  expect_false(grepl("Codeout", diagram, fixed = TRUE))
+  expect_false(grepl("Extra step", diagram, fixed = TRUE))
+  # undecidable condition kept, marked
+  expect_true(grepl("Maybe step <i>(if)</i>", diagram, fixed = TRUE))
+  # one node per job, steps listed in its label
+  expect_true(grepl('W2J1["<b>Version</b>"]', diagram, fixed = TRUE))
+  expect_true(grepl("<b>Docs</b><br>", diagram, fixed = TRUE))
+  # needs: fan-out, no transitive prep -> docs edge, no docs -> img chain
+  expect_true(grepl("W2J2 --> W2J3", diagram, fixed = TRUE))
+  expect_true(grepl("W2J2 --> W2J4", diagram, fixed = TRUE))
+  expect_false(grepl("W2J1 --> W2J3", diagram, fixed = TRUE))
+  expect_false(grepl("W2J3 --> W2J4", diagram, fixed = TRUE))
+  # workflows chained via the next trigger
+  expect_true(grepl("W1 -.-> W2T", diagram, fixed = TRUE))
+  # unreadable reusable workflow surfaces in the diagram
+  fs::file_delete(file.path(act, "img.yaml"))
+  d2 <- suppressWarnings(nemo_gha_mermaid(wf, actions_dir = act))
+  expect_true(grepl("could not read img.yaml", d2, fixed = TRUE))
 })
 

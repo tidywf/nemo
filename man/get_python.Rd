@@ -7,6 +7,7 @@
 get_python()
 }
 \description{
-Get the path to the Python binary in the system PATH.
+Get the path to the Python binary in the system PATH, preferring \code{python3}
+(many systems, e.g. macOS and Debian, ship no bare \code{python}).
 }
 \keyword{internal}

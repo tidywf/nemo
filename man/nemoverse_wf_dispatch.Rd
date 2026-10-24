@@ -16,6 +16,5 @@ The nemo workflow class to initiate.
 Dispatches the nemoverse workflow class based on the chosen workflow.
 }
 \examples{
-wf <- "basemean"
-(fun <- nemoverse_wf_dispatch(wf))
+(fun <- nemoverse_wf_dispatch("workflow1"))
 }

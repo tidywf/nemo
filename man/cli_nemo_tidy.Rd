@@ -15,6 +15,8 @@ cli_nemo_tidy(
   dbdrv = NULL,
   dbname = NULL,
   dbuser = NULL,
+  dbhost = NULL,
+  dbport = NULL,
   include = NULL,
   exclude = NULL
 )
@@ -46,6 +48,14 @@ If \code{TRUE}, prepend an \code{input_prefix} column to each tidy table.}
 
 \item{dbuser}{(\code{character(1)} or \code{NULL})\cr Database user. Required when
 \code{out_format} is \code{"db"}.}
+
+\item{dbhost}{(\code{character(1)} or \code{NULL})\cr Database host. \code{NULL} leaves it
+to the driver default (e.g. the \code{PGHOST} env var for \code{RPostgres}).}
+
+\item{dbport}{(\code{integer(1)} or \code{NULL})\cr Database port. \code{NULL} leaves it
+to the driver default (e.g. the \code{PGPORT} env var for \code{RPostgres}).
+Password is never taken as an argument: use the driver's env var or
+password file (e.g. \code{PGPASSWORD}, \verb{~/.pgpass}).}
 
 \item{include}{(\code{character(n)} or \code{NULL})\cr Tool parser names to include.
 \code{NULL} includes all.}

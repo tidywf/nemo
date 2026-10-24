@@ -4,7 +4,7 @@ channels:
   - tidywf
   - conda-forge
 dependencies:
-  - r-nemo ==0.1.0 # bump
+  - r-nemo ==0.1.0.9008 # bump
   - r-pkgdown
   - r-quarto
   - quarto
@@ -12,4 +12,5 @@ dependencies:
   - r-r6toplant
   - plantuml
   - r-htmltools
+  - r-htmlwidgets
   - r-reactable

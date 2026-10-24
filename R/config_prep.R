@@ -88,7 +88,7 @@ config_prep_raw_schema <- function(path, v = "latest", ...) {
 #' expect_equal(col1[["raw"]], "SampleID")
 #' expect_equal(col1[["tidy"]], "sample_id")
 #' @export
-config_prep_raw <- function(path, name, descr, pat, type = "txt", v = "latest", ...) {
+config_prep_raw <- function(path, name, descr, pat, type = "tsv", v = "latest", ...) {
   schema <- config_prep_raw_schema(path = path, v = v, ...)
   columns <- purrr::pmap(schema, list)
   entry <- list(description = descr, pattern = pat, ftype = type, columns = columns)
@@ -110,7 +110,7 @@ config_prep_raw <- function(path, name, descr, pat, type = "txt", v = "latest", 
 #'   name = c("table1", "table2"),
 #'   descr = c("Table1 from Tool1.", "Table2 from Tool1."),
 #'   pat = c("\\.tool1\\.table1\\.tsv$", "\\.tool1\\.table2\\.tsv$"),
-#'   type = c("txt", "txt"),
+#'   type = c("tsv", "tsv"),
 #'   path = c(path1, path2)
 #' )
 #' config <- config_prep_multi(x)
@@ -159,7 +159,7 @@ config_prep_multi <- function(x) {
 #'   name = c("table1", "table2"),
 #'   descr = c("Table1 from Tool1.", "Table2 from Tool1."),
 #'   pat = c("\\.tool1\\.table1\\.tsv$", "\\.tool1\\.table2\\.tsv$"),
-#'   type = c("txt", "txt"),
+#'   type = c("tsv", "tsv"),
 #'   path = c(path1, path2)
 #' )
 #' config <- config_prep_multi(x)

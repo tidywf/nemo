@@ -4,10 +4,15 @@
 \alias{reactable_schema}
 \title{Render a reactable schema table}
 \usage{
-reactable_schema(dat, ...)
+reactable_schema(dat, tool_colours = NULL, ...)
 }
 \arguments{
-\item{dat}{data frame as produced by \code{\link[=nemo_schema_reactable]{nemo_schema_reactable()}} internals.}
+\item{dat}{data frame as produced by \code{\link[=nemo_schemavis_data]{nemo_schemavis_data()}}.}
+
+\item{tool_colours}{named character vector of CSS colours, keyed by tool
+name, used for the tool pills (child packages supply their own, e.g.
+\code{tidywigits::WIGITS_TOOL_COLOURS}). Tools not listed, or all tools when
+\code{NULL}, fall back to grey.}
 
 \item{...}{additional arguments passed to \code{\link[reactable:reactable]{reactable::reactable()}}.}
 }
@@ -15,17 +20,23 @@ reactable_schema(dat, ...)
 An htmlwidget.
 }
 \description{
-Renders an interactive \code{\link[reactable:reactable]{reactable::reactable()}} displaying per-table schemas
-with expandable version buttons. The input data frame must contain columns
-\code{n}, \code{tool}, \code{tbl}, \code{description}, \code{row_id}, and a nested list-column
-\code{schema_version} (with sub-columns \code{version} and \code{schema}).
+Renders an interactive \code{\link[reactable:reactable]{reactable::reactable()}} with one row per table.
+Global search also matches ftypes and raw/tidy column names (via hidden
+searchable columns). Click a row to expand it and see the table's ftype and
+its columns, with one column per schema version marking where each column
+is present.
+
+The widget carries its own CSS: on a pkgdown/Quarto page it hides the
+sidebar and breaks out of the content column to (almost) the full viewport
+width, so child packages get the same layout without extra SCSS.
 
 This is a low-level function; most callers should use \code{\link[=nemo_schema_reactable]{nemo_schema_reactable()}}
 instead.
 }
 \examples{
 \dontrun{
-d <- nemo_schemavis_data("tool1", pkg = "nemo")
-reactable_schema(d)
+dat <- nemo_schemavis_data("tool1", pkg = "nemo")
+reactable_schema(dat)
+reactable_schema(dat, tool_colours = c(tool1 = "tomato"))
 }
 }

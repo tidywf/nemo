@@ -18,3 +18,6 @@ passed as \code{x}.}
 \description{
 Stops with an informative message if \code{x} is not a single non-NA character string.
 }
+\examples{
+nemo_assert_scalar_chr("foo")
+}

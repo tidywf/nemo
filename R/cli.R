@@ -27,6 +27,7 @@ nemo_cli <- function(pkg, descr, wf = NULL) {
   subp <- p$add_subparsers(help = "sub-command help", dest = subparser_name)
   cli_tidy_add_args(subp, wf = wf)
   cli_list_add_args(subp, wf = wf)
+  cli_sync_add_args(subp, wf = wf)
   args <- p$parse_args()
 
   if (length(args$subparser_name) == 0) {
@@ -35,6 +36,8 @@ nemo_cli <- function(pkg, descr, wf = NULL) {
     cli_tidy_parse_args(args, wf)
   } else if (args$subparser_name == "list") {
     cli_list_parse_args(args, wf)
+  } else if (args$subparser_name == "sync") {
+    cli_sync_parse_args(args, wf)
   } else {
     nemo_stop(glue("Unknown subcommand: '{args$subparser_name}'."))
   }

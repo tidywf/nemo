@@ -1,6 +1,6 @@
-Using {remotes} directly from GitHub:
+From GitHub:
 
-```{r}
+````{r}
 #| label: installation-r
 #| results: asis
 #| echo: false
@@ -14,5 +14,4 @@ glue(
   ",
   "```"
 )
-```
-
+````

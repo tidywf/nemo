@@ -7,20 +7,40 @@
 #' @param max_files (`integer(1)`)\cr
 #' Max files returned.
 #' @param type (`character(n)`)\cr
-#' File type(s) to return (e.g. any, file, directory, symlink). See `fs::dir_info`.
+#' File type(s) to return (e.g. any, file, directory). See `fs::dir_info`.
+#' Symlinks are followed and classified by their target, so a symlink to a
+#' file counts as a `file` (with the target's size and modification time);
+#' broken symlinks are dropped.
 #'
 #' @return A tibble with file basename, size, last modification timestamp
 #' and full path.
 #' @examples
 #' d <- system.file("R", package = "nemo")
 #' x <- list_files_dir(d)
+#' # symlinked files are included
+#' d2 <- fs::dir_create(tempfile())
+#' f <- fs::file_create(file.path(d2, "real.tsv"))
+#' fs::link_create(f, file.path(d2, "link.tsv"))
+#' x2 <- list_files_dir(d2)
 #' @testexamples
 #' expect_equal(names(x), c("bname", "size", "lastmodified", "path"))
+#' expect_setequal(x2$bname, c("real.tsv", "link.tsv"))
 #' @export
 list_files_dir <- function(path, max_files = NULL, type = "file") {
-  d <- fs::dir_info(path = path, recurse = TRUE, type = type) |>
+  # normalise the roots, not each file: that would resolve symlinks to their
+  # targets and replace the basename we match patterns against
+  paths <- fs::dir_ls(path = normalizePath(path), recurse = TRUE, type = "any")
+  d <- fs::file_info(paths, follow = TRUE)
+  # follow = TRUE also rewrites `path` to the target; keep the link's path
+  d$path <- paths
+  if (!"any" %in% type) {
+    keep <- type
+    # NA type = broken symlink
+    d <- dplyr::filter(d, !is.na(.data$type), .data$type %in% keep)
+  }
+  d <- d |>
     dplyr::mutate(
-      path = normalizePath(.data$path),
+      path = as.character(.data$path),
       bname = basename(.data$path),
       lastmodified = .data$modification_time
     ) |>
@@ -30,6 +50,40 @@ list_files_dir <- function(path, max_files = NULL, type = "file") {
       dplyr::slice_head(n = max_files)
   }
   d
+}
+
+#' Make Prefixes Unique
+#'
+#' Keeps the first of each repeated prefix and appends `_2`, `_3`, ... to the
+#' rest, skipping any candidate already in use, so a generated name never
+#' collides with another prefix in `x`.
+#'
+#' @param x (`character(n)`)\cr
+#' Prefixes, in the order that decides which one keeps its name.
+#' @return (`character(n)`)\cr
+#' Unique prefixes.
+#' @keywords internal
+#' @examples
+#' (u1 <- uniquify_prefixes(c("a", "a", "b", "a")))
+#' # the second "s1" would naively become "s1_2", which is already taken
+#' (u2 <- uniquify_prefixes(c("s1", "s1", "s1_2")))
+#' @testexamples
+#' expect_equal(u1, c("a", "a_2", "b", "a_3"))
+#' expect_equal(u2, c("s1", "s1_3", "s1_2"))
+#' expect_equal(uniquify_prefixes(character()), character())
+uniquify_prefixes <- function(x) {
+  out <- x
+  dup <- duplicated(x)
+  taken <- unique(x)
+  for (i in which(dup)) {
+    k <- 2L
+    while (paste0(x[i], "_", k) %in% taken) {
+      k <- k + 1L
+    }
+    out[i] <- paste0(x[i], "_", k)
+    taken <- c(taken, out[i])
+  }
+  out
 }
 
 #' Get Table Version Attribute
@@ -110,14 +164,16 @@ nemo_enframe <- function(x) {
 
 #' Get Python Binary
 #'
-#' Get the path to the Python binary in the system PATH.
+#' Get the path to the Python binary in the system PATH, preferring `python3`
+#' (many systems, e.g. macOS and Debian, ship no bare `python`).
 #' @keywords internal
 get_python <- function() {
-  py <- Sys.which("python")
-  if (!nzchar(py)) {
-    nemo_stop("Cannot find Python in PATH.")
+  py <- Sys.which(c("python3", "python"))
+  py <- unname(py[nzchar(py)])
+  if (length(py) == 0) {
+    nemo_stop("Cannot find python3 or python in PATH.")
   }
-  py
+  py[[1]]
 }
 
 #' Nemoverse Workflow Dispatcher
@@ -127,19 +183,17 @@ get_python <- function() {
 #' @param wf Workflow name.
 #' @return The nemo workflow class to initiate.
 #' @examples
-#' wf <- "basemean"
-#' (fun <- nemoverse_wf_dispatch(wf))
+#' (fun <- nemoverse_wf_dispatch("workflow1"))
 #' @testexamples
-#' expect_equal(fun, base::mean)
+#' expect_identical(fun, Workflow1)
 #' expect_error(nemoverse_wf_dispatch("foo"))
 #' @export
 nemoverse_wf_dispatch <- function(wf) {
   nemo_assert_not_null(wf)
   wfs <- list(
     wigits = list(pkg = "tidywigits", wf = "Wigits", repo = "https://github.com/tidywf/tidywigits"),
-    workflow1 = list(pkg = "nemo", wf = "Workflow1", repo = "https://github.com/tidywf/nemo"),
-    # basemean is a test/example entry only — not a real workflow
-    basemean = list(pkg = "base", wf = "mean", repo = "CRAN")
+    dragen = list(pkg = "tidydragen", wf = "Dragen", repo = "https://github.com/tidywf/tidydragen"),
+    workflow1 = list(pkg = "nemo", wf = "Workflow1", repo = "https://github.com/tidywf/nemo")
   )
   all_wfs <- names(wfs)
   if (!wf %in% all_wfs) {
@@ -152,6 +206,51 @@ nemoverse_wf_dispatch <- function(wf) {
     nemo_stop(glue("Package {x[['pkg']]} not found, please install from {x[['repo']]}"))
   }
   getExportedValue(x[["pkg"]], x[["wf"]])
+}
+
+#' Read Parquet File Matched By Pattern
+#'
+#' Test helper: reads the single parquet file in `odir` whose basename (from
+#' `lf`) matches `pattern`. Errors on zero or multiple matches unless
+#' `first = TRUE`.
+#'
+#' @param odir (`character(1)`)\cr
+#' Directory the files live in.
+#' @param lf (`character(n)`)\cr
+#' Basenames to match `pattern` against.
+#' @param pattern (`character(1)`)\cr
+#' Regex passed to `grep()`.
+#' @param first (`logical(1)`)\cr
+#' If `pattern` matches more than one file, read the first match instead of
+#' erroring.
+#'
+#' @return (`tibble`) Parsed parquet file.
+#' @examples
+#' odir <- fs::dir_create(tempfile())
+#' arrow::write_parquet(data.frame(x = 1L), file.path(odir, "a_1.parquet"))
+#' arrow::write_parquet(data.frame(x = 2L), file.path(odir, "a_2.parquet"))
+#' lf <- list.files(odir)
+#' (x <- read_parquet_grep(odir, lf, "a_1"))
+#' (y <- read_parquet_grep(odir, lf, "^a_", first = TRUE))
+#' @testexamples
+#' expect_equal(x$x, 1L)
+#' expect_equal(y$x, 1L)
+#' expect_error(read_parquet_grep(odir, lf, "^a_"), "2 files match")
+#' expect_error(read_parquet_grep(odir, lf, "nomatch"), "No file matches")
+#' expect_error(read_parquet_grep(odir, lf, "nomatch", first = TRUE), "No file matches")
+#' @export
+read_parquet_grep <- function(odir, lf, pattern, first = FALSE) {
+  m <- grep(pattern, lf, value = TRUE)
+  if (length(m) == 0) {
+    nemo_stop(glue("No file matches '{pattern}'."))
+  }
+  if (length(m) > 1 && !first) {
+    nemo_stop(glue(
+      "{length(m)} files match '{pattern}': {glue::glue_collapse(m, sep = ', ')}. ",
+      "Tighten the pattern or set first = TRUE."
+    ))
+  }
+  arrow::read_parquet(file.path(odir, m[1]))
 }
 
 #' Check if Package is Installed

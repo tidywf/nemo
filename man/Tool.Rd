@@ -4,22 +4,11 @@
 \alias{Tool}
 \title{Tool Object}
 \description{
-Base R6 class for all nemo tools. Subclasses implement parsers for specific
-bioinformatic tool outputs by optionally overriding \verb{parse_\{table_name\}()} and
-\verb{tidy_\{table_name\}()} methods for custom parse or tidy logic per table.
+Base R6 class for all nemo tools. Subclasses override \verb{parse_\{table_name\}()}
+and \verb{tidy_\{table_name\}()} for tables needing custom logic.
 
-A Tool object:
-\itemize{
-\item has a name (\code{name});
-\item has a path to a directory with its outputs (\code{path});
-\item has a schema configuration \code{Config} object (\code{config});
-\item exposes matched files via \code{list_files()};
-\item exposes parsed and tidied tables via \code{get_tbls()};
-}
-
-The typical workflow is: optionally filter files with \code{filter_files()}, parse
-and tidy with \code{tidy()}, then write outputs with \code{write()}. \code{run()} chains
-all three steps.
+Typical use: \code{filter_files()} (optional), \code{tidy()}, \code{write()}; \code{run()} chains
+all three.
 }
 \examples{
 fs::path(tempdir(), letters[1:5]) |>
@@ -29,14 +18,15 @@ name <- "tool1"; pkg <- "nemo";
 path <- system.file("extdata/tool1", package = "nemo")
 toolA <- Tool$new(name = name, pkg = pkg, path = path)
 toolA$list_files()
-toolA$filter_files(exclude = "tool1_table3"); toolA$list_files() # note the exclusion this time
+toolA$filter_files(exclude = "tool1_table3")
+toolA$list_files() # note the exclusion this time
 
 toolB <- Tool$new(name = name, pkg = pkg, path = path)$
   filter_files(include = "tool1_table1")
 toolB$list_files()
 # tidy + write
 toolC <- Tool$new(name = name, pkg = pkg, path = path)$
-  filter_files(exclude = "tool1_table5")$
+  filter_files(exclude = "tool1_table6")$
   tidy()
 toolC$list_files()
 toolC$get_tbls() # note the tidy column
@@ -46,7 +36,7 @@ toolC$write(output_dir = dir1, format = "parquet", input_id = "run1")
 
 # run
 toolD <- Tool$new(name = name, pkg = pkg, path = path)$
-  filter_files(exclude = "tool1_table5")$
+  filter_files(exclude = "tool1_table6")$
   run(output_dir = dir2, format = "parquet", input_id = "run2")
 (lfD <- list.files(dir2, full.names = TRUE))
 
@@ -78,6 +68,7 @@ Tibble of files written from \code{self$write()}.}
 \item \href{#method-Tool-new}{\code{Tool$new()}}
 \item \href{#method-Tool-print}{\code{Tool$print()}}
 \item \href{#method-Tool-list_files}{\code{Tool$list_files()}}
+\item \href{#method-Tool-get_globs}{\code{Tool$get_globs()}}
 \item \href{#method-Tool-get_tbls}{\code{Tool$get_tbls()}}
 \item \href{#method-Tool-filter_files}{\code{Tool$filter_files()}}
 \item \href{#method-Tool-tidy}{\code{Tool$tidy()}}
@@ -154,6 +145,20 @@ never \code{NULL}.
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Tool-get_globs"></a>}}
+\if{latex}{\out{\hypertarget{method-Tool-get_globs}{}}}
+\subsection{Method \code{get_globs()}}{
+Get this tool's S3 sync globs.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Tool$get_globs()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+(\code{tibble()})\cr
+\code{tool}, table \code{name} and its \code{glob}.
+}
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Tool-get_tbls"></a>}}
 \if{latex}{\out{\hypertarget{method-Tool-get_tbls}{}}}
 \subsection{Method \code{get_tbls()}}{
@@ -164,9 +169,9 @@ Get tidy tibbles after parsing and tidying.
 
 \subsection{Returns}{
 (\code{tibble()} or \code{NULL})\cr
-The \code{tbls} tibble, or \code{NULL} if \code{tidy()} has not been called or if
-\code{tidy()} found no matching files. When \code{tidy(keep_raw = TRUE)} was used,
-the tibble also contains a \code{raw} list-column of the unparsed tibbles.
+The \code{tbls} tibble (with a \code{raw} list-column after \code{tidy(keep_raw = TRUE)}),
+or \code{NULL} if \code{tidy()} wasn't called, matched no files, or \code{run()} was used
+(it streams and keeps nothing).
 }
 }
 \if{html}{\out{<hr>}}
@@ -256,9 +261,8 @@ If \code{TRUE}, prepend an \code{input_prefix} column to each tidy table.}
 Database connection object (see \code{DBI::dbConnect}).}
 
 \item{\code{write_metadata}}{(\code{logical(1)})\cr
-If \code{TRUE} (default), write a \verb{metadata_<tool>.parquet} file alongside
-the tidy outputs. Set to \code{FALSE} when a \code{Workflow} is orchestrating the
-write and will emit its own workflow-level metadata instead.}
+If \code{TRUE}, write a \verb{metadata_<tool>.parquet} file. \code{Workflow}
+sets \code{FALSE} and writes its own.}
 }
 \if{html}{\out{</div>}}
 }
@@ -304,7 +308,9 @@ Single-row tibble with columns \code{input_id}, \code{output_id}, \code{input_di
 \if{html}{\out{<a id="method-Tool-run"></a>}}
 \if{latex}{\out{\hypertarget{method-Tool-run}{}}}
 \subsection{Method \code{run()}}{
-Filter, tidy, and write files in one step.
+Filter, tidy, and write files in one step. A no-op if
+already written; if already tidied, writes the in-memory tables via
+\code{write()} instead of re-parsing.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Tool$run(
   output_dir = ".",
@@ -341,14 +347,13 @@ If \code{TRUE}, prepend an \code{input_prefix} column to each tidy table.}
 Database connection object (see \code{DBI::dbConnect}).}
 
 \item{\code{write_metadata}}{(\code{logical(1)})\cr
-If \code{TRUE} (default), write a \verb{metadata_<tool>.parquet} file alongside
-the tidy outputs. Set to \code{FALSE} to suppress.}
+If \code{TRUE}, write a \verb{metadata_<tool>.parquet} file.}
 
 \item{\code{include}}{(\code{character(n)})\cr
 tool_parser names to include (e.g. \code{"tool1_table1"}).}
 
 \item{\code{exclude}}{(\code{character(n)})\cr
-tool_parser names to exclude (e.g. \code{"tool1_table5"}).}
+tool_parser names to exclude (e.g. \code{"tool1_table6"}).}
 }
 \if{html}{\out{</div>}}
 }

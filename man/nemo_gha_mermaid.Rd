@@ -4,38 +4,81 @@
 \alias{nemo_gha_mermaid}
 \title{Generate a Mermaid GitHub Actions flowchart}
 \usage{
-nemo_gha_mermaid(actions_url, deploy_yaml)
+nemo_gha_mermaid(
+  wf_dir,
+  workflows = c("bump.yaml", "deploy.yaml"),
+  actions_dir = NULL,
+  skip = c("app token", "codeout", "miniforge setup", "qemu setup", "buildx setup",
+    "cr login")
+)
 }
 \arguments{
-\item{actions_url}{(\code{character(1)})\cr
-Base URL for raw reusable workflow YAML files in the tidywf/actions repo (see
-example).}
+\item{wf_dir}{(\code{character(1)})\cr
+Path to the repo's \code{.github/workflows} directory.}
 
-\item{deploy_yaml}{(\code{character(1)})\cr
-Path to the \code{.github/workflows/deploy.yaml} file.}
+\item{workflows}{(\code{character()})\cr
+Workflow file names under \code{wf_dir}, in pipeline order. Consecutive workflows
+are linked (e.g. bump pushes the tag that triggers deploy).}
+
+\item{actions_dir}{(\code{character(1)})\cr
+Optional local directory holding the reusable workflow files. When \code{NULL}
+(default) they're fetched from \code{raw.githubusercontent.com} at the ref pinned
+in each \verb{uses:}.}
+
+\item{skip}{(\code{character()})\cr
+Case-insensitive regex patterns; matching step names are left out (setup
+boilerplate repeated across jobs).}
 }
 \value{
 A character string containing the Mermaid diagram.
 }
 \description{
-Reads the local \code{deploy.yaml} GHA file and fetches reusable GHA files from
-the tidywf/actions repo to build a Mermaid flowchart of the full CI/CD pipeline.
+Builds a Mermaid flowchart of a repo's CI/CD pipeline from its local GHA
+workflow files, laid out top to bottom. Each workflow is a subgraph headed by
+its trigger, each job a single node listing its steps, and job edges follow
+\verb{needs:} (with redundant transitive edges removed). Jobs calling a reusable workflow (\verb{uses:}) have
+its steps fetched from the pinned \verb{@ref}. Simple step conditions of the form
+\code{inputs.x}, \code{!inputs.x} or \code{inputs.x == true|false} are evaluated against the
+caller's \verb{with:} and the reusable workflow's input defaults: steps that won't
+run are dropped, steps whose condition can't be decided are marked \verb{(if)}.
 }
 \examples{
 # Real usage (requires network):
-# repo <- "https://raw.githubusercontent.com/tidywf/actions/"
-# actions_url <- paste0(repo, "refs/heads/main/.github/workflows")
-# nemo_gha_mermaid(actions_url, here::here(".github/workflows/deploy.yaml"))
-d <- tempfile() |> fs::dir_create()
-bump_wf <- list(jobs = list(bump = list(steps = list(
-  list(name = "Setup"), list(name = "Bump version")
-))))
-job_wf <- list(jobs = list(deploy = list(steps = list(list(name = "Run deploy")))))
-deploy_wf <- list(jobs = list(
-  myjob = list(name = "My Job", uses = "org/repo/.github/workflows/myjob.yaml@main")
-))
-yaml::write_yaml(bump_wf, file.path(d, "bump.yaml"))
-yaml::write_yaml(job_wf, file.path(d, "myjob.yaml"))
-yaml::write_yaml(deploy_wf, file.path(d, "deploy.yaml"))
-diagram <- nemo_gha_mermaid(actions_url = d, deploy_yaml = file.path(d, "deploy.yaml"))
+# nemo_gha_mermaid(here::here(".github/workflows"))
+wf <- tempfile() |> fs::dir_create()
+act <- tempfile() |> fs::dir_create()
+ru <- function(f) paste0("org/actions/.github/workflows/", f, "@v1")
+yaml::write_yaml(
+  list(name = "Bump", on = list(workflow_dispatch = NULL), jobs = list(
+    bump = list(uses = ru("bump.yaml"))
+  )),
+  file.path(wf, "bump.yaml")
+)
+yaml::write_yaml(
+  list(name = "Deploy", on = list(push = list(tags = "v*")), jobs = list(
+    prep = list(name = "Version", steps = list(list(run = "echo"))),
+    build = list(name = "Build", needs = "prep", uses = ru("build.yaml")),
+    docs = list(
+      name = "Docs", needs = c("prep", "build"),
+      uses = ru("docs.yaml"), with = list(extra = FALSE)
+    ),
+    img = list(name = "Image", needs = c("prep", "build"), uses = ru("img.yaml"))
+  )),
+  file.path(wf, "deploy.yaml")
+)
+steps <- function(...) list(jobs = list(j = list(steps = list(...))))
+yaml::write_yaml(
+  steps(list(name = "Codeout"), list(name = "Bump version"), list(name = "Push tag")),
+  file.path(act, "bump.yaml")
+)
+yaml::write_yaml(steps(list(name = "Build pkg")), file.path(act, "build.yaml"))
+yaml::write_yaml(steps(list(name = "Build image")), file.path(act, "img.yaml"))
+docs <- steps(
+  list(name = "Extra step", `if` = "inputs.extra == true"),
+  list(name = "Maybe step", `if` = "github.event_name == 'push'"),
+  list(name = "Build site")
+)
+docs$on <- list(workflow_call = list(inputs = list(extra = list(default = TRUE))))
+yaml::write_yaml(docs, file.path(act, "docs.yaml"))
+diagram <- nemo_gha_mermaid(wf, actions_dir = act)
 }

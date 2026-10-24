@@ -14,5 +14,10 @@ nemo_log(level, msg, ...)
 \item{...}{Values to format into the message. See \link{sprintf} for details.}
 }
 \description{
-Log a message with a specified level
+Controlled by env vars \code{NEMO_LOG_ENABLE} (\code{"FALSE"} disables) and
+\code{NEMO_LOG_LEVEL} (\code{DEBUG}, \code{INFO} (default), \code{WARN}, \code{ERROR}, \code{FATAL};
+case-insensitive), both read at call time.
+}
+\examples{
+nemo_log("INFO", "Tidying \%s", "dir1")
 }

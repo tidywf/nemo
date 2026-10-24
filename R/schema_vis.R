@@ -1,223 +1,448 @@
 #' Render a reactable schema table
 #'
 #' @description
-#' Renders an interactive [reactable::reactable()] displaying per-table schemas
-#' with expandable version buttons. The input data frame must contain columns
-#' `n`, `tool`, `tbl`, `description`, `row_id`, and a nested list-column
-#' `schema_version` (with sub-columns `version` and `schema`).
+#' Renders an interactive [reactable::reactable()] with one row per table.
+#' Global search also matches ftypes and raw/tidy column names (via hidden
+#' searchable columns). Click a row to expand it and see the table's ftype and
+#' its columns, with one column per schema version marking where each column
+#' is present.
+#'
+#' The widget carries its own CSS: on a pkgdown/Quarto page it hides the
+#' sidebar and breaks out of the content column to (almost) the full viewport
+#' width, so child packages get the same layout without extra SCSS.
 #'
 #' This is a low-level function; most callers should use [nemo_schema_reactable()]
 #' instead.
 #'
-#' @param dat data frame as produced by [nemo_schema_reactable()] internals.
+#' @param dat data frame as produced by [nemo_schemavis_data()].
+#' @param tool_colours named character vector of CSS colours, keyed by tool
+#'   name, used for the tool pills (child packages supply their own, e.g.
+#'   `tidywigits::WIGITS_TOOL_COLOURS`). Tools not listed, or all tools when
+#'   `NULL`, fall back to grey.
 #' @param ... additional arguments passed to [reactable::reactable()].
 #' @return An htmlwidget.
 #' @examples
 #' \dontrun{
-#' d <- nemo_schemavis_data("tool1", pkg = "nemo")
-#' reactable_schema(d)
+#' dat <- nemo_schemavis_data("tool1", pkg = "nemo")
+#' reactable_schema(dat)
+#' reactable_schema(dat, tool_colours = c(tool1 = "tomato"))
 #' }
 #' @export
-reactable_schema <- function(dat, ...) {
-  rlang::check_installed(c("reactable", "htmltools"))
-  js_code <- "
-  function toggleSchema(rowId, versionIndex) {
-    var schemaId = 'schema_' + rowId + '_' + versionIndex;
-    var buttonId = 'btn_' + rowId + '_' + versionIndex;
-    var schemaDiv = document.getElementById(schemaId);
-    var button = document.getElementById(buttonId);
-
-    if (schemaDiv && button) {
-      if (schemaDiv.style.display === 'none' || schemaDiv.style.display === '') {
-        schemaDiv.style.display = 'block';
-        button.style.backgroundColor = '#1565c0';
-        button.style.color = 'white';
-        button.style.borderColor = '#0d47a1';
-        button.style.transform = 'scale(0.98)';
-      } else {
-        schemaDiv.style.display = 'none';
-        button.style.backgroundColor = '#e3f2fd';
-        button.style.color = '#1565c0';
-        button.style.borderColor = '#90caf9';
-        button.style.transform = 'scale(1)';
-      }
-    }
+reactable_schema <- function(dat, tool_colours = NULL, ...) {
+  rlang::check_installed(c("reactable", "htmltools", "htmlwidgets"))
+  colDef <- reactable::colDef
+  cols <- c(
+    "tool",
+    "tbl",
+    "description",
+    "glob",
+    "n_cols",
+    "version_str",
+    "ftype",
+    "col_names"
+  )
+  tools <- unique(dat$tool)
+  if (is.null(tool_colours)) {
+    tool_colours <- character()
   }
-  "
-
-  htmltools::tags$div(
-    htmltools::tags$script(htmltools::HTML(js_code)),
-    reactable::reactable(
-      dat,
-      sortable = TRUE,
-      searchable = TRUE,
-      pagination = FALSE,
-      filterable = TRUE,
-      striped = TRUE,
-      highlight = TRUE,
-      bordered = TRUE,
-      theme = reactable::reactableTheme(
-        borderColor = "#dfe2e5",
-        stripedColor = "#f8f9fa",
-        highlightColor = "#f0f5ff",
-        cellPadding = "12px 15px"
+  tool_cols <- rlang::set_names(as.character(tool_colours[tools]), tools)
+  tool_cols[is.na(tool_cols)] <- "#868e96"
+  w <- reactable::reactable(
+    dplyr::select(dat, dplyr::all_of(cols)) |>
+      dplyr::mutate(row = seq_len(dplyr::n()), .before = 1),
+    class = "nemo-schema",
+    searchable = TRUE,
+    filterable = TRUE,
+    pagination = FALSE,
+    highlight = TRUE,
+    striped = TRUE,
+    onClick = "expand",
+    rowStyle = list(cursor = "pointer"),
+    # inherit page colours so it works in light and dark themes
+    theme = reactable::reactableTheme(
+      color = "inherit",
+      backgroundColor = "transparent",
+      borderColor = "rgba(127, 127, 127, 0.25)",
+      stripedColor = "rgba(127, 127, 127, 0.06)",
+      highlightColor = "rgba(52, 89, 230, 0.10)",
+      headerStyle = list(
+        backgroundColor = "rgba(52, 89, 230, 0.10)",
+        borderBottom = "2px solid rgba(52, 89, 230, 0.6)"
       ),
-      columns = list(
-        n = reactable::colDef(maxWidth = 70),
-        row_id = reactable::colDef(show = FALSE),
-        schema_version = reactable::colDef(
-          minWidth = 130,
-          name = "schema",
-          html = TRUE,
-          cell = function(value, index) {
-            row_id <- dat$row_id[[index]]
-            versions <- value$version
-
-            version_buttons <- purrr::map_chr(
-              seq_along(versions),
-              function(i) {
-                v <- versions[[i]]
-                button_id <- glue("btn_{row_id}_{i - 1}")
-                paste0(
-                  glue('<button id="{button_id}" onclick="toggleSchema({row_id}, {i - 1})" '),
-                  'style="',
-                  'background-color: #e3f2fd; ',
-                  'border: 1px solid #90caf9; ',
-                  'border-radius: 16px; ',
-                  'padding: 6px 14px; ',
-                  'margin: 3px; ',
-                  'font-size: 12px; ',
-                  'cursor: pointer; ',
-                  'color: #1565c0; ',
-                  'font-weight: 500; ',
-                  'transition: all 0.2s ease;',
-                  'user-select: none;',
-                  '" onmouseover="if(this.style.backgroundColor !== \'rgb(21, 101, 192)\') this.style.backgroundColor=\'#bbdefb\'" ',
-                  'onmouseout="if(this.style.backgroundColor !== \'rgb(21, 101, 192)\') this.style.backgroundColor=\'#e3f2fd\'">',
-                  v,
-                  '</button>'
-                )
-              }
-            )
-
-            schema_divs <- purrr::map_chr(seq_along(versions), function(i) {
-              schema_data <- value$schema[[i]]
-              schema_id <- glue("schema_{row_id}_{i - 1}")
-
-              if (is.data.frame(schema_data)) {
-                schema_html <- paste0(
-                  '<div style="margin-top: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 6px; background-color: #fafafa;">',
-                  '<div style="font-weight: 600; margin-bottom: 8px; color: #333;">Version: ',
-                  versions[[i]],
-                  '</div>',
-                  '<div style="font-size: 12px; color: #666; margin-bottom: 10px;">',
-                  nrow(schema_data),
-                  ' rows \u00d7 ',
-                  ncol(schema_data),
-                  ' columns</div>',
-                  '<div style="overflow-x: auto; max-height: 300px;">',
-                  '<table style="width: 100%; border-collapse: collapse; font-size: 12px;">',
-                  '<thead>',
-                  paste0(
-                    '<th style="border: 1px solid #ddd; padding: 6px; background-color: #f5f5f5; text-align: left;">',
-                    names(schema_data),
-                    '</th>',
-                    collapse = ""
-                  ),
-                  '</thead>',
-                  '<tbody>',
-                  paste(
-                    vapply(
-                      seq_len(nrow(schema_data)),
-                      function(r) {
-                        cells <- as.character(unlist(schema_data[r, ]))
-                        paste0(
-                          '<tr>',
-                          paste0(
-                            '<td style="border: 1px solid #ddd; padding: 6px;">',
-                            cells,
-                            '</td>',
-                            collapse = ""
-                          ),
-                          '</tr>'
-                        )
-                      },
-                      character(1)
-                    ),
-                    collapse = ""
-                  ),
-                  '</tbody>',
-                  '</table>',
-                  '</div>',
-                  '</div>'
-                )
-              } else {
-                schema_html <- paste0(
-                  '<div style="margin-top: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">',
-                  '<div style="font-weight: 600; margin-bottom: 8px;">Version: ',
-                  versions[[i]],
-                  '</div>',
-                  '<div style="color: #999; font-style: italic;">No schema available</div>',
-                  '</div>'
-                )
-              }
-              glue('<div id="{schema_id}" style="display: none;">{schema_html}</div>')
-            })
-
-            htmltools::HTML(
-              paste0(
-                '<div>',
-                paste(version_buttons, collapse = ""),
-                paste(schema_divs, collapse = ""),
-                '</div>'
-              )
-            )
+      inputStyle = list(backgroundColor = "transparent", color = "inherit")
+    ),
+    details = function(i) {
+      schema_columns_detail(dat$columns[[i]], dat$versions[[i]], dat$ftype[[i]], dat$parent[[i]])
+    },
+    columns = list(
+      .details = colDef(name = "", width = 36),
+      row = schema_row_col(),
+      tool = colDef(
+        name = "Tool",
+        width = schema_col_width(tools, extra = 40),
+        cell = function(value) {
+          schema_pill(value, colour = tool_cols[[value]], weight = 500)
+        }
+      ),
+      tbl = colDef(
+        name = "Table",
+        width = schema_col_width(dat$tbl, extra = 24),
+        style = list(fontWeight = 600, fontFamily = schema_mono())
+      ),
+      description = colDef(name = "Description", minWidth = 260),
+      glob = colDef(
+        name = "Glob",
+        minWidth = 200,
+        cell = function(value, index) {
+          parent <- dat$parent[[index]]
+          if (is.na(parent)) {
+            return(htmltools::code(value))
           }
-        )
+          # outputs are synced via their file table's glob
+          htmltools::span(
+            style = "opacity: 0.6;",
+            glue::glue("\u2014 (child of {parent})")
+          )
+        }
       ),
-      ...
+      n_cols = colDef(
+        name = "Cols (latest)",
+        maxWidth = 100,
+        align = "right",
+        filterable = FALSE
+      ),
+      version_str = colDef(
+        name = "Versions",
+        minWidth = 140,
+        cell = function(value) {
+          vs <- strsplit(value, ", ", fixed = TRUE)[[1]]
+          htmltools::tagList(purrr::map(vs, schema_version_pill))
+        }
+      ),
+      # shown in the expanded row; hidden here to keep the table narrow
+      ftype = colDef(show = FALSE, searchable = TRUE),
+      col_names = colDef(show = FALSE, searchable = TRUE)
+    ),
+    ...
+  )
+  htmlwidgets::prependContent(w, htmltools::tags$style(schema_css()))
+}
+
+#' Column-level detail for one schema table
+#'
+#' @description
+#' Internal helper for [reactable_schema()]: ftype line plus a nested reactable
+#' of the table's columns, with one `●` presence column per schema version.
+#'
+#' @param x tibble of columns (`raw`, `tidy`, `type`, `description`, and
+#'   list-column `versions`).
+#' @param versions character vector of sorted schema versions for the table.
+#' @param ftype ftype string for the table.
+#' @return An htmltools tag.
+#' @keywords internal
+schema_columns_detail <- function(x, versions, ftype, parent = NA_character_) {
+  colDef <- reactable::colDef
+  if (nrow(x) == 0) {
+    return(htmltools::div(
+      style = "padding: 8px 16px 16px 40px; font-size: 0.9em;",
+      htmltools::strong("ftype: "),
+      htmltools::code(ftype),
+      " \u00b7 parsed by its own parser; its columns are on its output tables (\"output of\" this table)."
+    ))
+  }
+  pres <- purrr::map(versions, \(v) {
+    ifelse(purrr::map_lgl(x[["versions"]], \(vs) v %in% vs), "●", "")
+  }) |>
+    rlang::set_names(versions) |>
+    tibble::as_tibble()
+  d <- dplyr::bind_cols(
+    tibble::tibble(row = seq_len(nrow(x))),
+    dplyr::select(x, -"versions"),
+    pres
+  )
+  # outputs not parsed straight from a file have no raw names
+  if (all(is.na(d[["raw"]]))) {
+    d[["raw"]] <- NULL
+  }
+  vcols <- purrr::map(versions, \(v) {
+    colDef(
+      header = schema_version_pill(v),
+      align = "center",
+      minWidth = 70,
+      style = list(color = schema_version_colour(v))
+    )
+  }) |>
+    rlang::set_names(versions)
+  mono <- list(fontFamily = schema_mono())
+  htmltools::div(
+    style = paste(
+      "padding: 8px 16px 16px 40px;",
+      "border-left: 3px solid rgba(52, 89, 230, 0.6);",
+      "background: rgba(52, 89, 230, 0.03);"
+    ),
+    htmltools::div(
+      style = "margin-bottom: 8px; font-size: 0.9em;",
+      htmltools::strong("ftype: "),
+      htmltools::code(ftype),
+      if (!is.na(parent)) {
+        htmltools::tagList(" \u00b7 ", htmltools::strong("output of: "), htmltools::code(parent))
+      }
+    ),
+    reactable::reactable(
+      d,
+      pagination = FALSE,
+      compact = TRUE,
+      bordered = TRUE,
+      sortable = TRUE,
+      theme = reactable::reactableTheme(
+        color = "inherit",
+        backgroundColor = "transparent",
+        borderColor = "rgba(127, 127, 127, 0.25)",
+        headerStyle = list(backgroundColor = "rgba(127, 127, 127, 0.10)")
+      ),
+      columns = c(
+        list(row = schema_row_col()),
+        list(
+          raw = colDef(minWidth = 110, style = mono),
+          tidy = colDef(minWidth = 110, style = mono),
+          type = colDef(maxWidth = 60),
+          description = colDef(minWidth = 130)
+        )[intersect(c("raw", "tidy", "type", "description"), names(d))],
+        vcols
+      )
     )
   )
+}
+
+#' Row number column
+#'
+#' Numbers rows in display order (after search, filter and sort), not data
+#' order, so they always read 1, 2, 3, ... Both schema tables are unpaginated,
+#' so the view index is the row number.
+#'
+#' @return A `reactable::colDef()`.
+#' @keywords internal
+schema_row_col <- function() {
+  reactable::colDef(
+    name = "#",
+    width = 48,
+    align = "right",
+    sortable = FALSE,
+    filterable = FALSE,
+    searchable = FALSE,
+    cell = reactable::JS("function(cellInfo) { return cellInfo.viewIndex + 1 }"),
+    style = list(color = "rgba(127, 127, 127, 0.9)", fontVariantNumeric = "tabular-nums")
+  )
+}
+
+#' Pill-shaped label
+#'
+#' @param x label text.
+#' @param colour CSS colour: used as-is for the border, at 30% opacity for the
+#'   background.
+#' @param weight font weight.
+#' @return An htmltools span.
+#' @keywords internal
+schema_pill <- function(x, colour, weight = 400) {
+  htmltools::span(
+    style = sprintf(
+      paste(
+        "display: inline-block; padding: 0 8px; margin: 1px 2px;",
+        "border-radius: 10px; white-space: nowrap;",
+        "border: 1px solid %s;",
+        "background: color-mix(in srgb, %s 30%%, transparent);",
+        "font-weight: %s;"
+      ),
+      colour,
+      colour,
+      weight
+    ),
+    x
+  )
+}
+
+#' Version pill: `latest` green, others grey
+#'
+#' @param v version string.
+#' @return An htmltools span.
+#' @keywords internal
+schema_version_pill <- function(v) {
+  schema_pill(v, colour = schema_version_colour(v))
+}
+
+#' Version colour
+#'
+#' @param v version string.
+#' @return A CSS colour string.
+#' @keywords internal
+schema_version_colour <- function(v) {
+  if (v == "latest") {
+    return("#198754")
+  }
+  "#868e96"
+}
+
+#' Column width from its longest value
+#'
+#' @param x character vector of cell values.
+#' @param extra extra pixels for padding and decoration.
+#' @return Width in pixels (13px font, ~8px per character).
+#' @keywords internal
+schema_col_width <- function(x, extra = 0) {
+  max(nchar(x), 4) * 8 + extra
+}
+
+#' CSS shipped with the schema widget
+#'
+#' @description
+#' Hides the pkgdown sidebar on the page and lets the table break out of the
+#' content column to the viewport width (minus a gutter), centred.
+#'
+#' @return CSS string.
+#' @keywords internal
+schema_css <- function() {
+  paste0(
+    "
+main:has(.nemo-schema) { flex: 0 0 100%; max-width: 100%; }
+main:has(.nemo-schema) ~ aside { display: none; }
+.nemo-schema {
+  width: calc(100vw - 64px);
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 13px;
+}
+.nemo-schema .rt-expander:after { border-top-color: #3459e6; }
+.nemo-schema code { font-family: ",
+    schema_mono(),
+    "; }
+"
+  )
+}
+
+#' Monospace font stack for identifiers in the schema widget
+#'
+#' @return CSS font-family string.
+#' @keywords internal
+schema_mono <- function() {
+  "ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace"
 }
 
 #' Build schema data for reactable_schema
 #'
 #' @description
 #' Internal helper: builds the nested data frame expected by [reactable_schema()]
-#' for one or more tools from a given package.
+#' for one or more tools from a given package, read straight from each tool's
+#' `schema.yaml` tables.
 #'
 #' @param tools character vector of tool names.
 #' @param pkg package name that owns the tool configs. Defaults to `"nemo"`.
-#' @return A tibble with columns `n`, `tool`, `tbl`, `schema_version`,
-#'   `description`, `row_id`.
+#' @return A tibble with one row per (tool, table) - plus one per declared
+#'   output of a fan-out table, after it - and columns `tool`, `tbl`,
+#'   `description`, `ftype`, `glob`, `parent` (file table of an output, `NA`
+#'   otherwise), `columns` (nested tibble of `raw`, `tidy`,
+#'   `type`, `description`, list-column `versions`), `versions` (sorted
+#'   character vector), `n_cols` (columns in `latest`), `version_str` and
+#'   `col_names` (space-separated raw + tidy names, for search).
 #' @keywords internal
 #' @testexamples
-#' expect_s3_class(nemo_schemavis_data("tool1", pkg = "nemo"), "tbl_df")
-#' expect_true(all(c("n", "tool", "tbl", "schema_version", "description") %in%
-#'   names(nemo_schemavis_data("tool1", pkg = "nemo"))))
+#' d <- nemo_schemavis_data("tool1", pkg = "nemo")
+#' expect_s3_class(d, "tbl_df")
+#' expect_true(all(c("tool", "tbl", "description", "ftype", "glob", "columns",
+#'   "versions", "n_cols", "col_names") %in% names(d)))
+#' expect_equal(d$n_cols[d$tbl == "table1"], 6L)
+#' expect_true(grepl("sample_id", d$col_names[d$tbl == "table1"]))
+#' expect_equal(d$tbl[d$parent %in% "table7"], c("table7main", "table7dp"))
+#' expect_equal(d$ftype[d$tbl == "table7dp"], "tsv")
+#' expect_match(d$description[d$tbl == "table7"], "(parent of table7main, table7dp)", fixed = TRUE)
+#' expect_match(d$description[d$tbl == "table7dp"], "(child of table7)", fixed = TRUE)
+#' expect_false(grepl("NA", d$col_names[d$tbl == "table7dp"]))
 nemo_schemavis_data <- function(tools, pkg = "nemo") {
+  cols_tbl <- function(cols) {
+    if (length(cols) == 0) {
+      # custom-parsed fan-out file: its columns live on its outputs
+      return(tibble::tibble(
+        raw = character(),
+        tidy = character(),
+        type = character(),
+        description = character(),
+        versions = list()
+      ))
+    }
+    purrr::map(cols, \(col) {
+      tibble::tibble(
+        raw = col[["raw"]] %||% NA_character_,
+        tidy = col[["tidy"]],
+        type = col[["type"]],
+        description = col[["description"]] %||% NA_character_,
+        versions = list(col[["versions"]])
+      )
+    }) |>
+      dplyr::bind_rows()
+  }
   get_one <- function(tool) {
-    conf <- Config$new(tool, pkg = pkg)
-    conf$get_schemas_both() |>
-      dplyr::select(tbl = "name", description = "tbl_description", "version", "schema") |>
-      tidyr::nest(schema_version = c("version", "schema")) |>
-      dplyr::mutate(tool = toupper(tool))
+    tabs <- Config$new(tool, pkg = pkg)$get_tables()
+    # tag fan-out rows so parent and children read as a group
+    with_rel <- function(desc, rel) {
+      paste0(c(desc, glue::glue("({rel})")), collapse = " ")
+    }
+    purrr::imap(tabs, \(tab, tab_name) {
+      outs <- tab[["outputs"]] %||% list()
+      desc <- tab[["description"]]
+      if (length(outs) > 0) {
+        desc <- with_rel(desc, paste("parent of", paste(names(outs), collapse = ", ")))
+      }
+      file_row <- tibble::tibble(
+        tool = tool,
+        tbl = tab_name,
+        description = desc,
+        ftype = tab[["ftype"]],
+        glob = paste(tab[["glob"]], collapse = ", "),
+        parent = NA_character_,
+        columns = list(cols_tbl(tab[["columns"]]))
+      )
+      out_rows <- purrr::imap(outs, \(out, out_name) {
+        tibble::tibble(
+          tool = tool,
+          tbl = out_name,
+          description = with_rel(out[["description"]], paste("child of", tab_name)),
+          ftype = tab[["ftype"]],
+          glob = "",
+          parent = tab_name,
+          columns = list(cols_tbl(out[["columns"]]))
+        )
+      })
+      dplyr::bind_rows(file_row, unname(out_rows))
+    }) |>
+      dplyr::bind_rows()
   }
   purrr::map(tools, get_one) |>
     dplyr::bind_rows() |>
-    dplyr::mutate(row_id = dplyr::row_number(), n = .data$row_id) |>
-    dplyr::select("n", "tool", "tbl", "schema_version", "description", "row_id")
+    dplyr::mutate(
+      versions = purrr::map(.data$columns, \(x) {
+        config_sort_versions(unique(unlist(x[["versions"]])))
+      }),
+      n_cols = purrr::map_int(.data$columns, \(x) {
+        sum(purrr::map_lgl(x[["versions"]], \(v) "latest" %in% v))
+      }),
+      version_str = purrr::map_chr(.data$versions, \(v) paste(v, collapse = ", ")),
+      col_names = purrr::map_chr(.data$columns, \(x) {
+        nms <- c(x[["raw"]], x[["tidy"]])
+        paste(unique(nms[!is.na(nms)]), collapse = " ")
+      })
+    )
 }
 
 #' Render an interactive schema explorer
 #'
 #' @description
 #' Builds schema data for one or more tools and renders it as an interactive
-#' [reactable::reactable()] table with expandable per-version column details.
+#' [reactable::reactable()] table with expandable per-table column details.
 #'
 #' @param tools character vector of tool names.
 #' @param pkg package name that owns the tool configs. Defaults to `"nemo"`.
-#' @param ... additional arguments passed to [reactable::reactable()].
+#' @param ... additional arguments passed to [reactable_schema()] (e.g.
+#'   `tool_colours`) and on to [reactable::reactable()].
 #' @return An htmlwidget.
 #' @examples
 #' \dontrun{

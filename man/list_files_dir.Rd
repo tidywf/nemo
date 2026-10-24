@@ -14,7 +14,10 @@ Character vector of one or more paths.}
 Max files returned.}
 
 \item{type}{(\code{character(n)})\cr
-File type(s) to return (e.g. any, file, directory, symlink). See \code{fs::dir_info}.}
+File type(s) to return (e.g. any, file, directory). See \code{fs::dir_info}.
+Symlinks are followed and classified by their target, so a symlink to a
+file counts as a \code{file} (with the target's size and modification time);
+broken symlinks are dropped.}
 }
 \value{
 A tibble with file basename, size, last modification timestamp
@@ -26,4 +29,9 @@ Lists files inside a given directory.
 \examples{
 d <- system.file("R", package = "nemo")
 x <- list_files_dir(d)
+# symlinked files are included
+d2 <- fs::dir_create(tempfile())
+f <- fs::file_create(file.path(d2, "real.tsv"))
+fs::link_create(f, file.path(d2, "link.tsv"))
+x2 <- list_files_dir(d2)
 }
