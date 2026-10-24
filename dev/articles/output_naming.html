@@ -28,7 +28,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">nemo</a>
 
-    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.1.0.9008</small>
+    <small class="nav-text text-danger me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="In-development version">0.2.0.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -72,7 +72,7 @@
 
 
 
-      <small class="dont-index">Source: <a href="https://github.com/tidywf/nemo/blob/v0.1.0.9008/vignettes/output_naming.qmd" class="external-link"><code>vignettes/output_naming.qmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/tidywf/nemo/blob/v0.2.0.9000/vignettes/output_naming.qmd" class="external-link"><code>vignettes/output_naming.qmd</code></a></small>
       <div class="d-none name"><code></code></div>
     </div>
 
@@ -127,7 +127,7 @@
 <span><span class="op">}</span></span>
 <span></span>
 <span><span class="fu">dir_tree</span><span class="op">(</span><span class="va">dir_runs</span><span class="op">)</span></span>
-<span><span class="co">#&gt; /tmp/RtmpUul1XC/naming-demo/runs</span></span>
+<span><span class="co">#&gt; /tmp/RtmpXN52OS/naming-demo/runs</span></span>
 <span><span class="co">#&gt; ├── run1</span></span>
 <span><span class="co">#&gt; │   ├── sampleA.tool1.table1.tsv</span></span>
 <span><span class="co">#&gt; │   └── sampleA.tool1.table2.tsv</span></span>
@@ -150,12 +150,12 @@
 <span><span class="co">#&gt; # A tibble: 6 × 3</span></span>
 <span><span class="co">#&gt;   path                                                           prefix   parser</span></span>
 <span><span class="co">#&gt;   &lt;chr&gt;                                                          &lt;chr&gt;    &lt;chr&gt; </span></span>
-<span><span class="co">#&gt; 1 /tmp/RtmpUul1XC/naming-demo/runs/run1/sampleA.tool1.table1.tsv sampleA  table1</span></span>
-<span><span class="co">#&gt; 2 /tmp/RtmpUul1XC/naming-demo/runs/run2/sampleA.tool1.table1.tsv sampleA… table1</span></span>
-<span><span class="co">#&gt; 3 /tmp/RtmpUul1XC/naming-demo/runs/run3/sampleA.tool1.table1.tsv sampleA… table1</span></span>
-<span><span class="co">#&gt; 4 /tmp/RtmpUul1XC/naming-demo/runs/run1/sampleA.tool1.table2.tsv sampleA  table2</span></span>
-<span><span class="co">#&gt; 5 /tmp/RtmpUul1XC/naming-demo/runs/run2/sampleA.tool1.table2.tsv sampleA… table2</span></span>
-<span><span class="co">#&gt; 6 /tmp/RtmpUul1XC/naming-demo/runs/run3/sampleA.tool1.table2.tsv sampleA… table2</span></span></code></pre></div>
+<span><span class="co">#&gt; 1 /tmp/RtmpXN52OS/naming-demo/runs/run1/sampleA.tool1.table1.tsv sampleA  table1</span></span>
+<span><span class="co">#&gt; 2 /tmp/RtmpXN52OS/naming-demo/runs/run2/sampleA.tool1.table1.tsv sampleA… table1</span></span>
+<span><span class="co">#&gt; 3 /tmp/RtmpXN52OS/naming-demo/runs/run3/sampleA.tool1.table1.tsv sampleA… table1</span></span>
+<span><span class="co">#&gt; 4 /tmp/RtmpXN52OS/naming-demo/runs/run1/sampleA.tool1.table2.tsv sampleA  table2</span></span>
+<span><span class="co">#&gt; 5 /tmp/RtmpXN52OS/naming-demo/runs/run2/sampleA.tool1.table2.tsv sampleA… table2</span></span>
+<span><span class="co">#&gt; 6 /tmp/RtmpXN52OS/naming-demo/runs/run3/sampleA.tool1.table2.tsv sampleA… table2</span></span></code></pre></div>
 </div>
 <p>No overwrites:</p>
 <div class="cell">
@@ -169,7 +169,7 @@
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">dir_tree</span><span class="op">(</span><span class="va">dir_outA</span><span class="op">)</span></span>
-<span><span class="co">#&gt; /tmp/RtmpUul1XC/naming-demo/outA</span></span>
+<span><span class="co">#&gt; /tmp/RtmpXN52OS/naming-demo/outA</span></span>
 <span><span class="co">#&gt; ├── metadata_tool1.parquet</span></span>
 <span><span class="co">#&gt; ├── sampleA_2_tool1_table1.parquet</span></span>
 <span><span class="co">#&gt; ├── sampleA_2_tool1_table2.parquet</span></span>
@@ -214,7 +214,7 @@
 <span><span class="op">}</span></span>
 <span></span>
 <span><span class="fu">dir_tree</span><span class="op">(</span><span class="va">dir_outB</span><span class="op">)</span></span>
-<span><span class="co">#&gt; /tmp/RtmpUul1XC/naming-demo/outB</span></span>
+<span><span class="co">#&gt; /tmp/RtmpXN52OS/naming-demo/outB</span></span>
 <span><span class="co">#&gt; ├── run1</span></span>
 <span><span class="co">#&gt; │   ├── metadata_tool1.parquet</span></span>
 <span><span class="co">#&gt; │   ├── sampleA_tool1_table1.parquet</span></span>
