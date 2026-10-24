@@ -109,7 +109,7 @@ From GitHub:
 ``` r
 install.packages("remotes")
 remotes::install_github("tidywf/nemo") # latest main commit
-remotes::install_github("tidywf/nemo@v0.1.0.9008") # specific version
+remotes::install_github("tidywf/nemo@v0.2.0") # specific version
 ```
 
 Conda: <https://anaconda.org/tidywf/r-nemo>. More options:
@@ -125,7 +125,7 @@ export PATH="${nemo_cli}:${PATH}"
 ```
 
     $ nemo.R --version
-    nemo 0.1.0.9008
+    nemo 0.2.0
 
     #-----------------------------------#
     $ nemo.R --help
