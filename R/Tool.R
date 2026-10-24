@@ -163,7 +163,7 @@ Tool <- R6::R6Class(
     },
     # Calls custom tidy_{table_name}() if defined, else tidy_file().
     # `x` is a path or an already-parsed tibble (keep_raw = TRUE).
-    # A table with `outputs:` needs a custom tidy, checked against the schema.
+    # A table with `outputs` needs a custom tidy, checked against the schema.
     dispatch_tidy = function(x, table_name) {
       fun <- glue("tidy_{table_name}")
       outputs <- self$config$get_table_outputs(table_name)
@@ -359,7 +359,7 @@ Tool <- R6::R6Class(
         dplyr::select("raw_path", "tool_parser", "parser", "prefix", "tidy") |>
         tidyr::unnest("tidy", names_sep = "_") |>
         dplyr::mutate(
-          # schema outputs: <tool>_<output>; else <tool>_<parser>[<tidy_name>]
+          # schema outputs <tool>_<output>; else <tool>_<parser>[<tidy_name>]
           tbl_name = dplyr::case_when(
             .data$parser %in% fanout ~ paste0(self$name, "_", .data$tidy_name),
             .data$parser == .data$tidy_name ~ .data$tool_parser,

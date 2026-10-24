@@ -6,9 +6,6 @@ knitr:
     comment: "#>"
 ---
 
-Dev notes shared by nemo and its child pkgs (e.g. tidywigits, tidydragen).
-`<pkg>` below stands for the pkg name.
-
 ### R pkg dev
 
 | Command                               | Comment                                                 | Shortcut          |
