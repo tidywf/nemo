@@ -22,7 +22,9 @@ child1 <- system.file(
 #| label: child-news
 ```
 
-## v0.1.1 (2026-10-24)
+## v0.2.0.9000 (dev)
+
+## v0.2.0 (2026-10-24)
 
 ### New features
 
