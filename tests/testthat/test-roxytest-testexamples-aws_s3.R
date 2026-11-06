@@ -2,18 +2,22 @@
 
 # File R/aws_s3.R: @testexamples
 
-test_that("Function wf_sync_patterns() @ L79", {
+test_that("Function wf_s3sync_patterns() @ L86", {
   
-  (pats <- wf_sync_patterns("workflow1"))
+  (pats <- wf_s3sync_patterns("workflow1"))
+  (pats2 <- wf_s3sync_patterns("workflow1", include = "*.a.tsv", exclude = "*.b.tsv"))
   expect_equal(names(pats), c("inex", "pat"))
   expect_equal(pats$inex[1], "ex")
   expect_equal(pats$pat[1], "*")
   expect_gt(nrow(pats), 1)
-  expect_error(wf_sync_patterns("notaworkflow"))
+  expect_equal(nrow(pats2), nrow(pats) + 2)
+  expect_equal(utils::tail(pats2$inex, 2), c("ex", "in"))
+  expect_equal(utils::tail(pats2$pat, 2), c("*.b.tsv", "*.a.tsv"))
+  expect_error(wf_s3sync_patterns("notaworkflow"))
 })
 
 
-test_that("Function glob_to_regex() @ L143", {
+test_that("Function glob_to_regex() @ L150", {
   
   (r1 <- glob_to_regex("*.purple.qc"))
   (r2 <- glob_to_regex("*purple/*.purple.qc"))
@@ -40,7 +44,7 @@ test_that("Function glob_to_regex() @ L143", {
 })
 
 
-test_that("Function schema_glob_check() @ L222", {
+test_that("Function schema_glob_check() @ L229", {
   
   (bad <- schema_glob_check("nemo"))
   expect_equal(nrow(bad), 0)

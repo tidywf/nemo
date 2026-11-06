@@ -18,7 +18,7 @@ tools <- list(tool1 = Tool1)
 wf <- Workflow$new(name = "wf1", path = path, tools = tools)
 (lf_all <- wf$list_files())
 (globs <- wf$get_globs())
-(sync_pats <- wf$get_sync_patterns())
+(s3sync_pats <- wf$get_s3sync_patterns())
 wf$filter_files(exclude = "tool1_table6")
 wf$tidy()
 (tbls <- wf$get_tbls())
@@ -46,8 +46,8 @@ Package name(s) used for metadata version reporting.}
 \item{\code{written_files}}{(\code{tibble(n)})\cr
 Tibble of files written from \code{self$write()}.}
 
-\item{\code{sync_exclude}}{(\code{character(n)})\cr
-Trailing \code{--exclude} globs for \code{get_sync_patterns()}, carving files back
+\item{\code{s3sync_exclude}}{(\code{character(n)})\cr
+Trailing \code{--exclude} globs for \code{get_s3sync_patterns()}, carving files back
 out of the schema-derived includes. Subclasses override this.}
 }
 \if{html}{\out{</div>}}
@@ -59,7 +59,7 @@ out of the schema-derived includes. Subclasses override this.}
 \item \href{#method-Workflow-print}{\code{Workflow$print()}}
 \item \href{#method-Workflow-get_tools}{\code{Workflow$get_tools()}}
 \item \href{#method-Workflow-get_globs}{\code{Workflow$get_globs()}}
-\item \href{#method-Workflow-get_sync_patterns}{\code{Workflow$get_sync_patterns()}}
+\item \href{#method-Workflow-get_s3sync_patterns}{\code{Workflow$get_s3sync_patterns()}}
 \item \href{#method-Workflow-filter_files}{\code{Workflow$filter_files()}}
 \item \href{#method-Workflow-list_files}{\code{Workflow$list_files()}}
 \item \href{#method-Workflow-tidy}{\code{Workflow$tidy()}}
@@ -154,16 +154,28 @@ Bound \code{get_globs()} tibbles from all Tools (\code{tool}, \code{name}, \code
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Workflow-get_sync_patterns"></a>}}
-\if{latex}{\out{\hypertarget{method-Workflow-get_sync_patterns}{}}}
-\subsection{Method \code{get_sync_patterns()}}{
+\if{html}{\out{<a id="method-Workflow-get_s3sync_patterns"></a>}}
+\if{latex}{\out{\hypertarget{method-Workflow-get_s3sync_patterns}{}}}
+\subsection{Method \code{get_s3sync_patterns()}}{
 Build the \verb{aws s3 sync} patterns: exclude everything,
-include the schema globs, then \code{sync_exclude} (filters are
-last-match-wins).
+include the schema globs, then \code{s3sync_exclude}, then the extra
+\code{exclude} and \code{include} globs (filters are last-match-wins, so an extra
+\code{include} wins over any exclude).
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Workflow$get_sync_patterns()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Workflow$get_s3sync_patterns(include = NULL, exclude = NULL)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{include}}{(\code{character(n)})\cr
+Extra globs to include.}
+
+\item{\code{exclude}}{(\code{character(n)})\cr
+Extra globs to exclude.}
+}
+\if{html}{\out{</div>}}
+}
 \subsection{Returns}{
 (\code{tibble()})\cr
 Tibble with \code{inex} (\code{"in"}/\code{"ex"}) and \code{pat} columns, as expected by

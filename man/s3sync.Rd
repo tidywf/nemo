@@ -16,7 +16,7 @@ Local destination path.}
 \item{pats}{(\code{tibble()})\cr
 Patterns tibble with \code{inex} ("in" or "ex") and \code{pat} (pattern) columns.
 If \code{NULL} and \code{workflow} is given, the workflow's schema-derived patterns
-are used (see \code{\link[=wf_sync_patterns]{wf_sync_patterns()}}); if both are \code{NULL}, everything is
+are used (see \code{\link[=wf_s3sync_patterns]{wf_s3sync_patterns()}}); if both are \code{NULL}, everything is
 excluded.}
 
 \item{workflow}{(\code{character(1)})\cr

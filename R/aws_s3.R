@@ -7,7 +7,7 @@
 #' @param pats (`tibble()`)\cr
 #' Patterns tibble with `inex` ("in" or "ex") and `pat` (pattern) columns.
 #' If `NULL` and `workflow` is given, the workflow's schema-derived patterns
-#' are used (see [wf_sync_patterns()]); if both are `NULL`, everything is
+#' are used (see [wf_s3sync_patterns()]); if both are `NULL`, everything is
 #' excluded.
 #' @param workflow (`character(1)`)\cr
 #' Workflow name (e.g. `"wigits"`, `"dragen"`) whose schema-derived sync
@@ -37,7 +37,7 @@ s3sync <- function(src, dest, pats = NULL, workflow = NULL, dryrun = FALSE) {
     "ex"  , "*"
   )
   if (is.null(pats) && !is.null(workflow)) {
-    pats <- wf_sync_patterns(workflow)
+    pats <- wf_s3sync_patterns(workflow)
   }
   pats <- pats %||% pats_default
   dest <- path.expand(dest)
@@ -63,26 +63,33 @@ s3sync <- function(src, dest, pats = NULL, workflow = NULL, dryrun = FALSE) {
 #' @param workflow (`character(1)`)\cr
 #' Workflow name (e.g. `"wigits"`, `"dragen"`), as accepted by
 #' [nemoverse_wf_dispatch()].
+#' @param include,exclude (`character(n)`)\cr
+#' Extra globs to add after the workflow's own patterns. Excludes come first,
+#' so an extra `include` wins over any exclude.
 #' @returns (`tibble()`)\cr
 #' Tibble with `inex` (`"in"`/`"ex"`) and `pat` columns, suitable for
 #' [s3sync()]'s `pats` argument.
 #'
 #' @examples
-#' (pats <- wf_sync_patterns("workflow1"))
+#' (pats <- wf_s3sync_patterns("workflow1"))
+#' (pats2 <- wf_s3sync_patterns("workflow1", include = "*.a.tsv", exclude = "*.b.tsv"))
 #' @testexamples
 #' expect_equal(names(pats), c("inex", "pat"))
 #' expect_equal(pats$inex[1], "ex")
 #' expect_equal(pats$pat[1], "*")
 #' expect_gt(nrow(pats), 1)
-#' expect_error(wf_sync_patterns("notaworkflow"))
+#' expect_equal(nrow(pats2), nrow(pats) + 2)
+#' expect_equal(utils::tail(pats2$inex, 2), c("ex", "in"))
+#' expect_equal(utils::tail(pats2$pat, 2), c("*.b.tsv", "*.a.tsv"))
+#' expect_error(wf_s3sync_patterns("notaworkflow"))
 #' @export
-wf_sync_patterns <- function(workflow) {
+wf_s3sync_patterns <- function(workflow, include = NULL, exclude = NULL) {
   fun <- nemoverse_wf_dispatch(workflow)
   # patterns come from config, so an empty dir suffices
   tmp <- fs::file_temp()
   fs::dir_create(tmp)
   on.exit(fs::dir_delete(tmp), add = TRUE)
-  fun$new(tmp)$get_sync_patterns()
+  fun$new(tmp)$get_s3sync_patterns(include = include, exclude = exclude)
 }
 
 # Resolve a package resource dir when installed or under load_all(), where

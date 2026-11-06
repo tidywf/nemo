@@ -111,7 +111,7 @@ tables:
 - `pattern`: PCRE regex on the file **basename**; `Tool` uses it to discover and
   classify local files.
 - `glob`: list of `aws s3 sync --include` patterns on the whole key;
-  `wf_sync_patterns()` collects them to decide what to sync down. Usually the
+  `wf_s3sync_patterns()` collects them to decide what to sync down. Usually the
   basename pattern with a leading `*` (`"\\.tool1\\.table1\\.tsv$"` =>
   `["*.tool1.table1.tsv"]`).
 

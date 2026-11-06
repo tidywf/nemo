@@ -6,7 +6,7 @@
 \description{
 Reads a tool's \code{schema.yaml} from \verb{inst/config/tools/<tool>/} in the
 package, exposing the raw/tidy schemas and column maps \code{Tool} uses for file
-discovery and renaming. Fan-out \verb{outputs:} get their own schema rows, with
+discovery and renaming. Fan-out \code{outputs} get their own schema rows, with
 \code{parent} set to the file table. Schema format: see \emph{new-tool} article.
 }
 \examples{
@@ -255,7 +255,7 @@ Named list of table definitions from schema.yaml.
 \if{latex}{\out{\hypertarget{method-Config-get_table_outputs}{}}}
 \subsection{Method \code{get_table_outputs()}}{
 Return the output names declared under a table's
-\verb{outputs:}.
+\code{outputs}.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Config$get_table_outputs(x)}\if{html}{\out{</div>}}
 }
@@ -270,7 +270,7 @@ Table name.}
 }
 \subsection{Returns}{
 (\code{character(n)})\cr
-Output names, or \code{character(0)} when the table has no \verb{outputs:}.
+Output names, or \code{character(0)} when the table has no \code{outputs}.
 }
 }
 \if{html}{\out{<hr>}}
@@ -303,7 +303,7 @@ Output name.}
 \if{latex}{\out{\hypertarget{method-Config-get_outputs}{}}}
 \subsection{Method \code{get_outputs()}}{
 Return every output table the tool writes: the declared
-\verb{outputs:} of a fan-out table, or the table itself otherwise.
+\code{outputs} of a fan-out table, or the table itself otherwise.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Config$get_outputs()}\if{html}{\out{</div>}}
 }

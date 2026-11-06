@@ -187,6 +187,6 @@ echo "#-----------------------------------#"
 echo "$ nemo.R list --help" & nemo.R list --help
 echo ""
 echo "#-----------------------------------#"
-echo "$ nemo.R sync --help" & nemo.R sync --help
+echo "$ nemo.R s3sync --help" & nemo.R s3sync --help
 echo ""
 ```

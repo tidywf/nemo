@@ -15,7 +15,7 @@
 #' wf <- Workflow$new(name = "wf1", path = path, tools = tools)
 #' (lf_all <- wf$list_files())
 #' (globs <- wf$get_globs())
-#' (sync_pats <- wf$get_sync_patterns())
+#' (s3sync_pats <- wf$get_s3sync_patterns())
 #' wf$filter_files(exclude = "tool1_table6")
 #' wf$tidy()
 #' (tbls <- wf$get_tbls())
@@ -44,10 +44,10 @@ Workflow <- R6::R6Class(
     #' @field written_files (`tibble(n)`)\cr
     #' Tibble of files written from `self$write()`.
     written_files = NULL,
-    #' @field sync_exclude (`character(n)`)\cr
-    #' Trailing `--exclude` globs for `get_sync_patterns()`, carving files back
+    #' @field s3sync_exclude (`character(n)`)\cr
+    #' Trailing `--exclude` globs for `get_s3sync_patterns()`, carving files back
     #' out of the schema-derived includes. Subclasses override this.
-    sync_exclude = character(),
+    s3sync_exclude = character(),
 
     #' @description Create a new Workflow object.
     #' @param name (`character(1)`)\cr
@@ -111,16 +111,23 @@ Workflow <- R6::R6Class(
         dplyr::bind_rows()
     },
     #' @description Build the `aws s3 sync` patterns: exclude everything,
-    #' include the schema globs, then `sync_exclude` (filters are
-    #' last-match-wins).
+    #' include the schema globs, then `s3sync_exclude`, then the extra
+    #' `exclude` and `include` globs (filters are last-match-wins, so an extra
+    #' `include` wins over any exclude).
+    #' @param include (`character(n)`)\cr
+    #' Extra globs to include.
+    #' @param exclude (`character(n)`)\cr
+    #' Extra globs to exclude.
     #' @return (`tibble()`)\cr
     #' Tibble with `inex` (`"in"`/`"ex"`) and `pat` columns, as expected by
     #' [s3sync()].
-    get_sync_patterns = function() {
+    get_s3sync_patterns = function(include = NULL, exclude = NULL) {
       dplyr::bind_rows(
         tibble::tibble(inex = "ex", pat = "*"),
         tibble::tibble(inex = "in", pat = unique(self$get_globs()[["glob"]])),
-        tibble::tibble(inex = "ex", pat = self$sync_exclude)
+        tibble::tibble(inex = "ex", pat = self$s3sync_exclude),
+        tibble::tibble(inex = "ex", pat = as.character(exclude)),
+        tibble::tibble(inex = "in", pat = as.character(include))
       )
     },
     #' @description Filter files in given workflow directory.
