@@ -24,6 +24,13 @@ child1 <- system.file(
 
 ## v0.2.0.9000 (dev)
 
+- CLI: `sync` subcommand renamed to `s3sync`.
+- CLI: `s3sync` gets repeatable `--include` and `--exclude` globs, added after
+  the workflow's own patterns.
+- Rename `sync` functions and field: `cli_nemo_s3sync()`,
+  `cli_s3sync_add_args()`, `cli_s3sync_parse_args()`, `wf_s3sync_patterns()`,
+  `Workflow$get_s3sync_patterns()`, `Workflow$s3sync_exclude`.
+
 ## v0.2.0 (2026-10-24)
 
 ### New features

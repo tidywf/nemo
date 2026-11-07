@@ -94,22 +94,22 @@ Extension points a `Tool` subclass may override in `private`:
 
 ## Key API (`R/`)
 
-| Function                                      | File           | Purpose                                                                           |
-| --------------------------------------------- | -------------- | --------------------------------------------------------------------------------- |
-| `nemo_write(d, fpfix, format, dbconn, dbtab)` | `write.R`      | Dispatches to correct writer by format                                            |
-| `nemo_osfx(fpfix, format)`                    | `write.R`      | Constructs output path with right extension                                       |
-| `nemo_out_formats()`                          | `write.R`      | Returns valid format strings: `parquet`, `db`, `tsv`, `csv`, `rds`                |
-| `nemo_metadata(files, pkgs, ...)`             | `metadata.R`   | Assembles run-level metadata as a single-row tibble written to `metadata.parquet` |
-| `nemo_schema_reactable(tools, pkg, ...)`      | `schema_vis.R` | Interactive reactable schema explorer                                             |
-| `nemo_schemavis_data(tools, pkg)`             | `schema_vis.R` | Per-table schema tibble (+ output rows, `parent`); internal, not exported         |
-| `nemo_gha_mermaid(wf_dir, workflows, ...)`    | `gha.R`        | Builds Mermaid CI/CD flowchart from a `.github/workflows` dir                     |
-| `nemo_uml(classes, output_dir, pkg)`          | `uml.R`        | Generates PlantUML SVG from R6 class names                                        |
-| `nemo_enframe(x)`                             | `utils.R`      | Named list of tibbles → `name`/`data` tibble; used for 1-file → N-table fan-out   |
-| `nemoverse_wf_dispatch(wf)`                   | `utils.R`      | Workflow name (`wigits`/`dragen`/`workflow1`) → workflow class                    |
-| `read_parquet_grep(odir, lf, pattern, first)` | `utils.R`      | Read the one parquet in `lf` matching `pattern` (used in `@testexamples`)         |
-| `wf_sync_patterns(workflow)`                  | `aws_s3.R`     | Include/exclude tibble for `aws s3 sync`, built from schema `glob` fields         |
-| `schema_glob_check(pkg, fixture_dir)`         | `aws_s3.R`     | Fixture files a `pattern` matches but no `glob` covers (0 rows = consistent)      |
-| `s3sync(src, dest, pats, workflow, dryrun)`   | `aws_s3.R`     | `aws s3 sync` wrapper; `workflow` pulls patterns from `wf_sync_patterns()`        |
+| Function                                         | File           | Purpose                                                                             |
+| ---------------------------------------------    | -------------- | ---------------------------------------------------------------------------------   |
+| `nemo_write(d, fpfix, format, dbconn, dbtab)`    | `write.R`      | Dispatches to correct writer by format                                              |
+| `nemo_osfx(fpfix, format)`                       | `write.R`      | Constructs output path with right extension                                         |
+| `nemo_out_formats()`                             | `write.R`      | Returns valid format strings: `parquet`, `db`, `tsv`, `csv`, `rds`                  |
+| `nemo_metadata(files, pkgs, ...)`                | `metadata.R`   | Assembles run-level metadata as a single-row tibble written to `metadata.parquet`   |
+| `nemo_schema_reactable(tools, pkg, ...)`         | `schema_vis.R` | Interactive reactable schema explorer                                               |
+| `nemo_schemavis_data(tools, pkg)`                | `schema_vis.R` | Per-table schema tibble (+ output rows, `parent`); internal, not exported           |
+| `nemo_gha_mermaid(wf_dir, workflows, ...)`       | `gha.R`        | Builds Mermaid CI/CD flowchart from a `.github/workflows` dir                       |
+| `nemo_uml(classes, output_dir, pkg)`             | `uml.R`        | Generates PlantUML SVG from R6 class names                                          |
+| `nemo_enframe(x)`                                | `utils.R`      | Named list of tibbles → `name`/`data` tibble; used for 1-file → N-table fan-out     |
+| `nemoverse_wf_dispatch(wf)`                      | `utils.R`      | Workflow name (`wigits`/`dragen`/`workflow1`) → workflow class                      |
+| `read_parquet_grep(odir, lf, pattern, first)`    | `utils.R`      | Read the one parquet in `lf` matching `pattern` (used in `@testexamples`)           |
+| `wf_s3sync_patterns(workflow, include, exclude)` | `aws_s3.R`     | Include/exclude tibble for `aws s3 sync`, built from schema `glob` fields           |
+| `schema_glob_check(pkg, fixture_dir)`            | `aws_s3.R`     | Fixture files a `pattern` matches but no `glob` covers (0 rows = consistent)        |
+| `s3sync(src, dest, pats, workflow, dryrun)`      | `aws_s3.R`     | `aws s3 sync` wrapper; `workflow` pulls patterns from `wf_s3sync_patterns()`        |
 
 ## CLI (`R/cli.R`, `inst/cli/nemo.R`)
 

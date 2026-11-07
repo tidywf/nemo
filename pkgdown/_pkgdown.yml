@@ -75,9 +75,9 @@ reference:
       - cli_list_add_args
       - cli_list_parse_args
       - cli_nemo_list
-      - cli_sync_add_args
-      - cli_sync_parse_args
-      - cli_nemo_sync
+      - cli_s3sync_add_args
+      - cli_s3sync_parse_args
+      - cli_nemo_s3sync
   - title: "Schema Visualisation"
     contents:
       - nemo_schemavis_data
@@ -117,4 +117,4 @@ reference:
       - s3sync
       - glob_to_regex
       - schema_glob_check
-      - wf_sync_patterns
+      - wf_s3sync_patterns
