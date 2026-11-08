@@ -152,7 +152,10 @@ nemo_gha_mermaid <- function(
   src <- .gha_resolve_uses(uses, wf_dir, actions_dir)
   y <- .gha_read_yaml(src)
   if (is.null(y)) {
-    return(tibble::tibble(label = paste("⚠️ could not read", basename(src)), class = "warn"))
+    return(tibble::tibble(
+      label = paste("\u26a0\ufe0f could not read", basename(src)),
+      class = "warn"
+    ))
   }
   defaults <- (y[["on"]] %||% y[["TRUE"]])[["workflow_call"]][["inputs"]] |>
     purrr::map("default") |>
@@ -253,7 +256,7 @@ nemo_gha_mermaid <- function(
     on <- rlang::set_names(vector("list", length(on)), on)
   }
   if (length(on) == 0) {
-    return("▶️ trigger")
+    return("\u25b6\ufe0f trigger")
   }
   lab <- purrr::imap_chr(on, \(v, k) {
     switch(
@@ -270,7 +273,7 @@ nemo_gha_mermaid <- function(
       k
     )
   })
-  paste("▶️", paste(lab, collapse = " / "))
+  paste("\u25b6\ufe0f", paste(lab, collapse = " / "))
 }
 
 .gha_render_workflow <- function(wf) {

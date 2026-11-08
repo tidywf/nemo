@@ -20,8 +20,8 @@ rest, skipping any candidate already in use, so a generated name never
 collides with another prefix in \code{x}.
 }
 \examples{
-(u1 <- uniquify_prefixes(c("a", "a", "b", "a")))
+(u1 <- nemo:::uniquify_prefixes(c("a", "a", "b", "a")))
 # the second "s1" would naively become "s1_2", which is already taken
-(u2 <- uniquify_prefixes(c("s1", "s1", "s1_2")))
+(u2 <- nemo:::uniquify_prefixes(c("s1", "s1", "s1_2")))
 }
 \keyword{internal}

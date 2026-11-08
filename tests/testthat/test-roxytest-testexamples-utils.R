@@ -18,9 +18,9 @@ test_that("Function list_files_dir() @ L29", {
 
 test_that("Function uniquify_prefixes() @ L74", {
   
-  (u1 <- uniquify_prefixes(c("a", "a", "b", "a")))
+  (u1 <- nemo:::uniquify_prefixes(c("a", "a", "b", "a")))
   # the second "s1" would naively become "s1_2", which is already taken
-  (u2 <- uniquify_prefixes(c("s1", "s1", "s1_2")))
+  (u2 <- nemo:::uniquify_prefixes(c("s1", "s1", "s1_2")))
   expect_equal(u1, c("a", "a_2", "b", "a_3"))
   expect_equal(u2, c("s1", "s1_3", "s1_2"))
   expect_equal(uniquify_prefixes(character()), character())

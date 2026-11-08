@@ -151,7 +151,7 @@ schema_columns_detail <- function(x, versions, ftype, parent = NA_character_) {
     ))
   }
   pres <- purrr::map(versions, \(v) {
-    ifelse(purrr::map_lgl(x[["versions"]], \(vs) v %in% vs), "●", "")
+    ifelse(purrr::map_lgl(x[["versions"]], \(vs) v %in% vs), "\u25cf", "")
   }) |>
     rlang::set_names(versions) |>
     tibble::as_tibble()
