@@ -115,11 +115,11 @@ Extension points a `Tool` subclass may override in `private`:
 
 Built with `argparse` via `nemo_cli()`. Three subcommands:
 
-| Subcommand | Key args                         | What it does                                                   |
-| ---------- | -------------------------------- | -------------------------------------------------------------- |
-| `list`     | `-d IN_DIR -f FORMAT -m MAX`     | Lists parsable files; output as `pretty` or `tsv`              |
-| `tidy`     | `-d IN_DIR -o OUT_DIR -f FORMAT` | Runs `run()` and writes tidy outputs                           |
-| `sync`     | `-s S3_SRC -d DEST`              | `s3sync()` with the workflow's schema-derived include patterns |
+| Subcommand | Key args                            | What it does                                                   |
+| ---------- | --------------------------------    | -------------------------------------------------------------- |
+| `list`     | `-d INPUT_DIR -f FORMAT -m MAX`     | Lists parsable files; output as `pretty` or `tsv`              |
+| `tidy`     | `-d INPUT_DIR -o OUT_DIR -f FORMAT` | Runs `run()` and writes tidy outputs                           |
+| `sync`     | `-s S3_SRC -d DEST`                 | `s3sync()` with the workflow's schema-derived include patterns |
 
 All accept `-w WORKFLOW` (omitted when the child CLI fixes `wf`) and `-q`
 (quiet). `sync` also accepts `--dryrun` and `--show_patterns` (print the

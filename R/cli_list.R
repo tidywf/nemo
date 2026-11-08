@@ -21,7 +21,7 @@ cli_list_add_args <- function(subp, wf = NULL) {
   if (is.null(wf)) {
     l$add_argument("-w", "--workflow", help = "Workflow name.", required = TRUE)
   }
-  l$add_argument("-d", "--in_dir", help = "Input directory.", required = TRUE)
+  l$add_argument("-d", "--input_dir", help = "Input directory.", required = TRUE)
   # fmt: skip
   l$add_argument("-f", "--format", help = paste0("Format of list output [def: %(default)s] (", fmts, ")"), default = cli_nemo_list_formats[["pretty"]])
   l$add_argument("-m", "--max", help = "Max rows to show.", type = "integer")
@@ -36,27 +36,27 @@ cli_list_add_args <- function(subp, wf = NULL) {
 #' e.g. `tidywigits.R`).
 #'
 #' @param args Named list of parsed CLI arguments, as returned by argparse.
-#' Expected fields: `format`, `in_dir`, `workflow` (may be `NULL` when `wf`
+#' Expected fields: `format`, `input_dir`, `workflow` (may be `NULL` when `wf`
 #' is provided), `max`, `quiet`.
 #' @param wf (`character(1)` or `NULL`)\cr
 #' Workflow override. When non-NULL, replaces `args$workflow`.
 #' @examples
 #' path <- system.file("extdata/tool1", package = "nemo")
-#' args <- list(format = "pretty", in_dir = path, workflow = NULL, quiet = FALSE)
+#' args <- list(format = "pretty", input_dir = path, workflow = NULL, quiet = FALSE)
 #' capture.output(cli_list_parse_args(args, wf = "workflow1"))
 #' @testexamples
 #' expect_no_error(capture.output(cli_list_parse_args(args, wf = "workflow1")))
-#' args_wf <- list(format = "pretty", in_dir = path, workflow = "workflow1", quiet = FALSE)
+#' args_wf <- list(format = "pretty", input_dir = path, workflow = "workflow1", quiet = FALSE)
 #' expect_no_error(capture.output(cli_list_parse_args(args_wf, wf = NULL)))
-#' args_quiet <- list(format = "pretty", in_dir = path, workflow = NULL, quiet = TRUE)
+#' args_quiet <- list(format = "pretty", input_dir = path, workflow = NULL, quiet = TRUE)
 #' expect_no_error(capture.output(cli_list_parse_args(args_quiet, wf = "workflow1")))
-#' args_tsv <- list(format = "tsv", in_dir = path, workflow = NULL, quiet = FALSE)
+#' args_tsv <- list(format = "tsv", input_dir = path, workflow = NULL, quiet = FALSE)
 #' expect_no_error(capture.output(cli_list_parse_args(args_tsv, wf = "workflow1")))
 #' @export
 cli_list_parse_args <- function(args, wf = NULL) {
   list_args <- list(
     format = args$format,
-    in_dir = args$in_dir,
+    input_dir = args$input_dir,
     workflow = wf %||% args$workflow,
     max = args$max
   )
@@ -68,23 +68,23 @@ cli_list_parse_args <- function(args, wf = NULL) {
 
 #' List parsable workflow output files
 #'
-#' Discovers files under `in_dir` for the given workflow and prints a summary
+#' Discovers files under `input_dir` for the given workflow and prints a summary
 #' table to stdout.
 #'
-#' @param in_dir (`character(1)`)\cr Input directory to search.
+#' @param input_dir (`character(1)`)\cr Input directory to search.
 #' @param workflow (`character(1)`)\cr Workflow name (e.g. `"wigits"`).
 #' @param format (`character(1)`)\cr Output format: `"pretty"` or `"tsv"`.
 #' @param max (`integer(1)` or `NULL`)\cr Max rows to show. `NULL` shows all.
 #' @examples
 #' path <- system.file("extdata/tool1", package = "nemo")
 #' out_pretty <- capture.output(
-#'   cli_nemo_list(in_dir = path, workflow = "workflow1", format = "pretty")
+#'   cli_nemo_list(input_dir = path, workflow = "workflow1", format = "pretty")
 #' )
 #' out_tsv <- capture.output(
-#'   cli_nemo_list(in_dir = path, workflow = "workflow1", format = "tsv")
+#'   cli_nemo_list(input_dir = path, workflow = "workflow1", format = "tsv")
 #' )
 #' out_max <- capture.output(
-#'   cli_nemo_list(in_dir = path, workflow = "workflow1", format = "pretty", max = 3)
+#'   cli_nemo_list(input_dir = path, workflow = "workflow1", format = "pretty", max = 3)
 #' )
 #' @testexamples
 #' expect_true(grepl("tool_parser", out_pretty[1]))
@@ -92,13 +92,13 @@ cli_list_parse_args <- function(args, wf = NULL) {
 #' expect_true(grepl("tool_parser", out_tsv[1]))
 #' expect_true(grepl("\t", out_tsv[1]))
 #' expect_equal(length(out_max), 5)
-#' expect_error(cli_nemo_list(in_dir = path, workflow = "workflow1", format = "parquet"))
-#' expect_error(cli_nemo_list(in_dir = path, workflow = "notaworkflow", format = "pretty"))
+#' expect_error(cli_nemo_list(input_dir = path, workflow = "workflow1", format = "parquet"))
+#' expect_error(cli_nemo_list(input_dir = path, workflow = "notaworkflow", format = "pretty"))
 #' @export
-cli_nemo_list <- function(in_dir, workflow, format = "pretty", max = NULL) {
+cli_nemo_list <- function(input_dir, workflow, format = "pretty", max = NULL) {
   fun <- nemoverse_wf_dispatch(workflow)
   nemo_assert_out_fmt(format, choices = cli_nemo_list_formats)
-  obj <- fun$new(in_dir)
+  obj <- fun$new(input_dir)
   d <- obj$list_files()
   res <- d |>
     dplyr::mutate(n = dplyr::row_number()) |>

@@ -21,7 +21,7 @@ cli_tidy_add_args <- function(subp, wf = NULL) {
   if (is.null(wf)) {
     tidy$add_argument("-w", "--workflow", help = "Workflow name.", required = TRUE)
   }
-  tidy$add_argument("-d", "--in_dir", help = "Input directory.", required = TRUE)
+  tidy$add_argument("-d", "--input_dir", help = "Input directory.", required = TRUE)
   tidy$add_argument("-o", "--output_dir", help = "Output directory.")
   # fmt: skip
   tidy$add_argument("-f", "--format", help = paste0("Format of output [def: %(default)s] (", fmts, ")"), default = "parquet")
@@ -55,7 +55,7 @@ cli_tidy_add_args <- function(subp, wf = NULL) {
 #' e.g. `tidywigits.R`).
 #'
 #' @param args Named list of parsed CLI arguments, as returned by argparse.
-#' Expected fields: `format`, `in_dir`, `output_dir`, `input_id` (optional),
+#' Expected fields: `format`, `input_dir`, `output_dir`, `input_id` (optional),
 #' `output_id` (optional), `ulid`, `prefix_include`, `dbname`, `dbuser`,
 #' `dbhost` (optional), `dbport` (optional), `include`, `exclude`, `workflow`
 #' (may be `NULL` when `wf` is provided), `quiet`.
@@ -71,7 +71,7 @@ cli_tidy_add_args <- function(subp, wf = NULL) {
 #' @examples
 #' path <- system.file("extdata/tool1", package = "nemo")
 #' args <- list(
-#'   format = "tsv", in_dir = path, output_dir = tempfile(),
+#'   format = "tsv", input_dir = path, output_dir = tempfile(),
 #'   input_id = "run1", output_id = NULL, ulid = FALSE,
 #'   prefix_include = FALSE, workflow = NULL, dbname = NULL, dbuser = NULL,
 #'   include = NULL, exclude = NULL, quiet = FALSE
@@ -116,7 +116,7 @@ cli_tidy_parse_args <- function(args, wf = NULL, dbdrv = NULL) {
   output_id <- if (args$ulid) ulid::ulid() else args$output_id
   tidy_args <- list(
     workflow = wf %||% args$workflow,
-    in_dir = args$in_dir,
+    input_dir = args$input_dir,
     output_dir = output_dir,
     out_format = args$format,
     input_id = args$input_id,
@@ -138,12 +138,12 @@ cli_tidy_parse_args <- function(args, wf = NULL, dbdrv = NULL) {
 
 #' Tidy workflow output files
 #'
-#' Discovers and tidies files under `in_dir` for the given workflow, writing
+#' Discovers and tidies files under `input_dir` for the given workflow, writing
 #' results to `output_dir` in the requested format.
 #'
 #' @param workflow (`character(1)`)\cr Workflow name passed to
 #' [nemoverse_wf_dispatch()].
-#' @param in_dir (`character(1)`)\cr Input directory to search.
+#' @param input_dir (`character(1)`)\cr Input directory to search.
 #' @param output_dir (`character(1)` or `NULL`)\cr Output directory. Required
 #' unless `out_format` is `"db"`.
 #' @param out_format (`character(1)`)\cr Output format. One of `"parquet"`,
@@ -172,24 +172,24 @@ cli_tidy_parse_args <- function(args, wf = NULL, dbdrv = NULL) {
 #' path <- system.file("extdata/tool1", package = "nemo")
 #' out <- tempfile()
 #' res <- cli_nemo_tidy(
-#'   workflow = "workflow1", in_dir = path, output_dir = out,
+#'   workflow = "workflow1", input_dir = path, output_dir = out,
 #'   out_format = "parquet", input_id = "run1"
 #' )
 #' @testexamples
 #' expect_true(inherits(res, "Workflow"))
 #' expect_true(length(res$written_files) > 0)
 #' expect_error(cli_nemo_tidy(
-#'   workflow = "workflow1", in_dir = path, output_dir = tempfile(),
+#'   workflow = "workflow1", input_dir = path, output_dir = tempfile(),
 #'   out_format = "badformat", input_id = "run1"
 #' ))
 #' expect_error(cli_nemo_tidy(
-#'   workflow = "notaworkflow", in_dir = path, output_dir = tempfile(),
+#'   workflow = "notaworkflow", input_dir = path, output_dir = tempfile(),
 #'   out_format = "parquet", input_id = "run1"
 #' ))
 #' @export
 cli_nemo_tidy <- function(
   workflow,
-  in_dir,
+  input_dir,
   output_dir,
   out_format,
   input_id = NULL,
@@ -215,8 +215,8 @@ cli_nemo_tidy <- function(
     dbconn <- rlang::exec(DBI::dbConnect, drv = dbdrv, !!!conn_args)
     on.exit(DBI::dbDisconnect(dbconn), add = TRUE)
   }
-  nemo_log("INFO", "Tidying dir: %s", in_dir)
-  obj <- fun$new(in_dir)
+  nemo_log("INFO", "Tidying dir: %s", input_dir)
+  obj <- fun$new(input_dir)
   run_wf <- function() {
     obj$run(
       output_dir = output_dir,

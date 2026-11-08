@@ -8,7 +8,7 @@ cli_list_parse_args(args, wf = NULL)
 }
 \arguments{
 \item{args}{Named list of parsed CLI arguments, as returned by argparse.
-Expected fields: \code{format}, \code{in_dir}, \code{workflow} (may be \code{NULL} when \code{wf}
+Expected fields: \code{format}, \code{input_dir}, \code{workflow} (may be \code{NULL} when \code{wf}
 is provided), \code{max}, \code{quiet}.}
 
 \item{wf}{(\code{character(1)} or \code{NULL})\cr
@@ -22,6 +22,6 @@ e.g. \code{tidywigits.R}).
 }
 \examples{
 path <- system.file("extdata/tool1", package = "nemo")
-args <- list(format = "pretty", in_dir = path, workflow = NULL, quiet = FALSE)
+args <- list(format = "pretty", input_dir = path, workflow = NULL, quiet = FALSE)
 capture.output(cli_list_parse_args(args, wf = "workflow1"))
 }

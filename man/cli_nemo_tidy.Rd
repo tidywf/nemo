@@ -6,7 +6,7 @@
 \usage{
 cli_nemo_tidy(
   workflow,
-  in_dir,
+  input_dir,
   output_dir,
   out_format,
   input_id = NULL,
@@ -25,7 +25,7 @@ cli_nemo_tidy(
 \item{workflow}{(\code{character(1)})\cr Workflow name passed to
 \code{\link[=nemoverse_wf_dispatch]{nemoverse_wf_dispatch()}}.}
 
-\item{in_dir}{(\code{character(1)})\cr Input directory to search.}
+\item{input_dir}{(\code{character(1)})\cr Input directory to search.}
 
 \item{output_dir}{(\code{character(1)} or \code{NULL})\cr Output directory. Required
 unless \code{out_format} is \code{"db"}.}
@@ -64,14 +64,14 @@ password file (e.g. \code{PGPASSWORD}, \verb{~/.pgpass}).}
 \code{NULL} excludes none.}
 }
 \description{
-Discovers and tidies files under \code{in_dir} for the given workflow, writing
+Discovers and tidies files under \code{input_dir} for the given workflow, writing
 results to \code{output_dir} in the requested format.
 }
 \examples{
 path <- system.file("extdata/tool1", package = "nemo")
 out <- tempfile()
 res <- cli_nemo_tidy(
-  workflow = "workflow1", in_dir = path, output_dir = out,
+  workflow = "workflow1", input_dir = path, output_dir = out,
   out_format = "parquet", input_id = "run1"
 )
 }

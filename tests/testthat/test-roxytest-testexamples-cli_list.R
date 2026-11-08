@@ -5,14 +5,14 @@
 test_that("Function cli_list_parse_args() @ L56", {
   
   path <- system.file("extdata/tool1", package = "nemo")
-  args <- list(format = "pretty", in_dir = path, workflow = NULL, quiet = FALSE)
+  args <- list(format = "pretty", input_dir = path, workflow = NULL, quiet = FALSE)
   capture.output(cli_list_parse_args(args, wf = "workflow1"))
   expect_no_error(capture.output(cli_list_parse_args(args, wf = "workflow1")))
-  args_wf <- list(format = "pretty", in_dir = path, workflow = "workflow1", quiet = FALSE)
+  args_wf <- list(format = "pretty", input_dir = path, workflow = "workflow1", quiet = FALSE)
   expect_no_error(capture.output(cli_list_parse_args(args_wf, wf = NULL)))
-  args_quiet <- list(format = "pretty", in_dir = path, workflow = NULL, quiet = TRUE)
+  args_quiet <- list(format = "pretty", input_dir = path, workflow = NULL, quiet = TRUE)
   expect_no_error(capture.output(cli_list_parse_args(args_quiet, wf = "workflow1")))
-  args_tsv <- list(format = "tsv", in_dir = path, workflow = NULL, quiet = FALSE)
+  args_tsv <- list(format = "tsv", input_dir = path, workflow = NULL, quiet = FALSE)
   expect_no_error(capture.output(cli_list_parse_args(args_tsv, wf = "workflow1")))
 })
 
@@ -21,20 +21,20 @@ test_that("Function cli_nemo_list() @ L98", {
   
   path <- system.file("extdata/tool1", package = "nemo")
   out_pretty <- capture.output(
-    cli_nemo_list(in_dir = path, workflow = "workflow1", format = "pretty")
+    cli_nemo_list(input_dir = path, workflow = "workflow1", format = "pretty")
   )
   out_tsv <- capture.output(
-    cli_nemo_list(in_dir = path, workflow = "workflow1", format = "tsv")
+    cli_nemo_list(input_dir = path, workflow = "workflow1", format = "tsv")
   )
   out_max <- capture.output(
-    cli_nemo_list(in_dir = path, workflow = "workflow1", format = "pretty", max = 3)
+    cli_nemo_list(input_dir = path, workflow = "workflow1", format = "pretty", max = 3)
   )
   expect_true(grepl("tool_parser", out_pretty[1]))
   expect_true(grepl("\\|", out_pretty[1]))
   expect_true(grepl("tool_parser", out_tsv[1]))
   expect_true(grepl("\t", out_tsv[1]))
   expect_equal(length(out_max), 5)
-  expect_error(cli_nemo_list(in_dir = path, workflow = "workflow1", format = "parquet"))
-  expect_error(cli_nemo_list(in_dir = path, workflow = "notaworkflow", format = "pretty"))
+  expect_error(cli_nemo_list(input_dir = path, workflow = "workflow1", format = "parquet"))
+  expect_error(cli_nemo_list(input_dir = path, workflow = "notaworkflow", format = "pretty"))
 })
 
