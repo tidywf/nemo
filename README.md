@@ -109,7 +109,7 @@ From GitHub:
 ``` r
 install.packages("remotes")
 remotes::install_github("tidywf/nemo") # latest main commit
-remotes::install_github("tidywf/nemo@v0.2.1") # specific version
+remotes::install_github("tidywf/nemo@v0.2.2") # specific version
 ```
 
 Conda: <https://anaconda.org/tidywf/r-nemo>. More options:
@@ -125,7 +125,7 @@ export PATH="${nemo_cli}:${PATH}"
 ```
 
     $ nemo.R --version
-    nemo 0.2.1
+    nemo 0.2.2
 
     #-----------------------------------#
     $ nemo.R --help
@@ -194,6 +194,7 @@ export PATH="${nemo_cli}:${PATH}"
     $ nemo.R s3sync --help
     usage: nemo.R s3sync [-h] -w WORKFLOW -s SRC -d DEST [--exclude EXCLUDE]
                          [--include INCLUDE] [--dryrun] [--show_patterns] [-q]
+                         [--verbose]
 
     options:
       -h, --help            show this help message and exit
@@ -208,3 +209,5 @@ export PATH="${nemo_cli}:${PATH}"
       --dryrun              Show what would be synced, without syncing.
       --show_patterns       Print the include/exclude patterns and exit.
       -q, --quiet           Shush all the logs.
+      --verbose             Show aws s3 sync's per-file output (default: errors
+                            and warnings only).
