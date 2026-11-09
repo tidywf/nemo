@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">nemo</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.2.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.2.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -40,7 +40,7 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>AWS S3 Sync Helper</h1>
-      <small class="dont-index">Source: <a href="https://github.com/tidywf/nemo/blob/v0.2.1/R/aws_s3.R" class="external-link"><code>R/aws_s3.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/tidywf/nemo/blob/v0.2.2/R/aws_s3.R" class="external-link"><code>R/aws_s3.R</code></a></small>
       <div class="d-none name"><code>s3sync.Rd</code></div>
     </div>
 
@@ -50,7 +50,7 @@
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">s3sync</span><span class="op">(</span><span class="va">src</span>, <span class="va">dest</span>, pats <span class="op">=</span> <span class="cn">NULL</span>, workflow <span class="op">=</span> <span class="cn">NULL</span>, dryrun <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">s3sync</span><span class="op">(</span><span class="va">src</span>, <span class="va">dest</span>, pats <span class="op">=</span> <span class="cn">NULL</span>, workflow <span class="op">=</span> <span class="cn">NULL</span>, dryrun <span class="op">=</span> <span class="cn">FALSE</span>, quiet <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -85,6 +85,14 @@ patterns to use. Ignored when <code>pats</code> is supplied.</p></dd>
 <dd><p>(<code>logical(1)</code>)<br>
 If <code>TRUE</code>, passes <code>--dryrun</code> to <code>aws s3 sync</code> so operations are displayed
 without being executed.</p></dd>
+
+
+<dt id="arg-quiet">quiet<a class="anchor" aria-label="anchor" href="#arg-quiet"></a></dt>
+<dd><p>(<code>logical(1)</code>)<br>
+If <code>TRUE</code> (default), passes <code>--only-show-errors</code> to <code>aws s3 sync</code>, so it
+prints only errors and warnings, not a line per file (ignored with
+<code>dryrun</code>, whose output is the point).
+<code>--no-progress</code> is always passed, so the live progress line never appears.</p></dd>
 
 </dl></div>
 

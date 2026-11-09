@@ -9,7 +9,7 @@ workflow's tool schemas declare (see wf_s3sync_patterns())."><meta property="og:
 
     <a class="navbar-brand me-2" href="../index.html">nemo</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.2.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.2.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -42,7 +42,7 @@ workflow's tool schemas declare (see wf_s3sync_patterns())."><meta property="og:
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Sync parsable workflow output files from S3</h1>
-      <small class="dont-index">Source: <a href="https://github.com/tidywf/nemo/blob/v0.2.1/R/cli_s3sync.R" class="external-link"><code>R/cli_s3sync.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/tidywf/nemo/blob/v0.2.2/R/cli_s3sync.R" class="external-link"><code>R/cli_s3sync.R</code></a></small>
       <div class="d-none name"><code>cli_nemo_s3sync.Rd</code></div>
     </div>
 
@@ -60,7 +60,8 @@ workflow's tool schemas declare (see <code><a href="wf_s3sync_patterns.html">wf_
 <span>  dryrun <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  show_patterns <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  include <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  exclude <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  exclude <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  quiet <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -94,6 +95,12 @@ syncing.</p></dd>
 <dd><p>(<code>character(n)</code>)<br>
 Extra globs, added after the workflow's own patterns (see
 <code><a href="wf_s3sync_patterns.html">wf_s3sync_patterns()</a></code>).</p></dd>
+
+
+<dt id="arg-quiet">quiet<a class="anchor" aria-label="anchor" href="#arg-quiet"></a></dt>
+<dd><p>(<code>logical(1)</code>)<br>
+Pass <code>--only-show-errors</code> to <code>aws s3 sync</code> (see <code><a href="s3sync.html">s3sync()</a></code>). The CLI
+sets it unless <code>--verbose</code> is given.</p></dd>
 
 </dl></div>
 

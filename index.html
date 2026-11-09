@@ -29,7 +29,7 @@
 
     <a class="navbar-brand me-2" href="index.html">nemo</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.2.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.2.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -196,7 +196,7 @@
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"remotes"</span><span class="op">)</span></span>
 <span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"tidywf/nemo"</span><span class="op">)</span> <span class="co"># latest main commit</span></span>
-<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"tidywf/nemo@v0.2.1"</span><span class="op">)</span> <span class="co"># specific version</span></span></code></pre></div>
+<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"tidywf/nemo@v0.2.2"</span><span class="op">)</span> <span class="co"># specific version</span></span></code></pre></div>
 <p>Conda: <a href="https://anaconda.org/tidywf/r-nemo" class="external-link uri">https://anaconda.org/tidywf/r-nemo</a>. More options: <a href="https://tidywf.github.io/nemo/articles/installation" class="uri">https://tidywf.github.io/nemo/articles/installation</a></p>
 </div>
 <div class="section level2">
@@ -206,7 +206,7 @@
 <div class="sourceCode" id="cb5"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="va">nemo_cli</span><span class="op">=</span><span class="va">$(</span><span class="ex">Rscript</span> <span class="at">-e</span> <span class="st">'x = system.file("cli", package = "nemo"); cat(x, "\n")'</span> <span class="kw">|</span> <span class="fu">xargs</span><span class="va">)</span></span>
 <span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a><span class="bu">export</span> <span class="va">PATH</span><span class="op">=</span><span class="st">"</span><span class="va">${nemo_cli}</span><span class="st">:</span><span class="va">${PATH}</span><span class="st">"</span></span></code></pre></div>
 <div class="sourceCode" id="cb6"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="sc">$</span> nemo.R <span class="sc">--</span>version</span>
-<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>nemo <span class="dv">0</span>.<span class="fl">2.1</span></span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>nemo <span class="dv">0</span>.<span class="fl">2.2</span></span>
 <span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a></span>
 <span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a><span class="co">#-----------------------------------#</span></span>
 <span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a><span class="sc">$</span> nemo.R <span class="sc">--</span>help</span>
@@ -275,20 +275,23 @@
 <span id="cb6-68"><a href="#cb6-68" tabindex="-1"></a><span class="sc">$</span> nemo.R s3sync <span class="sc">--</span>help</span>
 <span id="cb6-69"><a href="#cb6-69" tabindex="-1"></a>usage<span class="sc">:</span> nemo.R s3sync [<span class="sc">-</span>h] <span class="sc">-</span>w WORKFLOW <span class="sc">-</span>s SRC <span class="sc">-</span>d DEST [<span class="sc">--</span>exclude EXCLUDE]</span>
 <span id="cb6-70"><a href="#cb6-70" tabindex="-1"></a>                     [<span class="sc">--</span>include INCLUDE] [<span class="sc">--</span>dryrun] [<span class="sc">--</span>show_patterns] [<span class="sc">-</span>q]</span>
-<span id="cb6-71"><a href="#cb6-71" tabindex="-1"></a></span>
-<span id="cb6-72"><a href="#cb6-72" tabindex="-1"></a>options<span class="sc">:</span></span>
-<span id="cb6-73"><a href="#cb6-73" tabindex="-1"></a>  <span class="sc">-</span>h, <span class="sc">--</span>help            show this help message and exit</span>
-<span id="cb6-74"><a href="#cb6-74" tabindex="-1"></a>  <span class="sc">-</span>w, <span class="sc">--</span>workflow WORKFLOW</span>
-<span id="cb6-75"><a href="#cb6-75" tabindex="-1"></a>                        Workflow name.</span>
-<span id="cb6-76"><a href="#cb6-76" tabindex="-1"></a>  <span class="sc">-</span>s, <span class="sc">--</span>src SRC         S3 source path.</span>
-<span id="cb6-77"><a href="#cb6-77" tabindex="-1"></a>  <span class="sc">-</span>d, <span class="sc">--</span>dest DEST       Local destination directory.</span>
-<span id="cb6-78"><a href="#cb6-78" tabindex="-1"></a>  <span class="sc">--</span>exclude EXCLUDE     Extra glob to exclude, on top of the workflow<span class="st">'s</span></span>
-<span id="cb6-79"><a href="#cb6-79" tabindex="-1"></a><span class="st">                        patterns. Repeatable.</span></span>
-<span id="cb6-80"><a href="#cb6-80" tabindex="-1"></a><span class="st">  --include INCLUDE     Extra glob to include, on top of the workflow'</span>s</span>
-<span id="cb6-81"><a href="#cb6-81" tabindex="-1"></a>                        patterns. Wins over any exclude. Repeatable.</span>
-<span id="cb6-82"><a href="#cb6-82" tabindex="-1"></a>  <span class="sc">--</span>dryrun              Show what would be synced, without syncing.</span>
-<span id="cb6-83"><a href="#cb6-83" tabindex="-1"></a>  <span class="sc">--</span>show_patterns       Print the include<span class="sc">/</span>exclude patterns and exit.</span>
-<span id="cb6-84"><a href="#cb6-84" tabindex="-1"></a>  <span class="sc">-</span>q, <span class="sc">--</span>quiet           Shush all the logs.</span></code></pre></div>
+<span id="cb6-71"><a href="#cb6-71" tabindex="-1"></a>                     [<span class="sc">--</span>verbose]</span>
+<span id="cb6-72"><a href="#cb6-72" tabindex="-1"></a></span>
+<span id="cb6-73"><a href="#cb6-73" tabindex="-1"></a>options<span class="sc">:</span></span>
+<span id="cb6-74"><a href="#cb6-74" tabindex="-1"></a>  <span class="sc">-</span>h, <span class="sc">--</span>help            show this help message and exit</span>
+<span id="cb6-75"><a href="#cb6-75" tabindex="-1"></a>  <span class="sc">-</span>w, <span class="sc">--</span>workflow WORKFLOW</span>
+<span id="cb6-76"><a href="#cb6-76" tabindex="-1"></a>                        Workflow name.</span>
+<span id="cb6-77"><a href="#cb6-77" tabindex="-1"></a>  <span class="sc">-</span>s, <span class="sc">--</span>src SRC         S3 source path.</span>
+<span id="cb6-78"><a href="#cb6-78" tabindex="-1"></a>  <span class="sc">-</span>d, <span class="sc">--</span>dest DEST       Local destination directory.</span>
+<span id="cb6-79"><a href="#cb6-79" tabindex="-1"></a>  <span class="sc">--</span>exclude EXCLUDE     Extra glob to exclude, on top of the workflow<span class="st">'s</span></span>
+<span id="cb6-80"><a href="#cb6-80" tabindex="-1"></a><span class="st">                        patterns. Repeatable.</span></span>
+<span id="cb6-81"><a href="#cb6-81" tabindex="-1"></a><span class="st">  --include INCLUDE     Extra glob to include, on top of the workflow'</span>s</span>
+<span id="cb6-82"><a href="#cb6-82" tabindex="-1"></a>                        patterns. Wins over any exclude. Repeatable.</span>
+<span id="cb6-83"><a href="#cb6-83" tabindex="-1"></a>  <span class="sc">--</span>dryrun              Show what would be synced, without syncing.</span>
+<span id="cb6-84"><a href="#cb6-84" tabindex="-1"></a>  <span class="sc">--</span>show_patterns       Print the include<span class="sc">/</span>exclude patterns and exit.</span>
+<span id="cb6-85"><a href="#cb6-85" tabindex="-1"></a>  <span class="sc">-</span>q, <span class="sc">--</span>quiet           Shush all the logs.</span>
+<span id="cb6-86"><a href="#cb6-86" tabindex="-1"></a>  <span class="sc">--</span>verbose             Show aws s3 sync<span class="st">'s per-file output (default: errors</span></span>
+<span id="cb6-87"><a href="#cb6-87" tabindex="-1"></a><span class="st">                        and warnings only).</span></span></code></pre></div>
 </div>
 </div>
 
