@@ -109,7 +109,7 @@ From GitHub:
 ``` r
 install.packages("remotes")
 remotes::install_github("tidywf/nemo") # latest main commit
-remotes::install_github("tidywf/nemo@v0.2.0.9000") # specific version
+remotes::install_github("tidywf/nemo@v0.2.1") # specific version
 ```
 
 Conda: <https://anaconda.org/tidywf/r-nemo>. More options:
@@ -125,27 +125,27 @@ export PATH="${nemo_cli}:${PATH}"
 ```
 
     $ nemo.R --version
-    nemo 0.2.0.9000
+    nemo 0.2.1
 
     #-----------------------------------#
     $ nemo.R --help
-    usage: nemo.R [-h] [-v] {tidy,list,sync} ...
+    usage: nemo.R [-h] [-v] {tidy,list,s3sync} ...
 
     Tidy Bioinformatic Workflows
 
     positional arguments:
-      {tidy,list,sync}  sub-command help
-        tidy            Tidy Workflow Outputs
-        list            List Parsable Workflow Outputs
-        sync            Sync Parsable Workflow Outputs From AWS S3
+      {tidy,list,s3sync}  sub-command help
+        tidy              Tidy Workflow Outputs
+        list              List Parsable Workflow Outputs
+        s3sync            Sync Parsable Workflow Outputs From AWS S3
 
     options:
-      -h, --help        show this help message and exit
-      -v, --version     show program's version number and exit
+      -h, --help          show this help message and exit
+      -v, --version       show program's version number and exit
     '
     #-----------------------------------#
     $ nemo.R tidy --help
-    usage: nemo.R tidy [-h] -w WORKFLOW -d IN_DIR [-o OUTPUT_DIR] [-f FORMAT]
+    usage: nemo.R tidy [-h] -w WORKFLOW -d INPUT_DIR [-o OUTPUT_DIR] [-f FORMAT]
                        [--input_id INPUT_ID] [--output_id OUTPUT_ID | --ulid]
                        [--dbname DBNAME] [--dbuser DBUSER] [--dbhost DBHOST]
                        [--dbport DBPORT] [--include INCLUDE] [--exclude EXCLUDE]
@@ -155,7 +155,8 @@ export PATH="${nemo_cli}:${PATH}"
       -h, --help            show this help message and exit
       -w, --workflow WORKFLOW
                             Workflow name.
-      -d, --in_dir IN_DIR   Input directory.
+      -d, --input_dir INPUT_DIR
+                            Input directory.
       -o, --output_dir OUTPUT_DIR
                             Output directory.
       -f, --format FORMAT   Format of output [def: parquet] (parquet, db, tsv,
@@ -177,21 +178,22 @@ export PATH="${nemo_cli}:${PATH}"
 
     #-----------------------------------#
     $ nemo.R list --help
-    usage: nemo.R list [-h] -w WORKFLOW -d IN_DIR [-f FORMAT] [-m MAX] [-q]
+    usage: nemo.R list [-h] -w WORKFLOW -d INPUT_DIR [-f FORMAT] [-m MAX] [-q]
 
     options:
       -h, --help            show this help message and exit
       -w, --workflow WORKFLOW
                             Workflow name.
-      -d, --in_dir IN_DIR   Input directory.
+      -d, --input_dir INPUT_DIR
+                            Input directory.
       -f, --format FORMAT   Format of list output [def: pretty] (tsv, pretty)
       -m, --max MAX         Max rows to show.
       -q, --quiet           Shush all the logs.
 
     #-----------------------------------#
-    $ nemo.R sync --help
-    usage: nemo.R sync [-h] -w WORKFLOW -s SRC -d DEST [--dryrun]
-                       [--show_patterns] [-q]
+    $ nemo.R s3sync --help
+    usage: nemo.R s3sync [-h] -w WORKFLOW -s SRC -d DEST [--exclude EXCLUDE]
+                         [--include INCLUDE] [--dryrun] [--show_patterns] [-q]
 
     options:
       -h, --help            show this help message and exit
@@ -199,6 +201,10 @@ export PATH="${nemo_cli}:${PATH}"
                             Workflow name.
       -s, --src SRC         S3 source path.
       -d, --dest DEST       Local destination directory.
+      --exclude EXCLUDE     Extra glob to exclude, on top of the workflow's
+                            patterns. Repeatable.
+      --include INCLUDE     Extra glob to include, on top of the workflow's
+                            patterns. Wins over any exclude. Repeatable.
       --dryrun              Show what would be synced, without syncing.
       --show_patterns       Print the include/exclude patterns and exit.
       -q, --quiet           Shush all the logs.
