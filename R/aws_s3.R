@@ -15,6 +15,11 @@
 #' @param dryrun (`logical(1)`)\cr
 #' If `TRUE`, passes `--dryrun` to `aws s3 sync` so operations are displayed
 #' without being executed.
+#' @param quiet (`logical(1)`)\cr
+#' If `TRUE` (default), passes `--only-show-errors` to `aws s3 sync`, so it
+#' prints only errors and warnings, not a line per file (ignored with
+#' `dryrun`, whose output is the point).
+#' `--no-progress` is always passed, so the live progress line never appears.
 #'
 #' @examples
 #' \dontrun{
@@ -31,7 +36,14 @@
 #' s3sync(src, dest, workflow = "wigits")
 #' }
 #' @export
-s3sync <- function(src, dest, pats = NULL, workflow = NULL, dryrun = FALSE) {
+s3sync <- function(
+  src,
+  dest,
+  pats = NULL,
+  workflow = NULL,
+  dryrun = FALSE,
+  quiet = TRUE
+) {
   pats_default <- tibble::tribble(
     ~inex , ~pat ,
     "ex"  , "*"
@@ -40,6 +52,13 @@ s3sync <- function(src, dest, pats = NULL, workflow = NULL, dryrun = FALSE) {
     pats <- wf_s3sync_patterns(workflow)
   }
   pats <- pats %||% pats_default
+  args <- s3sync_args(src, dest, pats, dryrun = dryrun, quiet = quiet)
+  system2("aws", args)
+}
+
+# `aws s3 sync` argument vector for s3sync(); split out so it can be tested
+# without calling aws.
+s3sync_args <- function(src, dest, pats, dryrun = FALSE, quiet = TRUE) {
   dest <- path.expand(dest)
   pat_args <- pats |>
     dplyr::mutate(
@@ -48,11 +67,13 @@ s3sync <- function(src, dest, pats = NULL, workflow = NULL, dryrun = FALSE) {
     ) |>
     tidyr::pivot_longer(c("flag", "pat"), values_to = "value") |>
     dplyr::pull("value")
-  args <- c("s3", "sync", shQuote(src), shQuote(dest), pat_args)
+  args <- c("s3", "sync", shQuote(src), shQuote(dest), pat_args, "--no-progress")
   if (dryrun) {
     args <- c(args, "--dryrun")
+  } else if (quiet) {
+    args <- c(args, "--only-show-errors")
   }
-  system2("aws", args)
+  args
 }
 
 #' S3 Sync Patterns for a Workflow

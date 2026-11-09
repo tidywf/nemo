@@ -10,7 +10,7 @@ cli_s3sync_parse_args(args, wf = NULL)
 \item{args}{Named list of parsed CLI arguments, as returned by argparse.
 Expected fields: \code{src}, \code{dest}, \code{workflow} (may be \code{NULL} when \code{wf} is
 provided), \code{include} and \code{exclude} (may be \code{NULL}), \code{dryrun},
-\code{show_patterns}, \code{quiet}.}
+\code{show_patterns}, \code{quiet}, \code{verbose} (may be \code{NULL}).}
 
 \item{wf}{(\code{character(1)} or \code{NULL})\cr
 Workflow override. When non-NULL, replaces \code{args$workflow}.}

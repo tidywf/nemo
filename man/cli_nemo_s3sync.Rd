@@ -11,7 +11,8 @@ cli_nemo_s3sync(
   dryrun = FALSE,
   show_patterns = FALSE,
   include = NULL,
-  exclude = NULL
+  exclude = NULL,
+  quiet = TRUE
 )
 }
 \arguments{
@@ -30,6 +31,10 @@ syncing.}
 \item{include, exclude}{(\code{character(n)})\cr
 Extra globs, added after the workflow's own patterns (see
 \code{\link[=wf_s3sync_patterns]{wf_s3sync_patterns()}}).}
+
+\item{quiet}{(\code{logical(1)})\cr
+Pass \code{--only-show-errors} to \verb{aws s3 sync} (see \code{\link[=s3sync]{s3sync()}}). The CLI
+sets it unless \code{--verbose} is given.}
 }
 \description{
 Runs \verb{aws s3 sync} from \code{src} to \code{dest}, pulling down only the files the

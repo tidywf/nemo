@@ -24,6 +24,12 @@ child1 <- system.file(
 
 ## dev
 
+## v0.2.2 (2026-11-09)
+
+- `s3sync()` / CLI `s3sync`: quiet by default. `aws s3 sync` always gets
+  `--no-progress`, and `--only-show-errors` (errors and warnings only) unless
+  `quiet = FALSE` / CLI `--verbose`. `--dryrun` output is never silenced.
+
 ## v0.2.1 (2026-11-09)
 
 - CLI: `--in_dir` renamed to `--input_dir`

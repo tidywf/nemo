@@ -2,7 +2,7 @@
 
 # File R/aws_s3.R: @testexamples
 
-test_that("Function wf_s3sync_patterns() @ L86", {
+test_that("Function wf_s3sync_patterns() @ L107", {
   
   (pats <- wf_s3sync_patterns("workflow1"))
   (pats2 <- wf_s3sync_patterns("workflow1", include = "*.a.tsv", exclude = "*.b.tsv"))
@@ -17,7 +17,7 @@ test_that("Function wf_s3sync_patterns() @ L86", {
 })
 
 
-test_that("Function glob_to_regex() @ L150", {
+test_that("Function glob_to_regex() @ L171", {
   
   (r1 <- glob_to_regex("*.purple.qc"))
   (r2 <- glob_to_regex("*purple/*.purple.qc"))
@@ -44,7 +44,7 @@ test_that("Function glob_to_regex() @ L150", {
 })
 
 
-test_that("Function schema_glob_check() @ L229", {
+test_that("Function schema_glob_check() @ L250", {
   
   (bad <- schema_glob_check("nemo"))
   expect_equal(nrow(bad), 0)

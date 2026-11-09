@@ -4,7 +4,7 @@
 \alias{s3sync}
 \title{AWS S3 Sync Helper}
 \usage{
-s3sync(src, dest, pats = NULL, workflow = NULL, dryrun = FALSE)
+s3sync(src, dest, pats = NULL, workflow = NULL, dryrun = FALSE, quiet = TRUE)
 }
 \arguments{
 \item{src}{(\code{character(1)})\cr
@@ -26,6 +26,12 @@ patterns to use. Ignored when \code{pats} is supplied.}
 \item{dryrun}{(\code{logical(1)})\cr
 If \code{TRUE}, passes \code{--dryrun} to \verb{aws s3 sync} so operations are displayed
 without being executed.}
+
+\item{quiet}{(\code{logical(1)})\cr
+If \code{TRUE} (default), passes \code{--only-show-errors} to \verb{aws s3 sync}, so it
+prints only errors and warnings, not a line per file (ignored with
+\code{dryrun}, whose output is the point).
+\code{--no-progress} is always passed, so the live progress line never appears.}
 }
 \description{
 AWS S3 Sync Helper

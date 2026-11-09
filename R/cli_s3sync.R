@@ -31,6 +31,8 @@ cli_s3sync_add_args <- function(subp, wf = NULL) {
   # fmt: skip
   s$add_argument("--show_patterns", help = "Print the include/exclude patterns and exit.", action = "store_true")
   s$add_argument("-q", "--quiet", help = "Shush all the logs.", action = "store_true")
+  # fmt: skip
+  s$add_argument("--verbose", help = "Show aws s3 sync's per-file output (default: errors and warnings only).", action = "store_true")
 }
 
 #' Parse and dispatch the 's3sync' subcommand
@@ -43,7 +45,7 @@ cli_s3sync_add_args <- function(subp, wf = NULL) {
 #' @param args Named list of parsed CLI arguments, as returned by argparse.
 #' Expected fields: `src`, `dest`, `workflow` (may be `NULL` when `wf` is
 #' provided), `include` and `exclude` (may be `NULL`), `dryrun`,
-#' `show_patterns`, `quiet`.
+#' `show_patterns`, `quiet`, `verbose` (may be `NULL`).
 #' @param wf (`character(1)` or `NULL`)\cr
 #' Workflow override. When non-NULL, replaces `args$workflow`.
 #' @examples
@@ -66,7 +68,8 @@ cli_s3sync_parse_args <- function(args, wf = NULL) {
     dryrun = args$dryrun,
     show_patterns = args$show_patterns,
     include = args$include,
-    exclude = args$exclude
+    exclude = args$exclude,
+    quiet = !isTRUE(args$verbose)
   )
 }
 
@@ -85,6 +88,9 @@ cli_s3sync_parse_args <- function(args, wf = NULL) {
 #' @param include,exclude (`character(n)`)\cr
 #' Extra globs, added after the workflow's own patterns (see
 #' [wf_s3sync_patterns()]).
+#' @param quiet (`logical(1)`)\cr
+#' Pass `--only-show-errors` to `aws s3 sync` (see [s3sync()]). The CLI
+#' sets it unless `--verbose` is given.
 #' @examples
 #' out <- capture.output(
 #'   cli_nemo_s3sync(
@@ -105,7 +111,8 @@ cli_nemo_s3sync <- function(
   dryrun = FALSE,
   show_patterns = FALSE,
   include = NULL,
-  exclude = NULL
+  exclude = NULL,
+  quiet = TRUE
 ) {
   nemo_assert_scalar_chr(src)
   nemo_assert_scalar_chr(dest)
@@ -116,7 +123,13 @@ cli_nemo_s3sync <- function(
   }
   nemo_log("INFO", "Syncing %d patterns from %s to %s", nrow(pats), src, dest)
   fs::dir_create(dest)
-  status <- s3sync(src = src, dest = dest, pats = pats, dryrun = dryrun)
+  status <- s3sync(
+    src = src,
+    dest = dest,
+    pats = pats,
+    dryrun = dryrun,
+    quiet = quiet
+  )
   if (status != 0L) {
     nemo_stop(glue("aws s3 sync failed (exit {status})."))
   }

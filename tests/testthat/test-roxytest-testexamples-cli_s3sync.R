@@ -2,7 +2,7 @@
 
 # File R/cli_s3sync.R: @testexamples
 
-test_that("Function cli_s3sync_parse_args() @ L58", {
+test_that("Function cli_s3sync_parse_args() @ L60", {
   
   args <- list(
     src = "s3://bucket/run1", dest = tempfile(), workflow = NULL,
@@ -13,7 +13,7 @@ test_that("Function cli_s3sync_parse_args() @ L58", {
 })
 
 
-test_that("Function cli_nemo_s3sync() @ L101", {
+test_that("Function cli_nemo_s3sync() @ L107", {
   
   out <- capture.output(
     cli_nemo_s3sync(
