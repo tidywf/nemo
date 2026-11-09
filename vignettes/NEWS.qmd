@@ -22,8 +22,11 @@ child1 <- system.file(
 #| label: child-news
 ```
 
-## v0.2.0.9000 (dev)
+## dev
 
+## v0.2.1 (2026-11-09)
+
+- CLI: `--in_dir` renamed to `--input_dir`
 - CLI: `sync` subcommand renamed to `s3sync`.
 - CLI: `s3sync` gets repeatable `--include` and `--exclude` globs, added after
   the workflow's own patterns.
