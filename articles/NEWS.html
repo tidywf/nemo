@@ -27,7 +27,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">nemo</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.2.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.2.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -71,7 +71,7 @@
 
 
 
-      <small class="dont-index">Source: <a href="https://github.com/tidywf/nemo/blob/v0.2.0/vignettes/NEWS.qmd" class="external-link"><code>vignettes/NEWS.qmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/tidywf/nemo/blob/v0.2.1/vignettes/NEWS.qmd" class="external-link"><code>vignettes/NEWS.qmd</code></a></small>
       <div class="d-none name"><code></code></div>
     </div>
 
@@ -92,9 +92,17 @@ See any child package's NEWS.qmd for the exact wiring.
 The parent MUST define `repo` (the package's GitHub URL) before the child
 runs; the helpers below close over it. They build links to compares, PRs,
 issues, and users: pr(48), iss(11), vdiff("0.1.0", "0.0.3"), user("reisingerf").
---><section class="level2"><h2 id="v0-2-0-9000-dev">v0.2.0.9000 (dev)<a class="anchor" aria-label="anchor" href="#v0-2-0-9000-dev"></a>
+--><section class="level2"><h2 id="dev">dev<a class="anchor" aria-label="anchor" href="#dev"></a>
 </h2>
-</section><section class="level2"><h2 id="v0-2-0-2026-10-24">v0.2.0 (2026-10-24)<a class="anchor" aria-label="anchor" href="#v0-2-0-2026-10-24"></a>
+</section><section class="level2"><h2 id="v0-2-1-2026-11-09">v0.2.1 (2026-11-09)<a class="anchor" aria-label="anchor" href="#v0-2-1-2026-11-09"></a>
+</h2>
+<ul>
+<li>CLI: <code>--in_dir</code> renamed to <code>--input_dir</code>
+</li>
+<li>CLI: <code>sync</code> subcommand renamed to <code>s3sync</code>.</li>
+<li>CLI: <code>s3sync</code> gets repeatable <code>--include</code> and <code>--exclude</code> globs, added after the workflow’s own patterns.</li>
+<li>Rename <code>sync</code> functions and field: <code><a href="../reference/cli_nemo_s3sync.html">cli_nemo_s3sync()</a></code>, <code><a href="../reference/cli_s3sync_add_args.html">cli_s3sync_add_args()</a></code>, <code><a href="../reference/cli_s3sync_parse_args.html">cli_s3sync_parse_args()</a></code>, <code><a href="../reference/wf_s3sync_patterns.html">wf_s3sync_patterns()</a></code>, <code>Workflow$get_s3sync_patterns()</code>, <code>Workflow$s3sync_exclude</code>.</li>
+</ul></section><section class="level2"><h2 id="v0-2-0-2026-10-24">v0.2.0 (2026-10-24)<a class="anchor" aria-label="anchor" href="#v0-2-0-2026-10-24"></a>
 </h2>
 <section class="level3"><h3 id="new-features">New features<a class="anchor" aria-label="anchor" href="#new-features"></a>
 </h3>
@@ -107,7 +115,7 @@ issues, and users: pr(48), iss(11), vdiff("0.1.0", "0.0.3"), user("reisingerf").
 <code><a href="../reference/list_files_dir.html">list_files_dir()</a></code> follows symlinks and drops broken ones.</li>
 <li>
 <code><a href="../reference/nemo_schema_reactable.html">nemo_schema_reactable()</a></code> rewritten: row details, searchable column names and descriptions, nicer version matrix, and its own CSS so it spans the full page width on any pkgdown site. <code><a href="../reference/nemo_schemavis_data.html">nemo_schemavis_data()</a></code> now returns one row per table with nested columns.</li>
-<li>Schema-driven AWS S3 sync: each <code>schema.yaml</code> table can declare a <code>glob</code> of the files it needs, and the new <code><a href="../reference/s3sync.html">s3sync()</a></code> (exposed via <code>nemo.R sync</code>) pulls only those files for a workflow (<a href="https://github.com/tidywf/nemo/pull/77" class="external-link">pr77</a>-<a href="https://github.com/tidywf/nemo/pull/79" class="external-link">pr79</a>, <a href="https://github.com/tidywf/nemo/pull/83" class="external-link">pr83</a>). <code><a href="../reference/wf_sync_patterns.html">wf_sync_patterns()</a></code> returns a workflow’s include/exclude patterns; <code><a href="../reference/schema_glob_check.html">schema_glob_check()</a></code> catches globs that drift from their table <code>pattern</code> (matched via <code><a href="../reference/glob_to_regex.html">glob_to_regex()</a></code>).</li>
+<li>Schema-driven AWS S3 sync: each <code>schema.yaml</code> table can declare a <code>glob</code> of the files it needs, and the new <code><a href="../reference/s3sync.html">s3sync()</a></code> (exposed via <code>nemo.R sync</code>) pulls only those files for a workflow (<a href="https://github.com/tidywf/nemo/pull/77" class="external-link">pr77</a>-<a href="https://github.com/tidywf/nemo/pull/79" class="external-link">pr79</a>, <a href="https://github.com/tidywf/nemo/pull/83" class="external-link">pr83</a>). <code>wf_sync_patterns()</code> returns a workflow’s include/exclude patterns; <code><a href="../reference/schema_glob_check.html">schema_glob_check()</a></code> catches globs that drift from their table <code>pattern</code> (matched via <code><a href="../reference/glob_to_regex.html">glob_to_regex()</a></code>).</li>
 <li>New <code>Config</code> methods <code>get_outputs()</code>, <code>get_table_outputs()</code> and <code>get_output_shape()</code>. <code>get_schemas_raw()</code>/<code>get_schemas_tidy()</code>/ <code>get_schemas_both()</code> include output rows and gain a <code>parent</code> column (the file table of an output).</li>
 <li>
 <code>Tool</code> errors on construction when a <code>parse_*()</code>/<code>tidy_*()</code> method matches no schema table.</li>
@@ -263,7 +271,8 @@ issues, and users: pr(48), iss(11), vdiff("0.1.0", "0.0.3"), user("reisingerf").
           return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
       }
       // Inspect non-navigation links and adorn them if external
-     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      window.quartoDecorateExternalLinks = function (root) {
+     var links = (root || window.document).querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
       for (var i=0; i<links.length; i++) {
         const link = links[i];
         if (!isInternal(link.href)) {
@@ -272,8 +281,69 @@ issues, and users: pr(48), iss(11), vdiff("0.1.0", "0.0.3"), user("reisingerf").
           if (link.dataset.originalHref !== undefined) {
             link.href = link.dataset.originalHref;
           }
+          if (!link.classList.contains('no-external-icon')) {
+          }
         }
       }
+      };
+      window.quartoDecorateExternalLinks(window.document);
+    // Esc closes the popup (WCAG 1.4.13) and focus leaving both trigger and
+    // popup closes it (WCAG 2.4.11); tippy handles neither for interactive popups.
+    const hideOnEscAndFocusOut = {
+      name: 'hideOnEscAndFocusOut',
+      defaultValue: true,
+      fn(instance) {
+        const dismiss = () => {
+          // A show scheduled by the trigger delay would otherwise reopen it
+          instance.clearDelayTimeouts();
+          instance.hide();
+        };
+        const onKeyDown = (event) => {
+          if (event.key !== 'Escape') {
+            return;
+          }
+          // Keep Esc from also reaching page handlers (e.g. reveal.js overview),
+          // except an open reveal.js slide menu, which Esc should close too.
+          // The menu handles keys only when its keyboard option is on.
+          const menuHandlesEsc = window.Reveal?.getPlugin?.('menu')?.isOpen() &&
+            window.Reveal.getConfig().menu?.keyboard !== false;
+          if (!menuHandlesEsc) {
+            event.stopPropagation();
+          }
+          if (instance.popper.contains(window.document.activeElement)) {
+            // Disabled while refocusing so the focus trigger does not reopen it
+            instance.disable();
+            instance.reference.focus();
+            instance.enable();
+          }
+          dismiss();
+        };
+        const onFocusOut = (event) => {
+          const target = event.relatedTarget;
+          if (target && !instance.reference.contains(target) &&
+              !instance.popper.contains(target)) {
+            dismiss();
+          }
+        };
+        // On the trigger too: a click trigger (code-annotations: select) has no
+        // blur handling. Attached for the instance's lifetime so leaving the
+        // trigger also cancels a show still pending on the trigger delay.
+        instance.reference.addEventListener('focusout', onFocusOut);
+        return {
+          onShow() {
+            window.document.addEventListener('keydown', onKeyDown, true);
+            instance.popper.addEventListener('focusout', onFocusOut);
+          },
+          onHide() {
+            window.document.removeEventListener('keydown', onKeyDown, true);
+            instance.popper.removeEventListener('focusout', onFocusOut);
+          },
+          onDestroy() {
+            instance.reference.removeEventListener('focusout', onFocusOut);
+          },
+        };
+      },
+    };
     function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
       const config = {
         allowHTML: true,
@@ -287,6 +357,7 @@ issues, and users: pr(48), iss(11), vdiff("0.1.0", "0.0.3"), user("reisingerf").
         interactiveBorder: 10,
         theme: 'light-border',
         placement: 'bottom-start',
+        plugins: [hideOnEscAndFocusOut],
       };
       if (contentFn) {
         config.content = contentFn;

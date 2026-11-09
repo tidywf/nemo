@@ -23,10 +23,10 @@
 <url><loc>https://tidywf.github.io/nemo/reference/cli_list_add_args.html</loc></url>
 <url><loc>https://tidywf.github.io/nemo/reference/cli_list_parse_args.html</loc></url>
 <url><loc>https://tidywf.github.io/nemo/reference/cli_nemo_list.html</loc></url>
-<url><loc>https://tidywf.github.io/nemo/reference/cli_nemo_sync.html</loc></url>
+<url><loc>https://tidywf.github.io/nemo/reference/cli_nemo_s3sync.html</loc></url>
 <url><loc>https://tidywf.github.io/nemo/reference/cli_nemo_tidy.html</loc></url>
-<url><loc>https://tidywf.github.io/nemo/reference/cli_sync_add_args.html</loc></url>
-<url><loc>https://tidywf.github.io/nemo/reference/cli_sync_parse_args.html</loc></url>
+<url><loc>https://tidywf.github.io/nemo/reference/cli_s3sync_add_args.html</loc></url>
+<url><loc>https://tidywf.github.io/nemo/reference/cli_s3sync_parse_args.html</loc></url>
 <url><loc>https://tidywf.github.io/nemo/reference/cli_tidy_add_args.html</loc></url>
 <url><loc>https://tidywf.github.io/nemo/reference/cli_tidy_parse_args.html</loc></url>
 <url><loc>https://tidywf.github.io/nemo/reference/config_prep_multi.html</loc></url>
@@ -81,6 +81,6 @@
 <url><loc>https://tidywf.github.io/nemo/reference/schema_version_pill.html</loc></url>
 <url><loc>https://tidywf.github.io/nemo/reference/set_tbl_version_attr.html</loc></url>
 <url><loc>https://tidywf.github.io/nemo/reference/uniquify_prefixes.html</loc></url>
-<url><loc>https://tidywf.github.io/nemo/reference/wf_sync_patterns.html</loc></url>
+<url><loc>https://tidywf.github.io/nemo/reference/wf_s3sync_patterns.html</loc></url>
 </urlset>
 

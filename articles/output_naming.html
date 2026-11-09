@@ -27,7 +27,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">nemo</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.2.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.2.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -71,7 +71,7 @@
 
 
 
-      <small class="dont-index">Source: <a href="https://github.com/tidywf/nemo/blob/v0.2.0/vignettes/output_naming.qmd" class="external-link"><code>vignettes/output_naming.qmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/tidywf/nemo/blob/v0.2.1/vignettes/output_naming.qmd" class="external-link"><code>vignettes/output_naming.qmd</code></a></small>
       <div class="d-none name"><code></code></div>
     </div>
 
@@ -126,7 +126,7 @@
 <span><span class="op">}</span></span>
 <span></span>
 <span><span class="fu">dir_tree</span><span class="op">(</span><span class="va">dir_runs</span><span class="op">)</span></span>
-<span><span class="co">#&gt; /tmp/Rtmp1LhGAq/naming-demo/runs</span></span>
+<span><span class="co">#&gt; /tmp/RtmpIpicy4/naming-demo/runs</span></span>
 <span><span class="co">#&gt; ├── run1</span></span>
 <span><span class="co">#&gt; │   ├── sampleA.tool1.table1.tsv</span></span>
 <span><span class="co">#&gt; │   └── sampleA.tool1.table2.tsv</span></span>
@@ -149,12 +149,12 @@
 <span><span class="co">#&gt; # A tibble: 6 × 3</span></span>
 <span><span class="co">#&gt;   path                                                           prefix   parser</span></span>
 <span><span class="co">#&gt;   &lt;chr&gt;                                                          &lt;chr&gt;    &lt;chr&gt; </span></span>
-<span><span class="co">#&gt; 1 /tmp/Rtmp1LhGAq/naming-demo/runs/run1/sampleA.tool1.table1.tsv sampleA  table1</span></span>
-<span><span class="co">#&gt; 2 /tmp/Rtmp1LhGAq/naming-demo/runs/run2/sampleA.tool1.table1.tsv sampleA… table1</span></span>
-<span><span class="co">#&gt; 3 /tmp/Rtmp1LhGAq/naming-demo/runs/run3/sampleA.tool1.table1.tsv sampleA… table1</span></span>
-<span><span class="co">#&gt; 4 /tmp/Rtmp1LhGAq/naming-demo/runs/run1/sampleA.tool1.table2.tsv sampleA  table2</span></span>
-<span><span class="co">#&gt; 5 /tmp/Rtmp1LhGAq/naming-demo/runs/run2/sampleA.tool1.table2.tsv sampleA… table2</span></span>
-<span><span class="co">#&gt; 6 /tmp/Rtmp1LhGAq/naming-demo/runs/run3/sampleA.tool1.table2.tsv sampleA… table2</span></span></code></pre></div>
+<span><span class="co">#&gt; 1 /tmp/RtmpIpicy4/naming-demo/runs/run1/sampleA.tool1.table1.tsv sampleA  table1</span></span>
+<span><span class="co">#&gt; 2 /tmp/RtmpIpicy4/naming-demo/runs/run2/sampleA.tool1.table1.tsv sampleA… table1</span></span>
+<span><span class="co">#&gt; 3 /tmp/RtmpIpicy4/naming-demo/runs/run3/sampleA.tool1.table1.tsv sampleA… table1</span></span>
+<span><span class="co">#&gt; 4 /tmp/RtmpIpicy4/naming-demo/runs/run1/sampleA.tool1.table2.tsv sampleA  table2</span></span>
+<span><span class="co">#&gt; 5 /tmp/RtmpIpicy4/naming-demo/runs/run2/sampleA.tool1.table2.tsv sampleA… table2</span></span>
+<span><span class="co">#&gt; 6 /tmp/RtmpIpicy4/naming-demo/runs/run3/sampleA.tool1.table2.tsv sampleA… table2</span></span></code></pre></div>
 </div>
 <p>No overwrites:</p>
 <div class="cell">
@@ -168,7 +168,7 @@
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">dir_tree</span><span class="op">(</span><span class="va">dir_outA</span><span class="op">)</span></span>
-<span><span class="co">#&gt; /tmp/Rtmp1LhGAq/naming-demo/outA</span></span>
+<span><span class="co">#&gt; /tmp/RtmpIpicy4/naming-demo/outA</span></span>
 <span><span class="co">#&gt; ├── metadata_tool1.parquet</span></span>
 <span><span class="co">#&gt; ├── sampleA_2_tool1_table1.parquet</span></span>
 <span><span class="co">#&gt; ├── sampleA_2_tool1_table2.parquet</span></span>
@@ -213,7 +213,7 @@
 <span><span class="op">}</span></span>
 <span></span>
 <span><span class="fu">dir_tree</span><span class="op">(</span><span class="va">dir_outB</span><span class="op">)</span></span>
-<span><span class="co">#&gt; /tmp/Rtmp1LhGAq/naming-demo/outB</span></span>
+<span><span class="co">#&gt; /tmp/RtmpIpicy4/naming-demo/outB</span></span>
 <span><span class="co">#&gt; ├── run1</span></span>
 <span><span class="co">#&gt; │   ├── metadata_tool1.parquet</span></span>
 <span><span class="co">#&gt; │   ├── sampleA_tool1_table1.parquet</span></span>
@@ -265,7 +265,8 @@
           return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
       }
       // Inspect non-navigation links and adorn them if external
-     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      window.quartoDecorateExternalLinks = function (root) {
+     var links = (root || window.document).querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
       for (var i=0; i<links.length; i++) {
         const link = links[i];
         if (!isInternal(link.href)) {
@@ -274,8 +275,69 @@
           if (link.dataset.originalHref !== undefined) {
             link.href = link.dataset.originalHref;
           }
+          if (!link.classList.contains('no-external-icon')) {
+          }
         }
       }
+      };
+      window.quartoDecorateExternalLinks(window.document);
+    // Esc closes the popup (WCAG 1.4.13) and focus leaving both trigger and
+    // popup closes it (WCAG 2.4.11); tippy handles neither for interactive popups.
+    const hideOnEscAndFocusOut = {
+      name: 'hideOnEscAndFocusOut',
+      defaultValue: true,
+      fn(instance) {
+        const dismiss = () => {
+          // A show scheduled by the trigger delay would otherwise reopen it
+          instance.clearDelayTimeouts();
+          instance.hide();
+        };
+        const onKeyDown = (event) => {
+          if (event.key !== 'Escape') {
+            return;
+          }
+          // Keep Esc from also reaching page handlers (e.g. reveal.js overview),
+          // except an open reveal.js slide menu, which Esc should close too.
+          // The menu handles keys only when its keyboard option is on.
+          const menuHandlesEsc = window.Reveal?.getPlugin?.('menu')?.isOpen() &&
+            window.Reveal.getConfig().menu?.keyboard !== false;
+          if (!menuHandlesEsc) {
+            event.stopPropagation();
+          }
+          if (instance.popper.contains(window.document.activeElement)) {
+            // Disabled while refocusing so the focus trigger does not reopen it
+            instance.disable();
+            instance.reference.focus();
+            instance.enable();
+          }
+          dismiss();
+        };
+        const onFocusOut = (event) => {
+          const target = event.relatedTarget;
+          if (target && !instance.reference.contains(target) &&
+              !instance.popper.contains(target)) {
+            dismiss();
+          }
+        };
+        // On the trigger too: a click trigger (code-annotations: select) has no
+        // blur handling. Attached for the instance's lifetime so leaving the
+        // trigger also cancels a show still pending on the trigger delay.
+        instance.reference.addEventListener('focusout', onFocusOut);
+        return {
+          onShow() {
+            window.document.addEventListener('keydown', onKeyDown, true);
+            instance.popper.addEventListener('focusout', onFocusOut);
+          },
+          onHide() {
+            window.document.removeEventListener('keydown', onKeyDown, true);
+            instance.popper.removeEventListener('focusout', onFocusOut);
+          },
+          onDestroy() {
+            instance.reference.removeEventListener('focusout', onFocusOut);
+          },
+        };
+      },
+    };
     function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
       const config = {
         allowHTML: true,
@@ -289,6 +351,7 @@
         interactiveBorder: 10,
         theme: 'light-border',
         placement: 'bottom-start',
+        plugins: [hideOnEscAndFocusOut],
       };
       if (contentFn) {
         config.content = contentFn;
